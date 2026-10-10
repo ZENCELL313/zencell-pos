@@ -708,7 +708,111 @@
                     </table>
                 </div>
             </div>
+<!-- ================================================================= -->
+<!-- 1. REKAP STOK OPNAME / BELANJA STOK (DENGAN FITUR TOGGLE / HIDE) -->
+<!-- ================================================================= -->
+<div class="card mt-4">
+    <div class="card-header flex justify-between items-center cursor-pointer bg-indigo-600 text-white font-bold p-3 rounded-t-lg" onclick="toggleCardCollapse('bodyStokOpnameCard', this)">
+        <span>📦 Rekap & Histori Belanja Stok Opname</span>
+        <span class="text-xs bg-indigo-800 px-2 py-1 rounded">Klik untuk Sembunyikan / Munculkan ▼</span>
+    </div>
+    <div id="bodyStokOpnameCard" class="p-3">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu / Tanggal</th>
+                        <th>Kategori</th>
+                        <th>Nama Barang</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Harga Modal</th>
+                        <th style="text-align: right;">Total Belanja</th>
+                        <th>Sumber Saldo (Kas)</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelRiwayatBelanjaStok">
+                    <!-- Data detail stok opname akan tampil otomatis di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
+
+<!-- ================================================================= -->
+<!-- 2. HISTORI PINDAH SALDO (TRANSFER BALANCING) DENGAN TOGGLE -->
+<!-- ================================================================= -->
+<div class="card mt-4">
+    <div class="card-header flex justify-between items-center cursor-pointer" style="background-color: var(--primary); color: white;" onclick="toggleCardCollapse('bodyPindahSaldoCard', this)">
+        <span>🔀 Histori Pindah Saldo (Transfer Balancing)</span>
+        <span class="text-xs opacity-80 px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Sembunyikan / Munculkan ▼</span>
+    </div>
+    <div id="bodyPindahSaldoCard" class="p-3">
+        <!-- Filter Pindah Saldo bawaan aplikasi Kakak -->
+        <div class="filter-container mb-3">
+            <span style="font-size:11px; font-weight:700; opacity:0.8;">Filter Pindah Saldo:</span>
+            <select id="filterPindahSaldoMode" class="date-picker-input">
+                <option value="DAILY">Per Hari (Tanggal)</option>
+            </select>
+            <input type="date" id="filterPindahSaldoDate" class="date-picker-input">
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Tanggal</th>
+                        <th>Dari (Asal)</th>
+                        <th>Ke (Tujuan)</th>
+                        <th style="text-align: right;">Nominal</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelPindahSaldo">
+                    <tr><td colspan="6" style="text-align: center; color: gray;">Belum ada catatan pindah saldo sesuai filter.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- ================================================================= -->
+<!-- 3. HISTORI SETORAN PROFIT OWNER DENGAN TOGGLE -->
+<!-- ================================================================= -->
+<div class="card mt-4">
+    <div class="card-header flex justify-between items-center cursor-pointer" style="background-color: #fee2e2; color: #991b1b;" onclick="toggleCardCollapse('bodySetoranOwnerCard', this)">
+        <span>🏛️ Histori Setoran Profit Owner</span>
+        <span class="text-xs px-2 py-1 rounded" style="background: rgba(153,27,27,0.1);">Klik untuk Sembunyikan / Munculkan ▼</span>
+    </div>
+    <div id="bodySetoranOwnerCard" class="p-3">
+        <div class="filter-container mb-3">
+            <span style="font-size:11px; font-weight:700; opacity:0.8;">Filter Setoran:</span>
+            <select id="filterSetoranMode" class="date-picker-input">
+                <option value="DAILY">Per Hari (Tanggal)</option>
+            </select>
+            <input type="date" id="filterSetoranDate" class="date-picker-input">
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Tanggal</th>
+                        <th>Dari Akun</th>
+                        <th style="text-align: right;">Nominal Setoran</th>
+                        <th>Catatan</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelSetoranOwner">
+                    <!-- Data setoran owner -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
             <!-- HISTORI PINDAH SALDO (TRANSFER BALANCING) -->
             <div class="card">
                 <div class="card-header" style="background:#E0F2FE; color:#0369A1;">🔀 Histori Pindah Saldo (Transfer Balancing)</div>
@@ -1239,7 +1343,98 @@
         };
 
         window.transaksiJurnal = [];
-        window.stokOpnameItems = [];
+        window.stokOpnameItems = = function(e) {
+    if (e) e.preventDefault();
+    
+    const editId = document.getElementById('editStokId').value;
+    const kat = document.getElementById('stokKat').value;
+    const nama = document.getElementById('stokNama').value.trim().toUpperCase();
+    const qty = parseFloat(document.getElementById('stokQty').value) || 0;
+    const modal = parseFloat(document.getElementById('stokModal').value) || 0;
+    const sumberKasSelect = document.getElementById('stokSumberKas');
+    const sumberKas = sumberKasSelect ? sumberKasSelect.value : "TIDAK POTONG SALDO";
+    const totalNilai = qty * modal;
+    
+    // Tanggal hari ini format Indonesia (DD/MM/YYYY) atau YYYY-MM-DD
+    const tglInput = new Date().toLocaleDateString('id-ID');
+
+    if (!nama || qty <= 0 || modal <= 0) {
+        alert("Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!");
+        return;
+    }
+
+    if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
+
+    if (editId) {
+        // --- MODE EDIT RIWAYAT BELANJA ---
+        let riwayat = window.riwayatBelanjaStok.find(r => r.id == editId);
+        if (riwayat) {
+            riwayat.kat = kat;
+            riwayat.nama = nama;
+            riwayat.qty = qty;
+            riwayat.modal = modal;
+            riwayat.total = totalNilai;
+            riwayat.sumberKas = sumberKas;
+        }
+
+        // Update juga data master stok opname realtime
+        let item = window.stokOpnameItems.find(i => i.id == editId || (i.nama === nama && i.kat === kat));
+        if (item) {
+            item.awal = qty;
+            item.modal = modal;
+        }
+
+        document.getElementById('editStokId').value = '';
+        const titleEl = document.getElementById('formStokTitle');
+        if (titleEl) titleEl.innerText = '+ Input Stok Opname';
+    } else {
+        // --- MODE TAMBAH BELANJA BARU ---
+        const recordId = Date.now();
+        
+        // Simpan khusus ke riwayat belanja stok (Terpisah dari jurnal harian)
+        window.riwayatBelanjaStok.unshift({
+            id: recordId,
+            tgl: tglInput,
+            kat: kat,
+            nama: nama,
+            qty: qty,
+            modal: modal,
+            total: totalNilai,
+            sumberKas: sumberKas
+        });
+
+        // Masukkan/Update ke Stok Opname Realtime
+        let item = window.stokOpnameItems.find(i => i.nama === nama && i.kat === kat);
+        if (item) {
+            item.awal += qty;
+            item.modal = modal;
+        } else {
+            window.stokOpnameItems.push({
+                id: recordId,
+                kat: kat,
+                nama: nama,
+                awal: qty,
+                terjual: 0,
+                modal: modal
+            });
+        }
+    }
+
+    // Reset Form Input
+    document.getElementById('formStokOpname').reset();
+    document.getElementById('editStokId').value = '';
+    document.getElementById('stokModal').value = '0';
+    if (document.getElementById('stokTotalDisplay')) {
+        document.getElementById('stokTotalDisplay').value = 'Rp0';
+    }
+    if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
+
+    // Simpan ke Firebase & Refresh Tampilan
+    if (typeof window.saveToFirebase === 'function') window.saveToFirebase();
+    if (typeof window.renderAll === 'function') window.renderAll();
+
+    alert("Data belanja stok berhasil disimpan ke rekap khusus laporan!");
+};
         window.piutangList = [];
         window.setoranOwnerList = [];
         window.sparepartList = [];
@@ -2737,7 +2932,10 @@ window.simpanStokOpname = function(e) {
 
             window.renderRekapKategoriTab();
             window.updateUndoRedoBtnState();
-        }
+        if (typeof window.renderRiwayatBelanjaStok === 'function') {
+                window.renderRiwayatBelanjaStok();
+            }
+        };
 
         window.renderRekapKategoriTab = function() {
             const mode = document.getElementById('rekapModeSelect').value;
@@ -2804,7 +3002,177 @@ window.simpanStokOpname = function(e) {
                 `;
             }).join('');
         }
+// Simpan riwayat belanja stok ke dalam data backup JSON
+    window.riwayatBelanjaStok = window.riwayatBelanjaStok || [];
 
+    // Fungsi Toggle Card Collapse (Sembunyikan / Munculkan)
+    window.toggleCardCollapse = function(contentId, headerElement) {
+        const content = document.getElementById(contentId);
+        if (!content) return;
+        
+        if (content.style.display === "none") {
+            content.style.display = "block";
+            headerElement.style.opacity = "1";
+        } else {
+            content.style.display = "none";
+            headerElement.style.opacity = "0.7";
+        }
+    };
+
+    // Fungsi Render Riwayat Belanja Stok
+    window.renderRiwayatBelanjaStok = function() {
+        const tbody = document.getElementById('tabelRiwayatBelanjaStok');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        
+        if (!window.riwayatBelanjaStok || window.riwayatBelanjaStok.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: gray; padding: 15px;">Belum ada riwayat belanja stok.</td></tr>`;
+            return;
+        }
+
+        window.riwayatBelanjaStok.forEach((item) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.waktu || '-'} <br><small style="color: gray;">${item.tgl || '-'}</small></td>
+                <td><span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${item.kat}</span></td>
+                <td style="font-weight: bold;">${item.nama}</td>
+                <td style="text-align: center;">${item.qty}</td>
+                <td style="text-align: right;">Rp${(item.modal || 0).toLocaleString('id-ID')}</td>
+                <td style="text-align: right; font-weight: bold; color: #2563eb;">Rp${(item.total || 0).toLocaleString('id-ID')}</td>
+                <td><span style="color: #7c3aed; font-weight: 500; font-size: 12px;">${item.sumberKas || '-'}</span></td>
+                <td style="text-align: center;">
+                    <button onclick="editRiwayatBelanja(${item.id})" style="background: #eab308; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-right: 2px;">Edit</button>
+                    <button onclick="hapusRiwayatBelanja(${item.id})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Hapus</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    window.editRiwayatBelanja = function(id) {
+        const item = window.riwayatBelanjaStok.find(r => r.id == id);
+        if (!item) return;
+
+        document.getElementById('editStokId').value = item.id;
+        document.getElementById('stokKat').value = item.kat;
+        document.getElementById('stokNama').value = item.nama;
+        document.getElementById('stokQty').value = item.qty;
+        document.getElementById('stokModal').value = item.modal;
+        
+        if (document.getElementById('stokModalDisplay')) {
+            document.getElementById('stokModalDisplay').value = item.modal.toLocaleString('id-ID');
+        }
+        if (document.getElementById('stokTotalDisplay')) {
+            document.getElementById('stokTotalDisplay').value = 'Rp' + (item.total || (item.qty * item.modal)).toLocaleString('id-ID');
+        }
+        if (document.getElementById('stokSumberKas')) {
+            document.getElementById('stokSumberKas').value = item.sumberKas || 'TIDAK POTONG SALDO';
+        }
+
+        const titleEl = document.getElementById('formStokTitle');
+        if (titleEl) titleEl.innerText = '✏️ Edit Belanja Stok';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.hapusRiwayatBelanja = function(id) {
+        if (confirm("Yakin ingin menghapus riwayat belanja stok ini?")) {
+            window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
+            if (typeof window.saveToFirebase === 'function') window.saveToFirebase();
+            if (typeof window.renderAll === 'function') window.renderAll();
+        }
+    };
+
+    // Update Fungsi Simpan Stok Opname
+    window.simpanStokOpname = function(e) {
+        if (e) e.preventDefault();
+        
+        const editId = document.getElementById('editStokId').value;
+        const kat = document.getElementById('stokKat').value;
+        const nama = document.getElementById('stokNama').value.trim().toUpperCase();
+        const qty = parseFloat(document.getElementById('stokQty').value) || 0;
+        const modal = parseFloat(document.getElementById('stokModal').value) || 0;
+        const sumberKasSelect = document.getElementById('stokSumberKas');
+        const sumberKas = sumberKasSelect ? sumberKasSelect.value : "TIDAK POTONG SALDO";
+        const totalNilai = qty * modal;
+        
+        const now = new Date();
+        const tglInput = now.toLocaleDateString('id-ID');
+        const waktuInput = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        if (!nama || qty <= 0 || modal <= 0) {
+            alert("Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!");
+            return;
+        }
+
+        if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
+
+        if (editId) {
+            let riwayat = window.riwayatBelanjaStok.find(r => r.id == editId);
+            if (riwayat) {
+                riwayat.kat = kat;
+                riwayat.nama = nama;
+                riwayat.qty = qty;
+                riwayat.modal = modal;
+                riwayat.total = totalNilai;
+                riwayat.sumberKas = sumberKas;
+            }
+
+            let item = window.stokOpnameItems.find(i => i.id == editId || (i.nama === nama && i.kat === kat));
+            if (item) {
+                item.awal = qty;
+                item.modal = modal;
+            }
+
+            document.getElementById('editStokId').value = '';
+            const titleEl = document.getElementById('formStokTitle');
+            if (titleEl) titleEl.innerText = '+ Input Stok Opname';
+        } else {
+            const recordId = Date.now();
+            
+            window.riwayatBelanjaStok.unshift({
+                id: recordId,
+                waktu: waktuInput,
+                tgl: tglInput,
+                kat: kat,
+                nama: nama,
+                qty: qty,
+                modal: modal,
+                total: totalNilai,
+                sumberKas: sumberKas
+            });
+
+            let item = window.stokOpnameItems.find(i => i.nama === nama && i.kat === kat);
+            if (item) {
+                item.awal += qty;
+                item.modal = modal;
+            } else {
+                window.stokOpnameItems.push({
+                    id: recordId,
+                    kat: kat,
+                    nama: nama,
+                    awal: qty,
+                    terjual: 0,
+                    modal: modal
+                });
+            }
+        }
+
+        document.getElementById('formStokOpname').reset();
+        document.getElementById('editStokId').value = '';
+        document.getElementById('stokModal').value = '0';
+        if (document.getElementById('stokTotalDisplay')) {
+            document.getElementById('stokTotalDisplay').value = 'Rp0';
+        }
+        if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
+
+        if (typeof window.saveToFirebase === 'function') window.saveToFirebase();
+        if (typeof window.renderAll === 'function') window.renderAll();
+
+        alert("Data belanja stok berhasil disimpan!");
+    };
+        
         window.backupJSON = function() {
             const dataBackup = { 
                 saldoList: window.saldoList, 
@@ -2815,6 +3183,7 @@ window.simpanStokOpname = function(e) {
                 setoranOwnerList: window.setoranOwnerList, 
                 stokOpnameItems: window.stokOpnameItems, 
                 sparepartList: window.sparepartList 
+                riwayatBelanjaStok: window.riwayatBelanjaStok
             };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataBackup, null, 2));
             const dlAnchor = document.createElement('a');
@@ -2823,5 +3192,6 @@ window.simpanStokOpname = function(e) {
             document.body.appendChild(dlAnchor); dlAnchor.click(); dlAnchor.remove();
         }
     </script>
+    
 </body>
 </html>
