@@ -114,7 +114,6 @@
             display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.15);
             padding: 6px 10px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: 600;
         }
-        .badge-live { background: #22C55E; color: #FFF; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
 
         .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6px; }
         .summary-grid-bottom { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
@@ -157,7 +156,7 @@
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; max-width: 650px; margin: 0 auto;
-            background: var(--card); border-top: 1px solid var(--border); display: flex; justify-around;
+            background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around;
             padding: 8px 0; z-index: 9997; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); border-radius: 14px 14px 0 0;
         }
         .nav-item {
@@ -285,7 +284,7 @@
                 </div>
             </div>
             <div class="header-status-bar">
-                <span>👤 <span id="hdrUserActive">Owner</span> <span id="cloudStatus" class="badge-live">• Menghubungkan Firebase...</span></span>
+                <span>👤 <span id="hdrUserActive">Owner</span> <span id="cloudStatus" style="color:#F59E0B;">• Menghubungkan Firebase...</span></span>
                 <span id="hdrRealtimeClock">SABTU, 10 OKTOBER 2026 00:00:00</span>
             </div>
         </header>
@@ -1028,7 +1027,6 @@
                 <textarea id="txtNotifOwner" class="form-control" rows="3" placeholder="Tulis instruksi/pesan untuk kasir di sini..." style="resize:none; margin-bottom:6px;"></textarea>
                 <div class="row-2">
                     <button type="button" class="btn" onclick="kirimPesanOwner()" style="padding:8px; font-size:11.5px;">Kirim Pesan ke Kasir</button>
-                    <button type="button" class="btn" onclick="tesNotifikasiGoyang()" style="padding:8px; font-size:11.5px; background:#F59E0B;">🧪 Tes Notif Goyang</button>
                 </div>
             </div>
 
@@ -1184,7 +1182,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE SDK V9 -->
+    <!-- SCRIPT JAVASCRIPT GLOBAL & FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
@@ -1196,78 +1194,121 @@
             projectId: "keuangan-pribadi-e713a",
             storageBucket: "keuangan-pribadi-e713a.firebasestorage.app",
             messagingSenderId: "333606490804",
-            appId: "1:333606490804:web:4733a1401932a206edbde1",
-            measurementId: "G-QJMNNPPMD1"
+            appId: "1:333606490804:web:4733a1401932a206edbde1"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPtfv5DAAKgzH_FVxrKX5Cg43fTSiiyRDKK2sGschbi26npMmu03wIQAVwSHPmpzgpag/exec";
+
+        // FUNGSI PEMBERSIH KARAKTER KHUSUS UNTUK FIREBASE KEY (OTOMATIS DI BALIK LAYAR)
+        function sanitizeKey(str) {
+            if (!str) return '';
+            return String(str).trim().replace(/[\/.#$\[\]]/g, '-');
+        }
+
+        window.kategoriList = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC', 'VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME', 'SERVICE', 'PIUTANG', 'LAIN LAIN', 'TRANSFER BALANCING'];
+        window.katAtm = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC'];
+        window.katKonter = ['VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME'];
+        window.katService = ['SERVICE'];
+
+        window.saldoList = [
+            'LACI', 'SEA ECA', 'DANA NINING', 'DANA SRI', 'DANA FINA', 'OVO', 'GOPAY', 'O KUOTA', 
+            'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL', 'VOUCHER', 'SP', 'QRIS', 'BRI', 
+            'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'AMARTHA', 'BRANKAS'
+        ];
+
+        window.masterSaldoAwal = {
+            'LACI': 1000000, 'SEA ECA': 1000000, 'SEA FINA': 1000000,
+            'DANA NINING': 1000000, 'DANA SRI': 1000000, 'DANA FINA': 1000000, 'DANA AA': 1000000
+        };
+        window.saldoList.forEach(s => { if (window.masterSaldoAwal[s] === undefined) window.masterSaldoAwal[s] = 0; });
+
+        window.masterVlookup = {
+            'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
+        };
+
+        window.transaksiJurnal = [];
+        window.stokOpnameItems = [
+            { id: 1, kat: 'VOUCHER', nama: 'VOUCHER TRI 5GB', awal: 20, terjual: 0, modal: 12000 },
+            { id: 2, kat: 'SP', nama: 'PERDANA TELKOMSEL 10GB', awal: 10, terjual: 0, modal: 25000 },
+            { id: 3, kat: 'ACC', nama: 'CHARGER TYPE C 20W', awal: 5, terjual: 0, modal: 35000 }
+        ];
+        window.piutangList = [];
+        window.setoranOwnerList = [];
+        window.sparepartList = [];
+
+        window.undoStack = [];
+        window.redoStack = [];
+        window.isUndoRedoAction = false;
+        let isFirebaseSyncing = false;
 
         const statusEl = document.getElementById('cloudStatus');
-        let isFirebaseSyncing = false;
 
         onValue(ref(db, 'zencellPosData'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 isFirebaseSyncing = true;
-                if (data.vlookup) masterVlookup = data.vlookup;
-                if (data.transaksi) transaksiJurnal = data.transaksi;
-                if (data.stok) stokOpnameItems = data.stok;
-                if (data.piutang) piutangList = data.piutang;
-                if (data.setoran) setoranOwnerList = data.setoran;
-                if (data.sparepart) sparepartList = data.sparepart;
+                if (data.vlookup) window.masterVlookup = data.vlookup;
+                if (data.transaksi) window.transaksiJurnal = data.transaksi;
+                if (data.stok) window.stokOpnameItems = data.stok;
+                if (data.piutang) window.piutangList = data.piutang;
+                if (data.setoran) window.setoranOwnerList = data.setoran;
+                if (data.sparepart) window.sparepartList = data.sparepart;
 
-                statusEl.style.color = '#22C55E';
-                statusEl.innerText = '• Realtime Terhubung';
+                if (statusEl) {
+                    statusEl.style.color = '#22C55E';
+                    statusEl.innerText = '• Realtime Terhubung';
+                }
 
-                initDropdowns();
-                initVlookupAutoFill();
-                renderAll();
+                window.initDropdowns();
+                window.initVlookupAutoFill();
+                window.renderAll();
                 isFirebaseSyncing = false;
             } else {
-                syncFromGoogleSheets();
+                window.saveToFirebase();
+            }
+        }, (error) => {
+            console.error("Firebase Connection Error:", error);
+            if (statusEl) {
+                statusEl.style.color = '#EF4444';
+                statusEl.innerText = '• Terputus (Mode Lokal)';
             }
         });
 
-        function syncFromGoogleSheets() {
-            fetch(GOOGLE_SCRIPT_URL)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.transaksi) transaksiJurnal = data.transaksi;
-                    if (data.stok) stokOpnameItems = data.stok;
-                    if (data.piutang) piutangList = data.piutang;
-                    if (data.vlookup) masterVlookup = data.vlookup;
-                    saveToFirebase();
-                }).catch(err => console.log("Gagal sync Sheets:", err));
-        }
-
         window.saveToFirebase = function(skipSnapshot = false) {
             if (isFirebaseSyncing) return;
+            
+            // Bersihkan key vlookup secara otomatis sebelum dikirim ke Firebase agar bebas error
+            let cleanVlookup = {};
+            for (let key in window.masterVlookup) {
+                let safeKey = sanitizeKey(key);
+                cleanVlookup[safeKey] = window.masterVlookup[key];
+            }
+
             set(ref(db, 'zencellPosData'), {
-                vlookup: masterVlookup,
-                transaksi: transaksiJurnal,
-                stok: stokOpnameItems,
-                piutang: piutangList,
-                setoran: setoranOwnerList,
-                sparepart: sparepartList
+                vlookup: cleanVlookup,
+                transaksi: window.transaksiJurnal,
+                stok: window.stokOpnameItems,
+                piutang: window.piutangList,
+                setoran: window.setoranOwnerList,
+                sparepart: window.sparepartList
             });
-            if (!skipSnapshot) saveStateSnapshot();
+            if (!skipSnapshot) window.saveStateSnapshot();
         }
 
-        const formatRp = (num) => 'Rp' + Number(num || 0).toLocaleString('id-ID');
+        window.formatRp = (num) => 'Rp' + Number(num || 0).toLocaleString('id-ID');
 
-        function getTodayIso() {
+        window.getTodayIso = function() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
-        function getCurrentMonthIso() {
+        window.getCurrentMonthIso = function() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        function toggleAccordion(boxId, arrowId) {
+        window.toggleAccordion = function(boxId, arrowId) {
             const box = document.getElementById(boxId);
             const arrow = document.getElementById(arrowId);
             if (box.style.display === 'none' || box.style.display === '') {
@@ -1279,7 +1320,6 @@
             }
         }
 
-        // TEMA SWITCHER
         const themes = ['default', 'theme-emerald', 'theme-dark'];
         let currentThemeIdx = 0;
 
@@ -1296,7 +1336,6 @@
             localStorage.setItem('zencell_theme', document.body.className);
         }
 
-        // JAM REALTIME
         function updateRealtimeClock() {
             const now = new Date();
             const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
@@ -1312,7 +1351,6 @@
         }
         setInterval(updateRealtimeClock, 1000);
 
-        // LOGIN & SESSION STORAGE
         window.checkSessionLogin = function() {
             const activeUser = sessionStorage.getItem('zencell_user');
             if (activeUser) {
@@ -1338,7 +1376,7 @@
                 document.getElementById('hdrUserActive').innerText = user;
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('loginPass').value = '';
-                checkStatusNotifikasi();
+                window.checkStatusNotifikasi();
             } else {
                 alert('Kata Sandi / PIN Salah!');
             }
@@ -1351,7 +1389,7 @@
             }
         }
 
-        function checkStatusNotifikasi() {
+        window.checkStatusNotifikasi = function() {
             const notifData = JSON.parse(localStorage.getItem('zencell_owner_notif') || '{"pesan":"", "unread":false, "waktu":""}');
             const btnNotif = document.getElementById('btnNotifHeader');
             const badge = document.getElementById('notifBadge');
@@ -1381,7 +1419,7 @@
 
             notifData.unread = false;
             localStorage.setItem('zencell_owner_notif', JSON.stringify(notifData));
-            checkStatusNotifikasi();
+            window.checkStatusNotifikasi();
             document.getElementById('modalNotifOverlay').classList.add('show');
         }
 
@@ -1394,21 +1432,21 @@
             const timeStr = `${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}`;
             localStorage.setItem('zencell_owner_notif', JSON.stringify({ pesan: txt, unread: true, waktu: timeStr }));
             document.getElementById('txtNotifOwner').value = '';
-            checkStatusNotifikasi(); closeModalNotif();
+            window.checkStatusNotifikasi(); window.closeModalNotif();
             alert("✅ Pesan berhasil dikirim ke Kasir!");
         }
 
         window.openModalKasir = function() { 
             const overlay = document.getElementById('modalKasirOverlay');
             if (document.getElementById('editTrxIdx').value === '-1') {
-                document.getElementById('trxDateInput').value = getTodayIso();
+                document.getElementById('trxDateInput').value = window.getTodayIso();
             }
             overlay.classList.add('show');
         }
 
         window.closeModalKasir = function() { 
             document.getElementById('modalKasirOverlay').classList.remove('show');
-            cancelEditTrx(); 
+            window.cancelEditTrx(); 
         }
 
         window.switchMainTab = function(evt, tabId) {
@@ -1420,7 +1458,7 @@
 
         window.switchSubTab = function(evt, subTabId) {
             document.querySelectorAll('.sub-tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.sub-nav-tabs .sub-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(subTabId).classList.add('active');
             if (evt) evt.currentTarget.classList.add('active');
         }
@@ -1435,7 +1473,7 @@
                 dPicker.style.display = 'inline-block';
                 mPicker.style.display = 'none';
             }
-            renderAll();
+            window.renderAll();
         }
 
         window.toggleFilterJurnalDate = function(mode) {
@@ -1451,7 +1489,7 @@
                 dPicker.style.display = 'none';
                 mPicker.style.display = 'none';
             }
-            renderAll();
+            window.renderAll();
         }
 
         window.toggleFilterTfDate = function(mode) {
@@ -1467,7 +1505,7 @@
                 dPicker.style.display = 'none';
                 mPicker.style.display = 'none';
             }
-            renderAll();
+            window.renderAll();
         }
 
         window.toggleFilterSetorDate = function(mode) {
@@ -1483,146 +1521,111 @@
                 dPicker.style.display = 'none';
                 mPicker.style.display = 'none';
             }
-            renderAll();
+            window.renderAll();
         }
 
-        const kategoriList = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC', 'VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME', 'SERVICE', 'PIUTANG', 'LAIN LAIN', 'TRANSFER BALANCING'];
-        const katAtm = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC'];
-        const katKonter = ['VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME'];
-        const katService = ['SERVICE'];
-
-        let saldoList = [
-            'LACI', 'SEA ECA', 'DANA NINING', 'DANA SRI', 'DANA FINA', 'OVO', 'GOPAY', 'O KUOTA', 
-            'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL', 'VOUCHER', 'SP', 'QRIS', 'BRI', 
-            'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'AMARTHA', 'BRANKAS'
-        ];
-
-        let masterSaldoAwal = {
-            'LACI': 1000000, 'SEA ECA': 1000000, 'SEA FINA': 1000000,
-            'DANA NINING': 1000000, 'DANA SRI': 1000000, 'DANA FINA': 1000000, 'DANA AA': 1000000
-        };
-        saldoList.forEach(s => { if (masterSaldoAwal[s] === undefined) masterSaldoAwal[s] = 0; });
-
-        let masterVlookup = {
-            'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
-        };
-
-        let transaksiJurnal = [];
-        let stokOpnameItems = [
-            { id: 1, kat: 'VOUCHER', nama: 'VOUCHER TRI 5GB', awal: 20, terjual: 0, modal: 12000 },
-            { id: 2, kat: 'SP', nama: 'PERDANA TELKOMSEL 10GB', awal: 10, terjual: 0, modal: 25000 },
-            { id: 3, kat: 'ACC', nama: 'CHARGER TYPE C 20W', awal: 5, terjual: 0, modal: 35000 }
-        ];
-        let piutangList = [];
-        let setoranOwnerList = [];
-        let sparepartList = [];
-
-        // ENGINE UNDO / REDO
-        let undoStack = [];
-        let redoStack = [];
-        let isUndoRedoAction = false;
-
-        function getCurrentStateSnapshot() {
-            return JSON.stringify({
-                masterVlookup, transaksiJurnal, stokOpnameItems, piutangList, setoranOwnerList, sparepartList
+        window.saveStateSnapshot = function() {
+            if (window.isUndoRedoAction) return;
+            const snap = JSON.stringify({
+                masterVlookup: window.masterVlookup,
+                transaksiJurnal: window.transaksiJurnal,
+                stokOpnameItems: window.stokOpnameItems,
+                piutangList: window.piutangList,
+                setoranOwnerList: window.setoranOwnerList,
+                sparepartList: window.sparepartList
             });
-        }
-
-        function saveStateSnapshot() {
-            if (isUndoRedoAction) return;
-            const snap = getCurrentStateSnapshot();
-            if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== snap) {
-                undoStack.push(snap);
-                if (undoStack.length > 25) undoStack.shift();
-                redoStack = [];
+            if (window.undoStack.length === 0 || window.undoStack[window.undoStack.length - 1] !== snap) {
+                window.undoStack.push(snap);
+                if (window.undoStack.length > 25) window.undoStack.shift();
+                window.redoStack = [];
             }
-            updateUndoRedoBtnState();
+            window.updateUndoRedoBtnState();
         }
 
-        function updateUndoRedoBtnState() {
+        window.updateUndoRedoBtnState = function() {
             const btnUndo = document.getElementById('btnUndo');
             const btnRedo = document.getElementById('btnRedo');
-            if (btnUndo) btnUndo.disabled = (undoStack.length <= 1);
-            if (btnRedo) btnRedo.disabled = (redoStack.length === 0);
-        }
-
-        function applyStateSnapshot(snapStr) {
-            isUndoRedoAction = true;
-            const state = JSON.parse(snapStr);
-            masterVlookup = state.masterVlookup || {};
-            transaksiJurnal = state.transaksiJurnal || [];
-            stokOpnameItems = state.stokOpnameItems || [];
-            piutangList = state.piutangList || [];
-            setoranOwnerList = state.setoranOwnerList || [];
-            sparepartList = state.sparepartList || [];
-
-            saveToFirebase(true);
-            initDropdowns();
-            renderAll();
-            isUndoRedoAction = false;
+            if (btnUndo) btnUndo.disabled = (window.undoStack.length <= 1);
+            if (btnRedo) btnRedo.disabled = (window.redoStack.length === 0);
         }
 
         window.doUndo = function() {
-            if (undoStack.length > 1) {
-                const currentSnap = undoStack.pop();
-                redoStack.push(currentSnap);
-                const prevSnap = undoStack[undoStack.length - 1];
-                applyStateSnapshot(prevSnap);
-                updateUndoRedoBtnState();
+            if (window.undoStack.length > 1) {
+                const currentSnap = window.undoStack.pop();
+                window.redoStack.push(currentSnap);
+                const prevSnap = window.undoStack[window.undoStack.length - 1];
+                window.applyStateSnapshot(prevSnap);
+                window.updateUndoRedoBtnState();
             }
         }
 
         window.doRedo = function() {
-            if (redoStack.length > 0) {
-                const nextSnap = redoStack.pop();
-                undoStack.push(nextSnap);
-                applyStateSnapshot(nextSnap);
-                updateUndoRedoBtnState();
+            if (window.redoStack.length > 0) {
+                const nextSnap = window.redoStack.pop();
+                window.undoStack.push(nextSnap);
+                window.applyStateSnapshot(nextSnap);
+                window.updateUndoRedoBtnState();
             }
+        }
+
+        window.applyStateSnapshot = function(snapStr) {
+            window.isUndoRedoAction = true;
+            const state = JSON.parse(snapStr);
+            window.masterVlookup = state.masterVlookup || {};
+            window.transaksiJurnal = state.transaksiJurnal || [];
+            window.stokOpnameItems = state.stokOpnameItems || [];
+            window.piutangList = state.piutangList || [];
+            window.setoranOwnerList = state.setoranOwnerList || [];
+            window.sparepartList = state.sparepartList || [];
+
+            window.saveToFirebase(true);
+            window.initDropdowns();
+            window.renderAll();
+            window.isUndoRedoAction = false;
         }
 
         window.resetTestData = function() {
             if (confirm("⚠️ Apakah Anda yakin ingin MERESET SELURUH DATA TESTING kembali ke 0?")) {
-                transaksiJurnal = [];
-                piutangList = [];
-                setoranOwnerList = [];
-                stokOpnameItems = [];
-                sparepartList = [];
-                saveToFirebase();
-                renderAll();
+                window.transaksiJurnal = [];
+                window.piutangList = [];
+                window.setoranOwnerList = [];
+                window.stokOpnameItems = [];
+                window.sparepartList = [];
+                window.saveToFirebase();
+                window.renderAll();
                 alert("✅ Data testing berhasil dibersihkan!");
             }
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            initTheme();
-            checkSessionLogin();
+            window.initTheme();
+            window.checkSessionLogin();
             
-            document.getElementById('trxDateInput').value = getTodayIso();
-            document.getElementById('rekapDatePicker').value = getTodayIso();
-            document.getElementById('rekapMonthPicker').value = getCurrentMonthIso();
-            document.getElementById('jurnalDatePicker').value = getTodayIso();
-            document.getElementById('jurnalMonthPicker').value = getCurrentMonthIso();
+            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('rekapDatePicker').value = window.getTodayIso();
+            document.getElementById('rekapMonthPicker').value = window.getCurrentMonthIso();
+            document.getElementById('jurnalDatePicker').value = window.getTodayIso();
+            document.getElementById('jurnalMonthPicker').value = window.getCurrentMonthIso();
             
-            document.getElementById('tfDatePicker').value = getTodayIso();
-            document.getElementById('tfMonthPicker').value = getCurrentMonthIso();
-            document.getElementById('setorDatePicker').value = getTodayIso();
-            document.getElementById('setorMonthPicker').value = getCurrentMonthIso();
+            document.getElementById('tfDatePicker').value = window.getTodayIso();
+            document.getElementById('tfMonthPicker').value = window.getCurrentMonthIso();
+            document.getElementById('setorDatePicker').value = window.getTodayIso();
+            document.getElementById('setorMonthPicker').value = window.getCurrentMonthIso();
 
-            updateRealtimeClock();
-            initDropdowns();
-            initVlookupAutoFill();
-            checkStatusNotifikasi();
+            window.initDropdowns();
+            window.initVlookupAutoFill();
+            window.checkStatusNotifikasi();
 
-            saveStateSnapshot();
-            renderAll();
+            window.saveStateSnapshot();
+            window.renderAll();
         });
 
-        // AUTO-FILL & WARNING STOK OPNAME
-        function initVlookupAutoFill() {
+        window.initVlookupAutoFill = function() {
             const inputKet = document.getElementById('keterangan');
             const notice = document.getElementById('vlookupNotice');
             const warnStok = document.getElementById('stokWarningBadge');
+
+            if (!inputKet) return;
 
             inputKet.addEventListener('input', function() {
                 const val = this.value.toUpperCase().trim();
@@ -1634,8 +1637,7 @@
                     return;
                 }
 
-                // 1. CEK KE STOK OPNAME
-                const matchStok = stokOpnameItems.find(s => s.nama.toUpperCase() === val || val.includes(s.nama.toUpperCase()) || s.nama.toUpperCase().includes(val));
+                const matchStok = window.stokOpnameItems.find(s => s.nama.toUpperCase() === val || val.includes(s.nama.toUpperCase()) || s.nama.toUpperCase().includes(val));
                 if (matchStok) {
                     const sisaStok = matchStok.awal - matchStok.terjual;
                     
@@ -1660,13 +1662,13 @@
                     document.getElementById('hargaModal').value = totalModalStok;
                     document.getElementById('hargaModalDisplay').value = totalModalStok ? Number(totalModalStok).toLocaleString('id-ID') : '0';
 
-                    if (masterVlookup[val] && masterVlookup[val].defJual !== undefined) {
-                        const totalJual = masterVlookup[val].defJual * qtyVal;
+                    if (window.masterVlookup[val] && window.masterVlookup[val].defJual !== undefined) {
+                        const totalJual = window.masterVlookup[val].defJual * qtyVal;
                         document.getElementById('hargaJual').value = totalJual;
                         document.getElementById('hargaJualDisplay').value = Number(totalJual).toLocaleString('id-ID');
                     }
 
-                    hitungCuan();
+                    window.hitungCuan();
                     notice.style.display = 'block';
                     notice.innerText = `⚡ Auto-Fill Stok (${matchStok.kat}): Modal Rp${Number(matchStok.modal).toLocaleString('id-ID')}/pcs ➔ Keluar dari [${matchStok.kat}] (Sisa Stok: ${sisaStok})`;
                     return;
@@ -1674,9 +1676,8 @@
                     warnStok.style.display = 'none';
                 }
 
-                // 2. CEK MASTER VLOOKUP BIASA
-                if (masterVlookup[val]) {
-                    const rule = masterVlookup[val];
+                if (window.masterVlookup[val]) {
+                    const rule = window.masterVlookup[val];
                     if (rule.kat) document.getElementById('kategori').value = rule.kat;
                     
                     document.getElementById('akunMasuk1').value = rule.akunMasuk || '';
@@ -1698,14 +1699,13 @@
                         document.getElementById('hargaModalDisplay').value = totalModal ? Number(totalModal).toLocaleString('id-ID') : '';
                     }
 
-                    hitungCuan();
+                    window.hitungCuan();
                     notice.style.display = 'block';
                     notice.innerText = `⚡ Auto-Fill VLOOKUP Terdeteksi!`;
                     return;
                 }
 
-                // 3. CEK PELUNASAN UTANG
-                const matchUtang = piutangList.find(p => val.includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(val));
+                const matchUtang = window.piutangList.find(p => val.includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(val));
                 if (matchUtang && matchUtang.sisa > 0) {
                     document.getElementById('kategori').value = matchUtang.kategori || 'TOPUP';
                     document.getElementById('akunMasuk1').value = '';
@@ -1718,7 +1718,7 @@
                     document.getElementById('hargaModalDisplay').value = Number(matchUtang.sisa).toLocaleString('id-ID');
                     
                     notice.style.display = 'block';
-                    notice.innerText = `⚡ Auto-Fill Pelunasan Utang a/n ${matchUtang.nama} (Kategori: ${matchUtang.kategori || 'TOPUP'}, Sisa: ${formatRp(matchUtang.sisa)})`;
+                    notice.innerText = `⚡ Auto-Fill Pelunasan Utang a/n ${matchUtang.nama} (Kategori: ${matchUtang.kategori || 'TOPUP'}, Sisa: ${window.formatRp(matchUtang.sisa)})`;
                 } else {
                     notice.style.display = 'none';
                 }
@@ -1738,7 +1738,7 @@
                     document.getElementById('splitAkunKeluar1').value = document.getElementById('akunKeluar1').value;
                 }
             }
-            hitungCuan();
+            window.hitungCuan();
         }
 
         window.formatNominal = function(el, hiddenId) {
@@ -1752,11 +1752,11 @@
             if (inputKet.value.trim()) {
                 inputKet.dispatchEvent(new Event('input'));
             } else {
-                hitungCuan();
+                window.hitungCuan();
             }
         }
 
-        function hitungCuan() {
+        window.hitungCuan = function() {
             const isSplit = document.getElementById('chkSplit').checked;
             let totalJual = 0;
             let totalModal = 0;
@@ -1774,10 +1774,10 @@
                 totalModal = parseFloat(document.getElementById('hargaModal').value) || 0;
             }
 
-            document.getElementById('cuanDisplay').value = formatRp(totalJual - totalModal);
+            document.getElementById('cuanDisplay').value = window.formatRp(totalJual - totalModal);
         }
 
-        function initDropdowns() {
+        window.initDropdowns = function() {
             const kSel = document.getElementById('kategori');
             const vKat = document.getElementById('v_kat');
             const vKatFast = document.getElementById('v_kat_fast');
@@ -1785,12 +1785,13 @@
             const pKat = document.getElementById('pKat');
             const bpKat = document.getElementById('bpKat');
             
+            if (!kSel) return;
             kSel.innerHTML = ''; vKat.innerHTML = ''; if (vKatFast) vKatFast.innerHTML = '';
             if (pKat) pKat.innerHTML = '';
             if (bpKat) bpKat.innerHTML = '';
             fKat.innerHTML = '<option value="">-- All Kategori --</option>';
 
-            kategoriList.forEach(k => {
+            window.kategoriList.forEach(k => {
                 kSel.innerHTML += `<option value="${k}">${k}</option>`;
                 vKat.innerHTML += `<option value="${k}">${k}</option>`;
                 if (vKatFast) vKatFast.innerHTML += `<option value="${k}">${k}</option>`;
@@ -1804,7 +1805,7 @@
                 const el = document.getElementById(id);
                 if (el) {
                     el.innerHTML = '<option value="">-- Pilih Akun --</option>';
-                    saldoList.forEach(s => el.innerHTML += `<option value="${s}">${s}</option>`);
+                    window.saldoList.forEach(s => el.innerHTML += `<option value="${s}">${s}</option>`);
                 }
             });
 
@@ -1813,23 +1814,23 @@
             if (fMasuk && fKeluar) {
                 fMasuk.innerHTML = '<option value="">-- All Akun Masuk --</option>';
                 fKeluar.innerHTML = '<option value="">-- All Akun Keluar --</option>';
-                saldoList.forEach(s => {
+                window.saldoList.forEach(s => {
                     fMasuk.innerHTML += `<option value="${s}">${s}</option>`;
                     fKeluar.innerHTML += `<option value="${s}">${s}</option>`;
                 });
             }
 
-            updateDatalistVlookup();
+            window.updateDatalistVlookup();
         }
 
-        function updateDatalistVlookup() {
+        window.updateDatalistVlookup = function() {
             const dList = document.getElementById('listVlookup');
             if (dList) {
-                let options = Object.keys(masterVlookup).map(k => `<option value="${k}">`);
-                stokOpnameItems.forEach(s => {
+                let options = Object.keys(window.masterVlookup).map(k => `<option value="${k}">`);
+                window.stokOpnameItems.forEach(s => {
                     options.push(`<option value="${s.nama}">`);
                 });
-                piutangList.forEach(p => {
+                window.piutangList.forEach(p => {
                     if (p.sisa > 0) options.push(`<option value="BAYAR UTANG ${p.nama.toUpperCase()}">`);
                 });
                 dList.innerHTML = options.join('');
@@ -1845,9 +1846,9 @@
 
             if (!namaUnit) { alert("Nama Unit Wajib Diisi!"); return; }
 
-            sparepartList.unshift({
+            window.sparepartList.unshift({
                 id: Date.now(),
-                tgl: getTodayIso(),
+                tgl: window.getTodayIso(),
                 namaUnit,
                 modal,
                 sumber,
@@ -1859,22 +1860,22 @@
             document.getElementById('spEstJual').value = '0';
 
             alert(`✅ Belanja Sparepart ${namaUnit} Berhasil Dicatat!`);
-            saveToFirebase();
-            renderAll();
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.hapusSparepart = function(id) {
             if (confirm("Apakah Anda yakin ingin menghapus data belanja sparepart ini?")) {
-                sparepartList = sparepartList.filter(s => s.id !== id);
-                saveToFirebase();
-                renderAll();
+                window.sparepartList = window.sparepartList.filter(s => s.id !== id);
+                window.saveToFirebase();
+                window.renderAll();
             }
         }
 
         window.hitungTotalStokOpname = function() {
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
-            document.getElementById('stokTotalDisplay').value = formatRp(qty * modal);
+            document.getElementById('stokTotalDisplay').value = window.formatRp(qty * modal);
         }
 
         window.simpanStokOpname = function(e) {
@@ -1886,15 +1887,15 @@
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
 
             if (editId) {
-                const idx = stokOpnameItems.findIndex(s => s.id == editId);
+                const idx = window.stokOpnameItems.findIndex(s => s.id == editId);
                 if (idx !== -1) {
-                    stokOpnameItems[idx].kat = kat;
-                    stokOpnameItems[idx].nama = nama;
-                    stokOpnameItems[idx].awal = awal;
-                    stokOpnameItems[idx].modal = modal;
+                    window.stokOpnameItems[idx].kat = kat;
+                    window.stokOpnameItems[idx].nama = nama;
+                    window.stokOpnameItems[idx].awal = awal;
+                    window.stokOpnameItems[idx].modal = modal;
                 }
             } else {
-                stokOpnameItems.unshift({ id: Date.now(), kat, nama, awal, terjual: 0, modal });
+                window.stokOpnameItems.unshift({ id: Date.now(), kat, nama, awal, terjual: 0, modal });
             }
 
             document.getElementById('formStokOpname').reset();
@@ -1902,8 +1903,8 @@
             document.getElementById('stokModal').value = '0';
             document.getElementById('stokTotalDisplay').value = 'Rp0';
 
-            saveToFirebase();
-            renderAll();
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.simpanPiutang = function(e) {
@@ -1920,14 +1921,14 @@
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const idUnik = Date.now();
 
-            piutangList.unshift({ 
+            window.piutangList.unshift({ 
                 id: idUnik, nama, sisa: nom, kategori: katUtang, sumber, catatan: ket, status: 'BELUM LUNAS',
                 riwayatCicilan: []
             });
 
-            transaksiJurnal.unshift({
+            window.transaksiJurnal.unshift({
                 idPiutangRef: idUnik,
-                waktu: timeStr, isoDate: getTodayIso(),
+                waktu: timeStr, isoDate: window.getTodayIso(),
                 ket: `[UTANG ${katUtang}] ${nama} - ${ket}`, qty: 1, kat: katUtang,
                 isPencatatanUtangAwal: true,
                 hargaJual: 0, akunMasuk1: 'PIUTANG', jualSplit1: 0, akunMasuk2: '', jualSplit2: 0,
@@ -1940,26 +1941,26 @@
             document.getElementById('pNom').value = '0';
             document.getElementById('pKet').value = '';
 
-            alert(`✅ Piutang (${katUtang}) a/n ${nama} sebesar ${formatRp(nom)} berhasil dicatat!`);
-            initDropdowns();
-            saveToFirebase();
-            renderAll();
+            alert(`✅ Piutang (${katUtang}) a/n ${nama} sebesar ${window.formatRp(nom)} berhasil dicatat!`);
+            window.initDropdowns();
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.openModalBayarPiutang = function(id) {
-            const item = piutangList.find(p => p.id === id);
+            const item = window.piutangList.find(p => p.id === id);
             if (!item) return;
 
             document.getElementById('bpId').value = item.id;
             document.getElementById('bpNama').value = item.nama;
             document.getElementById('bpPokokUtang').value = item.sisa;
-            document.getElementById('bpSisaDisplay').value = formatRp(item.sisa);
+            document.getElementById('bpSisaDisplay').value = window.formatRp(item.sisa);
             document.getElementById('bpKat').value = item.kategori || 'TOPUP';
             document.getElementById('bpAkunMasuk').value = '';
             document.getElementById('bpNomBayarDisplay').value = item.sisa ? Number(item.sisa).toLocaleString('id-ID') : '';
             document.getElementById('bpNomBayar').value = item.sisa;
 
-            hitungCuanPiutang();
+            window.hitungCuanPiutang();
             document.getElementById('modalBayarPiutangOverlay').classList.add('show');
         }
 
@@ -1969,13 +1970,13 @@
             const pokok = parseFloat(document.getElementById('bpPokokUtang').value) || 0;
             const bayar = parseFloat(document.getElementById('bpNomBayar').value) || 0;
             const selisihCuan = bayar > pokok ? (bayar - pokok) : 0;
-            document.getElementById('bpCuanDisplay').value = formatRp(selisihCuan);
+            document.getElementById('bpCuanDisplay').value = window.formatRp(selisihCuan);
         }
 
         window.prosesBayarPiutangDetail = function(e) {
             e.preventDefault();
             const id = parseInt(document.getElementById('bpId').value);
-            const item = piutangList.find(p => p.id === id);
+            const item = window.piutangList.find(p => p.id === id);
             if (!item) return;
 
             const katPelunasan = document.getElementById('bpKat').value;
@@ -1990,7 +1991,7 @@
             const modalTerpotong = nomBayar > pokokUtang ? pokokUtang : nomBayar;
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-            const tglStr = getTodayIso();
+            const tglStr = window.getTodayIso();
 
             item.sisa -= modalTerpotong;
             if (!item.riwayatCicilan) item.riwayatCicilan = [];
@@ -2001,7 +2002,7 @@
                 item.status = 'LUNAS';
             }
 
-            transaksiJurnal.unshift({
+            window.transaksiJurnal.unshift({
                 waktu: timeStr, isoDate: tglStr,
                 ket: `[BAYAR UTANG ${katPelunasan}] ${item.nama}`, qty: 1, kat: katPelunasan,
                 isNewCustomer: true,
@@ -2010,16 +2011,15 @@
                 cuan: cuanLebih, isSplit: false
             });
 
-            closeModalBayarPiutang();
-            alert(`✅ Pembayaran Utang (${katPelunasan}) sebesar ${formatRp(nomBayar)} berhasil dicatat! Sisa utang: ${formatRp(item.sisa)}`);
-            initDropdowns();
-            saveToFirebase();
-            renderAll();
+            window.closeModalBayarPiutang();
+            alert(`✅ Pembayaran Utang (${katPelunasan}) sebesar ${window.formatRp(nomBayar)} berhasil dicatat! Sisa utang: ${window.formatRp(item.sisa)}`);
+            window.initDropdowns();
+            window.saveToFirebase();
+            window.renderAll();
         }
 
-        // CETAK NOTA / STRUK FUNCTION
         window.openModalCetak = function(origIdx) {
-            const t = transaksiJurnal[origIdx];
+            const t = window.transaksiJurnal[origIdx];
             if (!t) return;
 
             document.getElementById('pIdxTrx').value = origIdx;
@@ -2053,7 +2053,7 @@
             const printerType = document.getElementById('pPrinterType').value;
 
             const origIdx = parseInt(document.getElementById('pIdxTrx').value);
-            const t = (origIdx >= 0) ? transaksiJurnal[origIdx] : { waktu: new Date().toLocaleTimeString('id-ID'), isoDate: getTodayIso() };
+            const t = (origIdx >= 0) ? window.transaksiJurnal[origIdx] : { waktu: new Date().toLocaleTimeString('id-ID'), isoDate: window.getTodayIso() };
 
             const printArea = document.getElementById('printArea');
             printArea.style.display = 'block';
@@ -2066,14 +2066,14 @@
                         HP/WA: 0822-XXXX-XXXX<br>
                         ----------------------------------<br>
                         <div style="text-align: left;">
-                            Tgl   : ${t.isoDate || getTodayIso()} ${t.waktu || ''}<br>
+                            Tgl   : ${t.isoDate || window.getTodayIso()} ${t.waktu || ''}<br>
                             Kasir : ${kasir}<br>
                             Pel   : ${pelanggan}<br>
                         </div>
                         ----------------------------------<br>
                         <div style="text-align: left; word-break: break-all;">
                             <b>Item:</b> ${ket}<br>
-                            <b>Harga:</b> ${formatRp(harga)}
+                            <b>Harga:</b> ${window.formatRp(harga)}
                         </div>
                         ----------------------------------<br>
                         <div style="text-align: left;">
@@ -2095,7 +2095,7 @@
                             </div>
                             <div style="text-align: right;">
                                 <b>NOTA PEMBAYARAN</b><br>
-                                Tanggal: ${t.isoDate || getTodayIso()} ${t.waktu || ''}
+                                Tanggal: ${t.isoDate || window.getTodayIso()} ${t.waktu || ''}
                             </div>
                         </div>
                         <div style="margin: 15px 0; display: flex; justify-content: space-between;">
@@ -2112,7 +2112,7 @@
                             <tbody>
                                 <tr>
                                     <td style="padding: 10px 8px; border-bottom: 1px solid #ddd;">${ket}</td>
-                                    <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold;">${formatRp(harga)}</td>
+                                    <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold;">${window.formatRp(harga)}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2128,7 +2128,7 @@
                 `;
             }
 
-            closeModalCetak();
+            window.closeModalCetak();
             window.print();
             setTimeout(() => { printArea.style.display = 'none'; }, 1000);
         }
@@ -2145,52 +2145,52 @@
             const now = new Date();
             const timeStr = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
 
-            setoranOwnerList.unshift({
-                id: Date.now(), waktu: timeStr, isoDate: getTodayIso(), sumber, nominal: nom, catatan: ket
+            window.setoranOwnerList.unshift({
+                id: Date.now(), waktu: timeStr, isoDate: window.getTodayIso(), sumber, nominal: nom, catatan: ket
             });
 
             document.getElementById('setorNomDisplay').value = '';
             document.getElementById('setorNom').value = '0';
             document.getElementById('setorKet').value = '';
 
-            alert(`✅ Setoran Profit ${formatRp(nom)} dari ${sumber} berhasil dicatat!`);
-            saveToFirebase();
-            renderAll();
+            alert(`✅ Setoran Profit ${window.formatRp(nom)} dari ${sumber} berhasil dicatat!`);
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.hapusSetoranOwner = function(id) {
             if (confirm("Apakah Anda yakin ingin menghapus catatan setoran profit ini?")) {
-                setoranOwnerList = setoranOwnerList.filter(s => s.id !== id);
-                saveToFirebase();
-                renderAll();
+                window.setoranOwnerList = window.setoranOwnerList.filter(s => s.id !== id);
+                window.saveToFirebase();
+                window.renderAll();
             }
         }
 
         window.hapusPiutang = function(id) {
             if (confirm("Apakah Anda yakin ingin menghapus catatan piutang ini beserta data di jurnal transaksi?")) {
-                piutangList = piutangList.filter(p => p.id !== id);
-                transaksiJurnal = transaksiJurnal.filter(t => t.idPiutangRef !== id);
+                window.piutangList = window.piutangList.filter(p => p.id !== id);
+                window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
 
-                initDropdowns();
-                saveToFirebase();
-                renderAll();
+                window.initDropdowns();
+                window.saveToFirebase();
+                window.renderAll();
                 alert("✅ Catatan piutang dan transaksi jurnal terkait berhasil dihapus!");
             }
         }
 
         window.hapusJurnalTrx = function(origIdx) {
-            const t = transaksiJurnal[origIdx];
+            const t = window.transaksiJurnal[origIdx];
             if (!t) return;
 
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${t.ket}"?`)) {
                 if (t.idPiutangRef) {
-                    piutangList = piutangList.filter(p => p.id !== t.idPiutangRef);
+                    window.piutangList = window.piutangList.filter(p => p.id !== t.idPiutangRef);
                 }
 
-                transaksiJurnal.splice(origIdx, 1);
-                initDropdowns();
-                saveToFirebase();
-                renderAll();
+                window.transaksiJurnal.splice(origIdx, 1);
+                window.initDropdowns();
+                window.saveToFirebase();
+                window.renderAll();
             }
         }
 
@@ -2203,7 +2203,7 @@
             const defJual = parseFloat(document.getElementById('v_jual_fast').value) || 0;
             const defModal = parseFloat(document.getElementById('v_modal_fast').value) || 0;
 
-            masterVlookup[ket] = { kat, akunMasuk, akunKeluar, defJual, defModal };
+            window.masterVlookup[ket] = { kat, akunMasuk, akunKeluar, defJual, defModal };
             document.getElementById('v_ket_fast').value = '';
             document.getElementById('v_jual_fastDisplay').value = '';
             document.getElementById('v_jual_fast').value = '0';
@@ -2211,9 +2211,9 @@
             document.getElementById('v_modal_fast').value = '0';
 
             alert(`✅ VLOOKUP "${ket}" Berhasil Ditambahkan!`);
-            initDropdowns();
-            saveToFirebase();
-            renderAll();
+            window.initDropdowns();
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.prosesTransferSaldoCepat = function(e) {
@@ -2227,8 +2227,8 @@
             if (nom <= 0) { alert('Nominal Transfer Harus Lebih Dari 0!'); return; }
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-            transaksiJurnal.unshift({
-                waktu: timeStr, isoDate: getTodayIso(),
+            window.transaksiJurnal.unshift({
+                waktu: timeStr, isoDate: window.getTodayIso(),
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'TRANSFER BALANCING',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
@@ -2238,9 +2238,9 @@
 
             document.getElementById('tfNomDisplay_fast').value = '';
             document.getElementById('tfNom_fast').value = '0';
-            alert(`✅ Pindah Saldo ${formatRp(nom)} Berhasil!`);
-            saveToFirebase();
-            renderAll();
+            alert(`✅ Pindah Saldo ${window.formatRp(nom)} Berhasil!`);
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.simpanVlookup = function(e) {
@@ -2252,7 +2252,7 @@
             const defJual = parseFloat(document.getElementById('v_jual').value) || 0;
             const defModal = parseFloat(document.getElementById('v_modal').value) || 0;
 
-            masterVlookup[ket] = { kat, akunMasuk, akunKeluar, defJual, defModal };
+            window.masterVlookup[ket] = { kat, akunMasuk, akunKeluar, defJual, defModal };
             document.getElementById('v_ket').value = '';
             document.getElementById('v_jualDisplay').value = '';
             document.getElementById('v_jual').value = '0';
@@ -2260,9 +2260,9 @@
             document.getElementById('v_modal').value = '0';
 
             alert(`✅ VLOOKUP "${ket}" Berhasil Ditambahkan!`);
-            initDropdowns();
-            saveToFirebase();
-            renderAll();
+            window.initDropdowns();
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.prosesTransferSaldo = function(e) {
@@ -2276,8 +2276,8 @@
             if (nom <= 0) { alert('Nominal Transfer Harus Lebih Dari 0!'); return; }
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-            transaksiJurnal.unshift({
-                waktu: timeStr, isoDate: getTodayIso(),
+            window.transaksiJurnal.unshift({
+                waktu: timeStr, isoDate: window.getTodayIso(),
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'TRANSFER BALANCING',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
@@ -2287,16 +2287,15 @@
 
             document.getElementById('tfNomDisplay').value = '';
             document.getElementById('tfNom').value = '0';
-            alert(`✅ Transfer Saldo ${formatRp(nom)} Berhasil!`);
-            saveToFirebase();
-            renderAll();
+            alert(`✅ Transfer Saldo ${window.formatRp(nom)} Berhasil!`);
+            window.saveToFirebase();
+            window.renderAll();
         }
 
-        // SUBMIT TRANSAKSI KASIR
         document.getElementById('formTrx').addEventListener('submit', function(e) {
             e.preventDefault();
             const editIdx = parseInt(document.getElementById('editTrxIdx').value);
-            const selectedDate = document.getElementById('trxDateInput').value || getTodayIso();
+            const selectedDate = document.getElementById('trxDateInput').value || window.getTodayIso();
             const ket = document.getElementById('keterangan').value.trim();
             const qty = parseFloat(document.getElementById('trxQty').value) || 1;
             const kat = document.getElementById('kategori').value;
@@ -2334,7 +2333,7 @@
             if (!akunMasuk1) { alert("Pilih Uang Masuk Ke (Akun 1)!"); return; }
 
             if (akunKeluar1 === 'PIUTANG') {
-                const matchUtang = piutangList.find(p => ket.toUpperCase().includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(ket.toUpperCase()));
+                const matchUtang = window.piutangList.find(p => ket.toUpperCase().includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(ket.toUpperCase()));
                 if (matchUtang) {
                     const bayarPokok = hargaJualTotal > hargaModalTotal ? hargaModalTotal : hargaJualTotal;
                     matchUtang.sisa -= bayarPokok;
@@ -2348,7 +2347,7 @@
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
 
             const trxData = {
-                waktu: (editIdx >= 0) ? transaksiJurnal[editIdx].waktu : timeStr,
+                waktu: (editIdx >= 0) ? window.transaksiJurnal[editIdx].waktu : timeStr,
                 isoDate: selectedDate, ket, qty, kat, isNewCustomer,
                 hargaJual: hargaJualTotal, akunMasuk1, jualSplit1, akunMasuk2, jualSplit2,
                 hargaModal: hargaModalTotal, akunKeluar1, modalSplit1, akunKeluar2, modalSplit2,
@@ -2356,25 +2355,25 @@
             };
 
             if (editIdx >= 0) {
-                if (transaksiJurnal[editIdx].idPiutangRef) trxData.idPiutangRef = transaksiJurnal[editIdx].idPiutangRef;
-                if (transaksiJurnal[editIdx].isPencatatanUtangAwal) trxData.isPencatatanUtangAwal = transaksiJurnal[editIdx].isPencatatanUtangAwal;
-                transaksiJurnal[editIdx] = trxData;
+                if (window.transaksiJurnal[editIdx].idPiutangRef) trxData.idPiutangRef = window.transaksiJurnal[editIdx].idPiutangRef;
+                if (window.transaksiJurnal[editIdx].isPencatatanUtangAwal) trxData.isPencatatanUtangAwal = window.transaksiJurnal[editIdx].isPencatatanUtangAwal;
+                window.transaksiJurnal[editIdx] = trxData;
             } else {
-                transaksiJurnal.unshift(trxData);
+                window.transaksiJurnal.unshift(trxData);
             }
 
-            closeModalKasir();
-            initDropdowns();
-            saveToFirebase();
-            renderAll();
+            window.closeModalKasir();
+            window.initDropdowns();
+            window.saveToFirebase();
+            window.renderAll();
         });
 
         window.editTrx = function(origIdx) {
-            const t = transaksiJurnal[origIdx];
+            const t = window.transaksiJurnal[origIdx];
             if (!t) return;
 
             document.getElementById('editTrxIdx').value = origIdx;
-            document.getElementById('trxDateInput').value = t.isoDate || getTodayIso();
+            document.getElementById('trxDateInput').value = t.isoDate || window.getTodayIso();
             document.getElementById('keterangan').value = t.ket;
             document.getElementById('trxQty').value = t.qty || 1;
             document.getElementById('kategori').value = t.kat;
@@ -2382,7 +2381,7 @@
 
             const isSplit = !!t.isSplit;
             document.getElementById('chkSplit').checked = isSplit;
-            toggleSplitMode(isSplit);
+            window.toggleSplitMode(isSplit);
 
             if (isSplit) {
                 document.getElementById('splitAkunMasuk1').value = t.akunMasuk1 || '';
@@ -2410,14 +2409,14 @@
                 document.getElementById('hargaModalDisplay').value = t.hargaModal ? Number(t.hargaModal).toLocaleString('id-ID') : '0';
             }
 
-            hitungCuan();
-            openModalKasir();
+            window.hitungCuan();
+            window.openModalKasir();
         }
 
-        function cancelEditTrx() {
+        window.cancelEditTrx = function() {
             document.getElementById('formTrx').reset();
             document.getElementById('editTrxIdx').value = '-1';
-            document.getElementById('trxDateInput').value = getTodayIso();
+            document.getElementById('trxDateInput').value = window.getTodayIso();
             document.getElementById('hargaJual').value = '0';
             document.getElementById('hargaModal').value = '0';
             document.getElementById('jualSplit1').value = '0';
@@ -2427,10 +2426,10 @@
             document.getElementById('cuanDisplay').value = 'Rp0';
             document.getElementById('vlookupNotice').style.display = 'none';
             document.getElementById('stokWarningBadge').style.display = 'none';
-            toggleSplitMode(false);
+            window.toggleSplitMode(false);
         }
 
-        function renderAll() {
+        window.renderAll = function() {
             const fMode = document.getElementById('jurnalFilterMode').value;
             const fDate = document.getElementById('jurnalDatePicker').value;
             const fMonth = document.getElementById('jurnalMonthPicker').value;
@@ -2438,12 +2437,12 @@
             const fMasuk = document.getElementById('jurnalFilterMasuk').value;
             const fKeluar = document.getElementById('jurnalFilterKeluar').value;
 
-            stokOpnameItems.forEach(s => { s.terjual = 0; });
+            window.stokOpnameItems.forEach(s => { s.terjual = 0; });
 
             let filteredTrx = [];
-            transaksiJurnal.forEach((t, origIdx) => {
+            window.transaksiJurnal.forEach((t, origIdx) => {
                 const ketUpper = (t.ket || '').toUpperCase();
-                stokOpnameItems.forEach(s => {
+                window.stokOpnameItems.forEach(s => {
                     const namaUpper = s.nama.toUpperCase();
                     if (ketUpper.includes(namaUpper) || namaUpper.includes(ketUpper)) {
                         s.terjual += Number(t.qty || 1);
@@ -2464,7 +2463,6 @@
                 if (match) filteredTrx.push({ data: t, origIdx });
             });
 
-            // 1. RENDER JURNAL HARIAN
             const bJurnal = document.getElementById('bodyJurnal');
             bJurnal.innerHTML = filteredTrx.map((item, idx) => {
                 const t = item.data;
@@ -2472,12 +2470,12 @@
 
                 let txtMasuk = t.akunMasuk1 || '-';
                 if (t.isSplit && t.akunMasuk2) {
-                    txtMasuk = `${t.akunMasuk1} (${formatRp(t.jualSplit1)}) + ${t.akunMasuk2} (${formatRp(t.jualSplit2)})`;
+                    txtMasuk = `${t.akunMasuk1} (${window.formatRp(t.jualSplit1)}) + ${t.akunMasuk2} (${window.formatRp(t.jualSplit2)})`;
                 }
 
                 let txtKeluar = t.akunKeluar1 || '-';
                 if (t.isSplit && t.akunKeluar2) {
-                    txtKeluar = `${t.akunKeluar1} (${formatRp(t.modalSplit1)}) + ${t.akunKeluar2} (${formatRp(t.modalSplit2)})`;
+                    txtKeluar = `${t.akunKeluar1} (${window.formatRp(t.modalSplit1)}) + ${t.akunKeluar2} (${window.formatRp(t.modalSplit2)})`;
                 }
 
                 return `
@@ -2487,11 +2485,11 @@
                         <td><b>${t.ket}</b></td>
                         <td>${t.qty}</td>
                         <td><span style="color:var(--primary); font-weight:bold;">${t.kat}</span></td>
-                        <td class="text-kredit">${formatRp(t.hargaJual)}</td>
+                        <td class="text-kredit">${window.formatRp(t.hargaJual)}</td>
                         <td>${txtMasuk}</td>
-                        <td class="text-debit">${formatRp(t.hargaModal)}</td>
+                        <td class="text-debit">${window.formatRp(t.hargaModal)}</td>
                         <td>${txtKeluar}</td>
-                        <td class="text-cuan">${formatRp(t.cuan)}</td>
+                        <td class="text-cuan">${window.formatRp(t.cuan)}</td>
                         <td>
                             <button class="btn-print" onclick="openModalCetak(${origIdx})">🖨️ Cetak</button>
                             <button class="btn-edit" onclick="editTrx(${origIdx})">Edit</button>
@@ -2501,28 +2499,26 @@
                 `;
             }).join('') || `<tr><td colspan="11" style="text-align:center; color:#94A3B8;">Tidak ada transaksi sesuai filter.</td></tr>`;
 
-            // RENDER TABEL SPAREPART SERVICE
             const bSparepart = document.getElementById('bodySparepartList');
             if (bSparepart) {
-                bSparepart.innerHTML = sparepartList.map(s => {
+                bSparepart.innerHTML = window.sparepartList.map(s => {
                     return `
                         <tr>
                             <td>${s.tgl}</td>
                             <td><b>${s.namaUnit}</b></td>
-                            <td class="text-debit">${formatRp(s.modal)}</td>
+                            <td class="text-debit">${window.formatRp(s.modal)}</td>
                             <td>${s.sumber}</td>
-                            <td class="text-kredit">${formatRp(s.estJual)}</td>
+                            <td class="text-kredit">${window.formatRp(s.estJual)}</td>
                             <td><button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button></td>
                         </tr>
                     `;
                 }).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Belum ada catatan belanja sparepart.</td></tr>`;
             }
 
-            // 2. RENDER STOK OPNAME
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
-                bStok.innerHTML = stokOpnameItems.map((s, idx) => {
+                bStok.innerHTML = window.stokOpnameItems.map((s, idx) => {
                     const sisa = s.awal - s.terjual;
                     const nilaiSisa = sisa * s.modal;
                     
@@ -2538,40 +2534,39 @@
                             <td>${s.awal}</td>
                             <td style="color:#EF4444; font-weight:bold;">${s.terjual}</td>
                             <td><b style="color:${sisa <= 3 ? '#EF4444' : 'inherit'};">${sisa}</b></td>
-                            <td>${formatRp(s.modal)}</td>
-                            <td class="text-kredit"><b>${formatRp(nilaiSisa)}</b></td>
+                            <td>${window.formatRp(s.modal)}</td>
+                            <td class="text-kredit"><b>${window.formatRp(nilaiSisa)}</b></td>
                             <td>
                                 <button class="btn-edit" onclick="document.getElementById('editStokId').value='${s.id}'; document.getElementById('stokKat').value='${s.kat}'; document.getElementById('stokNama').value='${s.nama}'; document.getElementById('stokQty').value='${s.awal}'; document.getElementById('stokModal').value='${s.modal}'; document.getElementById('stokModalDisplay').value=Number('${s.modal}').toLocaleString('id-ID'); hitungTotalStokOpname();">Edit</button>
-                                <button class="btn-delete" onclick="stokOpnameItems.splice(${idx},1); saveToFirebase(); renderAll();">Hapus</button>
+                                <button class="btn-delete" onclick="window.stokOpnameItems.splice(${idx},1); window.saveToFirebase(); window.renderAll();">Hapus</button>
                             </td>
                         </tr>
                     `;
                 }).join('') || `<tr><td colspan="8" style="text-align:center; color:#94A3B8;">Belum ada stok opname.</td></tr>`;
             }
 
-            document.getElementById('valNilaiStokVoucher').innerText = formatRp(nVoucher);
-            document.getElementById('valNilaiStokSp').innerText = formatRp(nSp);
-            document.getElementById('valNilaiStokAcc').innerText = formatRp(nAcc);
-            document.getElementById('valNilaiStokTotal').innerText = formatRp(nTotalStok);
-            document.getElementById('topStokOpnameVal').innerText = formatRp(nTotalStok);
+            document.getElementById('valNilaiStokVoucher').innerText = window.formatRp(nVoucher);
+            document.getElementById('valNilaiStokSp').innerText = window.formatRp(nSp);
+            document.getElementById('valNilaiStokAcc').innerText = window.formatRp(nAcc);
+            document.getElementById('valNilaiStokTotal').innerText = window.formatRp(nTotalStok);
+            document.getElementById('topStokOpnameVal').innerText = window.formatRp(nTotalStok);
 
-            // 3. RENDER TABEL PIUTANG DENGAN HISTORI CICILAN
             const bPiutang = document.getElementById('bodyPiutang');
             let totalPiutang = 0;
             if (bPiutang) {
-                bPiutang.innerHTML = piutangList.map(p => {
+                bPiutang.innerHTML = window.piutangList.map(p => {
                     totalPiutang += p.sisa;
                     const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
                     
                     let txtCicilan = '<span style="color:#94A3B8;">Belum ada</span>';
                     if (p.riwayatCicilan && p.riwayatCicilan.length > 0) {
-                        txtCicilan = p.riwayatCicilan.map(c => `• ${c.tgl}: ${formatRp(c.bayar)} (${c.akun})`).join('<br>');
+                        txtCicilan = p.riwayatCicilan.map(c => `• ${c.tgl}: ${window.formatRp(c.bayar)} (${c.akun})`).join('<br>');
                     }
 
                     return `
                         <tr>
                             <td><b>${p.nama}</b></td>
-                            <td class="text-debit"><b>${formatRp(p.sisa)}</b></td>
+                            <td class="text-debit"><b>${window.formatRp(p.sisa)}</b></td>
                             <td style="font-size:10px;">${txtCicilan}</td>
                             <td><span style="color:var(--primary); font-weight:bold;">${p.kategori || 'TOPUP'}</span></td>
                             <td>${p.sumber}</td>
@@ -2585,9 +2580,8 @@
                     `;
                 }).join('') || `<tr><td colspan="8" style="text-align:center; color:#94A3B8;">Belum ada catatan piutang.</td></tr>`;
             }
-            document.getElementById('topTotalPiutangVal').innerText = formatRp(totalPiutang);
+            document.getElementById('topTotalPiutangVal').innerText = window.formatRp(totalPiutang);
 
-            // 4. RENDER HISTORI PINDAH SALDO (TRANSFER BALANCING)
             const bPindah = document.getElementById('bodyHistoriPindahSaldo');
             if (bPindah) {
                 const tfMode = document.getElementById('tfFilterMode').value;
@@ -2595,7 +2589,7 @@
                 const tfMonth = document.getElementById('tfMonthPicker').value;
 
                 let listTfFiltered = [];
-                transaksiJurnal.forEach((t, origIdx) => {
+                window.transaksiJurnal.forEach((t, origIdx) => {
                     if (t.kat === 'TRANSFER BALANCING') {
                         let match = true;
                         if (tfMode === 'DAILY' && t.isoDate !== tfDate) match = false;
@@ -2613,21 +2607,20 @@
                             <td>${t.isoDate || ''}</td>
                             <td><span style="color:#DC2626; font-weight:bold;">${t.akunKeluar1}</span></td>
                             <td><span style="color:#16A34A; font-weight:bold;">${t.akunMasuk1}</span></td>
-                            <td class="text-kredit"><b>${formatRp(t.hargaJual)}</b></td>
+                            <td class="text-kredit"><b>${window.formatRp(t.hargaJual)}</b></td>
                             <td><button class="btn-delete" onclick="hapusJurnalTrx(${origIdx})">Hapus</button></td>
                         </tr>
                     `;
                 }).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Belum ada catatan pindah saldo sesuai filter.</td></tr>`;
             }
 
-            // 5. RENDER HISTORI SETORAN OWNER
             const bSetor = document.getElementById('bodyHistoriSetoran');
             if (bSetor) {
                 const setorMode = document.getElementById('setorFilterMode').value;
                 const setorDate = document.getElementById('setorDatePicker').value;
                 const setorMonth = document.getElementById('setorMonthPicker').value;
 
-                let listSetorFiltered = setoranOwnerList.filter(s => {
+                let listSetorFiltered = window.setoranOwnerList.filter(s => {
                     if (setorMode === 'DAILY' && s.isoDate !== setorDate) return false;
                     if (setorMode === 'MONTHLY' && (!s.isoDate || !s.isoDate.startsWith(setorMonth))) return false;
                     return true;
@@ -2639,7 +2632,7 @@
                             <td><b>${s.waktu}</b></td>
                             <td>${s.isoDate}</td>
                             <td><b>${s.sumber}</b></td>
-                            <td class="text-debit"><b>${formatRp(s.nominal)}</b></td>
+                            <td class="text-debit"><b>${window.formatRp(s.nominal)}</b></td>
                             <td>${s.catatan}</td>
                             <td><button class="btn-delete" onclick="hapusSetoranOwner(${s.id})">Hapus</button></td>
                         </tr>
@@ -2647,11 +2640,10 @@
                 }).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Belum ada catatan setoran profit owner sesuai filter.</td></tr>`;
             }
 
-            // 6. REKAP SALDO REALTIME
             let masukAkun = {}, keluarAkun = {};
-            saldoList.forEach(s => { masukAkun[s] = 0; keluarAkun[s] = 0; });
+            window.saldoList.forEach(s => { masukAkun[s] = 0; keluarAkun[s] = 0; });
             
-            transaksiJurnal.forEach(t => {
+            window.transaksiJurnal.forEach(t => {
                 if (t.isSplit) {
                     if (t.akunMasuk1) masukAkun[t.akunMasuk1] += Number(t.jualSplit1 || 0);
                     if (t.akunMasuk2) masukAkun[t.akunMasuk2] += Number(t.jualSplit2 || 0);
@@ -2664,63 +2656,61 @@
                 }
             });
 
-            sparepartList.forEach(sp => {
+            window.sparepartList.forEach(sp => {
                 if (keluarAkun[sp.sumber] !== undefined) {
                     keluarAkun[sp.sumber] += Number(sp.modal || 0);
                 }
             });
 
-            setoranOwnerList.forEach(s => {
+            window.setoranOwnerList.forEach(s => {
                 if (keluarAkun[s.sumber] !== undefined) {
                     keluarAkun[s.sumber] += Number(s.nominal || 0);
                 }
             });
 
             let totalSaldoRiil = 0;
-            document.getElementById('bodySaldo').innerHTML = saldoList.map(s => {
-                const awal = masterSaldoAwal[s] || 0;
+            document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
+                const awal = window.masterSaldoAwal[s] || 0;
                 const msk = masukAkun[s] || 0;
                 const klr = keluarAkun[s] || 0;
                 const akhir = awal + msk - klr;
                 if (s !== 'PIUTANG' && s !== 'SPAREPART') totalSaldoRiil += akhir;
-                return `<tr><td><b>${s}</b></td><td>${formatRp(awal)}</td><td class="text-kredit">+${formatRp(msk)}</td><td class="text-debit">-${formatRp(klr)}</td><td><b>${formatRp(akhir)}</b></td></tr>`;
+                return `<tr><td><b>${s}</b></td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(msk)}</td><td class="text-debit">-${window.formatRp(klr)}</td><td><b>${window.formatRp(akhir)}</b></td></tr>`;
             }).join('');
 
-            document.getElementById('topTotalSaldoRiil').innerText = formatRp(totalSaldoRiil);
+            document.getElementById('topTotalSaldoRiil').innerText = window.formatRp(totalSaldoRiil);
 
-            // 7. MASTER VLOOKUP TABLE
             const bVlookup = document.getElementById('bodyMasterVlookup');
             if (bVlookup) {
-                bVlookup.innerHTML = Object.keys(masterVlookup).map(k => `
+                bVlookup.innerHTML = Object.keys(window.masterVlookup).map(k => `
                     <tr>
                         <td><b>${k}</b></td>
-                        <td>${masterVlookup[k].kat}</td>
-                        <td>${masterVlookup[k].akunMasuk || '-'}</td>
-                        <td>${masterVlookup[k].akunKeluar}</td>
-                        <td class="text-kredit">${formatRp(masterVlookup[k].defJual || 0)}</td>
-                        <td class="text-debit">${formatRp(masterVlookup[k].defModal || 0)}</td>
-                        <td><button class="btn-delete" onclick="delete masterVlookup['${k}']; saveToFirebase(); renderAll();">Hapus</button></td>
+                        <td>${window.masterVlookup[k].kat}</td>
+                        <td>${window.masterVlookup[k].akunMasuk || '-'}</td>
+                        <td>${window.masterVlookup[k].akunKeluar}</td>
+                        <td class="text-kredit">${window.formatRp(window.masterVlookup[k].defJual || 0)}</td>
+                        <td class="text-debit">${window.formatRp(window.masterVlookup[k].defModal || 0)}</td>
+                        <td><button class="btn-delete" onclick="delete window.masterVlookup['${k}']; window.saveToFirebase(); window.renderAll();">Hapus</button></td>
                     </tr>
                 `).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada master VLOOKUP.</td></tr>`;
             }
 
-            renderRekapKategoriTab();
-            updateUndoRedoBtnState();
+            window.renderRekapKategoriTab();
+            window.updateUndoRedoBtnState();
         }
 
-        // REKAP KATEGORI & PERFORMANCE
-        function renderRekapKategoriTab() {
+        window.renderRekapKategoriTab = function() {
             const mode = document.getElementById('rekapModeSelect').value;
             const targetDate = document.getElementById('rekapDatePicker').value;
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let rekapMap = {};
-            kategoriList.forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+            window.kategoriList.forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
 
             let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0;
             let totalTrxCount = 0, pelangganCount = 0;
 
-            transaksiJurnal.forEach(t => {
+            window.transaksiJurnal.forEach(t => {
                 let matchFilter = false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) matchFilter = true;
                 if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) matchFilter = true;
@@ -2733,9 +2723,9 @@
                     rekapMap[t.kat].cuan += Number(t.cuan || 0);
 
                     rCuanTotal += Number(t.cuan || 0);
-                    if (katAtm.includes(t.kat)) rCuanAtm += Number(t.cuan || 0);
-                    if (katKonter.includes(t.kat)) rCuanKonter += Number(t.cuan || 0);
-                    if (katService.includes(t.kat)) rCuanService += Number(t.cuan || 0);
+                    if (window.katAtm.includes(t.kat)) rCuanAtm += Number(t.cuan || 0);
+                    if (window.katKonter.includes(t.kat)) rCuanKonter += Number(t.cuan || 0);
+                    if (window.katService.includes(t.kat)) rCuanService += Number(t.cuan || 0);
 
                     if (!t.isPencatatanUtangAwal && t.kat !== 'TRANSFER BALANCING') {
                         rekapMap[t.kat].count += 1;
@@ -2745,18 +2735,18 @@
                 }
             });
 
-            document.getElementById('cuanTotalVal').innerText = formatRp(rCuanTotal);
-            document.getElementById('cuanAtmVal').innerText = formatRp(rCuanAtm);
-            document.getElementById('cuanKonterVal').innerText = formatRp(rCuanKonter);
-            document.getElementById('cuanServiceVal').innerText = formatRp(rCuanService);
+            document.getElementById('cuanTotalVal').innerText = window.formatRp(rCuanTotal);
+            document.getElementById('cuanAtmVal').innerText = window.formatRp(rCuanAtm);
+            document.getElementById('cuanKonterVal').innerText = window.formatRp(rCuanKonter);
+            document.getElementById('cuanServiceVal').innerText = window.formatRp(rCuanService);
 
             document.getElementById('topTotalTrxVal').innerText = `${totalTrxCount} Trx`;
             document.getElementById('topTotalPelangganVal').innerText = `${pelangganCount} Orang`;
 
-            document.getElementById('valRekapCuanTotal').innerText = formatRp(rCuanTotal);
-            document.getElementById('valRekapCuanAtm').innerText = formatRp(rCuanAtm);
-            document.getElementById('valRekapCuanKonter').innerText = formatRp(rCuanKonter);
-            document.getElementById('valRekapCuanService').innerText = formatRp(rCuanService);
+            document.getElementById('valRekapCuanTotal').innerText = window.formatRp(rCuanTotal);
+            document.getElementById('valRekapCuanAtm').innerText = window.formatRp(rCuanAtm);
+            document.getElementById('valRekapCuanKonter').innerText = window.formatRp(rCuanKonter);
+            document.getElementById('valRekapCuanService').innerText = window.formatRp(rCuanService);
 
             document.getElementById('lblRekapCuanTotal').innerText = mode === 'DAILY' ? 'TOTAL CUAN HARIAN' : 'TOTAL CUAN BULANAN';
 
@@ -2767,20 +2757,29 @@
                     <tr>
                         <td><b>${k}</b></td>
                         <td style="text-align:center;">${item.count} Trx</td>
-                        <td class="text-kredit">${formatRp(item.omset)}</td>
-                        <td class="text-debit">${formatRp(item.modal)}</td>
-                        <td class="text-cuan"><b>${formatRp(item.cuan)}</b></td>
+                        <td class="text-kredit">${window.formatRp(item.omset)}</td>
+                        <td class="text-debit">${window.formatRp(item.modal)}</td>
+                        <td class="text-cuan"><b>${window.formatRp(item.cuan)}</b></td>
                     </tr>
                 `;
             }).join('');
         }
 
         window.backupJSON = function() {
-            const dataBackup = { saldoList, masterSaldoAwal, masterVlookup, transaksiJurnal, piutangList, setoranOwnerList, stokOpnameItems, sparepartList };
+            const dataBackup = { 
+                saldoList: window.saldoList, 
+                masterSaldoAwal: window.masterSaldoAwal, 
+                masterVlookup: window.masterVlookup, 
+                transaksiJurnal: window.transaksiJurnal, 
+                piutangList: window.piutangList, 
+                setoranOwnerList: window.setoranOwnerList, 
+                stokOpnameItems: window.stokOpnameItems, 
+                sparepartList: window.sparepartList 
+            };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataBackup, null, 2));
             const dlAnchor = document.createElement('a');
             dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `BACKUP_ZENCELL_${getTodayIso()}.json`);
+            dlAnchor.setAttribute("download", `BACKUP_ZENCELL_${window.getTodayIso()}.json`);
             document.body.appendChild(dlAnchor); dlAnchor.click(); dlAnchor.remove();
         }
     </script>
