@@ -1265,7 +1265,8 @@
                 window.renderAll();
                 isFirebaseSyncing = false;
             } else {
-                window.saveToFirebase();
+                console.log("Database Firebase masih kosong");
+                isFirebaseSyncing = false;
             }
         }, (error) => {
             console.error("Firebase Connection Error:", error);
