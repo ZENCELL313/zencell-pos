@@ -523,42 +523,53 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header" id="formStokTitle">+ Input Stok Opname</div>
-            <form id="formStokOpname" onsubmit="simpanStokOpname(event)">
-                <input type="hidden" id="editStokId" value="">
-                <div class="row-3">
-                    <div class="form-group">
-                        <label>Kategori</label>
-                        <select id="stokKat" class="form-control" required>
-                            <option value="VOUCHER">VOUCHER</option>
-                            <option value="SP">SP (PERDANA)</option>
-                            <option value="ACC">ACC (AKSESORIS)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Nama Barang</label>
-                        <input type="text" id="stokNama" class="form-control" placeholder="Nama..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>Qty Awal</label>
-                        <input type="number" id="stokQty" class="form-control" placeholder="0" inputmode="numeric" pattern="[0-9]*" required oninput="hitungTotalStokOpname()">
-                    </div>
-                </div>
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Harga Modal / Pcs</label>
-                        <input type="text" id="stokModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'stokModal'); hitungTotalStokOpname();">
-                        <input type="hidden" id="stokModal" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Total Nilai Awal</label>
-                        <input type="text" id="stokTotalDisplay" class="form-control" placeholder="0" readonly>
-                    </div>
-                </div>
-                <button type="submit" id="btnSubmitStok" class="btn">Simpan Stok Opname</button>
-            </form>
+<div class="card">
+    <div class="card-header" id="formStokTitle">+ Input Stok Opname</div>
+    <form id="formStokOpname" onsubmit="simpanStokOpname(event)">
+        <input type="hidden" id="editStokId" value="">
+        <div class="row-3">
+            <div class="form-group">
+                <label>Kategori</label>
+                <select id="stokKat" class="form-control" required>
+                    <option value="VOUCHER">VOUCHER</option>
+                    <option value="SP">SP (PERDANA)</option>
+                    <option value="ACC">ACC (AKSESORIS)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nama Barang</label>
+                <input type="text" id="stokNama" class="form-control" placeholder="Nama..." required>
+            </div>
+            <div class="form-group">
+                <label>Qty Awal</label>
+                <input type="number" id="stokQty" class="form-control" placeholder="0" inputmode="numeric" pattern="[0-9]*" required oninput="hitungTotalStokOpname()">
+            </div>
         </div>
+
+        <div class="row-3">
+            <div class="form-group">
+                <label>Harga Modal / Pcs</label>
+                <input type="text" id="stokModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'stokModal'); hitungTotalStokOpname();">
+                <input type="hidden" id="stokModal" value="0">
+            </div>
+            <div class="form-group">
+                <label>Total Nilai Awal</label>
+                <input type="text" id="stokTotalDisplay" class="form-control" placeholder="0" readonly>
+            </div>
+            <!-- TAMBAHAN PILIHAN SUMBER KAS DI SINI -->
+            <div class="form-group">
+                <label>Sumber Saldo (Potong Kas)</label>
+                <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
+                    <option value="SALDO KONTER">SALDO KONTER (TUNAI)</option>
+                    <option value="ATM LINK">ATM LINK / BANK</option>
+                    <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" id="btnSubmitStok" class="btn">Simpan Stok Opname & Potong Kas</button>
+    </form>
+</div>
 
         <div class="card">
             <div class="card-header">📦 Stok Opname Realtime</div>
@@ -1875,34 +1886,66 @@
             document.getElementById('stokTotalDisplay').value = window.formatRp(qty * modal);
         }
 
-        window.simpanStokOpname = function(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editStokId').value;
-            const kat = document.getElementById('stokKat').value;
-            const nama = document.getElementById('stokNama').value.trim();
-            const awal = parseFloat(document.getElementById('stokQty').value) || 0;
-            const modal = parseFloat(document.getElementById('stokModal').value) || 0;
+window.simpanStokOpname = function(e) {
+    e.preventDefault();
+    const editId = document.getElementById('editStokId').value;
+    const kat = document.getElementById('stokKat').value;
+    const nama = document.getElementById('stokNama').value.trim();
+    const awal = parseFloat(document.getElementById('stokQty').value) || 0;
+    const modal = parseFloat(document.getElementById('stokModal').value) || 0;
+    
+    // Ambil pilihan sumber kas (jika ada dropdown-nya)
+    const sumberKasSelect = document.getElementById('stokSumberKas');
+    const sumberKas = sumberKasSelect ? sumberKasSelect.value : "TIDAK POTONG SALDO";
+    const totalNilai = awal * modal;
 
-            if (editId) {
-                const idx = window.stokOpnameItems.findIndex(s => s.id == editId);
-                if (idx !== -1) {
-                    window.stokOpnameItems[idx].kat = kat;
-                    window.stokOpnameItems[idx].nama = nama;
-                    window.stokOpnameItems[idx].awal = awal;
-                    window.stokOpnameItems[idx].modal = modal;
-                }
-            } else {
-                window.stokOpnameItems.unshift({ id: Date.now(), kat, nama, awal, terjual: 0, modal });
-            }
-
-            document.getElementById('formStokOpname').reset();
-            document.getElementById('editStokId').value = '';
-            document.getElementById('stokModal').value = '0';
-            document.getElementById('stokTotalDisplay').value = 'Rp0';
-
-            window.saveToFirebase();
-            window.renderAll();
+    if (editId) {
+        const idx = window.stokOpnameItems.findIndex(s => s.id == editId);
+        if (idx !== -1) {
+            window.stokOpnameItems[idx].kat = kat;
+            window.stokOpnameItems[idx].nama = nama;
+            window.stokOpnameItems[idx].awal = awal;
+            window.stokOpnameItems[idx].modal = modal;
         }
+    } else {
+        // Tambah stok baru ke array
+        window.stokOpnameItems.unshift({ id: Date.now(), kat, nama, awal, terjual: 0, modal });
+
+        // JIKA BUKAN "TIDAK POTONG SALDO", OTOMATIS CATAT JURNAL PENGELUARAN KAS
+        if (sumberKas !== "TIDAK POTONG SALDO" && totalNilai > 0) {
+            const idTrx = "TRX-" + Date.now();
+            const tglStr = new Date().toLocaleDateString('id-ID');
+            
+            if (!window.transaksiJurnal) window.transaksiJurnal = [];
+
+            window.transaksiJurnal.unshift({
+                id: idTrx,
+                tgl: tglStr,
+                kategori: "BELANJA STOK",
+                keterangan: `Beli Stok: ${nama} (${awal} pcs @ Rp${modal.toLocaleString('id-ID')})`,
+                akunKeluar: sumberKas,
+                akunMasuk: "STOK BARANG",
+                nominal: totalNilai,
+                cuan: 0
+            });
+        }
+    }
+
+    document.getElementById('formStokOpname').reset();
+    document.getElementById('editStokId').value = '';
+    document.getElementById('stokModal').value = '0';
+    if (document.getElementById('stokTotalDisplay')) {
+        document.getElementById('stokTotalDisplay').value = 'Rp0';
+    }
+
+    // Reset pilihan kas ke default jika ada
+    if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
+
+    window.saveToFirebase();
+    window.renderAll();
+    
+    alert("Stok opname berhasil disimpan!" + (sumberKas !== "TIDAK POTONG SALDO" && totalNilai > 0 ? ` Pengeluaran Rp${totalNilai.toLocaleString('id-ID')} otomatis tercatat ke ${sumberKas}.` : ''));
+};
 
         window.simpanPiutang = function(e) {
             e.preventDefault();
