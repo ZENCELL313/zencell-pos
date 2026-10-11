@@ -1384,12 +1384,13 @@
             'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
         };
 
-        window.transaksiJurnal = [];
-        window.stokOpnameItems = [];
-        window.piutangList = [];
-        window.setoranOwnerList = [];
-        window.sparepartList = [];
-        window.riwayatBelanjaStok = [];
+        // AMBIL DARI LOCALSTORAGE SEBAGAI PENYIMPANAN AMAN PERMANEN (ANTI-HILANG SAAT OFFLINE)
+        window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
+        window.stokOpnameItems = JSON.parse(localStorage.getItem('zencell_stok') || '[]');
+        window.piutangList = JSON.parse(localStorage.getItem('zencell_piutang') || '[]');
+        window.setoranOwnerList = JSON.parse(localStorage.getItem('zencell_setoran') || '[]');
+        window.sparepartList = JSON.parse(localStorage.getItem('zencell_sparepart') || '[]');
+        window.riwayatBelanjaStok = JSON.parse(localStorage.getItem('zencell_riwayat_belanja') || '[]');
 
         window.undoStack = [];
         window.redoStack = [];
@@ -1398,12 +1399,26 @@
 
         const statusEl = document.getElementById('cloudStatus');
 
+        // FIREBASE LISTENER DENGAN INTEGRASI PENGGABUNGAN DATA LOKAL (ANTI OVERWRITE)
         onValue(ref(db, 'zencellPosData'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 isFirebaseSyncing = true;
                 if (data.vlookup) window.masterVlookup = data.vlookup;
-                if (data.transaksi) window.transaksiJurnal = data.transaksi;
+                
+                // Mencegah data offline lokal terhapus saat baru konek
+                if (data.transaksi) {
+                    let cloudTrx = data.transaksi;
+                    let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
+                    let mergedTrxMap = {};
+
+                    cloudTrx.forEach(t => { if(t.id) mergedTrxMap[t.id] = t; });
+                    localPending.forEach(t => { if(t.id) mergedTrxMap[t.id] = t; });
+
+                    window.transaksiJurnal = Object.values(mergedTrxMap);
+                    if (window.transaksiJurnal.length === 0) window.transaksiJurnal = cloudTrx;
+                }
+
                 if (data.stok) window.stokOpnameItems = data.stok;
                 if (data.piutang) window.piutangList = data.piutang;
                 if (data.setoran) window.setoranOwnerList = data.setoran;
@@ -1412,10 +1427,14 @@
                 if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
                 if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
 
+                // SIMPAN KEMBALI KE LOCALSTORAGE SUPAYA AMAN DITUTUP
+                window.saveLocalBackup();
+
                 if (statusEl) {
                     statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
                 }
 
+                window.syncPendingQueue();
                 window.initDropdowns();
                 window.initVlookupAutoFill();
                 window.renderAll();
@@ -1427,11 +1446,31 @@
         }, (error) => {
             console.error("Firebase Connection Error:", error);
             if (statusEl) {
-                statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL)';
+                statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
             }
         });
 
+        // SIMPAN DATA LOKAL KE MEMORI PERMANEN BROWSER
+        window.saveLocalBackup = function() {
+            localStorage.setItem('zencell_transaksi', JSON.stringify(window.transaksiJurnal));
+            localStorage.setItem('zencell_stok', JSON.stringify(window.stokOpnameItems));
+            localStorage.setItem('zencell_piutang', JSON.stringify(window.piutangList));
+            localStorage.setItem('zencell_setoran', JSON.stringify(window.setoranOwnerList));
+            localStorage.setItem('zencell_sparepart', JSON.stringify(window.sparepartList));
+            localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
+        }
+
+        // ANTREAN SINKRONISASI SAAT KEMBALI ONLINE
+        window.syncPendingQueue = function() {
+            let pendingItems = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
+            if (pendingItems.length > 0) {
+                pendingItems.forEach(t => t.syncStatus = 'synced');
+                window.saveToFirebase();
+            }
+        }
+
         window.saveToFirebase = function(skipSnapshot = false) {
+            window.saveLocalBackup();
             if (isFirebaseSyncing) return;
             
             let cleanVlookup = {};
@@ -1450,7 +1489,12 @@
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 saldoAwal: window.masterSaldoAwal,
                 saldoListCustom: window.saldoList
+            }).then(() => {
+                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
+            }).catch(err => {
+                if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERSIMPAM LOKAL (OFFLINE)';
             });
+
             if (!skipSnapshot) window.saveStateSnapshot();
         }
 
@@ -1633,6 +1677,7 @@
             window.stokOpnameItems = [];
             window.sparepartList = [];
             window.riwayatBelanjaStok = [];
+            localStorage.clear();
             window.saveToFirebase();
             window.renderAll();
             window.closeModalResetData();
@@ -2410,15 +2455,16 @@
                 riwayatCicilan: []
             });
 
-            // Dicatat sebagai transaksi pindah saldo (dari akun asal ke PIUTANG) agar saldo Piutang bertambah dan akun asal berkurang
             window.transaksiJurnal.unshift({
+                id: 'trx_' + idUnik,
                 idPiutangRef: idUnik,
                 waktu: timeStr, isoDate: tglStr,
                 ket: `[PIUTANG BARU] ${nama} (${ket})`, qty: 1, kat: 'GADAI',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: 'PIUTANG', jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, akunKeluar2: '', modalSplit2: 0,
-                cuan: 0, isSplit: false, isPencatatanUtangAwal: true, isPindahSaldo: true
+                cuan: 0, isSplit: false, isPencatatanUtangAwal: true, isPindahSaldo: true,
+                syncStatus: 'pending'
             });
 
             document.getElementById('pNama').value = '';
@@ -2488,26 +2534,27 @@
                 item.status = 'LUNAS';
             }
 
-            // Dicatat sebagai perpindahan saldo (dari PIUTANG ke akun penerima pembayaran)
             window.transaksiJurnal.unshift({
-                id: recordId,
+                id: 'trx_' + recordId,
                 waktu: timeStr, isoDate: tglStr,
                 ket: `[PELUNASAN UTANG] ${item.nama}`, qty: 1, kat: 'GADAI',
                 isNewCustomer: false,
                 hargaJual: modalTerpotong, akunMasuk1: akunMasuk, jualSplit1: modalTerpotong, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: modalTerpotong, akunKeluar1: 'PIUTANG', modalSplit1: modalTerpotong, akunKeluar2: '', modalSplit2: 0,
-                cuan: cuanLebih, isSplit: false, idPiutangRef: item.id, isPindahSaldo: true
+                cuan: cuanLebih, isSplit: false, idPiutangRef: item.id, isPindahSaldo: true,
+                syncStatus: 'pending'
             });
 
-            // Jika ada kelebihan pembayaran (cuan), dicatat sebagai transaksi pendapatan
             if (cuanLebih > 0) {
                 window.transaksiJurnal.unshift({
+                    id: 'trx_cuan_' + recordId,
                     waktu: timeStr, isoDate: tglStr,
                     ket: `[CUAN / KELEBIHAN UTANG] ${item.nama}`, qty: 1, kat: katPelunasan,
                     isNewCustomer: false,
                     hargaJual: cuanLebih, akunMasuk1: akunMasuk, jualSplit1: cuanLebih, akunMasuk2: '', jualSplit2: 0,
                     hargaModal: 0, akunKeluar1: '', modalSplit1: 0, akunKeluar2: '', modalSplit2: 0,
-                    cuan: cuanLebih, isSplit: false
+                    cuan: cuanLebih, isSplit: false,
+                    syncStatus: 'pending'
                 });
             }
 
@@ -2742,12 +2789,13 @@
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             
             window.transaksiJurnal.unshift({
+                id: 'trx_tf_' + Date.now(),
                 waktu: timeStr, isoDate: window.getTodayIso(),
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'GADAI',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
-                cuan: -admin, isSplit: false, isPindahSaldo: true
+                cuan: -admin, isSplit: false, isPindahSaldo: true, syncStatus: 'pending'
             });
 
             document.getElementById('tfNomDisplay_fast').value = '';
@@ -2824,12 +2872,13 @@
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             
             window.transaksiJurnal.unshift({
+                id: 'trx_tf_' + Date.now(),
                 waktu: timeStr, isoDate: window.getTodayIso(),
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'GADAI',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
-                cuan: -admin, isSplit: false, isPindahSaldo: true
+                cuan: -admin, isSplit: false, isPindahSaldo: true, syncStatus: 'pending'
             });
 
             document.getElementById('tfNomDisplay').value = '';
@@ -2900,13 +2949,15 @@
             }
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            const itemUnikId = (editIdx >= 0 && window.transaksiJurnal[editIdx].id) ? window.transaksiJurnal[editIdx].id : 'trx_' + Date.now();
 
             const trxData = {
+                id: itemUnikId,
                 waktu: (editIdx >= 0) ? window.transaksiJurnal[editIdx].waktu : timeStr,
                 isoDate: selectedDate, ket, qty, kat, isNewCustomer,
                 hargaJual: hargaJualTotal, akunMasuk1, jualSplit1, akunMasuk2, jualSplit2,
                 hargaModal: hargaModalTotal, akunKeluar1, modalSplit1, akunKeluar2, modalSplit2,
-                cuan: hargaJualTotal - hargaModalTotal, isSplit
+                cuan: hargaJualTotal - hargaModalTotal, isSplit, syncStatus: 'pending'
             };
 
             if (editIdx >= 0) {
@@ -3005,7 +3056,6 @@
                     }
                 });
 
-                // Transaksi piutang, gadai, atau pindah saldo disembunyikan dari jurnal utama harian (masuk ke menu rekap masing-masing)
                 if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal) {
                     return;
                 }
@@ -3039,7 +3089,7 @@
                     <tr>
                         <td>${idx + 1}</td>
                         <td><b>${t.waktu}</b><br><span style="font-size:9px; opacity:0.7;">${t.isoDate || ''}</span></td>
-                        <td><b>${t.ket}</b></td>
+                        <td><b>${t.ket}</b> ${t.syncStatus === 'pending' ? '<span style="color:#EF4444; font-size:9px;">(Offline)</span>' : ''}</td>
                         <td>${t.qty}</td>
                         <td><span style="color:var(--primary); font-weight:bold;">${t.kat}</span></td>
                         <td class="text-kredit">${window.formatRp(t.hargaJual)}</td>
