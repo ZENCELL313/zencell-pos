@@ -1384,7 +1384,6 @@
             'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
         };
 
-        // AMBIL DARI LOCALSTORAGE SEBAGAI PENYIMPANAN AMAN PERMANEN (ANTI-HILANG SAAT OFFLINE)
         window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
         window.stokOpnameItems = JSON.parse(localStorage.getItem('zencell_stok') || '[]');
         window.piutangList = JSON.parse(localStorage.getItem('zencell_piutang') || '[]');
@@ -1399,14 +1398,12 @@
 
         const statusEl = document.getElementById('cloudStatus');
 
-        // FIREBASE LISTENER DENGAN INTEGRASI PENGGABUNGAN DATA LOKAL (ANTI OVERWRITE)
         onValue(ref(db, 'zencellPosData'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 isFirebaseSyncing = true;
                 if (data.vlookup) window.masterVlookup = data.vlookup;
                 
-                // Mencegah data offline lokal terhapus saat baru konek
                 if (data.transaksi) {
                     let cloudTrx = data.transaksi;
                     let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
@@ -1427,7 +1424,6 @@
                 if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
                 if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
 
-                // SIMPAN KEMBALI KE LOCALSTORAGE SUPAYA AMAN DITUTUP
                 window.saveLocalBackup();
 
                 if (statusEl) {
@@ -1440,7 +1436,6 @@
                 window.renderAll();
                 isFirebaseSyncing = false;
             } else {
-                console.log("Database Firebase masih kosong");
                 isFirebaseSyncing = false;
             }
         }, (error) => {
@@ -1450,7 +1445,6 @@
             }
         });
 
-        // SIMPAN DATA LOKAL KE MEMORI PERMANEN BROWSER
         window.saveLocalBackup = function() {
             localStorage.setItem('zencell_transaksi', JSON.stringify(window.transaksiJurnal));
             localStorage.setItem('zencell_stok', JSON.stringify(window.stokOpnameItems));
@@ -1460,7 +1454,6 @@
             localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
         }
 
-        // ANTREAN SINKRONISASI SAAT KEMBALI ONLINE
         window.syncPendingQueue = function() {
             let pendingItems = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
             if (pendingItems.length > 0) {
@@ -2001,15 +1994,19 @@
                 const matchUtang = window.piutangList.find(p => val.includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(val));
                 if (matchUtang && matchUtang.sisa > 0) {
                     document.getElementById('kategori').value = matchUtang.kategori || 'TOPUP';
-                    document.getElementById('akunMasuk1').value = '';
-                    document.getElementById('splitAkunMasuk1').value = '';
+                    document.getElementById('akunMasuk1').value = 'LACI';
+                    document.getElementById('splitAkunMasuk1').value = 'LACI';
 
                     document.getElementById('akunKeluar1').value = 'PIUTANG';
                     document.getElementById('splitAkunKeluar1').value = 'PIUTANG';
 
                     document.getElementById('hargaModal').value = matchUtang.sisa;
                     document.getElementById('hargaModalDisplay').value = Number(matchUtang.sisa).toLocaleString('id-ID');
-                    
+
+                    document.getElementById('hargaJual').value = matchUtang.sisa;
+                    document.getElementById('hargaJualDisplay').value = Number(matchUtang.sisa).toLocaleString('id-ID');
+
+                    window.hitungCuan();
                     notice.style.display = 'block';
                     notice.innerText = `⚡ Auto-Fill Pelunasan Utang a/n ${matchUtang.nama} (Kategori: ${matchUtang.kategori || 'TOPUP'}, Sisa: ${window.formatRp(matchUtang.sisa)})`;
                 } else {
@@ -2434,6 +2431,7 @@
             alert("Data belanja stok berhasil disimpan!");
         };
 
+        // 1. PENCATATAN UTANG AWAL (TIDAK MASUK KE JURNAL HARIAN, HANYA ARUS SALDO)
         window.simpanPiutang = function(e) {
             e.preventDefault();
             const nama = document.getElementById('pNama').value.trim().toUpperCase();
@@ -2451,19 +2449,20 @@
             const tglStr = window.getTodayIso();
 
             window.piutangList.unshift({ 
-                id: idUnik, nama, sisa: nom, kategori: katUtang, sumber, catatan: ket, status: 'BELUM LUNAS',
+                id: idUnik, nama, sisa: nom, pokokAwal: nom, kategori: katUtang, sumber, catatan: ket, status: 'BELUM LUNAS',
                 riwayatCicilan: []
             });
 
+            // DICATAT SEBAGAI PIUTANG_INIT (DI FILTER AGAR TIDAK MUNCUL DI REKAP JURNAL HARIAN)
             window.transaksiJurnal.unshift({
-                id: 'trx_' + idUnik,
+                id: 'trx_init_piutang_' + idUnik,
                 idPiutangRef: idUnik,
                 waktu: timeStr, isoDate: tglStr,
-                ket: `[PIUTANG BARU] ${nama} (${ket})`, qty: 1, kat: 'GADAI',
+                ket: `[UTANG AWAL] ${nama} (${ket})`, qty: 1, kat: 'PIUTANG_INIT',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: 'PIUTANG', jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, akunKeluar2: '', modalSplit2: 0,
-                cuan: 0, isSplit: false, isPencatatanUtangAwal: true, isPindahSaldo: true,
+                cuan: 0, isSplit: false, isPencatatanUtangAwal: true,
                 syncStatus: 'pending'
             });
 
@@ -2472,7 +2471,7 @@
             document.getElementById('pNom').value = '0';
             document.getElementById('pKet').value = '';
 
-            alert(`✅ Piutang (${katUtang}) a/n ${nama} sebesar ${window.formatRp(nom)} berhasil dicatat! Saldo ${sumber} berkurang & Saldo Piutang bertambah.`);
+            alert(`✅ Utang a/n ${nama} sebesar ${window.formatRp(nom)} dicatat! Saldo ${sumber} berkurang & Saldo PIUTANG bertambah (Arus Saldo Saja).`);
             window.initDropdowns();
             window.saveToFirebase();
             window.renderAll();
@@ -2487,7 +2486,7 @@
             document.getElementById('bpPokokUtang').value = item.sisa;
             document.getElementById('bpSisaDisplay').value = window.formatRp(item.sisa);
             document.getElementById('bpKat').value = item.kategori || 'TOPUP';
-            document.getElementById('bpAkunMasuk').value = '';
+            document.getElementById('bpAkunMasuk').value = 'LACI';
             document.getElementById('bpNomBayarDisplay').value = item.sisa ? Number(item.sisa).toLocaleString('id-ID') : '';
             document.getElementById('bpNomBayar').value = item.sisa;
 
@@ -2504,6 +2503,7 @@
             document.getElementById('bpCuanDisplay').value = window.formatRp(selisihCuan);
         }
 
+        // 2. PELUNASAN PIUTANG (MASUK KE JURNAL HARIAN SEBAGAI 1 TRX LENGKAP & 1 CUST)
         window.prosesBayarPiutangDetail = function(e) {
             e.preventDefault();
             const id = parseInt(document.getElementById('bpId').value);
@@ -2519,47 +2519,35 @@
             if (nomBayar <= 0) { alert("Nominal pembayaran harus lebih dari 0!"); return; }
 
             const cuanLebih = nomBayar > pokokUtang ? (nomBayar - pokokUtang) : 0;
-            const modalTerpotong = nomBayar > pokokUtang ? pokokUtang : nomBayar;
+            const pokokTerpotong = nomBayar > pokokUtang ? pokokUtang : nomBayar;
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const tglStr = window.getTodayIso();
             const recordId = Date.now();
 
-            item.sisa -= modalTerpotong;
+            item.sisa -= pokokTerpotong;
             if (!item.riwayatCicilan) item.riwayatCicilan = [];
-            item.riwayatCicilan.push({ idCicilan: recordId, tgl: tglStr, waktu: timeStr, bayar: nomBayar, akun: akunMasuk, pokokTerpotong: modalTerpotong });
+            item.riwayatCicilan.push({ idCicilan: recordId, tgl: tglStr, waktu: timeStr, bayar: nomBayar, akun: akunMasuk, pokokTerpotong });
 
             if (item.sisa <= 0) {
                 item.sisa = 0;
                 item.status = 'LUNAS';
             }
 
+            // DITAMPILKAN DI JURNAL HARIAN SEBAGAI 1 TRANSAKSI
             window.transaksiJurnal.unshift({
-                id: 'trx_' + recordId,
+                id: 'trx_pay_piutang_' + recordId,
                 waktu: timeStr, isoDate: tglStr,
-                ket: `[PELUNASAN UTANG] ${item.nama}`, qty: 1, kat: 'GADAI',
-                isNewCustomer: false,
-                hargaJual: modalTerpotong, akunMasuk1: akunMasuk, jualSplit1: modalTerpotong, akunMasuk2: '', jualSplit2: 0,
-                hargaModal: modalTerpotong, akunKeluar1: 'PIUTANG', modalSplit1: modalTerpotong, akunKeluar2: '', modalSplit2: 0,
-                cuan: cuanLebih, isSplit: false, idPiutangRef: item.id, isPindahSaldo: true,
+                ket: `PELUNASAN UTANG ${item.nama}`, qty: 1, kat: katPelunasan,
+                isNewCustomer: true, // Dianggap 1 Customer / Cust +1
+                hargaJual: nomBayar, akunMasuk1: akunMasuk, jualSplit1: nomBayar, akunMasuk2: '', jualSplit2: 0,
+                hargaModal: pokokTerpotong, akunKeluar1: 'PIUTANG', modalSplit1: pokokTerpotong, akunKeluar2: '', modalSplit2: 0,
+                cuan: cuanLebih, isSplit: false, idPiutangRef: item.id, isPelunasanUtang: true,
                 syncStatus: 'pending'
             });
 
-            if (cuanLebih > 0) {
-                window.transaksiJurnal.unshift({
-                    id: 'trx_cuan_' + recordId,
-                    waktu: timeStr, isoDate: tglStr,
-                    ket: `[CUAN / KELEBIHAN UTANG] ${item.nama}`, qty: 1, kat: katPelunasan,
-                    isNewCustomer: false,
-                    hargaJual: cuanLebih, akunMasuk1: akunMasuk, jualSplit1: cuanLebih, akunMasuk2: '', jualSplit2: 0,
-                    hargaModal: 0, akunKeluar1: '', modalSplit1: 0, akunKeluar2: '', modalSplit2: 0,
-                    cuan: cuanLebih, isSplit: false,
-                    syncStatus: 'pending'
-                });
-            }
-
             window.closeModalBayarPiutang();
-            alert(`✅ Pelunasan Utang sebesar ${window.formatRp(nomBayar)} berhasil dicatat! Sisa utang: ${window.formatRp(item.sisa)}`);
+            alert(`✅ Pelunasan Utang a/n ${item.nama} sebesar ${window.formatRp(nomBayar)} berhasil dicatat di Jurnal Harian!`);
             window.initDropdowns();
             window.saveToFirebase();
             window.renderAll();
@@ -2725,6 +2713,7 @@
             }
         }
 
+        // 3. HAPUS ATAU EDIT DI JURNAL HARIAN AKAN MENGEMBALIKAN SALDO PIUTANG (UNDO LOGIC)
         window.hapusJurnalTrx = function(origIdx) {
             const t = window.transaksiJurnal[origIdx];
             if (!t) return;
@@ -2736,7 +2725,7 @@
                         matchPiutang.sisa += Number(t.hargaModal || 0);
                         matchPiutang.status = 'BELUM LUNAS';
                         if (matchPiutang.riwayatCicilan) {
-                            matchPiutang.riwayatCicilan = matchPiutang.riwayatCicilan.filter(c => c.idCicilan !== t.id);
+                            matchPiutang.riwayatCicilan = matchPiutang.riwayatCicilan.filter(c => c.pokokTerpotong !== t.hargaModal);
                         }
                     }
                 }
@@ -2749,6 +2738,7 @@
                 window.initDropdowns();
                 window.saveToFirebase();
                 window.renderAll();
+                alert("✅ Transaksi berhasil dihapus dan sisa utang telah dikembalikan seperti semula!");
             }
         }
 
@@ -2936,6 +2926,7 @@
                 }
             });
 
+            // JIKA INPUT DARI HALAMAN KASIR TERDETEKSI SEBAGAI PELUNASAN UTANG (AKUN KELUAR = PIUTANG)
             if (akunKeluar1 === 'PIUTANG') {
                 const matchUtang = window.piutangList.find(p => ket.toUpperCase().includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(ket.toUpperCase()));
                 if (matchUtang) {
@@ -3056,7 +3047,12 @@
                     }
                 });
 
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal) {
+                // LEWATI TRANSAKSI UTANG AWAL AGAR TIDAK TAMPIL DI REKAP JURNAL HARIAN
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') {
+                    return;
+                }
+
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) {
                     return;
                 }
 
@@ -3358,7 +3354,7 @@
             let totalTrxCount = 0, pelangganCount = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
 
                 let matchFilter = false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) matchFilter = true;
@@ -3435,7 +3431,7 @@
             }
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
                 
                 if (t.isoDate && t.isoDate.startsWith(targetMonth)) {
                     const cuanVal = Number(t.cuan || 0);
