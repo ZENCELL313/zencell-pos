@@ -367,8 +367,9 @@
 
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
 
+        <!-- TIGA KOTAK AKSI CEPAT DENGAN AUTO-CLOSE SAAT KLIK DI LUAR -->
         <div class="row-3" style="margin-bottom:10px;">
-            <div class="card" style="margin-bottom:0; padding:8px;">
+            <div class="card auto-collapse-card" id="cardVlookupFast" style="margin-bottom:0; padding:8px;">
                 <div class="card-header card-header-toggle" onclick="toggleAccordion('boxVlookupFast', 'arrowVlookup')" style="font-size:11px; padding:6px 8px; margin-bottom:0;">
                     <span>+ VLOOKUP</span>
                     <span id="arrowVlookup" style="font-size:9px;">▼</span>
@@ -388,7 +389,7 @@
                 </div>
             </div>
 
-            <div class="card" style="margin-bottom:0; padding:8px;">
+            <div class="card auto-collapse-card" id="cardTfFast" style="margin-bottom:0; padding:8px;">
                 <div class="card-header card-header-toggle" onclick="toggleAccordion('boxTfFast', 'arrowTf')" style="font-size:11px; padding:6px 8px; margin-bottom:0;">
                     <span>🔀 PINDAH</span>
                     <span id="arrowTf" style="font-size:9px;">▼</span>
@@ -410,7 +411,7 @@
                 </div>
             </div>
 
-            <div class="card" style="margin-bottom:0; padding:8px; background:#FEF2F2; border-color:#FECACA;">
+            <div class="card auto-collapse-card" id="cardSetorFast" style="margin-bottom:0; padding:8px; background:#FEF2F2; border-color:#FECACA;">
                 <div class="card-header card-header-toggle" onclick="toggleAccordion('boxSetorFast', 'arrowSetor')" style="font-size:11px; padding:6px 8px; margin-bottom:0; background:#FEE2E2; color:#991B1B;">
                     <span>💸 SETORAN</span>
                     <span id="arrowSetor" style="font-size:9px;">▼</span>
@@ -713,7 +714,6 @@
                         <input type="month" id="rekapMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
                     </div>
 
-                    <!-- TOMBOL EXPORT BARU UNTUK EXCEL & PDF LAPORAN -->
                     <div style="display:flex; gap:6px; margin-top:4px;">
                         <button type="button" class="btn" onclick="exportLaporanExcel()" style="background:#16A34A; padding:6px 10px; font-size:11px; width:auto;">📊 Download Excel</button>
                         <button type="button" class="btn" onclick="exportLaporanPDF()" style="background:#0284C7; padding:6px 10px; font-size:11px; width:auto;">📄 Cetak PDF Laporan</button>
@@ -1559,6 +1559,28 @@
                 if (arrow) arrow.innerText = '▼';
             }
         }
+
+        // AUTO-CLOSE SAAT KLIK DI LUAR BOX AKSI CEPAT
+        document.addEventListener('click', function(e) {
+            const listCardAuto = [
+                { cardId: 'cardVlookupFast', boxId: 'boxVlookupFast', arrowId: 'arrowVlookup' },
+                { cardId: 'cardTfFast', boxId: 'boxTfFast', arrowId: 'arrowTf' },
+                { cardId: 'cardSetorFast', boxId: 'boxSetorFast', arrowId: 'arrowSetor' }
+            ];
+
+            listCardAuto.forEach(item => {
+                const cardEl = document.getElementById(item.cardId);
+                const boxEl = document.getElementById(item.boxId);
+                const arrowEl = document.getElementById(item.arrowId);
+
+                if (cardEl && boxEl && boxEl.style.display === 'block') {
+                    if (!cardEl.contains(e.target)) {
+                        boxEl.style.display = 'none';
+                        if (arrowEl) arrowEl.innerText = '▼';
+                    }
+                }
+            });
+        });
 
         window.toggleCardCollapse = function(contentId, headerElement) {
             const content = document.getElementById(contentId);
@@ -2735,6 +2757,10 @@
             document.getElementById('setorNom').value = '0';
             document.getElementById('setorKet').value = '';
 
+            // Otomatis Tutup Form setelah submit
+            document.getElementById('boxSetorFast').style.display = 'none';
+            document.getElementById('arrowSetor').innerText = '▼';
+
             alert(`✅ Setoran Profit ${window.formatRp(nom)} dari ${sumber} berhasil dicatat!`);
             window.saveToFirebaseNode('setoran', window.setoranOwnerList);
             window.renderAll();
@@ -2806,6 +2832,10 @@
             document.getElementById('v_modal_fastDisplay').value = '';
             document.getElementById('v_modal_fast').value = '0';
 
+            // Otomatis Tutup Form setelah submit
+            document.getElementById('boxVlookupFast').style.display = 'none';
+            document.getElementById('arrowVlookup').innerText = '▼';
+
             alert(`✅ VLOOKUP "${ket}" Berhasil Ditambahkan!`);
             window.initDropdowns();
             window.saveToFirebaseNode('vlookup', window.masterVlookup);
@@ -2840,6 +2870,11 @@
             document.getElementById('tfNom_fast').value = '0';
             document.getElementById('tfAdminDisplay_fast').value = '';
             document.getElementById('tfAdmin_fast').value = '0';
+
+            // Otomatis Tutup Form setelah submit
+            document.getElementById('boxTfFast').style.display = 'none';
+            document.getElementById('arrowTf').innerText = '▼';
+
             alert(`✅ Pindah Saldo ${window.formatRp(nom)} Berhasil!`);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
@@ -3588,7 +3623,6 @@
             }
         }
 
-        // FUNGSI 1: EXPORT KE EXCEL (.XLSX) RAPI
         window.exportLaporanExcel = function() {
             const mode = document.getElementById('rekapModeSelect').value;
             const targetDate = document.getElementById('rekapDatePicker').value;
@@ -3651,7 +3685,6 @@
             XLSX.writeFile(wb, namaFile);
         }
 
-        // FUNGSI 2: EXPORT / CETAK LAPORAN PDF GAYA BUKUWARUNG
         window.exportLaporanPDF = function() {
             const mode = document.getElementById('rekapModeSelect').value;
             const targetDate = document.getElementById('rekapDatePicker').value;
