@@ -3308,7 +3308,8 @@
                 const msk = masukAkun[s] || 0;
                 const klr = keluarAkun[s] || 0;
                 const akhir = awal + msk - klr;
-                if (s !== 'PIUTANG' && s !== 'SPAREPART') totalSaldoRiil += akhir;
+                // OPSI A: PIUTANG diikutsertakan agar Saldo Konter tetap utuh mencakup total Aset
+                if (s !== 'SPAREPART') totalSaldoRiil += akhir;
                 return `<tr><td><b>${s}</b></td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(msk)}</td><td class="text-debit">-${window.formatRp(klr)}</td><td><b>${window.formatRp(akhir)}</b></td></tr>`;
             }).join('');
 
