@@ -308,7 +308,7 @@
                         <span id="notifBadge" class="notif-badge" style="display:none;">1</span>
                     </button>
                     <button class="btn-icon-hdr" id="btnResetDataGlobal" onclick="bukaModalResetData()" title="Reset Data Testing" style="background:#DC2626; display:none;">🗑️</button>
-                    <button class="btn-icon-hdr" onclick="backupJSON()" title="Setting / Backup">⚙️</button>
+                    <button class="btn-icon-hdr" onclick="backupJSON()" title="Setting / Backup JSON">⚙️</button>
                     <button class="btn-icon-hdr" onclick="prosesLogout()" title="Logout Akun" style="background:linear-gradient(135deg, #38BDF8, #A855F7); border:1px solid #E9D5FF; box-shadow:0 2px 6px rgba(168,85,247,0.4);" aria-label="Logout Akun">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
                     </button>
@@ -316,7 +316,7 @@
             </div>
             <div class="header-status-bar">
                 <span>👤 <span id="hdrUserActive">OWNER</span> <span id="cloudStatus" style="color:#FFF; font-weight:800; background:rgba(52,211,153,0.35); padding:2px 8px; border-radius:6px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>TERHUBUNG REALTIME</span></span>
-                <span id="hdrRealtimeClock">MINGGU, 11 OKTOBER 2026 00:00:00</span>
+                <span id="hdrRealtimeClock">SENIN, 12 OKTOBER 2026 00:00:00</span>
             </div>
         </header>
 
@@ -701,15 +701,23 @@
             <div class="card">
                 <div class="card-header">📊 Pembukuan Kategori & Transaksi</div>
                 
-                <div class="filter-container">
-                    <span style="font-size:11px; font-weight:700; opacity:0.8;">Mode Rekap:</span>
-                    <select id="rekapModeSelect" class="date-picker-input" onchange="toggleRekapMode(this.value)">
-                        <option value="DAILY" selected>📅 Per Hari (Harian)</option>
-                        <option value="MONTHLY">📆 Per Bulan (Bulanan)</option>
-                    </select>
+                <div class="filter-container" style="justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span style="font-size:11px; font-weight:700; opacity:0.8;">Mode Rekap:</span>
+                        <select id="rekapModeSelect" class="date-picker-input" onchange="toggleRekapMode(this.value)">
+                            <option value="DAILY" selected>📅 Per Hari (Harian)</option>
+                            <option value="MONTHLY">📆 Per Bulan (Bulanan)</option>
+                        </select>
 
-                    <input type="date" id="rekapDatePicker" class="date-picker-input" onchange="renderAll()">
-                    <input type="month" id="rekapMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                        <input type="date" id="rekapDatePicker" class="date-picker-input" onchange="renderAll()">
+                        <input type="month" id="rekapMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                    </div>
+
+                    <!-- TOMBOL EXPORT BARU UNTUK EXCEL & PDF LAPORAN -->
+                    <div style="display:flex; gap:6px; margin-top:4px;">
+                        <button type="button" class="btn" onclick="exportLaporanExcel()" style="background:#16A34A; padding:6px 10px; font-size:11px; width:auto;">📊 Download Excel</button>
+                        <button type="button" class="btn" onclick="exportLaporanPDF()" style="background:#0284C7; padding:6px 10px; font-size:11px; width:auto;">📄 Cetak PDF Laporan</button>
+                    </div>
                 </div>
 
                 <div class="summary-grid" style="margin-bottom:10px;">
@@ -1398,7 +1406,6 @@
 
         const statusEl = document.getElementById('cloudStatus');
 
-        // ATOMIC PATH SYNC (MENARIK DATA PER NODE DENGAN CERDAS & MERGE OFFLINE PENDING)
         onValue(ref(db, 'zencellNodes'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -1408,7 +1415,6 @@
                 if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
                 if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
 
-                // 1. MERGE TRANSAKSI
                 if (data.transaksi) {
                     let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
                     let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
@@ -1418,7 +1424,6 @@
                     window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
                 }
 
-                // 2. MERGE PIUTANG
                 if (data.piutang) {
                     let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
                     let localPendingP = window.piutangList.filter(p => p.syncStatus === 'pending');
@@ -1428,7 +1433,6 @@
                     window.piutangList = Object.values(mergedPMap);
                 }
 
-                // 3. MERGE STOK
                 if (data.stok) {
                     let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
                     let mergedSMap = {};
@@ -1436,7 +1440,6 @@
                     window.stokOpnameItems = Object.values(mergedSMap);
                 }
 
-                // 4. MERGE SPAREPART
                 if (data.sparepart) {
                     let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
                     let mergedSpMap = {};
@@ -1444,7 +1447,6 @@
                     window.sparepartList = Object.values(mergedSpMap);
                 }
 
-                // 5. MERGE RIWAYAT BELANJA STOK
                 if (data.riwayatBelanjaStok) {
                     let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
                     let mergedRbMap = {};
@@ -1452,7 +1454,6 @@
                     window.riwayatBelanjaStok = Object.values(mergedRbMap);
                 }
 
-                // 6. MERGE SETORAN
                 if (data.setoran) {
                     let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
                     let mergedSetorMap = {};
@@ -1495,7 +1496,6 @@
             }
         }
 
-        // FUNGSI PENYIMPANAN ATOMIK SPESIFIK NODE (MENCEGAH OVERWRITTEN MASIF)
         window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
             window.saveLocalBackup();
             if (isFirebaseSyncing) return;
@@ -2479,7 +2479,6 @@
             alert("Data belanja stok berhasil disimpan!");
         };
 
-        // 1. PENCATATAN UTANG AWAL
         window.simpanPiutang = function(e) {
             e.preventDefault();
             const nama = document.getElementById('pNama').value.trim().toUpperCase();
@@ -2551,7 +2550,6 @@
             document.getElementById('bpCuanDisplay').value = window.formatRp(selisihCuan);
         }
 
-        // 2. PELUNASAN PIUTANG
         window.prosesBayarPiutangDetail = function(e) {
             e.preventDefault();
             const id = parseInt(document.getElementById('bpId').value);
@@ -3588,6 +3586,163 @@
                     </tr>
                 `;
             }
+        }
+
+        // FUNGSI 1: EXPORT KE EXCEL (.XLSX) RAPI
+        window.exportLaporanExcel = function() {
+            const mode = document.getElementById('rekapModeSelect').value;
+            const targetDate = document.getElementById('rekapDatePicker').value;
+            const targetMonth = document.getElementById('rekapMonthPicker').value;
+
+            let filteredTrx = window.transaksiJurnal.filter(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
+                if (mode === 'DAILY' && t.isoDate === targetDate) return true;
+                if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) return true;
+                return false;
+            });
+
+            if (filteredTrx.length === 0) {
+                alert("Tidak ada data transaksi pada periode yang dipilih untuk di-export!");
+                return;
+            }
+
+            let excelData = [
+                ["LAPORAN TRANSAKSI POS ZENCELL 1"],
+                ["Periode:", mode === 'DAILY' ? targetDate : targetMonth],
+                ["Tanggal Cetak:", new Date().toLocaleString('id-ID')],
+                [], 
+                ["NO", "WAKTU", "TANGGAL", "KETERANGAN", "QTY", "KATEGORI", "UANG MASUK (RP)", "MASUK KE", "MODAL (RP)", "KELUAR DARI", "CUAN (RP)"]
+            ];
+
+            let totalMasuk = 0, totalKeluar = 0, totalCuan = 0;
+
+            filteredTrx.forEach((t, i) => {
+                let msk = Number(t.hargaJual || 0);
+                let klr = Number(t.hargaModal || 0);
+                let cuan = Number(t.cuan || 0);
+
+                totalMasuk += msk;
+                totalKeluar += klr;
+                totalCuan += cuan;
+
+                excelData.push([
+                    i + 1,
+                    t.waktu || '',
+                    t.isoDate || '',
+                    t.ket || '',
+                    t.qty || 1,
+                    t.kat || '',
+                    msk,
+                    t.akunMasuk1 || '',
+                    klr,
+                    t.akunKeluar1 || '',
+                    cuan
+                ]);
+            });
+
+            excelData.push([]);
+            excelData.push(["", "", "", "TOTAL KESELURUHAN", "", "", totalMasuk, "", totalKeluar, "", totalCuan]);
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan Keuangan");
+
+            const namaFile = `LAPORAN_ZENCELL_${mode === 'DAILY' ? targetDate : targetMonth}.xlsx`;
+            XLSX.writeFile(wb, namaFile);
+        }
+
+        // FUNGSI 2: EXPORT / CETAK LAPORAN PDF GAYA BUKUWARUNG
+        window.exportLaporanPDF = function() {
+            const mode = document.getElementById('rekapModeSelect').value;
+            const targetDate = document.getElementById('rekapDatePicker').value;
+            const targetMonth = document.getElementById('rekapMonthPicker').value;
+
+            let filteredTrx = window.transaksiJurnal.filter(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
+                if (mode === 'DAILY' && t.isoDate === targetDate) return true;
+                if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) return true;
+                return false;
+            });
+
+            if (filteredTrx.length === 0) {
+                alert("Tidak ada data transaksi pada periode ini untuk dicetak!");
+                return;
+            }
+
+            let totalMasuk = 0, totalKeluar = 0, totalCuan = 0;
+            let rowsHtml = filteredTrx.map((t, i) => {
+                let msk = Number(t.hargaJual || 0);
+                let klr = Number(t.hargaModal || 0);
+                let cuan = Number(t.cuan || 0);
+
+                totalMasuk += msk;
+                totalKeluar += klr;
+                totalCuan += cuan;
+
+                return `
+                    <tr>
+                        <td style="padding:6px; border:1px solid #ccc; text-align:center;">${i + 1}</td>
+                        <td style="padding:6px; border:1px solid #ccc;">${t.waktu}<br><small>${t.isoDate}</small></td>
+                        <td style="padding:6px; border:1px solid #ccc;"><b>${t.ket}</b></td>
+                        <td style="padding:6px; border:1px solid #ccc; text-align:center;">${t.kat}</td>
+                        <td style="padding:6px; border:1px solid #ccc; text-align:right; color:#16A34A;">${window.formatRp(msk)}</td>
+                        <td style="padding:6px; border:1px solid #ccc; text-align:right; color:#EF4444;">${window.formatRp(klr)}</td>
+                        <td style="padding:6px; border:1px solid #ccc; text-align:right; font-weight:bold; color:#D97706;">${window.formatRp(cuan)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const printArea = document.getElementById('printArea');
+            printArea.style.display = 'block';
+            printArea.innerHTML = `
+                <div style="width: 100%; font-family: sans-serif; padding: 20px; color: #1e293b;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #059669; padding-bottom:10px; margin-bottom:15px;">
+                        <div>
+                            <h2 style="margin:0; color:#059669; font-size:22px;">POS ZENCELL 1</h2>
+                            <p style="margin:3px 0; font-size:12px; color:#64748b;">Nanggerang, Jalaksana, Kuningan - West Java</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <h3 style="margin:0; font-size:16px;">LAPORAN TRANSAKSI</h3>
+                            <p style="margin:3px 0; font-size:12px; font-weight:bold;">Periode: ${mode === 'DAILY' ? targetDate : targetMonth}</p>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:15px; text-align:center;">
+                        <div style="background:#DCFCE7; padding:10px; border-radius:8px; border:1px solid #BBF7D0;">
+                            <small style="color:#16A34A; font-weight:bold;">TOTAL PENJUALAN / OMSET</small>
+                            <div style="font-size:15px; font-weight:bold; color:#15803D;">${window.formatRp(totalMasuk)}</div>
+                        </div>
+                        <div style="background:#FEE2E2; padding:10px; border-radius:8px; border:1px solid #FECACA;">
+                            <small style="color:#DC2626; font-weight:bold;">TOTAL MODAL / HPP</small>
+                            <div style="font-size:15px; font-weight:bold; color:#B91C1C;">${window.formatRp(totalKeluar)}</div>
+                        </div>
+                        <div style="background:#FEF3C7; padding:10px; border-radius:8px; border:1px solid #FDE68A;">
+                            <small style="color:#D97706; font-weight:bold;">TOTAL KEUNTUNGAN / CUAN</small>
+                            <div style="font-size:15px; font-weight:bold; color:#B45309;">${window.formatRp(totalCuan)}</div>
+                        </div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                        <thead>
+                            <tr style="background:#059669; color:#FFF;">
+                                <th style="padding:8px; border:1px solid #ccc;">NO</th>
+                                <th style="padding:8px; border:1px solid #ccc;">WAKTU</th>
+                                <th style="padding:8px; border:1px solid #ccc;">KETERANGAN</th>
+                                <th style="padding:8px; border:1px solid #ccc;">KATEGORI</th>
+                                <th style="padding:8px; border:1px solid #ccc;">MASUK</th>
+                                <th style="padding:8px; border:1px solid #ccc;">KELUAR</th>
+                                <th style="padding:8px; border:1px solid #ccc;">CUAN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            window.print();
+            setTimeout(() => { printArea.style.display = 'none'; }, 1000);
         }
 
         window.backupJSON = function() {
