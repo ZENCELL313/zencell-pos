@@ -155,11 +155,10 @@
         .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 
         .sticky-subnav { position: sticky; top: 110px; z-index: 8900; background: var(--bg); padding: 4px 0 8px 0; }
-        .sub-nav-tabs { display: flex; gap: 6px; background: var(--primary-light); padding: 5px; border-radius: 10px; border: 1px solid var(--border); }
-        .sub-tab-btn { flex: 1; padding: 8px 6px; border: none; background: transparent; font-size: 11px; font-weight: 700; color: var(--primary); border-radius: 6px; cursor: pointer; text-transform: uppercase; }
+        .sub-nav-tabs { display: flex; gap: 6px; background: var(--primary-light); padding: 5px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; }
+        .sub-tab-btn { flex: 1; padding: 8px 6px; border: none; background: transparent; font-size: 10.5px; font-weight: 700; color: var(--primary); border-radius: 6px; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
         .sub-tab-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 
-        /* ANIMASI TRANSISI HALAMAN YANG SMOOTH */
         .tab-content, .sub-tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
         .tab-content.active, .sub-tab-content.active { display: block; opacity: 1; transform: translateY(0); }
 
@@ -317,7 +316,7 @@
             </div>
             <div class="header-status-bar">
                 <span>👤 <span id="hdrUserActive">OWNER</span> <span id="cloudStatus" style="color:#FFF; font-weight:800; background:rgba(52,211,153,0.35); padding:2px 8px; border-radius:6px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>TERHUBUNG REALTIME</span></span>
-                <span id="hdrRealtimeClock">SABTU, 10 OKTOBER 2026 00:00:00</span>
+                <span id="hdrRealtimeClock">MINGGU, 11 OKTOBER 2026 00:00:00</span>
             </div>
         </header>
 
@@ -681,6 +680,7 @@
         <div class="sticky-subnav">
             <div class="sub-nav-tabs">
                 <button class="sub-tab-btn active" onclick="switchSubTab(event, 'sub-pembukuan-saldo')">📊 Pembukuan Kategori</button>
+                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-harian')">🗓️ Rekap Harian (Omset & Profit)</button>
                 <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-saldo')">💰 Rekap Saldo</button>
                 <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-vlookup')">⚙️ Master Vlookup</button>
             </div>
@@ -795,6 +795,47 @@
                             <tbody id="bodyHistoriSetoran"></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sub-rekap-harian" class="sub-tab-content">
+            <div class="card">
+                <div class="card-header">📊 REKAP PROFIT / KATEGORI (BULANAN)</div>
+                <div class="filter-container">
+                    <span style="font-size:11px; font-weight:bold; color:var(--primary);">🗓️ PILIH BULAN:</span>
+                    <input type="month" id="rekapSektorMonthPicker" class="date-picker-input" onchange="renderAll()">
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">REKAP PROFIT / KATEGORI</th>
+                                <th style="text-align:right;">PROFIT</th>
+                                <th style="text-align:center;">PERSENTASE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyRekapProfitKelompok"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">📅 REKAPAN BULANAN PER HARI (OMSET, PROFIT, CUST, TRX)</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">TANGGAL</th>
+                                <th style="text-align:right;">OMSET</th>
+                                <th style="text-align:right;">PROFIT</th>
+                                <th style="text-align:center;">CUST</th>
+                                <th style="text-align:center;">TRX</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyRekapBulananPerHari"></tbody>
+                        <tfoot id="footRekapBulananPerHari"></tfoot>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1311,9 +1352,9 @@
             return String(str).trim().replace(/[\/.#$\[\]]/g, '-');
         }
 
-        window.kategoriList = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC', 'VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME', 'SERVICE', 'PIUTANG', 'LAIN LAIN', 'TRANSFER BALANCING'];
+        window.kategoriList = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC', 'VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME', 'GADAI', 'SERVICE', 'LAIN LAIN'];
         window.katAtm = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC'];
-        window.katKonter = ['VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME'];
+        window.katKonter = ['VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME', 'GADAI'];
         window.katService = ['SERVICE'];
 
         window.saldoList = [
@@ -1759,6 +1800,7 @@
             document.getElementById('trxDateInput').value = window.getTodayIso();
             document.getElementById('rekapDatePicker').value = window.getTodayIso();
             document.getElementById('rekapMonthPicker').value = window.getCurrentMonthIso();
+            document.getElementById('rekapSektorMonthPicker').value = window.getCurrentMonthIso();
             document.getElementById('jurnalDatePicker').value = window.getTodayIso();
             document.getElementById('jurnalMonthPicker').value = window.getCurrentMonthIso();
             
@@ -1792,7 +1834,6 @@
                     return;
                 }
 
-                // Cek auto-fill dari data service / sparepart
                 const matchSparepart = window.sparepartList.find(s => s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase()) || s.namaUnit.toUpperCase().includes(val));
                 if (matchSparepart) {
                     document.getElementById('kategori').value = 'SERVICE';
@@ -2627,7 +2668,7 @@
             
             window.transaksiJurnal.unshift({
                 waktu: timeStr, isoDate: window.getTodayIso(),
-                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'TRANSFER BALANCING',
+                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'GADAI',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
@@ -2709,7 +2750,7 @@
             
             window.transaksiJurnal.unshift({
                 waktu: timeStr, isoDate: window.getTodayIso(),
-                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'TRANSFER BALANCING',
+                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'GADAI',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
@@ -2732,7 +2773,7 @@
             const ket = document.getElementById('keterangan').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('trxQty').value) || 1;
             const kat = document.getElementById('kategori').value;
-            const isNewCustomer = (kat === 'TRANSFER BALANCING') ? false : document.getElementById('chkIsNewCustomer').checked;
+            const isNewCustomer = document.getElementById('chkIsNewCustomer').checked;
             const isSplit = document.getElementById('chkSplit').checked;
 
             let akunMasuk1 = '', akunMasuk2 = '';
@@ -2882,7 +2923,7 @@
                     }
                 });
 
-                if (t.kat === 'TRANSFER BALANCING' || t.isPencatatanUtangAwal) {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG') {
                     return;
                 }
 
@@ -3026,7 +3067,7 @@
 
                 let listTfFiltered = [];
                 window.transaksiJurnal.forEach((t, origIdx) => {
-                    if (t.kat === 'TRANSFER BALANCING') {
+                    if (t.kat === 'GADAI') {
                         let match = true;
                         if (tfMode === 'DAILY' && t.isoDate !== tfDate) match = false;
                         if (tfMode === 'MONTHLY' && (!t.isoDate || !t.isoDate.startsWith(tfMonth))) match = false;
@@ -3151,6 +3192,7 @@
             }
 
             window.renderRekapKategoriTab();
+            window.renderRekapHarianSektorTab();
             window.updateUndoRedoBtnState();
 
             if (typeof window.renderRiwayatBelanjaStok === 'function') {
@@ -3164,12 +3206,15 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let rekapMap = {};
-            window.kategoriList.forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+            const activeKatList = window.kategoriList.filter(k => k !== 'PIUTANG');
+            activeKatList.forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
 
             let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0;
             let totalTrxCount = 0, pelangganCount = 0;
 
             window.transaksiJurnal.forEach(t => {
+                if (t.kat === 'PIUTANG') return;
+
                 let matchFilter = false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) matchFilter = true;
                 if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) matchFilter = true;
@@ -3186,7 +3231,7 @@
                     if (window.katKonter.includes(t.kat)) rCuanKonter += Number(t.cuan || 0);
                     if (window.katService.includes(t.kat)) rCuanService += Number(t.cuan || 0);
 
-                    if (!t.isPencatatanUtangAwal && t.kat !== 'TRANSFER BALANCING') {
+                    if (!t.isPencatatanUtangAwal) {
                         rekapMap[t.kat].count += 1;
                         totalTrxCount += 1;
                         if (t.isNewCustomer !== false) pelangganCount += 1;
@@ -3222,6 +3267,138 @@
                     </tr>
                 `;
             }).join('');
+        }
+
+        window.renderRekapHarianSektorTab = function() {
+            const monthPicker = document.getElementById('rekapSektorMonthPicker');
+            if (!monthPicker) return;
+            
+            const targetMonth = monthPicker.value || window.getCurrentMonthIso();
+            const [yearStr, monthStr] = targetMonth.split('-');
+            const year = parseInt(yearStr);
+            const month = parseInt(monthStr);
+
+            let profitAtm = 0, profitKonter = 0, profitService = 0;
+            let dailyMap = {};
+
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateObj = new Date(year, month - 1, d);
+                const isoDate = `${yearStr}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const formattedLabel = `${dayNames[dateObj.getDay()]}, ${String(d).padStart(2, '0')} ${String(month).padStart(2, '0')} ${yearStr}`;
+                dailyMap[isoDate] = { label: formattedLabel, omset: 0, profit: 0, cust: 0, trx: 0 };
+            }
+
+            window.transaksiJurnal.forEach(t => {
+                if (t.kat === 'PIUTANG') return;
+                
+                if (t.isoDate && t.isoDate.startsWith(targetMonth)) {
+                    const cuanVal = Number(t.cuan || 0);
+                    if (window.katAtm.includes(t.kat)) profitAtm += cuanVal;
+                    if (window.katKonter.includes(t.kat)) profitKonter += cuanVal;
+                    if (window.katService.includes(t.kat)) profitService += cuanVal;
+
+                    if (dailyMap[t.isoDate]) {
+                        dailyMap[t.isoDate].omset += Number(t.hargaJual || 0);
+                        dailyMap[t.isoDate].profit += cuanVal;
+                        dailyMap[t.isoDate].trx += 1;
+                        if (t.isNewCustomer !== false) {
+                            dailyMap[t.isoDate].cust += 1;
+                        }
+                    }
+                }
+            });
+
+            const totalProfitSektor = profitAtm + profitKonter + profitService;
+            const pctAtm = totalProfitSektor > 0 ? ((profitAtm / totalProfitSektor) * 100).toFixed(1) : '0';
+            const pctKonter = totalProfitSektor > 0 ? ((profitKonter / totalProfitSektor) * 100).toFixed(1) : '0';
+            const pctService = totalProfitSektor > 0 ? ((profitService / totalProfitSektor) * 100).toFixed(1) : '0';
+
+            const bSektor = document.getElementById('bodyRekapProfitKelompok');
+            if (bSektor) {
+                bSektor.innerHTML = `
+                    <tr>
+                        <td style="text-align:left;"><b>ATM LINK / AGEN</b><br><small style="color:gray;">TOPUP, TRANSFER, TARIK TUNAI, EDC</small></td>
+                        <td style="text-align:right; font-weight:bold; color:var(--primary);">${window.formatRp(profitAtm)}</td>
+                        <td style="text-align:center; font-weight:bold;">${pctAtm}%</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:left;"><b>KONTER</b><br><small style="color:gray;">VCR, KUOTA, PPOB, PULSA, ACC, SP, GAME, GADAI</small></td>
+                        <td style="text-align:right; font-weight:bold; color:var(--kredit);">${window.formatRp(profitKonter)}</td>
+                        <td style="text-align:center; font-weight:bold;">${pctKonter}%</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:left;"><b>SERVICE</b><br><small style="color:gray;">SERVICE UNIT / JASA REPARASI</small></td>
+                        <td style="text-align:right; font-weight:bold; color:#9333EA;">${window.formatRp(profitService)}</td>
+                        <td style="text-align:center; font-weight:bold;">${pctService}%</td>
+                    </tr>
+                    <tr style="background:var(--primary-light); font-weight:bold;">
+                        <td style="text-align:left;"><b>TOTAL PROFIT SEKTOR</b></td>
+                        <td style="text-align:right; color:#D97706;"><b>${window.formatRp(totalProfitSektor)}</b></td>
+                        <td style="text-align:center;">100%</td>
+                    </tr>
+                `;
+            }
+
+            let grandOmset = 0, grandProfit = 0, grandCust = 0, grandTrx = 0;
+            let activeDaysCount = 0;
+
+            const bDaily = document.getElementById('bodyRekapBulananPerHari');
+            const fDaily = document.getElementById('footRekapBulananPerHari');
+
+            if (bDaily) {
+                let htmlRows = '';
+                Object.keys(dailyMap).sort().forEach(isoKey => {
+                    const d = dailyMap[isoKey];
+                    grandOmset += d.omset;
+                    grandProfit += d.profit;
+                    grandCust += d.cust;
+                    grandTrx += d.trx;
+                    if (d.trx > 0 || d.omset > 0) activeDaysCount++;
+
+                    htmlRows += `
+                        <tr>
+                            <td style="text-align:left;"><b>${d.label}</b></td>
+                            <td class="text-kredit">${window.formatRp(d.omset)}</td>
+                            <td class="text-cuan"><b>${window.formatRp(d.profit)}</b></td>
+                            <td style="text-align:center;">${d.cust}</td>
+                            <td style="text-align:center;">${d.trx}</td>
+                        </tr>
+                    `;
+                });
+                bDaily.innerHTML = htmlRows;
+            }
+
+            if (fDaily) {
+                const denominatorDays = activeDaysCount > 0 ? activeDaysCount : daysInMonth;
+                const avgCust = (grandCust / denominatorDays).toFixed(1);
+                const avgTrx = (grandTrx / denominatorDays).toFixed(1);
+                const avgProfit = Math.round(grandProfit / denominatorDays);
+
+                fDaily.innerHTML = `
+                    <tr style="background:#FEF08A; font-weight:bold; border-top:2px solid #000;">
+                        <td style="text-align:left;">TOTAL</td>
+                        <td style="text-align:right; color:#15803D;">${window.formatRp(grandOmset)}</td>
+                        <td style="text-align:right; color:#B45309;">${window.formatRp(grandProfit)}</td>
+                        <td style="text-align:center; color:#2563EB;">${grandCust}</td>
+                        <td style="text-align:center; color:#7E22CE;">${grandTrx}</td>
+                    </tr>
+                    <tr style="background:#F1F5F9; font-weight:bold;">
+                        <td colspan="3" style="text-align:right;">RATA-RATA CUST / HARI :</td>
+                        <td colspan="2" style="text-align:center; color:#2563EB;">${avgCust} ORANG</td>
+                    </tr>
+                    <tr style="background:#F1F5F9; font-weight:bold;">
+                        <td colspan="3" style="text-align:right;">RATA-RATA TRX / HARI :</td>
+                        <td colspan="2" style="text-align:center; color:#7E22CE;">${avgTrx} TRX</td>
+                    </tr>
+                    <tr style="background:#F1F5F9; font-weight:bold;">
+                        <td colspan="3" style="text-align:right;">RATA-RATA PROFIT / HARI :</td>
+                        <td colspan="2" style="text-align:right; color:#B45309; font-size:12.5px;">${window.formatRp(avgProfit)}</td>
+                    </tr>
+                `;
+            }
         }
 
         window.backupJSON = function() {
