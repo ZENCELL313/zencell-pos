@@ -3,28 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POS & Pembukuan ZENCELL</title>
+    <title>POS ZENCELL 1</title>
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Konter ZENCELL","short_name":"ZENCELL","start_url":".","display":"standalone","background_color":"#0284C7","theme_color":"#0284C7","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2845/2845701.png","sizes":"512x512","type":"image/png"}]}'>
-    <meta name="theme-color" content="#0284C7">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"POS ZENCELL 1","short_name":"ZENCELL","start_url":".","display":"standalone","background_color":"#059669","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2845/2845701.png","sizes":"512x512","type":"image/png"}]}'>
+    <meta name="theme-color" content="#059669">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
         :root {
-            --primary: #0284C7;
-            --primary-dark: #0369A1;
-            --primary-light: #E0F2FE;
-            --accent: #38BDF8;
-            --bg: #F0F9FF;
-            --card: #FFFFFF;
-            --text: #0F172A;
-            --debit: #EF4444;
-            --kredit: #16A34A;
-            --border: #BAE6FD;
-        }
-
-        body.theme-emerald {
             --primary: #059669;
             --primary-dark: #047857;
             --primary-light: #D1FAE5;
@@ -32,14 +19,27 @@
             --bg: #ECFDF5;
             --card: #FFFFFF;
             --text: #064E3B;
+            --debit: #EF4444;
+            --kredit: #16A34A;
             --border: #A7F3D0;
         }
 
-        body.theme-dark {
+        body.theme-blue {
             --primary: #0284C7;
+            --primary-dark: #0369A1;
+            --primary-light: #E0F2FE;
+            --accent: #38BDF8;
+            --bg: #F0F9FF;
+            --card: #FFFFFF;
+            --text: #0F172A;
+            --border: #BAE6FD;
+        }
+
+        body.theme-dark {
+            --primary: #059669;
             --primary-dark: #0F172A;
             --primary-light: #1E293B;
-            --accent: #38BDF8;
+            --accent: #34D399;
             --bg: #0F172A;
             --card: #1E293B;
             --text: #F8FAFC;
@@ -58,7 +58,6 @@
             transition: background-color 0.3s ease, color 0.3s ease; 
         }
 
-        /* AUTO KAPITAL / HURUF BESAR PADA INPUT TEKS */
         input[type="text"], textarea, select {
             text-transform: uppercase;
         }
@@ -84,11 +83,13 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
-        .header-title h1 { font-size: 17px; font-weight: 800; color: #FFF; }
-        .header-actions { display: flex; gap: 8px; }
+        .header-title { display: flex; align-items: center; gap: 8px; }
+        .header-logo { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8); background: #FFF; }
+        .header-title h1 { font-size: 16px; font-weight: 800; color: #FFF; }
+        .header-actions { display: flex; gap: 6px; }
         .btn-icon-hdr { 
             background: rgba(255,255,255,0.2); color: #FFF; border: none; width: 36px; height: 36px; 
-            border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; 
+            border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; justify-content: center; 
             align-items: center; transition: transform 0.2s, background-color 0.2s; position: relative; overflow: visible;
         }
         .btn-icon-hdr:active { transform: scale(0.9); }
@@ -219,9 +220,9 @@
         @media (min-width: 768px) {
             body { max-width: 1250px; padding: 16px; padding-bottom: 110px; }
             header { padding: 14px 18px; }
-            .header-title h1 { font-size: 20px; }
+            .header-title h1 { font-size: 18px; }
             .header-status-bar { font-size: 12.5px; padding: 6px 12px; }
-            .btn-icon-hdr { width: 38px; height: 38px; font-size: 17px; }
+            .btn-icon-hdr { width: 38px; height: 38px; font-size: 16px; }
             .summary-card { padding: 9px 6px; }
             .summary-card .lbl { font-size: 10px; }
             .summary-card .val { font-size: 13.5px; }
@@ -247,7 +248,7 @@
     <!-- MODAL LOGIN MODERN -->
     <div id="loginOverlay">
         <div class="login-card">
-            <h2>ZENCELL POS</h2>
+            <h2>POS ZENCELL 1</h2>
             <p>Silakan Login Untuk Mengakses Pembukuan</p>
             <form onsubmit="prosesLogin(event)">
                 <div class="form-group" style="text-align:left;">
@@ -273,7 +274,8 @@
         <header>
             <div class="header-top">
                 <div class="header-title">
-                    <h1>🏬 KONTER ZENCELL</h1>
+                    <img src="LOGO ZENCELL.jpg" alt="Logo" class="header-logo">
+                    <h1>POS ZENCELL 1</h1>
                 </div>
                 <div class="header-actions">
                     <button class="btn-icon-hdr" id="btnUndo" onclick="doUndo()" title="Undo (Batal Langkah)" disabled>↩️</button>
@@ -285,11 +287,14 @@
                     </button>
                     <button class="btn-icon-hdr" onclick="resetTestData()" title="Reset Data Testing" style="background:#DC2626;">🗑️</button>
                     <button class="btn-icon-hdr" onclick="backupJSON()" title="Setting / Backup">⚙️</button>
-                    <button class="btn-icon-hdr" onclick="prosesLogout()" title="Logout Akun" style="background:#EF4444; border:1px solid #FCA5A5; box-shadow:0 2px 6px rgba(239,68,68,0.4);">🚪</button>
+                    <!-- Icon Logout disesuaikan dengan referensi gambar (ikon bulat gradasi biru-ungu panah keluar) -->
+                    <button class="btn-icon-hdr" onclick="prosesLogout()" title="Logout Akun" style="background:linear-gradient(135deg, #38BDF8, #A855F7); border:1px solid #E9D5FF; box-shadow:0 2px 6px rgba(168,85,247,0.4);" aria-label="Logout Akun">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                    </button>
                 </div>
             </div>
             <div class="header-status-bar">
-                <span>👤 <span id="hdrUserActive">OWNER</span> <span id="cloudStatus" style="color:#F59E0B;">• Menghubungkan Firebase...</span></span>
+                <span>👤 <span id="hdrUserActive">OWNER</span> <span id="cloudStatus" style="color:#34D399; font-weight:800; background:rgba(52,211,153,0.2); padding:2px 6px; border-radius:6px;">● TERHUBUNG REALTIME</span></span>
                 <span id="hdrRealtimeClock">SABTU, 10 OKTOBER 2026 00:00:00</span>
             </div>
         </header>
@@ -800,6 +805,27 @@
                 </form>
             </div>
 
+            <!-- MENU SET SALDO AWAL & GANTI NAMA AKUN SALDO -->
+            <div class="card">
+                <div class="card-header">⚙️ Pengaturan Akun & Saldo Awal</div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Pilih Akun Saldo</label>
+                        <select id="cfgAkunTarget" class="form-control" onchange="muatDataAkunConfig(this.value)"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ganti Nama Akun</label>
+                        <input type="text" id="cfgNamaBaru" class="form-control" placeholder="NAMA BARU AKUN...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Set Saldo Awal (Rp)</label>
+                    <input type="text" id="cfgSaldoAwalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'cfgSaldoAwal')">
+                    <input type="hidden" id="cfgSaldoAwal" value="0">
+                </div>
+                <button type="button" class="btn" onclick="simpanPengaturanAkun()" style="background:#0284C7;">Simpan Perubahan Akun</button>
+            </div>
+
             <div class="card">
                 <div class="card-header">💰 Rekap Saldo Realtime (26 Akun)</div>
                 <div class="table-responsive">
@@ -1304,10 +1330,12 @@
                 if (data.setoran) window.setoranOwnerList = data.setoran;
                 if (data.sparepart) window.sparepartList = data.sparepart;
                 if (data.riwayatBelanjaStok) window.riwayatBelanjaStok = data.riwayatBelanjaStok;
+                if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
+                if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
 
                 if (statusEl) {
-                    statusEl.style.color = '#22C55E';
-                    statusEl.innerText = '• Realtime Terhubung';
+                    statusEl.style.color = '#34D399';
+                    statusEl.innerText = '● TERHUBUNG REALTIME';
                 }
 
                 window.initDropdowns();
@@ -1322,7 +1350,7 @@
             console.error("Firebase Connection Error:", error);
             if (statusEl) {
                 statusEl.style.color = '#EF4444';
-                statusEl.innerText = '• Terputus (Mode Lokal)';
+                statusEl.innerText = '● TERPUTUS (LOKAL)';
             }
         });
 
@@ -1342,7 +1370,9 @@
                 piutang: window.piutangList,
                 setoran: window.setoranOwnerList,
                 sparepart: window.sparepartList,
-                riwayatBelanjaStok: window.riwayatBelanjaStok
+                riwayatBelanjaStok: window.riwayatBelanjaStok,
+                saldoAwal: window.masterSaldoAwal,
+                saldoListCustom: window.saldoList
             });
             if (!skipSnapshot) window.saveStateSnapshot();
         }
@@ -1384,7 +1414,7 @@
             }
         };
 
-        const themes = ['default', 'theme-emerald', 'theme-dark'];
+        const themes = ['default', 'theme-blue', 'theme-dark'];
         let currentThemeIdx = 0;
 
         window.initTheme = function() {
@@ -1597,7 +1627,9 @@
                 piutangList: window.piutangList,
                 setoranOwnerList: window.setoranOwnerList,
                 sparepartList: window.sparepartList,
-                riwayatBelanjaStok: window.riwayatBelanjaStok
+                riwayatBelanjaStok: window.riwayatBelanjaStok,
+                masterSaldoAwal: window.masterSaldoAwal,
+                saldoList: window.saldoList
             });
             if (window.undoStack.length === 0 || window.undoStack[window.undoStack.length - 1] !== snap) {
                 window.undoStack.push(snap);
@@ -1643,6 +1675,8 @@
             window.setoranOwnerList = state.setoranOwnerList || [];
             window.sparepartList = state.sparepartList || [];
             window.riwayatBelanjaStok = state.riwayatBelanjaStok || [];
+            window.masterSaldoAwal = state.masterSaldoAwal || {};
+            window.saldoList = state.saldoList || [];
 
             window.saveToFirebase(true);
             window.initDropdowns();
@@ -1852,11 +1886,13 @@
             const pKat = document.getElementById('pKat');
             const bpKat = document.getElementById('bpKat');
             const stokKas = document.getElementById('stokSumberKas');
+            const cfgAkun = document.getElementById('cfgAkunTarget');
             
             if (!kSel) return;
             kSel.innerHTML = ''; vKat.innerHTML = ''; if (vKatFast) vKatFast.innerHTML = '';
             if (pKat) pKat.innerHTML = '';
             if (bpKat) bpKat.innerHTML = '';
+            if (cfgAkun) cfgAkun.innerHTML = '<option value="">-- Pilih Akun Saldo --</option>';
             fKat.innerHTML = '<option value="">-- All Kategori --</option>';
 
             window.kategoriList.forEach(k => {
@@ -1874,6 +1910,12 @@
                     if (s !== 'PIUTANG' && s !== 'SPAREPART') {
                         stokKas.innerHTML += `<option value="${s}">${s}</option>`;
                     }
+                });
+            }
+
+            if (cfgAkun) {
+                window.saldoList.forEach(s => {
+                    cfgAkun.innerHTML += `<option value="${s}">${s}</option>`;
                 });
             }
 
@@ -1898,6 +1940,56 @@
             }
 
             window.updateDatalistVlookup();
+        }
+
+        window.muatDataAkunConfig = function(namaAkun) {
+            if (!namaAkun) {
+                document.getElementById('cfgNamaBaru').value = '';
+                document.getElementById('cfgSaldoAwal').value = '0';
+                document.getElementById('cfgSaldoAwalDisplay').value = '';
+                return;
+            }
+            document.getElementById('cfgNamaBaru').value = namaAkun;
+            const awal = window.masterSaldoAwal[namaAkun] || 0;
+            document.getElementById('cfgSaldoAwal').value = awal;
+            document.getElementById('cfgSaldoAwalDisplay').value = awal ? Number(awal).toLocaleString('id-ID') : '0';
+        }
+
+        window.simpanPengaturanAkun = function() {
+            const akunLama = document.getElementById('cfgAkunTarget').value;
+            const namaBaru = document.getElementById('cfgNamaBaru').value.trim().toUpperCase();
+            const saldoAwalBaru = parseFloat(document.getElementById('cfgSaldoAwal').value) || 0;
+
+            if (!akunLama) { alert("Pilih Akun Saldo terlebih dahulu!"); return; }
+            if (!namaBaru) { alert("Nama akun baru tidak boleh kosong!"); return; }
+
+            if (akunLama !== namaBaru) {
+                if (window.saldoList.includes(namaBaru)) {
+                    alert("Nama akun tersebut sudah ada dalam daftar!");
+                    return;
+                }
+                const idx = window.saldoList.indexOf(akunLama);
+                if (idx !== -1) window.saldoList[idx] = namaBaru;
+
+                if (window.masterSaldoAwal[akunLama] !== undefined) {
+                    window.masterSaldoAwal[namaBaru] = saldoAwalBaru;
+                    delete window.masterSaldoAwal[akunLama];
+                }
+
+                window.transaksiJurnal.forEach(t => {
+                    if (t.akunMasuk1 === akunLama) t.akunMasuk1 = namaBaru;
+                    if (t.akunMasuk2 === akunLama) t.akunMasuk2 = namaBaru;
+                    if (t.akunKeluar1 === akunLama) t.akunKeluar1 = namaBaru;
+                    if (t.akunKeluar2 === akunLama) t.akunKeluar2 = namaBaru;
+                });
+            } else {
+                window.masterSaldoAwal[akunLama] = saldoAwalBaru;
+            }
+
+            alert(`✅ Pengaturan Akun Berhasil Disimpan!`);
+            window.initDropdowns();
+            window.saveToFirebase();
+            window.renderAll();
         }
 
         window.updateDatalistVlookup = function() {
@@ -2050,7 +2142,6 @@
             }
         };
 
-        // Simpan Stok Opname dengan Pemasukan Saldo Kategori Terkait (VOUCHER, SP, ACC)
         window.simpanStokOpname = function(e) {
             if (e) e.preventDefault();
             
@@ -2283,7 +2374,7 @@
             if (printerType === 'THERMAL') {
                 printArea.innerHTML = `
                     <div style="width: 220px; font-size: 11px; font-family: monospace; text-align: center; padding: 5px;">
-                        <b style="font-size: 14px;">KONTER ZENCELL</b><br>
+                        <b style="font-size: 14px;">POS ZENCELL 1</b><br>
                         Desa Nanggerang, Jalaksana, Kuningan<br>
                         HP/WA: 0822-XXXX-XXXX<br>
                         ----------------------------------<br>
@@ -2312,7 +2403,7 @@
                     <div style="width: 650px; font-size: 13px; font-family: sans-serif; padding: 20px; border: 1px solid #000; margin: 10px auto;">
                         <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px;">
                             <div>
-                                <h2 style="margin: 0; color: #0284C7;">KONTER & SERVICE ZENCELL</h2>
+                                <h2 style="margin: 0; color: #059669;">POS ZENCELL 1</h2>
                                 <p style="margin: 2px 0;">Desa Nanggerang, Jalaksana, Kuningan - West Java</p>
                             </div>
                             <div style="text-align: right;">
@@ -2467,6 +2558,7 @@
 
         window.simpanVlookup = function(e) {
             e.preventDefault();
+            const editKey = document.getElementById('editVlookupKey').value;
             const ket = document.getElementById('v_ket').value.toUpperCase().trim();
             const kat = document.getElementById('v_kat').value;
             const akunMasuk = document.getElementById('v_akunMasuk').value;
@@ -2474,17 +2566,44 @@
             const defJual = parseFloat(document.getElementById('v_jual').value) || 0;
             const defModal = parseFloat(document.getElementById('v_modal').value) || 0;
 
+            if (editKey && editKey !== ket) {
+                delete window.masterVlookup[editKey];
+            }
+
             window.masterVlookup[ket] = { kat, akunMasuk, akunKeluar, defJual, defModal };
+            
+            document.getElementById('editVlookupKey').value = '';
             document.getElementById('v_ket').value = '';
             document.getElementById('v_jualDisplay').value = '';
             document.getElementById('v_jual').value = '0';
             document.getElementById('v_modalDisplay').value = '';
             document.getElementById('v_modal').value = '0';
+            document.getElementById('formVlookupTitle').innerText = '+ Aturan Auto-Fill VLOOKUP';
+            document.getElementById('btnSubmitVlookup').innerText = 'Simpan VLOOKUP';
 
-            alert(`✅ VLOOKUP "${ket}" Berhasil Ditambahkan!`);
+            alert(`✅ VLOOKUP "${ket}" Berhasil Disimpan!`);
             window.initDropdowns();
             window.saveToFirebase();
             window.renderAll();
+        }
+
+        window.editVlookup = function(key) {
+            const rule = window.masterVlookup[key];
+            if (!rule) return;
+
+            document.getElementById('editVlookupKey').value = key;
+            document.getElementById('v_ket').value = key;
+            document.getElementById('v_kat').value = rule.kat || 'VOUCHER';
+            document.getElementById('v_akunMasuk').value = rule.akunMasuk || '';
+            document.getElementById('v_akunKeluar').value = rule.akunKeluar || '';
+            document.getElementById('v_jual').value = rule.defJual || 0;
+            document.getElementById('v_jualDisplay').value = rule.defJual ? Number(rule.defJual).toLocaleString('id-ID') : '';
+            document.getElementById('v_modal').value = rule.defModal || 0;
+            document.getElementById('v_modalDisplay').value = rule.defModal ? Number(rule.defModal).toLocaleString('id-ID') : '';
+
+            document.getElementById('formVlookupTitle').innerText = '✏️ Edit Aturan VLOOKUP';
+            document.getElementById('btnSubmitVlookup').innerText = 'Update VLOOKUP';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         window.prosesTransferSaldo = function(e) {
@@ -2881,7 +3000,6 @@
                 }
             });
 
-            // Sinkronisasi Belanja Stok: Saldo Asal Berkurang (Keluar), Saldo Kategori Stok Bertambah (Masuk)
             if (window.riwayatBelanjaStok) {
                 window.riwayatBelanjaStok.forEach(r => {
                     if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO') {
@@ -2929,7 +3047,10 @@
                         <td>${window.masterVlookup[k].akunKeluar}</td>
                         <td class="text-kredit">${window.formatRp(window.masterVlookup[k].defJual || 0)}</td>
                         <td class="text-debit">${window.formatRp(window.masterVlookup[k].defModal || 0)}</td>
-                        <td><button class="btn-delete" onclick="delete window.masterVlookup['${k}']; window.saveToFirebase(); window.renderAll();">Hapus</button></td>
+                        <td>
+                            <button class="btn-edit" onclick="editVlookup('${k}')">Edit</button>
+                            <button class="btn-delete" onclick="delete window.masterVlookup['${k}']; window.saveToFirebase(); window.renderAll();">Hapus</button>
+                        </td>
                     </tr>
                 `).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada master VLOOKUP.</td></tr>`;
             }
