@@ -515,7 +515,17 @@
         </div>
 
         <div class="card">
-            <div class="card-header">🛠️ Service Dalam Pengerjaan</div>
+            <div class="card-header">🛠️ Service Dalam Pengerjaan & Rekap</div>
+            <div class="filter-container">
+                <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER SERVICE:</span>
+                <select id="serviceFilterMode" class="date-picker-input" onchange="toggleFilterServiceDate(this.value)">
+                    <option value="ALL">📅 Semua Tanggal</option>
+                    <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
+                    <option value="MONTHLY">🗓️ Per Bulan</option>
+                </select>
+                <input type="date" id="serviceDatePicker" class="date-picker-input" onchange="renderAll()">
+                <input type="month" id="serviceMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+            </div>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -525,6 +535,7 @@
                             <th>MODAL</th>
                             <th>SUMBER</th>
                             <th>ESTIMASI JUAL</th>
+                            <th>STATUS</th>
                             <th>AKSI</th>
                         </tr>
                     </thead>
@@ -642,7 +653,7 @@
                         <select id="pKat" class="form-control" required></select>
                     </div>
                     <div class="form-group">
-                        <label>Modal Asal Terpotong</label>
+                        <label>Keluar Dari Akun (Asal Saldo)</label>
                         <select id="pSumber" class="form-control" required></select>
                     </div>
                 </div>
@@ -664,7 +675,7 @@
                             <th>SISA UTANG</th>
                             <th>HISTORI CICILAN</th>
                             <th>KATEGORI</th>
-                            <th>MODAL DARI</th>
+                            <th>KELUAR DR</th>
                             <th>CATATAN</th>
                             <th>STATUS</th>
                             <th>AKSI</th>
@@ -1339,7 +1350,7 @@
             authDomain: "keuangan-pribadi-e713a.firebaseapp.com",
             databaseURL: "https://keuangan-pribadi-e713a-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "keuangan-pribadi-e713a",
-            storageBucket: "keuangan-pribadi-e713a.firebasestorage.app",
+            storageBucket: "keuangan-pribadi-e713a.appspot.com",
             messagingSenderId: "333606490804",
             appId: "1:333606490804:web:4733a1401932a206edbde1"
         };
@@ -1695,6 +1706,22 @@
             window.renderAll();
         }
 
+        window.toggleFilterServiceDate = function(mode) {
+            const dPicker = document.getElementById('serviceDatePicker');
+            const mPicker = document.getElementById('serviceMonthPicker');
+            if (mode === 'MONTHLY') {
+                dPicker.style.display = 'none';
+                mPicker.style.display = 'inline-block';
+            } else if (mode === 'DAILY') {
+                dPicker.style.display = 'inline-block';
+                mPicker.style.display = 'none';
+            } else {
+                dPicker.style.display = 'none';
+                mPicker.style.display = 'none';
+            }
+            window.renderAll();
+        }
+
         window.toggleFilterTfDate = function(mode) {
             const dPicker = document.getElementById('tfDatePicker');
             const mPicker = document.getElementById('tfMonthPicker');
@@ -1804,6 +1831,8 @@
             document.getElementById('jurnalDatePicker').value = window.getTodayIso();
             document.getElementById('jurnalMonthPicker').value = window.getCurrentMonthIso();
             
+            document.getElementById('serviceDatePicker').value = window.getTodayIso();
+            document.getElementById('serviceMonthPicker').value = window.getCurrentMonthIso();
             document.getElementById('tfDatePicker').value = window.getTodayIso();
             document.getElementById('tfMonthPicker').value = window.getCurrentMonthIso();
             document.getElementById('setorDatePicker').value = window.getTodayIso();
@@ -1837,8 +1866,8 @@
                 const matchSparepart = window.sparepartList.find(s => s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase()) || s.namaUnit.toUpperCase().includes(val));
                 if (matchSparepart) {
                     document.getElementById('kategori').value = 'SERVICE';
-                    document.getElementById('akunKeluar1').value = matchSparepart.sumber;
-                    document.getElementById('splitAkunKeluar1').value = matchSparepart.sumber;
+                    document.getElementById('akunKeluar1').value = 'SPAREPART';
+                    document.getElementById('splitAkunKeluar1').value = 'SPAREPART';
 
                     const totalModal = matchSparepart.modal * qtyVal;
                     document.getElementById('hargaModal').value = totalModal;
@@ -1852,7 +1881,7 @@
 
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = `⚡ Auto-Fill Service [${matchSparepart.namaUnit}]: Modal Rp${Number(matchSparepart.modal).toLocaleString('id-ID')} (Keluar dr ${matchSparepart.sumber}), Est Jual Rp${Number(matchSparepart.estJual||0).toLocaleString('id-ID')}`;
+                    notice.innerText = `⚡ Auto-Fill Service [${matchSparepart.namaUnit}]: Modal Rp${Number(matchSparepart.modal).toLocaleString('id-ID')} (Keluar dr SPAREPART), Est Jual Rp${Number(matchSparepart.estJual||0).toLocaleString('id-ID')}`;
                     return;
                 }
 
@@ -2139,6 +2168,10 @@
             if (modal <= 0) { alert("Modal sparepart harus lebih dari 0!"); return; }
             if (!sumber) { alert("Pilih sumber saldo asal pengambilan modal!"); return; }
 
+            const now = new Date();
+            const tglStr = window.getTodayIso();
+            const waktuStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
             if (editId) {
                 let sp = window.sparepartList.find(s => s.id == editId);
                 if (sp) {
@@ -2153,11 +2186,13 @@
             } else {
                 window.sparepartList.unshift({
                     id: Date.now(),
-                    tgl: window.getTodayIso(),
+                    tgl: tglStr,
+                    waktu: waktuStr,
                     namaUnit,
                     modal,
                     sumber,
-                    estJual
+                    estJual,
+                    status: 'BELUM LUNAS'
                 });
             }
 
@@ -2260,6 +2295,7 @@
         window.hapusRiwayatBelanja = function(id) {
             if (confirm("Yakin ingin menghapus riwayat belanja stok ini?")) {
                 window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
+                window.stokOpnameItems = window.stokOpnameItems.filter(s => s.id != id);
                 window.saveToFirebase();
                 window.renderAll();
             }
@@ -2363,13 +2399,26 @@
 
             if (!nama) { alert("Nama pengutang wajib diisi!"); return; }
             if (nom <= 0) { alert("Nominal utang harus lebih dari 0!"); return; }
+            if (!sumber) { alert("Pilih Akun Sumber Keluar Saldo!"); return; }
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const idUnik = Date.now();
+            const tglStr = window.getTodayIso();
 
             window.piutangList.unshift({ 
                 id: idUnik, nama, sisa: nom, kategori: katUtang, sumber, catatan: ket, status: 'BELUM LUNAS',
                 riwayatCicilan: []
+            });
+
+            // Dicatat sebagai transaksi pindah saldo (dari akun asal ke PIUTANG) agar saldo Piutang bertambah dan akun asal berkurang
+            window.transaksiJurnal.unshift({
+                idPiutangRef: idUnik,
+                waktu: timeStr, isoDate: tglStr,
+                ket: `[PIUTANG BARU] ${nama} (${ket})`, qty: 1, kat: 'GADAI',
+                isNewCustomer: false,
+                hargaJual: nom, akunMasuk1: 'PIUTANG', jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
+                hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, akunKeluar2: '', modalSplit2: 0,
+                cuan: 0, isSplit: false, isPencatatanUtangAwal: true, isPindahSaldo: true
             });
 
             document.getElementById('pNama').value = '';
@@ -2377,7 +2426,7 @@
             document.getElementById('pNom').value = '0';
             document.getElementById('pKet').value = '';
 
-            alert(`✅ Piutang (${katUtang}) a/n ${nama} sebesar ${window.formatRp(nom)} berhasil dicatat!`);
+            alert(`✅ Piutang (${katUtang}) a/n ${nama} sebesar ${window.formatRp(nom)} berhasil dicatat! Saldo ${sumber} berkurang & Saldo Piutang bertambah.`);
             window.initDropdowns();
             window.saveToFirebase();
             window.renderAll();
@@ -2428,27 +2477,42 @@
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const tglStr = window.getTodayIso();
+            const recordId = Date.now();
 
             item.sisa -= modalTerpotong;
             if (!item.riwayatCicilan) item.riwayatCicilan = [];
-            item.riwayatCicilan.push({ tgl: tglStr, waktu: timeStr, bayar: nomBayar, akun: akunMasuk });
+            item.riwayatCicilan.push({ idCicilan: recordId, tgl: tglStr, waktu: timeStr, bayar: nomBayar, akun: akunMasuk, pokokTerpotong: modalTerpotong });
 
             if (item.sisa <= 0) {
                 item.sisa = 0;
                 item.status = 'LUNAS';
             }
 
+            // Dicatat sebagai perpindahan saldo (dari PIUTANG ke akun penerima pembayaran)
             window.transaksiJurnal.unshift({
+                id: recordId,
                 waktu: timeStr, isoDate: tglStr,
-                ket: `[BAYAR UTANG ${katPelunasan}] ${item.nama}`, qty: 1, kat: katPelunasan,
-                isNewCustomer: true,
-                hargaJual: nomBayar, akunMasuk1: akunMasuk, jualSplit1: nomBayar, akunMasuk2: '', jualSplit2: 0,
+                ket: `[PELUNASAN UTANG] ${item.nama}`, qty: 1, kat: 'GADAI',
+                isNewCustomer: false,
+                hargaJual: modalTerpotong, akunMasuk1: akunMasuk, jualSplit1: modalTerpotong, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: modalTerpotong, akunKeluar1: 'PIUTANG', modalSplit1: modalTerpotong, akunKeluar2: '', modalSplit2: 0,
-                cuan: cuanLebih, isSplit: false
+                cuan: cuanLebih, isSplit: false, idPiutangRef: item.id, isPindahSaldo: true
             });
 
+            // Jika ada kelebihan pembayaran (cuan), dicatat sebagai transaksi pendapatan
+            if (cuanLebih > 0) {
+                window.transaksiJurnal.unshift({
+                    waktu: timeStr, isoDate: tglStr,
+                    ket: `[CUAN / KELEBIHAN UTANG] ${item.nama}`, qty: 1, kat: katPelunasan,
+                    isNewCustomer: false,
+                    hargaJual: cuanLebih, akunMasuk1: akunMasuk, jualSplit1: cuanLebih, akunMasuk2: '', jualSplit2: 0,
+                    hargaModal: 0, akunKeluar1: '', modalSplit1: 0, akunKeluar2: '', modalSplit2: 0,
+                    cuan: cuanLebih, isSplit: false
+                });
+            }
+
             window.closeModalBayarPiutang();
-            alert(`✅ Pembayaran Utang (${katPelunasan}) sebesar ${window.formatRp(nomBayar)} berhasil dicatat! Sisa utang: ${window.formatRp(item.sisa)}`);
+            alert(`✅ Pelunasan Utang sebesar ${window.formatRp(nomBayar)} berhasil dicatat! Sisa utang: ${window.formatRp(item.sisa)}`);
             window.initDropdowns();
             window.saveToFirebase();
             window.renderAll();
@@ -2619,7 +2683,18 @@
             if (!t) return;
 
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${t.ket}"?`)) {
-                if (t.idPiutangRef) {
+                if (t.idPiutangRef && t.akunKeluar1 === 'PIUTANG') {
+                    const matchPiutang = window.piutangList.find(p => p.id === t.idPiutangRef);
+                    if (matchPiutang) {
+                        matchPiutang.sisa += Number(t.hargaModal || 0);
+                        matchPiutang.status = 'BELUM LUNAS';
+                        if (matchPiutang.riwayatCicilan) {
+                            matchPiutang.riwayatCicilan = matchPiutang.riwayatCicilan.filter(c => c.idCicilan !== t.id);
+                        }
+                    }
+                }
+
+                if (t.isPencatatanUtangAwal && t.idPiutangRef) {
                     window.piutangList = window.piutangList.filter(p => p.id !== t.idPiutangRef);
                 }
 
@@ -2672,7 +2747,7 @@
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
-                cuan: -admin, isSplit: false
+                cuan: -admin, isSplit: false, isPindahSaldo: true
             });
 
             document.getElementById('tfNomDisplay_fast').value = '';
@@ -2754,7 +2829,7 @@
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
-                cuan: -admin, isSplit: false
+                cuan: -admin, isSplit: false, isPindahSaldo: true
             });
 
             document.getElementById('tfNomDisplay').value = '';
@@ -2806,6 +2881,12 @@
 
             if (!akunMasuk1) { alert("Pilih Uang Masuk Ke (Akun 1)!"); return; }
 
+            window.sparepartList.forEach(sp => {
+                if (ket.includes(sp.namaUnit.toUpperCase()) || sp.namaUnit.toUpperCase().includes(ket)) {
+                    sp.status = 'LUNAS';
+                }
+            });
+
             if (akunKeluar1 === 'PIUTANG') {
                 const matchUtang = window.piutangList.find(p => ket.toUpperCase().includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(ket.toUpperCase()));
                 if (matchUtang) {
@@ -2831,6 +2912,7 @@
             if (editIdx >= 0) {
                 if (window.transaksiJurnal[editIdx].idPiutangRef) trxData.idPiutangRef = window.transaksiJurnal[editIdx].idPiutangRef;
                 if (window.transaksiJurnal[editIdx].isPencatatanUtangAwal) trxData.isPencatatanUtangAwal = window.transaksiJurnal[editIdx].isPencatatanUtangAwal;
+                if (window.transaksiJurnal[editIdx].isPindahSaldo) trxData.isPindahSaldo = window.transaksiJurnal[editIdx].isPindahSaldo;
                 window.transaksiJurnal[editIdx] = trxData;
             } else {
                 window.transaksiJurnal.unshift(trxData);
@@ -2923,7 +3005,8 @@
                     }
                 });
 
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG') {
+                // Transaksi piutang, gadai, atau pindah saldo disembunyikan dari jurnal utama harian (masuk ke menu rekap masing-masing)
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal) {
                     return;
                 }
 
@@ -2975,7 +3058,18 @@
 
             const bSparepart = document.getElementById('bodySparepartList');
             if (bSparepart) {
-                bSparepart.innerHTML = window.sparepartList.map(s => {
+                const sMode = document.getElementById('serviceFilterMode').value;
+                const sDate = document.getElementById('serviceDatePicker').value;
+                const sMonth = document.getElementById('serviceMonthPicker').value;
+
+                let filteredService = window.sparepartList.filter(s => {
+                    if (sMode === 'DAILY' && s.tgl !== sDate) return false;
+                    if (sMode === 'MONTHLY' && (!s.tgl || !s.tgl.startsWith(sMonth))) return false;
+                    return true;
+                });
+
+                bSparepart.innerHTML = filteredService.map(s => {
+                    const isLunas = s.status === 'LUNAS';
                     return `
                         <tr>
                             <td>${s.tgl}</td>
@@ -2983,13 +3077,14 @@
                             <td class="text-debit">${window.formatRp(s.modal)}</td>
                             <td>${s.sumber}</td>
                             <td class="text-kredit">${window.formatRp(s.estJual)}</td>
+                            <td><span style="color:${isLunas ? '#16A34A' : '#EF4444'}; font-weight:bold;">${isLunas ? 'LUNAS' : 'BELUM LUNAS'}</span></td>
                             <td>
                                 <button class="btn-edit" onclick="editSparepart(${s.id})">Edit</button>
                                 <button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Belum ada catatan belanja sparepart.</td></tr>`;
+                }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada catatan belanja sparepart sesuai filter.</td></tr>`;
             }
 
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
@@ -3015,7 +3110,7 @@
                             <td class="text-kredit"><b>${window.formatRp(nilaiSisa)}</b></td>
                             <td>
                                 <button class="btn-edit" onclick="document.getElementById('editStokId').value='${s.id}'; document.getElementById('stokKat').value='${s.kat}'; document.getElementById('stokNama').value='${s.nama}'; document.getElementById('stokQty').value='${s.awal}'; document.getElementById('stokModal').value='${s.modal}'; document.getElementById('stokModalDisplay').value=Number('${s.modal}').toLocaleString('id-ID'); hitungTotalStokOpname();">Edit</button>
-                                <button class="btn-delete" onclick="window.stokOpnameItems.splice(${idx},1); window.saveToFirebase(); window.renderAll();">Hapus</button>
+                                <button class="btn-delete" onclick="hapusRiwayatBelanja(${s.id});">Hapus</button>
                             </td>
                         </tr>
                     `;
@@ -3046,7 +3141,7 @@
                             <td class="text-debit"><b>${window.formatRp(p.sisa)}</b></td>
                             <td style="font-size:10px;">${txtCicilan}</td>
                             <td><span style="color:var(--primary); font-weight:bold;">${p.kategori || 'TOPUP'}</span></td>
-                            <td>${p.sumber}</td>
+                            <td><span style="color:#DC2626;">${p.sumber}</span></td>
                             <td>${p.catatan}</td>
                             <td><span style="color:${isLunas ? '#16A34A' : '#EF4444'}; font-weight:bold;">${isLunas ? 'LUNAS' : 'BELUM LUNAS'}</span></td>
                             <td>
@@ -3067,7 +3162,7 @@
 
                 let listTfFiltered = [];
                 window.transaksiJurnal.forEach((t, origIdx) => {
-                    if (t.kat === 'GADAI') {
+                    if (t.kat === 'GADAI' || t.isPindahSaldo) {
                         let match = true;
                         if (tfMode === 'DAILY' && t.isoDate !== tfDate) match = false;
                         if (tfMode === 'MONTHLY' && (!t.isoDate || !t.isoDate.startsWith(tfMonth))) match = false;
@@ -3084,7 +3179,7 @@
                             <td>${t.isoDate || ''}</td>
                             <td><span style="color:#DC2626; font-weight:bold;">${t.akunKeluar1}</span></td>
                             <td><span style="color:#16A34A; font-weight:bold;">${t.akunMasuk1}</span></td>
-                            <td class="text-kredit"><b>${window.formatRp(t.hargaJual)}</b></td>
+                            <td class="text-kredit"><b>${window.formatRp(t.hargaModal)}</b></td>
                             <td><button class="btn-delete" onclick="hapusJurnalTrx(${origIdx})">Hapus</button></td>
                         </tr>
                     `;
@@ -3206,14 +3301,14 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let rekapMap = {};
-            const activeKatList = window.kategoriList.filter(k => k !== 'PIUTANG');
+            const activeKatList = window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'GADAI');
             activeKatList.forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
 
             let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0;
             let totalTrxCount = 0, pelangganCount = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG') return;
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal) return;
 
                 let matchFilter = false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) matchFilter = true;
@@ -3231,11 +3326,9 @@
                     if (window.katKonter.includes(t.kat)) rCuanKonter += Number(t.cuan || 0);
                     if (window.katService.includes(t.kat)) rCuanService += Number(t.cuan || 0);
 
-                    if (!t.isPencatatanUtangAwal) {
-                        rekapMap[t.kat].count += 1;
-                        totalTrxCount += 1;
-                        if (t.isNewCustomer !== false) pelangganCount += 1;
-                    }
+                    rekapMap[t.kat].count += 1;
+                    totalTrxCount += 1;
+                    if (t.isNewCustomer !== false) pelangganCount += 1;
                 }
             });
 
@@ -3292,7 +3385,7 @@
             }
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG') return;
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal) return;
                 
                 if (t.isoDate && t.isoDate.startsWith(targetMonth)) {
                     const cuanVal = Number(t.cuan || 0);
