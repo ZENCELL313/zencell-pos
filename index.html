@@ -818,7 +818,7 @@
                 </div>
             </div>
 
-            <!-- HISTORI PINDAH SALDO (TRANSFER BALANCING) - PINDAH KE SINI -->
+            <!-- HISTORI PINDAH SALDO (TRANSFER BALANCING) -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center cursor-pointer" style="background-color: var(--primary); color: white;" onclick="toggleCardCollapse('bodyPindahSaldoCard', this)">
                     <span>🔀 Histori Pindah Saldo (Transfer Balancing)</span>
@@ -1868,7 +1868,6 @@
                 fKat.innerHTML += `<option value="${k}">${k}</option>`;
             });
 
-            // Perbaikan Poin 1: Sumber kas stok opname memuat seluruh saldo yang tersedia
             if (stokKas) {
                 stokKas.innerHTML = '<option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>';
                 window.saldoList.forEach(s => {
@@ -1915,7 +1914,6 @@
             }
         }
 
-        // Perbaikan Poin 4: Belanja Sparepart (Tanpa Masuk Jurnal Transaksi Harian + Ada Edit)
         window.simpanBelanjaSparepart = function(e) {
             e.preventDefault();
             const editId = document.getElementById('editSparepartId').value;
@@ -2052,7 +2050,7 @@
             }
         };
 
-        // Perbaikan Poin 3: Simpan Stok Opname (Tanpa Masuk Jurnal Utama, Sinkron Kas)
+        // Simpan Stok Opname dengan Pemasukan Saldo Kategori Terkait (VOUCHER, SP, ACC)
         window.simpanStokOpname = function(e) {
             if (e) e.preventDefault();
             
@@ -2160,7 +2158,6 @@
                 riwayatCicilan: []
             });
 
-            // Catatan utang awal tidak masuk jurnal harian sesuai permintaan poin 3
             document.getElementById('pNama').value = '';
             document.getElementById('pNomDisplay').value = '';
             document.getElementById('pNom').value = '0';
@@ -2227,7 +2224,6 @@
                 item.status = 'LUNAS';
             }
 
-            // Saat pembayaran utang masuk ke jurnal harian (pengecualian sesuai poin 3)
             window.transaksiJurnal.unshift({
                 waktu: timeStr, isoDate: tglStr,
                 ket: `[BAYAR UTANG ${katPelunasan}] ${item.nama}`, qty: 1, kat: katPelunasan,
@@ -2744,7 +2740,6 @@
                 }).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Belum ada catatan belanja sparepart.</td></tr>`;
             }
 
-            // Perbaikan Poin 2: Perhitungan nilai stok riil berdasarkan sisa dikali modal tiap item
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
@@ -2886,11 +2881,16 @@
                 }
             });
 
-            // Sinkronisasi arus kas dari Riwayat Belanja Stok (Poin 3)
+            // Sinkronisasi Belanja Stok: Saldo Asal Berkurang (Keluar), Saldo Kategori Stok Bertambah (Masuk)
             if (window.riwayatBelanjaStok) {
                 window.riwayatBelanjaStok.forEach(r => {
-                    if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO' && keluarAkun[r.sumberKas] !== undefined) {
-                        keluarAkun[r.sumberKas] += Number(r.total || 0);
+                    if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO') {
+                        if (keluarAkun[r.sumberKas] !== undefined) {
+                            keluarAkun[r.sumberKas] += Number(r.total || 0);
+                        }
+                        if (r.kat && masukAkun[r.kat] !== undefined) {
+                            masukAkun[r.kat] += Number(r.total || 0);
+                        }
                     }
                 });
             }
