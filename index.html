@@ -85,7 +85,6 @@
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .header-title { display: flex; align-items: center; gap: 8px; }
         
-        /* LOGO SVG INLINE ZENCELL */
         .header-logo-svg { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); background: #FFF; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; }
 
         .header-title h1 { font-size: 16px; font-weight: 800; color: #FFF; letter-spacing: 0.5px; }
@@ -124,7 +123,6 @@
             padding: 6px 10px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: 600;
         }
 
-        /* ANIMASI PULSE REALTIME */
         @keyframes realtimePulse {
             0% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.4; transform: scale(0.85); }
@@ -161,8 +159,9 @@
         .sub-tab-btn { flex: 1; padding: 8px 6px; border: none; background: transparent; font-size: 11px; font-weight: 700; color: var(--primary); border-radius: 6px; cursor: pointer; text-transform: uppercase; }
         .sub-tab-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 
-        .tab-content, .sub-tab-content { display: none; }
-        .tab-content.active, .sub-tab-content.active { display: block; }
+        /* ANIMASI TRANSISI HALAMAN YANG SMOOTH */
+        .tab-content, .sub-tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
+        .tab-content.active, .sub-tab-content.active { display: block; opacity: 1; transform: translateY(0); }
 
         .fab-trx {
             position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px;
@@ -210,7 +209,6 @@
         
         .split-box { background: var(--primary-light); border: 1px dashed var(--border); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: none; }
 
-        /* MODAL POPUP DI TENGAH LAYAR */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(15, 23, 42, 0.65); display: flex; justify-content: center; align-items: center; 
@@ -261,7 +259,6 @@
 </head>
 <body>
 
-    <!-- MODAL LOGIN MODERN -->
     <div id="loginOverlay">
         <div class="login-card">
             <h2>POS ZENCELL 1</h2>
@@ -285,7 +282,6 @@
         </div>
     </div>
 
-    <!-- WIDGET HEADER + RINGKASAN REKAP LENGKAP -->
     <div class="sticky-top-container">
         <header>
             <div class="header-top">
@@ -312,10 +308,8 @@
                         <span class="icon-bell-inner">🔔</span>
                         <span id="notifBadge" class="notif-badge" style="display:none;">1</span>
                     </button>
-                    <!-- Tombol Reset Data Testing (Hanya dirender jika Owner) -->
                     <button class="btn-icon-hdr" id="btnResetDataGlobal" onclick="bukaModalResetData()" title="Reset Data Testing" style="background:#DC2626; display:none;">🗑️</button>
                     <button class="btn-icon-hdr" onclick="backupJSON()" title="Setting / Backup">⚙️</button>
-                    <!-- Icon Logout -->
                     <button class="btn-icon-hdr" onclick="prosesLogout()" title="Logout Akun" style="background:linear-gradient(135deg, #38BDF8, #A855F7); border:1px solid #E9D5FF; box-shadow:0 2px 6px rgba(168,85,247,0.4);" aria-label="Logout Akun">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
                     </button>
@@ -370,10 +364,8 @@
         </div>
     </div>
 
-    <!-- FLOATING ACTION BUTTON (+) -->
     <button class="fab-trx" onclick="openModalKasir()" title="Input Transaksi Baru">+</button>
 
-    <!-- MAIN TAB 1: KASIR & JURNAL HARIAN -->
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
 
         <div class="row-3" style="margin-bottom:10px;">
@@ -409,8 +401,11 @@
                         <label style="font-size:10px;">Tujuan</label>
                         <select id="tfTujuan_fast" class="form-control" required style="margin-bottom:4px;"></select>
                         <label style="font-size:10px;">Nominal Rp</label>
-                        <input type="text" id="tfNomDisplay_fast" class="form-control" placeholder="RP" inputmode="decimal" pattern="[0-9.]*" required style="margin-bottom:6px;" oninput="formatNominal(this, 'tfNom_fast')">
+                        <input type="text" id="tfNomDisplay_fast" class="form-control" placeholder="RP" inputmode="decimal" pattern="[0-9.]*" required style="margin-bottom:4px;" oninput="formatNominal(this, 'tfNom_fast')">
                         <input type="hidden" id="tfNom_fast" value="0">
+                        <label style="font-size:10px;">Biaya Admin Rp (Opsional)</label>
+                        <input type="text" id="tfAdminDisplay_fast" class="form-control" placeholder="ADMIN" inputmode="decimal" pattern="[0-9.]*" style="margin-bottom:6px;" oninput="formatNominal(this, 'tfAdmin_fast')">
+                        <input type="hidden" id="tfAdmin_fast" value="0">
                         <button type="submit" class="btn">PROSES PINDAH</button>
                     </form>
                 </div>
@@ -489,7 +484,6 @@
         </div>
     </div>
 
-    <!-- MAIN TAB 2: SERVICE -->
     <div id="tab-service" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" id="formSparepartTitle">+ Catat Belanja Sparepart Service</div>
@@ -541,7 +535,6 @@
         </div>
     </div>
 
-    <!-- MAIN TAB 3: STOK OPNAME -->
     <div id="tab-stok" class="tab-content" style="margin-top:6px;">
         <div class="summary-grid" style="margin-bottom:10px;">
             <div class="summary-card" style="background:#E0F2FE; border-color:#BAE6FD;">
@@ -629,7 +622,6 @@
         </div>
     </div>
 
-    <!-- MAIN TAB 4: PIUTANG -->
     <div id="tab-piutang" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header">+ Catat Utang Baru</div>
@@ -685,7 +677,6 @@
         </div>
     </div>
 
-    <!-- MAIN TAB 5: LAPORAN -->
     <div id="tab-laporan" class="tab-content">
         <div class="sticky-subnav">
             <div class="sub-nav-tabs">
@@ -745,7 +736,6 @@
                 </div>
             </div>
 
-            <!-- 1. REKAP STOK OPNAME / BELANJA STOK (DENGAN TOGGLE) -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center cursor-pointer" onclick="toggleCardCollapse('bodyStokOpnameCard', this)" style="background-color: var(--primary); color: white;">
                     <span>📦 Rekap & Histori Belanja Stok Opname</span>
@@ -774,7 +764,6 @@
                 </div>
             </div>
 
-            <!-- 2. HISTORI SETORAN PROFIT OWNER (DENGAN TOGGLE) -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center cursor-pointer" style="background-color: #fee2e2; color: #991b1b;" onclick="toggleCardCollapse('bodySetoranOwnerCard', this)">
                     <span>🏛️ Histori Setoran Profit Owner</span>
@@ -829,11 +818,15 @@
                             <input type="hidden" id="tfNom" value="0">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Biaya Admin / Potongan (Rp) - Opsional</label>
+                        <input type="text" id="tfAdminDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'tfAdmin')">
+                        <input type="hidden" id="tfAdmin" value="0">
+                    </div>
                     <button type="submit" class="btn">Transfer Saldo</button>
                 </form>
             </div>
 
-            <!-- MENU SET SALDO AWAL & GANTI NAMA AKUN SALDO -->
             <div class="card">
                 <div class="card-header">⚙️ Pengaturan Akun & Saldo Awal</div>
                 <div class="row-2">
@@ -872,7 +865,6 @@
                 </div>
             </div>
 
-            <!-- HISTORI PINDAH SALDO (TRANSFER BALANCING) -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center cursor-pointer" style="background-color: var(--primary); color: white;" onclick="toggleCardCollapse('bodyPindahSaldoCard', this)">
                     <span>🔀 Histori Pindah Saldo (Transfer Balancing)</span>
@@ -969,7 +961,6 @@
         </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchMainTab(event, 'tab-kasir')">
             <span class="icon">🛒</span>
@@ -993,7 +984,6 @@
         </button>
     </nav>
 
-    <!-- MODAL POPUP KELOLA RESET DATA TESTING KHUSUS OWNER -->
     <div id="modalResetOverlay" class="modal-overlay">
         <div class="modal-content" style="border-color:#EF4444;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1011,7 +1001,6 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP PENGATURAN CETAK STRUK / NOTA SERVICE -->
     <div id="modalCetakOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1083,10 +1072,8 @@
         </div>
     </div>
 
-    <!-- AREA KHUSUS CETAK STRUK -->
     <div id="printArea" style="display:none;"></div>
 
-    <!-- MODAL POPUP BAYAR PIUTANG DETAIL -->
     <div id="modalBayarPiutangOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1139,7 +1126,6 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP PEMBERITAHUAN -->
     <div id="modalNotifOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1163,7 +1149,6 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP INPUT TRANSAKSI KASIR -->
     <div id="modalKasirOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1189,7 +1174,7 @@
                     <label>Keterangan Transaksi / Nama Barang</label>
                     <input type="text" id="keterangan" list="listVlookup" class="form-control" placeholder="KETIK KATA KUNCI (CONTOH: V TRI 5/3)..." required autocomplete="off">
                     <datalist id="listVlookup"></datalist>
-                    <div id="vlookupNotice" class="badge-vlookup">⚡ Auto-Fill VLOOKUP / Utang Terdeteksi!</div>
+                    <div id="vlookupNotice" class="badge-vlookup">⚡ Auto-Fill VLOOKUP / Sparepart / Utang Terdeteksi!</div>
                     <div id="stokWarningBadge" class="badge-warn-stok">⚠️ Stok Tinggal Sedikit!</div>
                 </div>
 
@@ -1207,7 +1192,6 @@
                     </div>
                 </div>
 
-                <!-- FORM PEMBAYARAN NORMAL (SINGLE / 1 AKUN) -->
                 <div id="boxSingleModeInputs">
                     <div class="row-2">
                         <div class="form-group">
@@ -1234,14 +1218,12 @@
                     </div>
                 </div>
 
-                <!-- CHECKBOX SPLIT SALDO / PEMBAYARAN CAMPURAN -->
                 <div class="form-group">
                     <label style="font-size:11px; cursor:pointer; font-weight:bold; color:var(--primary);">
                         <input type="checkbox" id="chkSplit" onchange="toggleSplitMode(this.checked)"> 🔀 Pembayaran Campuran / Split Saldo (2 Akun)
                     </label>
                 </div>
 
-                <!-- BOX DETIL DETAIL INPUT SPLIT SALDO -->
                 <div id="boxSplitMasuk" class="split-box">
                     <b style="font-size:11.5px; color:var(--primary); display:block; margin-bottom:6px;">💰 Rincian Pembayaran Uang Masuk (2 Akun)</b>
                     <div class="row-2">
@@ -1307,7 +1289,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT GLOBAL & FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
@@ -1811,6 +1792,29 @@
                     return;
                 }
 
+                // Cek auto-fill dari data service / sparepart
+                const matchSparepart = window.sparepartList.find(s => s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase()) || s.namaUnit.toUpperCase().includes(val));
+                if (matchSparepart) {
+                    document.getElementById('kategori').value = 'SERVICE';
+                    document.getElementById('akunKeluar1').value = matchSparepart.sumber;
+                    document.getElementById('splitAkunKeluar1').value = matchSparepart.sumber;
+
+                    const totalModal = matchSparepart.modal * qtyVal;
+                    document.getElementById('hargaModal').value = totalModal;
+                    document.getElementById('hargaModalDisplay').value = totalModal ? Number(totalModal).toLocaleString('id-ID') : '0';
+
+                    if (matchSparepart.estJual) {
+                        const totalJual = matchSparepart.estJual * qtyVal;
+                        document.getElementById('hargaJual').value = totalJual;
+                        document.getElementById('hargaJualDisplay').value = totalJual ? Number(totalJual).toLocaleString('id-ID') : '';
+                    }
+
+                    window.hitungCuan();
+                    notice.style.display = 'block';
+                    notice.innerText = `⚡ Auto-Fill Service [${matchSparepart.namaUnit}]: Modal Rp${Number(matchSparepart.modal).toLocaleString('id-ID')} (Keluar dr ${matchSparepart.sumber}), Est Jual Rp${Number(matchSparepart.estJual||0).toLocaleString('id-ID')}`;
+                    return;
+                }
+
                 const matchStok = window.stokOpnameItems.find(s => s.nama.toUpperCase() === val || val.includes(s.nama.toUpperCase()) || s.nama.toUpperCase().includes(val));
                 if (matchStok) {
                     const sisaStok = matchStok.awal - matchStok.terjual;
@@ -2072,6 +2076,9 @@
                 window.stokOpnameItems.forEach(s => {
                     options.push(`<option value="${s.nama}">`);
                 });
+                window.sparepartList.forEach(sp => {
+                    options.push(`<option value="${sp.namaUnit}">`);
+                });
                 window.piutangList.forEach(p => {
                     if (p.sisa > 0) options.push(`<option value="BAYAR UTANG ${p.nama.toUpperCase()}">`);
                 });
@@ -2088,6 +2095,8 @@
             const estJual = parseFloat(document.getElementById('spEstJual').value) || 0;
 
             if (!namaUnit) { alert("Nama Unit Wajib Diisi!"); return; }
+            if (modal <= 0) { alert("Modal sparepart harus lebih dari 0!"); return; }
+            if (!sumber) { alert("Pilih sumber saldo asal pengambilan modal!"); return; }
 
             if (editId) {
                 let sp = window.sparepartList.find(s => s.id == editId);
@@ -2115,7 +2124,7 @@
             document.getElementById('spNom').value = '0';
             document.getElementById('spEstJual').value = '0';
 
-            alert(`✅ Belanja Sparepart ${namaUnit} Berhasil Disimpan!`);
+            alert(`✅ Belanja Sparepart ${namaUnit} Berhasil Disimpan & Saldo ${sumber} terpotong!`);
             window.saveToFirebase();
             window.renderAll();
         }
@@ -2607,23 +2616,28 @@
             const sumber = document.getElementById('tfSumber_fast').value;
             const tujuan = document.getElementById('tfTujuan_fast').value;
             const nom = parseFloat(document.getElementById('tfNom_fast').value) || 0;
+            const admin = parseFloat(document.getElementById('tfAdmin_fast').value) || 0;
 
             if (!sumber || !tujuan) { alert('Pilih Saldo Asal dan Tujuan!'); return; }
             if (sumber === tujuan) { alert('Saldo Asal & Tujuan Tidak Boleh Sama!'); return; }
             if (nom <= 0) { alert('Nominal Transfer Harus Lebih Dari 0!'); return; }
 
+            const totalKeluar = nom + admin;
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            
             window.transaksiJurnal.unshift({
                 waktu: timeStr, isoDate: window.getTodayIso(),
-                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'TRANSFER BALANCING',
+                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'TRANSFER BALANCING',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
-                hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, akunKeluar2: '', modalSplit2: 0,
-                cuan: 0, isSplit: false
+                hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
+                cuan: -admin, isSplit: false
             });
 
             document.getElementById('tfNomDisplay_fast').value = '';
             document.getElementById('tfNom_fast').value = '0';
+            document.getElementById('tfAdminDisplay_fast').value = '';
+            document.getElementById('tfAdmin_fast').value = '0';
             alert(`✅ Pindah Saldo ${window.formatRp(nom)} Berhasil!`);
             window.saveToFirebase();
             window.renderAll();
@@ -2684,23 +2698,28 @@
             const sumber = document.getElementById('tfSumber').value;
             const tujuan = document.getElementById('tfTujuan').value;
             const nom = parseFloat(document.getElementById('tfNom').value) || 0;
+            const admin = parseFloat(document.getElementById('tfAdmin').value) || 0;
 
             if (!sumber || !tujuan) { alert('Pilih Saldo Asal dan Tujuan!'); return; }
             if (sumber === tujuan) { alert('Saldo Asal & Tujuan Tidak Boleh Sama!'); return; }
             if (nom <= 0) { alert('Nominal Transfer Harus Lebih Dari 0!'); return; }
 
+            const totalKeluar = nom + admin;
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            
             window.transaksiJurnal.unshift({
                 waktu: timeStr, isoDate: window.getTodayIso(),
-                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'TRANSFER BALANCING',
+                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan} ${admin > 0 ? '(Admin: ' + window.formatRp(admin) + ')' : ''}`, qty: 1, kat: 'TRANSFER BALANCING',
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
-                hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, akunKeluar2: '', modalSplit2: 0,
-                cuan: 0, isSplit: false
+                hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
+                cuan: -admin, isSplit: false
             });
 
             document.getElementById('tfNomDisplay').value = '';
             document.getElementById('tfNom').value = '0';
+            document.getElementById('tfAdminDisplay').value = '';
+            document.getElementById('tfAdmin').value = '0';
             alert(`✅ Transfer Saldo ${window.formatRp(nom)} Berhasil!`);
             window.saveToFirebase();
             window.renderAll();
@@ -3089,6 +3108,9 @@
             window.sparepartList.forEach(sp => {
                 if (keluarAkun[sp.sumber] !== undefined) {
                     keluarAkun[sp.sumber] += Number(sp.modal || 0);
+                }
+                if (masukAkun['SPAREPART'] !== undefined) {
+                    masukAkun['SPAREPART'] += Number(sp.modal || 0);
                 }
             });
 
