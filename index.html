@@ -1343,7 +1343,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDcOeS1jvbHdT1SRI8CKZwFQx7ZDNXp12c",
@@ -1398,37 +1398,70 @@
 
         const statusEl = document.getElementById('cloudStatus');
 
-        onValue(ref(db, 'zencellPosData'), (snapshot) => {
+        // ATOMIC PATH SYNC (MENARIK DATA PER NODE DENGAN CERDAS & MERGE OFFLINE PENDING)
+        onValue(ref(db, 'zencellNodes'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 isFirebaseSyncing = true;
-                if (data.vlookup) window.masterVlookup = data.vlookup;
                 
-                if (data.transaksi) {
-                    let cloudTrx = data.transaksi;
-                    let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
-                    let mergedTrxMap = {};
-
-                    cloudTrx.forEach(t => { if(t.id) mergedTrxMap[t.id] = t; });
-                    localPending.forEach(t => { if(t.id) mergedTrxMap[t.id] = t; });
-
-                    window.transaksiJurnal = Object.values(mergedTrxMap);
-                    if (window.transaksiJurnal.length === 0) window.transaksiJurnal = cloudTrx;
-                }
-
-                if (data.stok) window.stokOpnameItems = data.stok;
-                if (data.piutang) window.piutangList = data.piutang;
-                if (data.setoran) window.setoranOwnerList = data.setoran;
-                if (data.sparepart) window.sparepartList = data.sparepart;
-                if (data.riwayatBelanjaStok) window.riwayatBelanjaStok = data.riwayatBelanjaStok;
+                if (data.vlookup) window.masterVlookup = data.vlookup;
                 if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
                 if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
 
-                window.saveLocalBackup();
-
-                if (statusEl) {
-                    statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
+                // 1. MERGE TRANSAKSI
+                if (data.transaksi) {
+                    let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
+                    let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
+                    let mergedMap = {};
+                    cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                    localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                    window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
                 }
+
+                // 2. MERGE PIUTANG
+                if (data.piutang) {
+                    let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
+                    let localPendingP = window.piutangList.filter(p => p.syncStatus === 'pending');
+                    let mergedPMap = {};
+                    cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
+                    localPendingP.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
+                    window.piutangList = Object.values(mergedPMap);
+                }
+
+                // 3. MERGE STOK
+                if (data.stok) {
+                    let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
+                    let mergedSMap = {};
+                    cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
+                    window.stokOpnameItems = Object.values(mergedSMap);
+                }
+
+                // 4. MERGE SPAREPART
+                if (data.sparepart) {
+                    let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
+                    let mergedSpMap = {};
+                    cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
+                    window.sparepartList = Object.values(mergedSpMap);
+                }
+
+                // 5. MERGE RIWAYAT BELANJA STOK
+                if (data.riwayatBelanjaStok) {
+                    let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
+                    let mergedRbMap = {};
+                    cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
+                    window.riwayatBelanjaStok = Object.values(mergedRbMap);
+                }
+
+                // 6. MERGE SETORAN
+                if (data.setoran) {
+                    let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
+                    let mergedSetorMap = {};
+                    cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
+                    window.setoranOwnerList = Object.values(mergedSetorMap);
+                }
+
+                window.saveLocalBackup();
+                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
 
                 window.syncPendingQueue();
                 window.initDropdowns();
@@ -1458,21 +1491,35 @@
             let pendingItems = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
             if (pendingItems.length > 0) {
                 pendingItems.forEach(t => t.syncStatus = 'synced');
-                window.saveToFirebase();
+                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             }
         }
 
-        window.saveToFirebase = function(skipSnapshot = false) {
+        // FUNGSI PENYIMPANAN ATOMIK SPESIFIK NODE (MENCEGAH OVERWRITTEN MASIF)
+        window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
             window.saveLocalBackup();
             if (isFirebaseSyncing) return;
-            
+
+            set(ref(db, `zencellNodes/${nodeName}`), dataValue).then(() => {
+                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
+            }).catch(err => {
+                if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERSIMPAN LOKAL (OFFLINE)';
+            });
+
+            if (!skipSnapshot) window.saveStateSnapshot();
+        }
+
+        window.saveAllToFirebase = function(skipSnapshot = false) {
+            window.saveLocalBackup();
+            if (isFirebaseSyncing) return;
+
             let cleanVlookup = {};
             for (let key in window.masterVlookup) {
                 let safeKey = sanitizeKey(key);
                 cleanVlookup[safeKey] = window.masterVlookup[key];
             }
 
-            set(ref(db, 'zencellPosData'), {
+            set(ref(db, 'zencellNodes'), {
                 vlookup: cleanVlookup,
                 transaksi: window.transaksiJurnal,
                 stok: window.stokOpnameItems,
@@ -1484,8 +1531,6 @@
                 saldoListCustom: window.saldoList
             }).then(() => {
                 if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
-            }).catch(err => {
-                if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERSIMPAM LOKAL (OFFLINE)';
             });
 
             if (!skipSnapshot) window.saveStateSnapshot();
@@ -1671,7 +1716,7 @@
             window.sparepartList = [];
             window.riwayatBelanjaStok = [];
             localStorage.clear();
-            window.saveToFirebase();
+            window.saveAllToFirebase();
             window.renderAll();
             window.closeModalResetData();
             alert("✅ Seluruh data testing berhasil di-reset bersih!");
@@ -1852,7 +1897,7 @@
             window.masterSaldoAwal = state.masterSaldoAwal || {};
             window.saldoList = state.saldoList || [];
 
-            window.saveToFirebase(true);
+            window.saveAllToFirebase(true);
             window.initDropdowns();
             window.renderAll();
             window.isUndoRedoAction = false;
@@ -2177,7 +2222,7 @@
 
             alert(`✅ Pengaturan Akun Berhasil Disimpan!`);
             window.initDropdowns();
-            window.saveToFirebase();
+            window.saveAllToFirebase();
             window.renderAll();
         }
 
@@ -2234,7 +2279,8 @@
                     modal,
                     sumber,
                     estJual,
-                    status: 'BELUM LUNAS'
+                    status: 'BELUM LUNAS',
+                    syncStatus: 'pending'
                 });
             }
 
@@ -2243,7 +2289,7 @@
             document.getElementById('spEstJual').value = '0';
 
             alert(`✅ Belanja Sparepart ${namaUnit} Berhasil Disimpan & Saldo ${sumber} terpotong!`);
-            window.saveToFirebase();
+            window.saveToFirebaseNode('sparepart', window.sparepartList);
             window.renderAll();
         }
 
@@ -2267,7 +2313,7 @@
         window.hapusSparepart = function(id) {
             if (confirm("Apakah Anda yakin ingin menghapus data belanja sparepart ini?")) {
                 window.sparepartList = window.sparepartList.filter(s => s.id !== id);
-                window.saveToFirebase();
+                window.saveToFirebaseNode('sparepart', window.sparepartList);
                 window.renderAll();
             }
         }
@@ -2338,7 +2384,8 @@
             if (confirm("Yakin ingin menghapus riwayat belanja stok ini?")) {
                 window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
                 window.stokOpnameItems = window.stokOpnameItems.filter(s => s.id != id);
-                window.saveToFirebase();
+                window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
+                window.saveToFirebaseNode('stok', window.stokOpnameItems);
                 window.renderAll();
             }
         };
@@ -2425,13 +2472,14 @@
             }
             if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
 
-            window.saveToFirebase();
+            window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
+            window.saveToFirebaseNode('stok', window.stokOpnameItems);
             window.renderAll();
 
             alert("Data belanja stok berhasil disimpan!");
         };
 
-        // 1. PENCATATAN UTANG AWAL (TIDAK MASUK KE JURNAL HARIAN, HANYA ARUS SALDO)
+        // 1. PENCATATAN UTANG AWAL
         window.simpanPiutang = function(e) {
             e.preventDefault();
             const nama = document.getElementById('pNama').value.trim().toUpperCase();
@@ -2450,10 +2498,9 @@
 
             window.piutangList.unshift({ 
                 id: idUnik, nama, sisa: nom, pokokAwal: nom, kategori: katUtang, sumber, catatan: ket, status: 'BELUM LUNAS',
-                riwayatCicilan: []
+                riwayatCicilan: [], syncStatus: 'pending'
             });
 
-            // DICATAT SEBAGAI PIUTANG_INIT (DI FILTER AGAR TIDAK MUNCUL DI REKAP JURNAL HARIAN)
             window.transaksiJurnal.unshift({
                 id: 'trx_init_piutang_' + idUnik,
                 idPiutangRef: idUnik,
@@ -2471,9 +2518,10 @@
             document.getElementById('pNom').value = '0';
             document.getElementById('pKet').value = '';
 
-            alert(`✅ Utang a/n ${nama} sebesar ${window.formatRp(nom)} dicatat! Saldo ${sumber} berkurang & Saldo PIUTANG bertambah (Arus Saldo Saja).`);
+            alert(`✅ Utang a/n ${nama} sebesar ${window.formatRp(nom)} dicatat! Saldo ${sumber} berkurang & Saldo PIUTANG bertambah.`);
             window.initDropdowns();
-            window.saveToFirebase();
+            window.saveToFirebaseNode('piutang', window.piutangList);
+            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
         }
 
@@ -2503,7 +2551,7 @@
             document.getElementById('bpCuanDisplay').value = window.formatRp(selisihCuan);
         }
 
-        // 2. PELUNASAN PIUTANG (MASUK KE JURNAL HARIAN SEBAGAI 1 TRX LENGKAP & 1 CUST)
+        // 2. PELUNASAN PIUTANG
         window.prosesBayarPiutangDetail = function(e) {
             e.preventDefault();
             const id = parseInt(document.getElementById('bpId').value);
@@ -2533,13 +2581,13 @@
                 item.sisa = 0;
                 item.status = 'LUNAS';
             }
+            item.syncStatus = 'pending';
 
-            // DITAMPILKAN DI JURNAL HARIAN SEBAGAI 1 TRANSAKSI
             window.transaksiJurnal.unshift({
                 id: 'trx_pay_piutang_' + recordId,
                 waktu: timeStr, isoDate: tglStr,
                 ket: `PELUNASAN UTANG ${item.nama}`, qty: 1, kat: katPelunasan,
-                isNewCustomer: true, // Dianggap 1 Customer / Cust +1
+                isNewCustomer: true,
                 hargaJual: nomBayar, akunMasuk1: akunMasuk, jualSplit1: nomBayar, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: pokokTerpotong, akunKeluar1: 'PIUTANG', modalSplit1: pokokTerpotong, akunKeluar2: '', modalSplit2: 0,
                 cuan: cuanLebih, isSplit: false, idPiutangRef: item.id, isPelunasanUtang: true,
@@ -2547,9 +2595,10 @@
             });
 
             window.closeModalBayarPiutang();
-            alert(`✅ Pelunasan Utang a/n ${item.nama} sebesar ${window.formatRp(nomBayar)} berhasil dicatat di Jurnal Harian!`);
+            alert(`✅ Pelunasan Utang a/n ${item.nama} sebesar ${window.formatRp(nomBayar)} berhasil dicatat!`);
             window.initDropdowns();
-            window.saveToFirebase();
+            window.saveToFirebaseNode('piutang', window.piutangList);
+            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
         }
 
@@ -2681,7 +2730,7 @@
             const timeStr = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
 
             window.setoranOwnerList.unshift({
-                id: Date.now(), waktu: timeStr, isoDate: window.getTodayIso(), sumber, nominal: nom, catatan: ket
+                id: Date.now(), waktu: timeStr, isoDate: window.getTodayIso(), sumber, nominal: nom, catatan: ket, syncStatus: 'pending'
             });
 
             document.getElementById('setorNomDisplay').value = '';
@@ -2689,14 +2738,14 @@
             document.getElementById('setorKet').value = '';
 
             alert(`✅ Setoran Profit ${window.formatRp(nom)} dari ${sumber} berhasil dicatat!`);
-            window.saveToFirebase();
+            window.saveToFirebaseNode('setoran', window.setoranOwnerList);
             window.renderAll();
         }
 
         window.hapusSetoranOwner = function(id) {
             if (confirm("Apakah Anda yakin ingin menghapus catatan setoran profit ini?")) {
                 window.setoranOwnerList = window.setoranOwnerList.filter(s => s.id !== id);
-                window.saveToFirebase();
+                window.saveToFirebaseNode('setoran', window.setoranOwnerList);
                 window.renderAll();
             }
         }
@@ -2707,13 +2756,13 @@
                 window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
 
                 window.initDropdowns();
-                window.saveToFirebase();
+                window.saveToFirebaseNode('piutang', window.piutangList);
+                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
                 window.renderAll();
                 alert("✅ Catatan piutang dan transaksi jurnal terkait berhasil dihapus!");
             }
         }
 
-        // 3. HAPUS ATAU EDIT DI JURNAL HARIAN AKAN MENGEMBALIKAN SALDO PIUTANG (UNDO LOGIC)
         window.hapusJurnalTrx = function(origIdx) {
             const t = window.transaksiJurnal[origIdx];
             if (!t) return;
@@ -2736,9 +2785,10 @@
 
                 window.transaksiJurnal.splice(origIdx, 1);
                 window.initDropdowns();
-                window.saveToFirebase();
+                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+                window.saveToFirebaseNode('piutang', window.piutangList);
                 window.renderAll();
-                alert("✅ Transaksi berhasil dihapus dan sisa utang telah dikembalikan seperti semula!");
+                alert("✅ Transaksi berhasil dihapus!");
             }
         }
 
@@ -2760,7 +2810,7 @@
 
             alert(`✅ VLOOKUP "${ket}" Berhasil Ditambahkan!`);
             window.initDropdowns();
-            window.saveToFirebase();
+            window.saveToFirebaseNode('vlookup', window.masterVlookup);
             window.renderAll();
         }
 
@@ -2793,7 +2843,7 @@
             document.getElementById('tfAdminDisplay_fast').value = '';
             document.getElementById('tfAdmin_fast').value = '0';
             alert(`✅ Pindah Saldo ${window.formatRp(nom)} Berhasil!`);
-            window.saveToFirebase();
+            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
         }
 
@@ -2824,7 +2874,7 @@
 
             alert(`✅ VLOOKUP "${ket}" Berhasil Disimpan!`);
             window.initDropdowns();
-            window.saveToFirebase();
+            window.saveToFirebaseNode('vlookup', window.masterVlookup);
             window.renderAll();
         }
 
@@ -2876,7 +2926,7 @@
             document.getElementById('tfAdminDisplay').value = '';
             document.getElementById('tfAdmin').value = '0';
             alert(`✅ Transfer Saldo ${window.formatRp(nom)} Berhasil!`);
-            window.saveToFirebase();
+            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
         }
 
@@ -2926,7 +2976,6 @@
                 }
             });
 
-            // JIKA INPUT DARI HALAMAN KASIR TERDETEKSI SEBAGAI PELUNASAN UTANG (AKUN KELUAR = PIUTANG)
             if (akunKeluar1 === 'PIUTANG') {
                 const matchUtang = window.piutangList.find(p => ket.toUpperCase().includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(ket.toUpperCase()));
                 if (matchUtang) {
@@ -2936,6 +2985,7 @@
                         matchUtang.sisa = 0;
                         matchUtang.status = 'LUNAS';
                     }
+                    matchUtang.syncStatus = 'pending';
                 }
             }
 
@@ -2962,7 +3012,8 @@
 
             window.closeModalKasir();
             window.initDropdowns();
-            window.saveToFirebase();
+            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+            window.saveToFirebaseNode('piutang', window.piutangList);
             window.renderAll();
         });
 
@@ -3047,7 +3098,6 @@
                     }
                 });
 
-                // LEWATI TRANSAKSI UTANG AWAL AGAR TIDAK TAMPIL DI REKAP JURNAL HARIAN
                 if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') {
                     return;
                 }
@@ -3308,7 +3358,6 @@
                 const msk = masukAkun[s] || 0;
                 const klr = keluarAkun[s] || 0;
                 const akhir = awal + msk - klr;
-                // OPSI A: PIUTANG diikutsertakan agar Saldo Konter tetap utuh mencakup total Aset
                 if (s !== 'SPAREPART') totalSaldoRiil += akhir;
                 return `<tr><td><b>${s}</b></td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(msk)}</td><td class="text-debit">-${window.formatRp(klr)}</td><td><b>${window.formatRp(akhir)}</b></td></tr>`;
             }).join('');
@@ -3327,7 +3376,7 @@
                         <td class="text-debit">${window.formatRp(window.masterVlookup[k].defModal || 0)}</td>
                         <td>
                             <button class="btn-edit" onclick="editVlookup('${k}')">Edit</button>
-                            <button class="btn-delete" onclick="delete window.masterVlookup['${k}']; window.saveToFirebase(); window.renderAll();">Hapus</button>
+                            <button class="btn-delete" onclick="delete window.masterVlookup['${k}']; window.saveToFirebaseNode('vlookup', window.masterVlookup); window.renderAll();">Hapus</button>
                         </td>
                     </tr>
                 `).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada master VLOOKUP.</td></tr>`;
