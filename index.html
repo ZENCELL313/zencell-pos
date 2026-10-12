@@ -58,9 +58,7 @@
             transition: background-color 0.3s ease, color 0.3s ease; 
         }
 
-        input[type="text"], textarea, select {
-            text-transform: uppercase;
-        }
+        input[type="text"], textarea, select { text-transform: uppercase; }
 
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -84,9 +82,7 @@
         }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .header-title { display: flex; align-items: center; gap: 8px; }
-        
         .header-logo-svg { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); background: #FFF; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; }
-
         .header-title h1 { font-size: 16px; font-weight: 800; color: #FFF; letter-spacing: 0.5px; }
         .header-actions { display: flex; gap: 6px; }
         .btn-icon-hdr { 
@@ -144,9 +140,7 @@
 
         .card { background: var(--card); padding: 12px; border-radius: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); margin-bottom: 10px; border: 1px solid var(--border); }
         .card-header { background-color: var(--primary-light); color: var(--primary); font-weight: 700; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; margin-bottom: 10px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
-
         .card-header-toggle { cursor: pointer; user-select: none; transition: background-color 0.2s; }
-        .card-header-toggle:hover { opacity: 0.9; }
 
         .form-group { margin-bottom: 8px; }
         .form-group label { display: block; font-size: 11.5px; font-weight: 600; margin-bottom: 3px; color: var(--text); opacity: 0.9; }
@@ -162,15 +156,25 @@
         .tab-content, .sub-tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
         .tab-content.active, .sub-tab-content.active { display: block; opacity: 1; transform: translateY(0); }
 
-        .fab-trx {
-            position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px;
-            background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;
-            border-radius: 50%; border: none; font-size: 28px; font-weight: bold;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.3); cursor: pointer;
-            display: flex; justify-content: center; align-items: center; z-index: 9998;
-            transition: transform 0.2s ease;
+        /* FAB SPEED DIAL CONTAINER */
+        .fab-container { position: fixed; bottom: 75px; right: 20px; z-index: 9998; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
+        .fab-main {
+            width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;
+            border-radius: 50%; border: none; font-size: 28px; font-weight: bold; box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.25s ease;
         }
-        .fab-trx:active { transform: scale(0.9) rotate(90deg); }
+        .fab-main.active { transform: rotate(45deg); background: #EF4444; }
+        .fab-sub-menu {
+            display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+            opacity: 0; visibility: hidden; transform: translateY(15px); transition: all 0.25s ease;
+        }
+        .fab-container.show .fab-sub-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .fab-item {
+            display: flex; align-items: center; gap: 8px; background: var(--card); color: var(--text);
+            padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 11.5px; font-weight: bold; cursor: pointer; text-decoration: none; white-space: nowrap;
+        }
+        .fab-item span.icon-badge { width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 14px; }
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; max-width: 650px; margin: 0 auto;
@@ -179,9 +183,9 @@
         }
         .nav-item {
             border: none; background: transparent; display: flex; flex-direction: column; align-items: center;
-            font-size: 10px; font-weight: 700; color: #64748B; cursor: pointer; width: 20%;
+            font-size: 9.5px; font-weight: 700; color: #64748B; cursor: pointer; width: 16.66%;
         }
-        .nav-item .icon { font-size: 18px; margin-bottom: 2px; }
+        .nav-item .icon { font-size: 16px; margin-bottom: 2px; }
         .nav-item.active { color: var(--primary); }
 
         .btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background-color: var(--primary); color: white; font-weight: 700; font-size: 12.5px; cursor: pointer; }
@@ -248,8 +252,9 @@
             .sub-tab-btn { font-size: 11.5px; padding: 10px; }
             .bottom-nav { max-width: 1250px; padding: 10px 0; }
             .nav-item { font-size: 11px; }
-            .nav-item .icon { font-size: 20px; }
-            .fab-trx { width: 58px; height: 58px; font-size: 30px; bottom: 85px; right: 30px; }
+            .nav-item .icon { font-size: 18px; }
+            .fab-container { bottom: 85px; right: 30px; }
+            .fab-main { width: 58px; height: 58px; font-size: 30px; }
             .modal-content { max-width: 520px; padding: 22px; }
             .btn-edit, .btn-delete, .btn-pay, .btn-print { padding: 5px 8px; font-size: 11px; }
             .date-picker-input { font-size: 12px; padding: 6px 10px; }
@@ -381,10 +386,27 @@
         </div>
     </div>
 
-    <button class="fab-trx" onclick="openModalKasir()" title="Input Transaksi Baru">+</button>
+    <!-- FAB SPEED DIAL MENU (FLOATING BUTTONS) -->
+    <div class="fab-container" id="fabContainer">
+        <button class="fab-main" id="fabMainBtn" onclick="toggleFabMenu()" title="Menu Cepat">+</button>
+        <div class="fab-sub-menu">
+            <div class="fab-item" onclick="closeFabMenu(); openModalKasir();">
+                <span>Input Transaksi Kasir</span>
+                <span class="icon-badge" style="background:#059669;">🛒</span>
+            </div>
+            <div class="fab-item" onclick="closeFabMenu(); openModalSparepart();">
+                <span>Catat Belanja Sparepart</span>
+                <span class="icon-badge" style="background:#2563EB;">🛠️</span>
+            </div>
+            <div class="fab-item" onclick="closeFabMenu(); openModalInputPiutang();">
+                <span>Catat Utang Baru</span>
+                <span class="icon-badge" style="background:#D97706;">🤝</span>
+            </div>
+        </div>
+    </div>
 
+    <!-- TAB KASIR -->
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
-
         <div class="row-3" style="margin-bottom:10px;">
             <div class="card auto-collapse-card" id="cardVlookupFast" style="margin-bottom:0; padding:8px;">
                 <div class="card-header card-header-toggle" onclick="toggleAccordion('boxVlookupFast', 'arrowVlookup')" style="font-size:11px; padding:6px 8px; margin-bottom:0;">
@@ -501,39 +523,13 @@
         </div>
     </div>
 
+    <!-- TAB SERVICE -->
     <div id="tab-service" class="tab-content" style="margin-top:6px;">
         <div class="card">
-            <div class="card-header" id="formSparepartTitle">+ Catat Belanja Sparepart Service</div>
-            <form id="formBelanjaSparepart" onsubmit="simpanBelanjaSparepart(event)">
-                <input type="hidden" id="editSparepartId" value="">
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Nama Unit / Keterangan</label>
-                        <input type="text" id="spNamaUnit" class="form-control" placeholder="CONTOH: LCD OPPO A3S" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Modal Sparepart (Rp)</label>
-                        <input type="text" id="spNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'spNom')">
-                        <input type="hidden" id="spNom" value="0">
-                    </div>
-                </div>
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Diambil Dari (Sumber Saldo)</label>
-                        <select id="spSumber" class="form-control" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Estimasi Biaya Service (Rp)</label>
-                        <input type="text" id="spEstJualDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'spEstJual')">
-                        <input type="hidden" id="spEstJual" value="0">
-                    </div>
-                </div>
-                <button type="submit" id="btnSubmitSparepart" class="btn">Catat Belanja Sparepart</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <div class="card-header">🛠️ Service Dalam Pengerjaan & Rekap</div>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>🛠️ Service Dalam Pengerjaan & Rekap</span>
+                <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalSparepart()">+ Belanja Sparepart</button>
+            </div>
             <div class="filter-container">
                 <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER SERVICE:</span>
                 <select id="serviceFilterMode" class="date-picker-input" onchange="toggleFilterServiceDate(this.value)">
@@ -563,6 +559,7 @@
         </div>
     </div>
 
+    <!-- TAB STOK -->
     <div id="tab-stok" class="tab-content" style="margin-top:6px;">
         <div class="summary-grid" style="margin-bottom:10px;">
             <div class="summary-card" style="background:#E0F2FE; border-color:#BAE6FD;">
@@ -650,41 +647,13 @@
         </div>
     </div>
 
+    <!-- TAB PIUTANG -->
     <div id="tab-piutang" class="tab-content" style="margin-top:6px;">
         <div class="card">
-            <div class="card-header">+ Catat Utang Baru</div>
-            <form id="formPiutang" onsubmit="simpanPiutang(event)">
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Nama Pengutang</label>
-                        <input type="text" id="pNama" class="form-control" placeholder="NAMA..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nominal Utang (Rp)</label>
-                        <input type="text" id="pNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'pNom')">
-                        <input type="hidden" id="pNom" value="0">
-                    </div>
-                </div>
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Kategori Transaksi Utang</label>
-                        <select id="pKat" class="form-control" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Keluar Dari Akun (Asal Saldo)</label>
-                        <select id="pSumber" class="form-control" required></select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Catatan</label>
-                    <input type="text" id="pKet" class="form-control" placeholder="ISI PULSA / VOUCHER / TOPUP DANA...">
-                </div>
-                <button type="submit" class="btn">Catat Piutang</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <div class="card-header">🤝 Rekapan Piutang</div>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>🤝 Rekapan Piutang & Utang Konter</span>
+                <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
+            </div>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -705,6 +674,61 @@
         </div>
     </div>
 
+    <!-- TAB OPERASIONAL (BARU) -->
+    <div id="tab-operasional" class="tab-content" style="margin-top:6px;">
+        <div class="card">
+            <div class="card-header" id="formOperasionalTitle">💸 Catat Pengeluaran Operasional Konter</div>
+            <form id="formOperasional" onsubmit="simpanOperasional(event)">
+                <input type="hidden" id="editOperasionalId" value="">
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Keterangan / Keperluan</label>
+                        <input type="text" id="opKet" class="form-control" placeholder="CONTOH: TOKEN PLN / WIFI / ATK" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nominal Pengeluaran (Rp)</label>
+                        <input type="text" id="opNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'opNom')">
+                        <input type="hidden" id="opNom" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Diambil Dari Akun (Sumber Saldo Kas)</label>
+                    <select id="opSumber" class="form-control" required></select>
+                </div>
+                <button type="submit" id="btnSubmitOperasional" class="btn">Simpan Pengeluaran Operasional</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">📊 Histori & Rekap Pengeluaran Operasional</div>
+            <div class="filter-container">
+                <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER OPERASIONAL:</span>
+                <select id="opFilterMode" class="date-picker-input" onchange="toggleFilterOpDate(this.value)">
+                    <option value="ALL">📅 Semua Tanggal</option>
+                    <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
+                    <option value="MONTHLY">🗓️ Per Bulan</option>
+                </select>
+                <input type="date" id="opDatePicker" class="date-picker-input" onchange="renderAll()">
+                <input type="month" id="opMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>WAKTU & TANGGAL</th>
+                            <th>KETERANGAN OPERASIONAL</th>
+                            <th>SUMBER AKUN</th>
+                            <th>NOMINAL</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyOperasional"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB LAPORAN -->
     <div id="tab-laporan" class="tab-content">
         <div class="sticky-subnav">
             <div class="sub-nav-tabs">
@@ -1038,6 +1062,7 @@
         </div>
     </div>
 
+    <!-- BOTTOM NAVIGATION (6 MENU) -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchMainTab(event, 'tab-kasir')">
             <span class="icon">🛒</span>
@@ -1055,12 +1080,91 @@
             <span class="icon">🤝</span>
             <span>Piutang</span>
         </button>
+        <button class="nav-item" onclick="switchMainTab(event, 'tab-operasional')">
+            <span class="icon">💸</span>
+            <span>Operasional</span>
+        </button>
         <button class="nav-item" onclick="switchMainTab(event, 'tab-laporan')">
             <span class="icon">📊</span>
             <span>Laporan</span>
         </button>
     </nav>
 
+    <!-- MODAL SPAREPART / SERVICE (FLOATING) -->
+    <div id="modalSparepartOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 id="formSparepartTitle" style="font-size:15px; color:var(--primary);">+ Catat Belanja Sparepart Service</h3>
+                <button onclick="closeModalSparepart()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+            <form id="formBelanjaSparepart" onsubmit="simpanBelanjaSparepart(event)">
+                <input type="hidden" id="editSparepartId" value="">
+                <div class="form-group">
+                    <label>Nama Unit / Keterangan</label>
+                    <input type="text" id="spNamaUnit" class="form-control" placeholder="CONTOH: LCD OPPO A3S" required>
+                </div>
+                <div class="form-group">
+                    <label>Modal Sparepart (Rp)</label>
+                    <input type="text" id="spNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'spNom')">
+                    <input type="hidden" id="spNom" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Diambil Dari (Sumber Saldo)</label>
+                    <select id="spSumber" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Estimasi Biaya Service (Rp)</label>
+                    <input type="text" id="spEstJualDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'spEstJual')">
+                    <input type="hidden" id="spEstJual" value="0">
+                </div>
+                <div class="row-2" style="margin-top:12px;">
+                    <button type="submit" id="btnSubmitSparepart" class="btn">Simpan Sparepart</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="closeModalSparepart()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CATAT UTANG BARU (FLOATING) -->
+    <div id="modalInputPiutangOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; color:var(--primary);">+ Catat Utang Baru</h3>
+                <button onclick="closeModalInputPiutang()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+            <form id="formPiutang" onsubmit="simpanPiutang(event)">
+                <div class="form-group">
+                    <label>Nama Pengutang</label>
+                    <input type="text" id="pNama" class="form-control" placeholder="NAMA..." required>
+                </div>
+                <div class="form-group">
+                    <label>Nominal Utang (Rp)</label>
+                    <input type="text" id="pNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'pNom')">
+                    <input type="hidden" id="pNom" value="0">
+                </div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Kategori Transaksi Utang</label>
+                        <select id="pKat" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Keluar Dari Akun (Asal Saldo)</label>
+                        <select id="pSumber" class="form-control" required></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <input type="text" id="pKet" class="form-control" placeholder="ISI PULSA / VOUCHER / TOPUP DANA...">
+                </div>
+                <div class="row-2" style="margin-top:12px;">
+                    <button type="submit" class="btn">Catat Piutang</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="closeModalInputPiutang()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL RESET DATA -->
     <div id="modalResetOverlay" class="modal-overlay">
         <div class="modal-content" style="border-color:#EF4444;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1078,6 +1182,7 @@
         </div>
     </div>
 
+    <!-- MODAL CETAK NOTA -->
     <div id="modalCetakOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1151,6 +1256,7 @@
 
     <div id="printArea" style="display:none;"></div>
 
+    <!-- MODAL BAYAR PIUTANG -->
     <div id="modalBayarPiutangOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1203,6 +1309,7 @@
         </div>
     </div>
 
+    <!-- MODAL NOTIFIKASI -->
     <div id="modalNotifOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1226,6 +1333,7 @@
         </div>
     </div>
 
+    <!-- MODAL INPUT KASIR -->
     <div id="modalKasirOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1415,6 +1523,7 @@
         window.setoranOwnerList = JSON.parse(localStorage.getItem('zencell_setoran') || '[]');
         window.sparepartList = JSON.parse(localStorage.getItem('zencell_sparepart') || '[]');
         window.riwayatBelanjaStok = JSON.parse(localStorage.getItem('zencell_riwayat_belanja') || '[]');
+        window.operasionalList = JSON.parse(localStorage.getItem('zencell_operasional') || '[]');
 
         window.undoStack = [];
         window.redoStack = [];
@@ -1443,10 +1552,8 @@
 
                 if (data.piutang) {
                     let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
-                    let localPendingP = window.piutangList.filter(p => p.syncStatus === 'pending');
                     let mergedPMap = {};
                     cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
-                    localPendingP.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
                     window.piutangList = Object.values(mergedPMap);
                 }
 
@@ -1478,6 +1585,13 @@
                     window.setoranOwnerList = Object.values(mergedSetorMap);
                 }
 
+                if (data.operasional) {
+                    let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
+                    let mergedOpMap = {};
+                    cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
+                    window.operasionalList = Object.values(mergedOpMap);
+                }
+
                 window.saveLocalBackup();
                 if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
 
@@ -1503,6 +1617,7 @@
             localStorage.setItem('zencell_setoran', JSON.stringify(window.setoranOwnerList));
             localStorage.setItem('zencell_sparepart', JSON.stringify(window.sparepartList));
             localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
+            localStorage.setItem('zencell_operasional', JSON.stringify(window.operasionalList));
         }
 
         window.syncPendingQueue = function() {
@@ -1544,6 +1659,7 @@
                 setoran: window.setoranOwnerList,
                 sparepart: window.sparepartList,
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
+                operasional: window.operasionalList,
                 saldoAwal: window.masterSaldoAwal,
                 saldoListCustom: window.saldoList
             }).then(() => {
@@ -1563,6 +1679,45 @@
         window.getCurrentMonthIso = function() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        // FAB SPEED DIAL LOGIC
+        window.toggleFabMenu = function() {
+            const fab = document.getElementById('fabContainer');
+            const mainBtn = document.getElementById('fabMainBtn');
+            fab.classList.toggle('show');
+            mainBtn.classList.toggle('active');
+        }
+
+        window.closeFabMenu = function() {
+            const fab = document.getElementById('fabContainer');
+            const mainBtn = document.getElementById('fabMainBtn');
+            fab.classList.remove('show');
+            mainBtn.classList.remove('active');
+        }
+
+        // MODAL SPAREPART
+        window.openModalSparepart = function() {
+            document.getElementById('editSparepartId').value = '';
+            document.getElementById('formBelanjaSparepart').reset();
+            document.getElementById('spNom').value = '0';
+            document.getElementById('spEstJual').value = '0';
+            document.getElementById('formSparepartTitle').innerText = '+ Catat Belanja Sparepart Service';
+            document.getElementById('btnSubmitSparepart').innerText = 'Simpan Sparepart';
+            document.getElementById('modalSparepartOverlay').classList.add('show');
+        }
+        window.closeModalSparepart = function() {
+            document.getElementById('modalSparepartOverlay').classList.remove('show');
+        }
+
+        // MODAL INPUT PIUTANG
+        window.openModalInputPiutang = function() {
+            document.getElementById('formPiutang').reset();
+            document.getElementById('pNom').value = '0';
+            document.getElementById('modalInputPiutangOverlay').classList.add('show');
+        }
+        window.closeModalInputPiutang = function() {
+            document.getElementById('modalInputPiutangOverlay').classList.remove('show');
         }
 
         window.toggleAccordion = function(boxId, arrowId) {
@@ -1596,12 +1751,19 @@
                     }
                 }
             });
+
+            // Close FAB if clicked outside
+            const fabContainer = document.getElementById('fabContainer');
+            if (fabContainer && fabContainer.classList.contains('show')) {
+                if (!fabContainer.contains(e.target)) {
+                    window.closeFabMenu();
+                }
+            }
         });
 
         window.toggleCardCollapse = function(contentId, headerElement) {
             const content = document.getElementById(contentId);
             if (!content) return;
-            
             if (content.style.display === "none") {
                 content.style.display = "block";
                 headerElement.style.opacity = "1";
@@ -1753,6 +1915,7 @@
             window.stokOpnameItems = [];
             window.sparepartList = [];
             window.riwayatBelanjaStok = [];
+            window.operasionalList = [];
             localStorage.clear();
             window.saveAllToFirebase();
             window.renderAll();
@@ -1843,6 +2006,22 @@
             window.renderAll();
         }
 
+        window.toggleFilterOpDate = function(mode) {
+            const dPicker = document.getElementById('opDatePicker');
+            const mPicker = document.getElementById('opMonthPicker');
+            if (mode === 'MONTHLY') {
+                dPicker.style.display = 'none';
+                mPicker.style.display = 'inline-block';
+            } else if (mode === 'DAILY') {
+                dPicker.style.display = 'inline-block';
+                mPicker.style.display = 'none';
+            } else {
+                dPicker.style.display = 'none';
+                mPicker.style.display = 'none';
+            }
+            window.renderAll();
+        }
+
         window.toggleFilterTfDate = function(mode) {
             const dPicker = document.getElementById('tfDatePicker');
             const mPicker = document.getElementById('tfMonthPicker');
@@ -1885,6 +2064,7 @@
                 setoranOwnerList: window.setoranOwnerList,
                 sparepartList: window.sparepartList,
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
+                operasionalList: window.operasionalList,
                 masterSaldoAwal: window.masterSaldoAwal,
                 saldoList: window.saldoList
             });
@@ -1932,6 +2112,7 @@
             window.setoranOwnerList = state.setoranOwnerList || [];
             window.sparepartList = state.sparepartList || [];
             window.riwayatBelanjaStok = state.riwayatBelanjaStok || [];
+            window.operasionalList = state.operasionalList || [];
             window.masterSaldoAwal = state.masterSaldoAwal || {};
             window.saldoList = state.saldoList || [];
 
@@ -1954,6 +2135,8 @@
             
             document.getElementById('serviceDatePicker').value = window.getTodayIso();
             document.getElementById('serviceMonthPicker').value = window.getCurrentMonthIso();
+            document.getElementById('opDatePicker').value = window.getTodayIso();
+            document.getElementById('opMonthPicker').value = window.getCurrentMonthIso();
             document.getElementById('tfDatePicker').value = window.getTodayIso();
             document.getElementById('tfMonthPicker').value = window.getCurrentMonthIso();
             document.getElementById('setorDatePicker').value = window.getTodayIso();
@@ -2191,7 +2374,7 @@
                 });
             }
 
-            const dropList = ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunKeluar', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'pSumber', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'bpAkunMasuk', 'setorSumber'];
+            const dropList = ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunKeluar', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'pSumber', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'bpAkunMasuk', 'setorSumber', 'opSumber'];
             dropList.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -2281,6 +2464,75 @@
             }
         }
 
+        // SIMPAN BELANJA OPERASIONAL
+        window.simpanOperasional = function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editOperasionalId').value;
+            const ket = document.getElementById('opKet').value.trim().toUpperCase();
+            const nominal = parseFloat(document.getElementById('opNom').value) || 0;
+            const sumber = document.getElementById('opSumber').value;
+
+            if (!ket) { alert("Keterangan operasional wajib diisi!"); return; }
+            if (nominal <= 0) { alert("Nominal pengeluaran harus lebih dari 0!"); return; }
+            if (!sumber) { alert("Pilih akun sumber saldo kas!"); return; }
+
+            const now = new Date();
+            const tglStr = window.getTodayIso();
+            const waktuStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            if (editId) {
+                let op = window.operasionalList.find(o => o.id == editId);
+                if (op) {
+                    op.ket = ket;
+                    op.nominal = nominal;
+                    op.sumber = sumber;
+                }
+                document.getElementById('editOperasionalId').value = '';
+                document.getElementById('formOperasionalTitle').innerText = '💸 Catat Pengeluaran Operasional Konter';
+                document.getElementById('btnSubmitOperasional').innerText = 'Simpan Pengeluaran Operasional';
+            } else {
+                window.operasionalList.unshift({
+                    id: Date.now(),
+                    tgl: tglStr,
+                    waktu: waktuStr,
+                    ket,
+                    nominal,
+                    sumber,
+                    syncStatus: 'pending'
+                });
+            }
+
+            document.getElementById('formOperasional').reset();
+            document.getElementById('opNom').value = '0';
+
+            alert(`✅ Pengeluaran operasional [${ket}] sebesar ${window.formatRp(nominal)} berhasil dicatat! Saldo ${sumber} terpotong.`);
+            window.saveToFirebaseNode('operasional', window.operasionalList);
+            window.renderAll();
+        }
+
+        window.editOperasional = function(id) {
+            const op = window.operasionalList.find(o => o.id == id);
+            if (!op) return;
+
+            document.getElementById('editOperasionalId').value = op.id;
+            document.getElementById('opKet').value = op.ket;
+            document.getElementById('opNom').value = op.nominal;
+            document.getElementById('opNomDisplay').value = Number(op.nominal).toLocaleString('id-ID');
+            document.getElementById('opSumber').value = op.sumber;
+
+            document.getElementById('formOperasionalTitle').innerText = '✏️ Edit Pengeluaran Operasional';
+            document.getElementById('btnSubmitOperasional').innerText = 'Update Pengeluaran';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.hapusOperasional = function(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus catatan pengeluaran operasional ini?")) {
+                window.operasionalList = window.operasionalList.filter(o => o.id !== id);
+                window.saveToFirebaseNode('operasional', window.operasionalList);
+                window.renderAll();
+            }
+        }
+
         window.simpanBelanjaSparepart = function(e) {
             e.preventDefault();
             const editId = document.getElementById('editSparepartId').value;
@@ -2306,8 +2558,6 @@
                     sp.estJual = estJual;
                 }
                 document.getElementById('editSparepartId').value = '';
-                document.getElementById('formSparepartTitle').innerText = '+ Catat Belanja Sparepart Service';
-                document.getElementById('btnSubmitSparepart').innerText = 'Catat Belanja Sparepart';
             } else {
                 window.sparepartList.unshift({
                     id: Date.now(),
@@ -2322,10 +2572,7 @@
                 });
             }
 
-            document.getElementById('formBelanjaSparepart').reset();
-            document.getElementById('spNom').value = '0';
-            document.getElementById('spEstJual').value = '0';
-
+            window.closeModalSparepart();
             alert(`✅ Belanja Sparepart ${namaUnit} Berhasil Disimpan & Saldo ${sumber} terpotong!`);
             window.saveToFirebaseNode('sparepart', window.sparepartList);
             window.renderAll();
@@ -2345,7 +2592,7 @@
 
             document.getElementById('formSparepartTitle').innerText = '✏️ Edit Belanja Sparepart';
             document.getElementById('btnSubmitSparepart').innerText = 'Update Sparepart';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.openModalSparepart();
         }
 
         window.hapusSparepart = function(id) {
@@ -2550,11 +2797,7 @@
                 syncStatus: 'pending'
             });
 
-            document.getElementById('pNama').value = '';
-            document.getElementById('pNomDisplay').value = '';
-            document.getElementById('pNom').value = '0';
-            document.getElementById('pKet').value = '';
-
+            window.closeModalInputPiutang();
             alert(`✅ Utang a/n ${nama} sebesar ${window.formatRp(nom)} dicatat! Saldo ${sumber} berkurang & Saldo PIUTANG bertambah.`);
             window.initDropdowns();
             window.saveToFirebaseNode('piutang', window.piutangList);
@@ -3229,6 +3472,34 @@
                 }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada catatan belanja sparepart sesuai filter.</td></tr>`;
             }
 
+            const bOperasional = document.getElementById('bodyOperasional');
+            if (bOperasional) {
+                const opMode = document.getElementById('opFilterMode').value;
+                const opDate = document.getElementById('opDatePicker').value;
+                const opMonth = document.getElementById('opMonthPicker').value;
+
+                let filteredOp = window.operasionalList.filter(o => {
+                    if (opMode === 'DAILY' && o.tgl !== opDate) return false;
+                    if (opMode === 'MONTHLY' && (!o.tgl || !o.tgl.startsWith(opMonth))) return false;
+                    return true;
+                });
+
+                bOperasional.innerHTML = filteredOp.map(o => {
+                    return `
+                        <tr>
+                            <td><b>${o.waktu}</b><br><small style="color:gray;">${o.tgl}</small></td>
+                            <td><b>${o.ket}</b></td>
+                            <td><span style="color:#DC2626; font-weight:bold;">${o.sumber}</span></td>
+                            <td class="text-debit"><b>${window.formatRp(o.nominal)}</b></td>
+                            <td>
+                                <button class="btn-edit" onclick="editOperasional(${o.id})">Edit</button>
+                                <button class="btn-delete" onclick="hapusOperasional(${o.id})">Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="5" style="text-align:center; color:#94A3B8;">Belum ada pengeluaran operasional sesuai filter.</td></tr>`;
+            }
+
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
@@ -3389,6 +3660,12 @@
                 }
                 if (masukAkun['SPAREPART'] !== undefined) {
                     masukAkun['SPAREPART'] += Number(sp.modal || 0);
+                }
+            });
+
+            window.operasionalList.forEach(op => {
+                if (keluarAkun[op.sumber] !== undefined) {
+                    keluarAkun[op.sumber] += Number(op.nominal || 0);
                 }
             });
 
@@ -3810,7 +4087,8 @@
                 setoranOwnerList: window.setoranOwnerList, 
                 stokOpnameItems: window.stokOpnameItems, 
                 sparepartList: window.sparepartList,
-                riwayatBelanjaStok: window.riwayatBelanjaStok 
+                riwayatBelanjaStok: window.riwayatBelanjaStok,
+                operasionalList: window.operasionalList
             };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataBackup, null, 2));
             const dlAnchor = document.createElement('a');
@@ -3837,6 +4115,7 @@
                         if (data.stokOpnameItems) window.stokOpnameItems = data.stokOpnameItems;
                         if (data.sparepartList) window.sparepartList = data.sparepartList;
                         if (data.riwayatBelanjaStok) window.riwayatBelanjaStok = data.riwayatBelanjaStok;
+                        if (data.operasionalList) window.operasionalList = data.operasionalList;
 
                         window.saveAllToFirebase();
                         window.initDropdowns();
