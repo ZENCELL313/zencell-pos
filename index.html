@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>POS ZENCELL 1</title>
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"POS ZENCELL 1","short_name":"ZENCELL","start_url":".","display":"standalone","background_color":"#059669","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2845/2845701.png","sizes":"512x512","type":"image/png"}]}'>
+    <!-- Dinamis PWA Manifest Link -->
+    <link id="dynamicManifest" rel="stylesheet" href="">
     <meta name="theme-color" content="#059669">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -674,7 +675,7 @@
         </div>
     </div>
 
-    <!-- TAB OPERASIONAL (BARU) -->
+    <!-- TAB OPERASIONAL -->
     <div id="tab-operasional" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" id="formOperasionalTitle">💸 Catat Pengeluaran Operasional Konter</div>
@@ -1478,6 +1479,26 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
+        // Generate manifest.json secara dinamis agar bisa diinstal sebagai PWA di Android & iOS
+        const manifestData = {
+            "name": "POS ZENCELL 1",
+            "short_name": "ZENCELL",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#059669",
+            "theme_color": "#059669",
+            "icons": [{
+                "src": "https://cdn-icons-png.flaticon.com/512/2845/2845701.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }]
+        };
+        const stringManifest = JSON.stringify(manifestData);
+        const blob = new Blob([stringManifest], {type: 'application/manifest+json'});
+        const manifestURL = URL.createObjectURL(blob);
+        document.getElementById('dynamicManifest').setAttribute('rel', 'manifest');
+        document.getElementById('dynamicManifest').setAttribute('href', manifestURL);
+
         const firebaseConfig = {
             apiKey: "AIzaSyDcOeS1jvbHdT1SRI8CKZwFQx7ZDNXp12c",
             authDomain: "keuangan-pribadi-e713a.firebaseapp.com",
@@ -1752,7 +1773,6 @@
                 }
             });
 
-            // Close FAB if clicked outside
             const fabContainer = document.getElementById('fabContainer');
             if (fabContainer && fabContainer.classList.contains('show')) {
                 if (!fabContainer.contains(e.target)) {
@@ -2464,7 +2484,6 @@
             }
         }
 
-        // SIMPAN BELANJA OPERASIONAL
         window.simpanOperasional = function(e) {
             e.preventDefault();
             const editId = document.getElementById('editOperasionalId').value;
@@ -4068,7 +4087,6 @@
             setTimeout(() => { printArea.style.display = 'none'; }, 1000);
         }
 
-        // FUNGSI MENU SETTING / MODAL BACKUP & RESTORE
         window.bukaMenuSettingJSON = function() {
             document.getElementById('modalSettingOverlay').classList.add('show');
         }
