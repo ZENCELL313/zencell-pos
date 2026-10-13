@@ -130,14 +130,46 @@
             margin-right: 4px; animation: realtimePulse 1.2s infinite ease-in-out; box-shadow: 0 0 8px #4ADE80;
         }
 
-        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6px; }
-        .summary-grid-bottom { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        /* 10 KOTAK RINGKASAN SIMETRIS (5 X 2) */
+        .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 5px; }
         .summary-card { 
-            background: var(--card); padding: 8px 4px; border-radius: 10px; border: 1px solid var(--border); 
+            background: var(--card); padding: 7px 3px; border-radius: 8px; border: 1px solid var(--border); 
             text-align: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
         }
-        .summary-card .lbl { font-size: 9px; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 2px; }
-        .summary-card .val { font-size: 11.5px; font-weight: 800; word-break: break-all; }
+        .summary-card.clickable { cursor: pointer; transition: transform 0.15s, background-color 0.15s; }
+        .summary-card.clickable:active { transform: scale(0.96); background: var(--primary-light); }
+        .summary-card .lbl { font-size: 8.5px; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 2px; }
+        .summary-card .val { font-size: 11px; font-weight: 800; word-break: break-all; }
+
+        /* LEFT SIDEBAR SALDO REALTIME */
+        .left-sidebar {
+            position: fixed; top: 0; left: -320px; width: 310px; height: 100%; background: var(--card);
+            box-shadow: 5px 0 25px rgba(0,0,0,0.25); z-index: 99995; transition: left 0.3s ease;
+            display: flex; flex-direction: column; border-right: 1px solid var(--border);
+        }
+        .left-sidebar.show { left: 0; }
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white;
+            padding: 14px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13.5px;
+        }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4);
+            z-index: 99994; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .sidebar-overlay.show { opacity: 1; visibility: visible; }
+        
+        .saldo-item-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11.5px;
+        }
+        .saldo-item-row:nth-child(even) { background-color: var(--primary-light); border-radius: 6px; }
 
         .card { background: var(--card); padding: 12px; border-radius: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); margin-bottom: 10px; border: 1px solid var(--border); }
         .card-header { background-color: var(--primary-light); color: var(--primary); font-weight: 700; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; margin-bottom: 10px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
@@ -211,8 +243,6 @@
         .badge-vlookup { font-size: 11px; color: #0284C7; font-weight: bold; margin-top: 4px; display: none; background: #E0F2FE; padding: 4px 8px; border-radius: 6px; border: 1px solid #BAE6FD; }
         .badge-warn-stok { font-size: 11px; color: #DC2626; font-weight: bold; margin-top: 4px; display: none; background: #FEE2E2; padding: 4px 8px; border-radius: 6px; border: 1px solid #FCA5A5; }
         
-        .split-box { background: var(--primary-light); border: 1px dashed var(--border); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: none; }
-
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(15, 23, 42, 0.65); display: flex; justify-content: center; align-items: center; 
@@ -241,9 +271,9 @@
             .header-title h1 { font-size: 18px; }
             .header-status-bar { font-size: 12.5px; padding: 6px 12px; }
             .btn-icon-hdr { width: 38px; height: 38px; font-size: 16px; }
-            .summary-card { padding: 9px 6px; }
-            .summary-card .lbl { font-size: 10px; }
-            .summary-card .val { font-size: 13.5px; }
+            .summary-card { padding: 8px 4px; }
+            .summary-card .lbl { font-size: 9px; }
+            .summary-card .val { font-size: 12px; }
             table { font-size: 12.5px; }
             th, td { padding: 8px 10px; }
             .form-control { font-size: 12.5px; padding: 8px 10px; }
@@ -263,6 +293,18 @@
     </style>
 </head>
 <body>
+
+    <!-- LEFT SIDEBAR SALDO REALTIME -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSaldoSidebar()"></div>
+    <div id="leftSaldoSidebar" class="left-sidebar">
+        <div class="sidebar-header">
+            <span>💰 SALDO REALTIME</span>
+            <button onclick="toggleSaldoSidebar()" style="background:none; border:none; color:white; font-size:18px; font-weight:bold; cursor:pointer;">✕</button>
+        </div>
+        <div class="sidebar-content" id="sidebarSaldoListContent">
+            <!-- Di-generate otomatis via JS -->
+        </div>
+    </div>
 
     <input type="file" id="fileRestoreJson" accept=".json" style="display:none;" onchange="restoreJSON(event)">
 
@@ -344,13 +386,14 @@
             </div>
         </header>
 
+        <!-- 10 KOTAK RINGKASAN SIMETRIS -->
         <div class="summary-grid">
             <div class="summary-card">
-                <div class="lbl">Cuan Hari Ini</div>
+                <div class="lbl">Cuan Harian</div>
                 <div class="val text-cuan" id="cuanTotalVal">Rp0</div>
             </div>
             <div class="summary-card">
-                <div class="lbl">Cuan ATM Link</div>
+                <div class="lbl">Cuan ATM</div>
                 <div class="val" id="cuanAtmVal" style="color:var(--primary);">Rp0</div>
             </div>
             <div class="summary-card">
@@ -361,16 +404,16 @@
                 <div class="lbl">Cuan Service</div>
                 <div class="val" id="cuanServiceVal" style="color:#9333EA;">Rp0</div>
             </div>
-        </div>
-
-        <div class="summary-grid-bottom">
             <div class="summary-card">
                 <div class="lbl">Total Trx</div>
                 <div class="val" id="topTotalTrxVal" style="color:#2563EB;">0 TRX</div>
             </div>
+        </div>
+
+        <div class="summary-grid" style="margin-bottom:6px;">
             <div class="summary-card">
                 <div class="lbl">Pelanggan</div>
-                <div class="val" id="topTotalPelangganVal" style="color:#D97706;">0 ORANG</div>
+                <div class="val" id="topTotalPelangganVal" style="color:#D97706;">0 ORG</div>
             </div>
             <div class="summary-card">
                 <div class="lbl">Stok Opname</div>
@@ -384,10 +427,14 @@
                 <div class="lbl">Saldo Konter</div>
                 <div class="val text-kredit" id="topTotalSaldoRiil">Rp0</div>
             </div>
+            <div class="summary-card clickable" onclick="toggleSaldoSidebar()" title="Klik untuk lihat rekap saldo realtime di kiri">
+                <div class="lbl" style="color:#0284C7;">💰 Cek Saldo</div>
+                <div class="val" style="color:#0284C7; font-size:10px;">➔ Buka Kiri</div>
+            </div>
         </div>
     </div>
 
-    <!-- FAB SPEED DIAL MENU (FLOATING BUTTONS) -->
+    <!-- FAB SPEED DIAL MENU -->
     <div class="fab-container" id="fabContainer">
         <button class="fab-main" id="fabMainBtn" onclick="toggleFabMenu()" title="Menu Cepat">+</button>
         <div class="fab-sub-menu">
@@ -564,19 +611,19 @@
     <div id="tab-stok" class="tab-content" style="margin-top:6px;">
         <div class="summary-grid" style="margin-bottom:10px;">
             <div class="summary-card" style="background:#E0F2FE; border-color:#BAE6FD;">
-                <div class="lbl">🎫 NILAI VOUCHER</div>
+                <div class="lbl">🎫 VOUCHER</div>
                 <div class="val" id="valNilaiStokVoucher" style="color:#0284C7;">Rp0</div>
             </div>
             <div class="summary-card" style="background:#DCFCE7; border-color:#BBF7D0;">
-                <div class="lbl">📱 NILAI SP (PERDANA)</div>
+                <div class="lbl">📱 SP</div>
                 <div class="val" id="valNilaiStokSp" style="color:#15803D;">Rp0</div>
             </div>
             <div class="summary-card" style="background:#FEF3C7; border-color:#FDE68A;">
-                <div class="lbl">🎧 NILAI ACC</div>
+                <div class="lbl">🎧 ACC</div>
                 <div class="val" id="valNilaiStokAcc" style="color:#B45309;">Rp0</div>
             </div>
-            <div class="summary-card" style="background:#FAF5FF; border-color:#E9D5FF;">
-                <div class="lbl">TOTAL NILAI STOK</div>
+            <div class="summary-card" style="background:#FAF5FF; border-color:#E9D5FF;" colspan="2">
+                <div class="lbl">TOTAL STOK</div>
                 <div class="val" id="valNilaiStokTotal" style="color:#7E22CE;">Rp0</div>
             </div>
         </div>
@@ -775,7 +822,7 @@
                         <div class="lbl">CUAN KONTER</div>
                         <div class="val text-kredit" id="valRekapCuanKonter">Rp0</div>
                     </div>
-                    <div class="summary-card" style="background:#FAF5FF; border-color:#E9D5FF;">
+                    <div class="summary-card" style="background:#FAF5FF; border-color:#E9D5FF;" colspan="2">
                         <div class="lbl">CUAN SERVICE</div>
                         <div class="val" id="valRekapCuanService" style="color:#9333EA;">Rp0</div>
                     </div>
@@ -930,7 +977,7 @@
             </div>
 
             <div class="card">
-                <div class="card-header">⚙️ Pengaturan Akun & Saldo Awal</div>
+                <div class="card-header">⚙️ Pengaturan Akun, Saldo Awal & Batas Limit</div>
                 <div class="row-2">
                     <div class="form-group">
                         <label>Pilih Akun Saldo</label>
@@ -941,16 +988,23 @@
                         <input type="text" id="cfgNamaBaru" class="form-control" placeholder="NAMA BARU AKUN...">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Set Saldo Awal (Rp)</label>
-                    <input type="text" id="cfgSaldoAwalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'cfgSaldoAwal')">
-                    <input type="hidden" id="cfgSaldoAwal" value="0">
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Set Saldo Awal (Rp)</label>
+                        <input type="text" id="cfgSaldoAwalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'cfgSaldoAwal')">
+                        <input type="hidden" id="cfgSaldoAwal" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Batas Minimal Saldo / Limit (Rp)</label>
+                        <input type="text" id="cfgBatasMinDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'cfgBatasMin')">
+                        <input type="hidden" id="cfgBatasMin" value="0">
+                    </div>
                 </div>
-                <button type="button" class="btn" onclick="simpanPengaturanAkun()" style="background:#0284C7;">Simpan Perubahan Akun</button>
+                <button type="button" class="btn" onclick="simpanPengaturanAkun()" style="background:#0284C7; margin-top:4px;">Simpan Perubahan Akun & Limit</button>
             </div>
 
             <div class="card">
-                <div class="card-header">💰 Rekap Saldo Realtime (26 Akun)</div>
+                <div class="card-header">💰 Rekap Saldo Realtime</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -1063,7 +1117,7 @@
         </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION (6 MENU) -->
+    <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchMainTab(event, 'tab-kasir')">
             <span class="icon">🛒</span>
@@ -1091,7 +1145,7 @@
         </button>
     </nav>
 
-    <!-- MODAL SPAREPART / SERVICE (FLOATING) -->
+    <!-- MODAL SPAREPART / SERVICE -->
     <div id="modalSparepartOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1126,7 +1180,7 @@
         </div>
     </div>
 
-    <!-- MODAL CATAT UTANG BARU (FLOATING) -->
+    <!-- MODAL CATAT UTANG BARU -->
     <div id="modalInputPiutangOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1479,7 +1533,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-        // Generate manifest.json secara dinamis agar bisa diinstal sebagai PWA di Android & iOS
         const manifestData = {
             "name": "POS ZENCELL 1",
             "short_name": "ZENCELL",
@@ -1534,6 +1587,8 @@
         };
         window.saldoList.forEach(s => { if (window.masterSaldoAwal[s] === undefined) window.masterSaldoAwal[s] = 0; });
 
+        window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
+
         window.masterVlookup = {
             'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
         };
@@ -1561,6 +1616,7 @@
                 if (data.vlookup) window.masterVlookup = data.vlookup;
                 if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
                 if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
+                if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
                 if (data.transaksi) {
                     let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
@@ -1639,6 +1695,7 @@
             localStorage.setItem('zencell_sparepart', JSON.stringify(window.sparepartList));
             localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
             localStorage.setItem('zencell_operasional', JSON.stringify(window.operasionalList));
+            localStorage.setItem('zencell_batas_min', JSON.stringify(window.masterBatasMinSaldo));
         }
 
         window.syncPendingQueue = function() {
@@ -1682,7 +1739,8 @@
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 operasional: window.operasionalList,
                 saldoAwal: window.masterSaldoAwal,
-                saldoListCustom: window.saldoList
+                saldoListCustom: window.saldoList,
+                batasMinSaldo: window.masterBatasMinSaldo
             }).then(() => {
                 if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
             });
@@ -1702,7 +1760,13 @@
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        // FAB SPEED DIAL LOGIC
+        window.toggleSaldoSidebar = function() {
+            const sidebar = document.getElementById('leftSaldoSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
         window.toggleFabMenu = function() {
             const fab = document.getElementById('fabContainer');
             const mainBtn = document.getElementById('fabMainBtn');
@@ -1717,7 +1781,6 @@
             mainBtn.classList.remove('active');
         }
 
-        // MODAL SPAREPART
         window.openModalSparepart = function() {
             document.getElementById('editSparepartId').value = '';
             document.getElementById('formBelanjaSparepart').reset();
@@ -1731,7 +1794,6 @@
             document.getElementById('modalSparepartOverlay').classList.remove('show');
         }
 
-        // MODAL INPUT PIUTANG
         window.openModalInputPiutang = function() {
             document.getElementById('formPiutang').reset();
             document.getElementById('pNom').value = '0';
@@ -2086,7 +2148,8 @@
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 operasionalList: window.operasionalList,
                 masterSaldoAwal: window.masterSaldoAwal,
-                saldoList: window.saldoList
+                saldoList: window.saldoList,
+                masterBatasMinSaldo: window.masterBatasMinSaldo
             });
             if (window.undoStack.length === 0 || window.undoStack[window.undoStack.length - 1] !== snap) {
                 window.undoStack.push(snap);
@@ -2135,6 +2198,7 @@
             window.operasionalList = state.operasionalList || [];
             window.masterSaldoAwal = state.masterSaldoAwal || {};
             window.saldoList = state.saldoList || [];
+            window.masterBatasMinSaldo = state.masterBatasMinSaldo || {};
 
             window.saveAllToFirebase(true);
             window.initDropdowns();
@@ -2422,18 +2486,25 @@
                 document.getElementById('cfgNamaBaru').value = '';
                 document.getElementById('cfgSaldoAwal').value = '0';
                 document.getElementById('cfgSaldoAwalDisplay').value = '';
+                document.getElementById('cfgBatasMin').value = '0';
+                document.getElementById('cfgBatasMinDisplay').value = '';
                 return;
             }
             document.getElementById('cfgNamaBaru').value = namaAkun;
             const awal = window.masterSaldoAwal[namaAkun] || 0;
             document.getElementById('cfgSaldoAwal').value = awal;
             document.getElementById('cfgSaldoAwalDisplay').value = awal ? Number(awal).toLocaleString('id-ID') : '0';
+
+            const batasMin = window.masterBatasMinSaldo[namaAkun] || 0;
+            document.getElementById('cfgBatasMin').value = batasMin;
+            document.getElementById('cfgBatasMinDisplay').value = batasMin ? Number(batasMin).toLocaleString('id-ID') : '0';
         }
 
         window.simpanPengaturanAkun = function() {
             const akunLama = document.getElementById('cfgAkunTarget').value;
             const namaBaru = document.getElementById('cfgNamaBaru').value.trim().toUpperCase();
             const saldoAwalBaru = parseFloat(document.getElementById('cfgSaldoAwal').value) || 0;
+            const batasMinBaru = parseFloat(document.getElementById('cfgBatasMin').value) || 0;
 
             if (!akunLama) { alert("Pilih Akun Saldo terlebih dahulu!"); return; }
             if (!namaBaru) { alert("Nama akun baru tidak boleh kosong!"); return; }
@@ -2451,6 +2522,11 @@
                     delete window.masterSaldoAwal[akunLama];
                 }
 
+                if (window.masterBatasMinSaldo[akunLama] !== undefined) {
+                    window.masterBatasMinSaldo[namaBaru] = window.masterBatasMinSaldo[akunLama];
+                    delete window.masterBatasMinSaldo[akunLama];
+                }
+
                 window.transaksiJurnal.forEach(t => {
                     if (t.akunMasuk1 === akunLama) t.akunMasuk1 = namaBaru;
                     if (t.akunMasuk2 === akunLama) t.akunMasuk2 = namaBaru;
@@ -2461,7 +2537,9 @@
                 window.masterSaldoAwal[akunLama] = saldoAwalBaru;
             }
 
-            alert(`✅ Pengaturan Akun Berhasil Disimpan!`);
+            window.masterBatasMinSaldo[namaBaru] = batasMinBaru;
+
+            alert(`✅ Pengaturan Akun & Limit Saldo Berhasil Disimpan!`);
             window.initDropdowns();
             window.saveAllToFirebase();
             window.renderAll();
@@ -3695,6 +3773,7 @@
             });
 
             let totalSaldoRiil = 0;
+            
             document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
                 const awal = window.masterSaldoAwal[s] || 0;
                 const msk = masukAkun[s] || 0;
@@ -3703,6 +3782,39 @@
                 if (s !== 'SPAREPART') totalSaldoRiil += akhir;
                 return `<tr><td><b>${s}</b></td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(msk)}</td><td class="text-debit">-${window.formatRp(klr)}</td><td><b>${window.formatRp(akhir)}</b></td></tr>`;
             }).join('');
+
+            // RENDER SIDEBAR KIRI (REALTIME SALDO & STATUS LIMIT)
+            const sidebarContainer = document.getElementById('sidebarSaldoListContent');
+            if (sidebarContainer) {
+                sidebarContainer.innerHTML = window.saldoList.map(s => {
+                    const awal = window.masterSaldoAwal[s] || 0;
+                    const msk = masukAkun[s] || 0;
+                    const klr = keluarAkun[s] || 0;
+                    const akhir = awal + msk - klr;
+                    const limitMin = window.masterBatasMinSaldo[s] || 0;
+
+                    let colorStyle = "color: var(--kredit); font-weight:700;";
+                    let badge = "";
+
+                    if (akhir < 0) {
+                        colorStyle = "color: var(--debit); font-weight:800; animation: blink 1s infinite;";
+                        badge = `<span style="font-size:8px; background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; padding:1px 4px; border-radius:4px; margin-left:4px;">MINUS</span>`;
+                    } else if (limitMin > 0 && akhir <= limitMin) {
+                        colorStyle = "color: var(--debit); font-weight:800;";
+                        badge = `<span style="font-size:8px; background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; padding:1px 4px; border-radius:4px; margin-left:4px;">LOW</span>`;
+                    }
+
+                    return `
+                        <div class="saldo-item-row">
+                            <div>
+                                <div style="font-weight:bold;">${s}</div>
+                                ${limitMin > 0 ? `<div style="font-size:9px; opacity:0.7;">Limit: ${window.formatRp(limitMin)}</div>` : ''}
+                            </div>
+                            <span class="${akhir < 0 ? 'text-debit' : 'text-kredit'}" style="${colorStyle}">${window.formatRp(akhir)} ${badge}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
 
             document.getElementById('topTotalSaldoRiil').innerText = window.formatRp(totalSaldoRiil);
 
@@ -3776,7 +3888,7 @@
             document.getElementById('cuanServiceVal').innerText = window.formatRp(rCuanService);
 
             document.getElementById('topTotalTrxVal').innerText = `${totalTrxCount} TRX`;
-            document.getElementById('topTotalPelangganVal').innerText = `${pelangganCount} ORANG`;
+            document.getElementById('topTotalPelangganVal').innerText = `${pelangganCount} ORG`;
 
             document.getElementById('valRekapCuanTotal').innerText = window.formatRp(rCuanTotal);
             document.getElementById('valRekapCuanAtm').innerText = window.formatRp(rCuanAtm);
@@ -3918,7 +4030,7 @@
                     </tr>
                     <tr style="background:#F1F5F9; font-weight:bold;">
                         <td colspan="3" style="text-align:right;">RATA-RATA CUST / HARI :</td>
-                        <td colspan="2" style="text-align:center; color:#2563EB;">${avgCust} ORANG</td>
+                        <td colspan="2" style="text-align:center; color:#2563EB;">${avgCust} ORG</td>
                     </tr>
                     <tr style="background:#F1F5F9; font-weight:bold;">
                         <td colspan="3" style="text-align:right;">RATA-RATA TRX / HARI :</td>
@@ -4099,6 +4211,7 @@
             const dataBackup = { 
                 saldoList: window.saldoList, 
                 masterSaldoAwal: window.masterSaldoAwal, 
+                masterBatasMinSaldo: window.masterBatasMinSaldo,
                 masterVlookup: window.masterVlookup, 
                 transaksiJurnal: window.transaksiJurnal, 
                 piutangList: window.piutangList, 
@@ -4126,6 +4239,7 @@
                     if (confirm("⚠️ Apakah Anda yakin ingin memulihkan (restore) data dari file cadangan ini? Data yang ada saat ini akan diperbarui.")) {
                         if (data.saldoList) window.saldoList = data.saldoList;
                         if (data.masterSaldoAwal) window.masterSaldoAwal = data.masterSaldoAwal;
+                        if (data.masterBatasMinSaldo) window.masterBatasMinSaldo = data.masterBatasMinSaldo;
                         if (data.masterVlookup) window.masterVlookup = data.masterVlookup;
                         if (data.transaksiJurnal) window.transaksiJurnal = data.transaksiJurnal;
                         if (data.piutangList) window.piutangList = data.piutangList;
