@@ -1560,83 +1560,104 @@
         const statusEl = document.getElementById('cloudStatus');
 
         onValue(ref(db, 'zencellNodes'), (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                isFirebaseSyncing = true;
-                
-                if (data.vlookup) window.masterVlookup = data.vlookup;
-                if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
-                if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
-                if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
+    const data = snapshot.val();
+    if (data) {
+        // Cek apakah perangkat ini sempat offline lebih dari 6 jam
+        const lastSyncTime = parseInt(localStorage.getItem('zencell_last_sync') || '0');
+        const nowTime = Date.now();
+        const sixHours = 6 * 60 * 60 * 1000;
+        const isOfflineTooLong = (nowTime - lastSyncTime) > sixHours;
 
-                if (data.transaksi) {
-                    let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
-                    let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
-                    let mergedMap = {};
-                    cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                    localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                    window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
-                }
+        isFirebaseSyncing = true;
+        
+        if (data.vlookup) window.masterVlookup = data.vlookup;
+        if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
+        if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
+        if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
-                if (data.piutang) {
-                    let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
-                    let mergedPMap = {};
-                    cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
-                    window.piutangList = Object.values(mergedPMap);
-                }
-
-                if (data.stok) {
-                    let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
-                    let mergedSMap = {};
-                    cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
-                    window.stokOpnameItems = Object.values(mergedSMap);
-                }
-
-                if (data.sparepart) {
-                    let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
-                    let mergedSpMap = {};
-                    cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
-                    window.sparepartList = Object.values(mergedSpMap);
-                }
-
-                if (data.riwayatBelanjaStok) {
-                    let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
-                    let mergedRbMap = {};
-                    cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
-                    window.riwayatBelanjaStok = Object.values(mergedRbMap);
-                }
-
-                if (data.setoran) {
-                    let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
-                    let mergedSetorMap = {};
-                    cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
-                    window.setoranOwnerList = Object.values(mergedSetorMap);
-                }
-
-                if (data.operasional) {
-                    let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
-                    let mergedOpMap = {};
-                    cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
-                    window.operasionalList = Object.values(mergedOpMap);
-                }
-
-                window.saveLocalBackup();
-                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
-
-                window.syncPendingQueue();
-                window.initDropdowns();
-                window.initVlookupAutoFill();
-                window.renderAll();
-                isFirebaseSyncing = false;
-            } else {
-                isFirebaseSyncing = false;
+        // Jika offline lebih dari 6 jam, abaikan cache lokal jadul dan ambil mutlak dari Cloud (Mencegah data hantu hidup lagi)
+        if (isOfflineTooLong) {
+            window.transaksiJurnal = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi || {});
+            window.piutangList = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang || {});
+            window.stokOpnameItems = Array.isArray(data.stok) ? data.stok : Object.values(data.stok || {});
+            window.sparepartList = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart || {});
+            window.riwayatBelanjaStok = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok || {});
+            window.setoranOwnerList = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran || {});
+            window.operasionalList = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional || {});
+        } else {
+            // Sinkronisasi normal jika perangkat aktif / baru saja offline sebentar
+            if (data.transaksi) {
+                let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
+                let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
+                let mergedMap = {};
+                cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
             }
-        }, (error) => {
-            console.error("Firebase Connection Error:", error);
-            if (statusEl) {
-                statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
+
+            if (data.piutang) {
+                let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
+                let mergedPMap = {};
+                cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
+                window.piutangList = Object.values(mergedPMap);
             }
-        });
+
+            if (data.stok) {
+                let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
+                let mergedSMap = {};
+                cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
+                window.stokOpnameItems = Object.values(mergedSMap);
+            }
+
+            if (data.sparepart) {
+                let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
+                let mergedSpMap = {};
+                cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
+                window.sparepartList = Object.values(mergedSpMap);
+            }
+
+            if (data.riwayatBelanjaStok) {
+                let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
+                let mergedRbMap = {};
+                cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
+                window.riwayatBelanjaStok = Object.values(mergedRbMap);
+            }
+
+            if (data.setoran) {
+                let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
+                let mergedSetorMap = {};
+                cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
+                window.setoranOwnerList = Object.values(mergedSetorMap);
+            }
+
+            if (data.operasional) {
+                let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
+                let mergedOpMap = {};
+                cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
+                window.operasionalList = Object.values(mergedOpMap);
+            }
+        }
+
+        // Perbarui stempel waktu sinkronisasi sukses
+        localStorage.setItem('zencell_last_sync', Date.now().toString());
+
+        window.saveLocalBackup();
+        if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
+
+        window.syncPendingQueue();
+        window.initDropdowns();
+        window.initVlookupAutoFill();
+        window.renderAll();
+        isFirebaseSyncing = false;
+    } else {
+        isFirebaseSyncing = false;
+    }
+}, (error) => {
+    console.error("Firebase Connection Error:", error);
+    if (statusEl) {
+        statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
+    }
+});
 
         window.saveLocalBackup = function() {
             localStorage.setItem('zencell_transaksi', JSON.stringify(window.transaksiJurnal));
