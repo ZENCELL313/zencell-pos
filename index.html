@@ -3255,12 +3255,11 @@
 
             if (!akunMasuk1) { alert("Pilih Uang Masuk Ke (Akun 1)!"); return; }
 
-            // LOGIKA SINKRONISASI PRESISI: Keterangan kasir harus sama persis dengan nama unit sparepart agar tidak salah sasaran
             let isSparepartUpdated = false;
             if (window.sparepartList && window.sparepartList.length > 0) {
                 window.sparepartList.forEach(sp => {
                     const namaSp = (sp.namaUnit || '').trim().toUpperCase();
-                    if (sp.status === 'BELUM LUNAS' && (ket === namaSp || ket.includes(namaSp))) {
+                    if (namaSp && (ket.includes(namaSp) || namaSp.includes(ket))) {
                         sp.status = 'LUNAS';
                         isSparepartUpdated = true;
                     }
@@ -3374,6 +3373,20 @@
         }
 
         window.renderAll = function() {
+            // PEMINDAI OTOMATIS: Memastikan sparepart yang sudah tercatat di jurnal kasir otomatis berubah status menjadi LUNAS
+            if (window.sparepartList && window.transaksiJurnal) {
+                window.sparepartList.forEach(sp => {
+                    const namaSp = (sp.namaUnit || '').trim().toUpperCase();
+                    const matchTrx = window.transaksiJurnal.find(t => {
+                        const tKet = (t.ket || '').trim().toUpperCase();
+                        return namaSp && (tKet.includes(namaSp) || namaSp.includes(tKet));
+                    });
+                    if (matchTrx) {
+                        sp.status = 'LUNAS';
+                    }
+                });
+            }
+
             const fMode = document.getElementById('jurnalFilterMode').value;
             const fDate = document.getElementById('jurnalDatePicker').value;
             const fMonth = document.getElementById('jurnalMonthPicker').value;
