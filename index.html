@@ -3048,25 +3048,51 @@
             if (!t) return;
 
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${t.ket}"?`)) {
+                // 1. Jika ini transaksi pencatatan utang awal
                 if (t.isPencatatanUtangAwal && t.idPiutangRef) {
                     window.piutangList = window.piutangList.filter(p => p.id !== t.idPiutangRef);
-                } else if (t.idPiutangRef && t.akunKeluar1 === 'PIUTANG') {
+                } 
+                // 2. Jika ini transaksi PELUNASAN UTANG
+                else if (t.idPiutangRef && (t.akunKeluar1 === 'PIUTANG' || t.isPelunasanUtang)) {
                     const matchPiutang = window.piutangList.find(p => p.id === t.idPiutangRef);
                     if (matchPiutang) {
-                        matchPiutang.sisa += Number(t.hargaModal || 0);
+                        // Kembalikan sisa pokok utang sebesar modal/pokok yang dibayar sebelumnya
+                        const pokokDikembalikan = Number(t.hargaModal || 0);
+                        matchPiutang.sisa += pokokDikembalikan;
+                        
+                        // Jika sebelumnya sudah LUNAS, kembalikan statusnya menjadi BELUM LUNAS
                         matchPiutang.status = 'BELUM LUNAS';
+
+                        // Hapus histori cicilan terakhir yang sesuai dengan transaksi ini
                         if (matchPiutang.riwayatCicilan) {
-                            matchPiutang.riwayatCicilan = matchPiutang.riwayatCicilan.filter(c => c.pokokTerpotong !== t.hargaModal);
+                            matchPiutang.riwayatCicilan = matchPiutang.riwayatCicilan.filter(c => c.bayar !== Number(t.hargaJual || 0));
                         }
+                        matchPiutang.syncStatus = 'pending';
                     }
+                } 
+                // 3. LOGIKA TAMBAHAN: Jika transaksi ini adalah pelunasan Service Sparepart
+                else {
+                    // Cek apakah ada sparepart service yang namanya cocok dengan keterangan transaksi ini
+                    const ketUpper = (t.ket || '').trim().toUpperCase();
+                    window.sparepartList.forEach(sp => {
+                        const namaSp = (sp.namaUnit || '').trim().toUpperCase();
+                        if (namaSp && (ketUpper.includes(namaSp) || namaSp.includes(ketUpper))) {
+                            // Kembalikan status sparepart service menjadi BELUM LUNAS
+                            sp.status = 'BELUM LUNAS';
+                        }
+                    });
                 }
 
+                // Hapus transaksi dari jurnal
                 window.transaksiJurnal.splice(origIdx, 1);
+                
                 window.initDropdowns();
                 window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
                 window.saveToFirebaseNode('piutang', window.piutangList);
+                window.saveToFirebaseNode('sparepart', window.sparepartList);
                 window.renderAll();
-                alert("✅ Transaksi berhasil dihapus!");
+                
+                alert("✅ Transaksi berhasil dihapus dan status piutang/service berhasil dikembalikan menjadi Belum Lunas!");
             }
         }
 
