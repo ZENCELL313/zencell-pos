@@ -58,8 +58,6 @@
             transition: background-color 0.3s ease, color 0.3s ease; 
         }
 
-        input[type="text"], textarea, select { text-transform: uppercase; }
-
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -1911,7 +1909,8 @@
 
         window.cekValidasiReset = function(val) {
             const btn = document.getElementById('btnEksekusiReset');
-            if (val.trim() === 'KONFIRMASI HAPUS') {
+            const cleanVal = (val || '').trim().toUpperCase();
+            if (cleanVal === 'KONFIRMASI HAPUS') {
                 btn.disabled = false;
             } else {
                 btn.disabled = true;
@@ -2678,12 +2677,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // FUNGSI SIMPAN STOK OPNAME (MURNI SEBAGAI STOK & MUTASI SALDO, TIDAK MASUK KE JURNAL TRANSAKSI KASIR)
         window.simpanStokOpname = function(e) {
             if (e) e.preventDefault();
             
             const editId = document.getElementById('editStokId').value;
-            const kat = document.getElementById('stokKat').value; // VOUCHER, SP, ACC
+            const kat = document.getElementById('stokKat').value; 
             const nama = document.getElementById('stokNama').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
@@ -2748,7 +2746,6 @@
             alert(`✅ Belanja Stok [${nama}] (${kat}) berhasil disimpan! Saldo ${sumberKas} terpotong & masuk ke saldo akun ${kat}.`);
         };
 
-        // FUNGSI HAPUS BELANJA STOK / STOK OPNAME YANG BERSIH & AMAN
         window.hapusRiwayatBelanja = function(id) {
             if(!confirm("Yakin ingin menghapus data belanja ini? Saldo kas akan dikembalikan dan item stok terkait akan dihapus.")) return;
             
@@ -3258,11 +3255,17 @@
 
             if (!akunMasuk1) { alert("Pilih Uang Masuk Ke (Akun 1)!"); return; }
 
-            window.sparepartList.forEach(sp => {
-                if (ket.includes(sp.namaUnit.toUpperCase()) || sp.namaUnit.toUpperCase().includes(ket)) {
-                    sp.status = 'LUNAS';
-                }
-            });
+            // LOGIKA SINKRONISASI PRESISI: Keterangan kasir harus sama persis dengan nama unit sparepart agar tidak salah sasaran
+            let isSparepartUpdated = false;
+            if (window.sparepartList && window.sparepartList.length > 0) {
+                window.sparepartList.forEach(sp => {
+                    const namaSp = (sp.namaUnit || '').trim().toUpperCase();
+                    if (sp.status === 'BELUM LUNAS' && (ket === namaSp || ket.includes(namaSp))) {
+                        sp.status = 'LUNAS';
+                        isSparepartUpdated = true;
+                    }
+                });
+            }
 
             if (akunKeluar1 === 'PIUTANG') {
                 const matchUtang = window.piutangList.find(p => ket.toUpperCase().includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(ket.toUpperCase()));
@@ -3300,7 +3303,11 @@
 
             window.closeModalKasir();
             window.initDropdowns();
+            
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+            if (isSparepartUpdated) {
+                window.saveToFirebaseNode('sparepart', window.sparepartList);
+            }
             window.saveToFirebaseNode('piutang', window.piutangList);
             window.renderAll();
         });
@@ -3460,7 +3467,7 @@
                             <td><span style="color:${isLunas ? '#16A34A' : '#EF4444'}; font-weight:bold;">${isLunas ? 'LUNAS' : 'BELUM LUNAS'}</span></td>
                             <td>
                                 <button class="btn-edit" onclick="editSparepart(${s.id})">Edit</button>
-                                <button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>
+                                ${!isLunas ? `<button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>` : '<span style="font-size:10px; color:#16A34A; font-weight:bold;">(Terkunci)</span>'}
                             </td>
                         </tr>
                     `;
@@ -3636,17 +3643,14 @@
                 }
             });
 
-            // Akumulasi Mutasi Belanja Stok secara mandiri (Tanpa masuk ke jurnal transaksi)
             if (window.riwayatBelanjaStok) {
                 window.riwayatBelanjaStok.forEach(r => {
                     if (r.kat && r.total > 0) {
-                        // Masuk ke saldo akun kategori (VOUCHER, SP, ACC)
                         if (masukAkun[r.kat] !== undefined) {
                             masukAkun[r.kat] += Number(r.total || 0);
                         }
                     }
                     if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO') {
-                        // Keluar dari kas sumber
                         if (keluarAkun[r.sumberKas] !== undefined) {
                             keluarAkun[r.sumberKas] += Number(r.total || 0);
                         }
