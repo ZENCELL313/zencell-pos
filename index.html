@@ -40,7 +40,6 @@
             --primary: #059669;
             --primary-dark: #0F172A;
             --primary-light: #1E293B;
-            --accent: #34D399;
             --bg: #0F172A;
             --card: #1E293B;
             --text: #F8FAFC;
@@ -280,9 +279,7 @@
             <span>💰 SALDO REALTIME</span>
             <button onclick="toggleSaldoSidebar()" style="background:none; border:none; color:white; font-size:18px; font-weight:bold; cursor:pointer;">✕</button>
         </div>
-        <div class="sidebar-content" id="sidebarSaldoListContent">
-            <!-- Di-generate otomatis via JS -->
-        </div>
+        <div class="sidebar-content" id="sidebarSaldoListContent"></div>
     </div>
 
     <input type="file" id="fileRestoreJson" accept=".json" style="display:none;" onchange="restoreJSON(event)">
@@ -1482,7 +1479,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
         const manifestData = {
             "name": "POS ZENCELL 1",
@@ -1560,104 +1557,100 @@
         const statusEl = document.getElementById('cloudStatus');
 
         onValue(ref(db, 'zencellNodes'), (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-        // Cek apakah perangkat ini sempat offline lebih dari 6 jam
-        const lastSyncTime = parseInt(localStorage.getItem('zencell_last_sync') || '0');
-        const nowTime = Date.now();
-        const sixHours = 6 * 60 * 60 * 1000;
-        const isOfflineTooLong = (nowTime - lastSyncTime) > sixHours;
+            const data = snapshot.val();
+            if (data) {
+                const lastSyncTime = parseInt(localStorage.getItem('zencell_last_sync') || '0');
+                const nowTime = Date.now();
+                const sixHours = 6 * 60 * 60 * 1000;
+                const isOfflineTooLong = (nowTime - lastSyncTime) > sixHours;
 
-        isFirebaseSyncing = true;
-        
-        if (data.vlookup) window.masterVlookup = data.vlookup;
-        if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
-        if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
-        if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
+                isFirebaseSyncing = true;
+                
+                if (data.vlookup) window.masterVlookup = data.vlookup;
+                if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
+                if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
+                if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
-        // Jika offline lebih dari 6 jam, abaikan cache lokal jadul dan ambil mutlak dari Cloud (Mencegah data hantu hidup lagi)
-        if (isOfflineTooLong) {
-            window.transaksiJurnal = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi || {});
-            window.piutangList = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang || {});
-            window.stokOpnameItems = Array.isArray(data.stok) ? data.stok : Object.values(data.stok || {});
-            window.sparepartList = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart || {});
-            window.riwayatBelanjaStok = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok || {});
-            window.setoranOwnerList = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran || {});
-            window.operasionalList = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional || {});
-        } else {
-            // Sinkronisasi normal jika perangkat aktif / baru saja offline sebentar
-            if (data.transaksi) {
-                let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
-                let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
-                let mergedMap = {};
-                cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
+                if (isOfflineTooLong) {
+                    window.transaksiJurnal = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi || {});
+                    window.piutangList = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang || {});
+                    window.stokOpnameItems = Array.isArray(data.stok) ? data.stok : Object.values(data.stok || {});
+                    window.sparepartList = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart || {});
+                    window.riwayatBelanjaStok = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok || {});
+                    window.setoranOwnerList = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran || {});
+                    window.operasionalList = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional || {});
+                } else {
+                    if (data.transaksi) {
+                        let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
+                        let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
+                        let mergedMap = {};
+                        cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                        localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                        window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
+                    }
+
+                    if (data.piutang) {
+                        let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
+                        let mergedPMap = {};
+                        cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
+                        window.piutangList = Object.values(mergedPMap);
+                    }
+
+                    if (data.stok) {
+                        let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
+                        let mergedSMap = {};
+                        cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
+                        window.stokOpnameItems = Object.values(mergedSMap);
+                    }
+
+                    if (data.sparepart) {
+                        let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
+                        let mergedSpMap = {};
+                        cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
+                        window.sparepartList = Object.values(mergedSpMap);
+                    }
+
+                    if (data.riwayatBelanjaStok) {
+                        let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
+                        let mergedRbMap = {};
+                        cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
+                        window.riwayatBelanjaStok = Object.values(mergedRbMap);
+                    }
+
+                    if (data.setoran) {
+                        let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
+                        let mergedSetorMap = {};
+                        cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
+                        window.setoranOwnerList = Object.values(mergedSetorMap);
+                    }
+
+                    if (data.operasional) {
+                        let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
+                        let mergedOpMap = {};
+                        cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
+                        window.operasionalList = Object.values(mergedOpMap);
+                    }
+                }
+
+                localStorage.setItem('zencell_last_sync', Date.now().toString());
+
+                window.saveLocalBackup();
+                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
+
+                window.syncPendingQueue();
+                window.initDropdowns();
+                window.initVlookupAutoFill();
+                window.renderAll();
+                isFirebaseSyncing = false;
+            } else {
+                isFirebaseSyncing = false;
             }
-
-            if (data.piutang) {
-                let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
-                let mergedPMap = {};
-                cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
-                window.piutangList = Object.values(mergedPMap);
+        }, (error) => {
+            console.error("Firebase Connection Error:", error);
+            if (statusEl) {
+                statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
             }
-
-            if (data.stok) {
-                let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
-                let mergedSMap = {};
-                cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
-                window.stokOpnameItems = Object.values(mergedSMap);
-            }
-
-            if (data.sparepart) {
-                let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
-                let mergedSpMap = {};
-                cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
-                window.sparepartList = Object.values(mergedSpMap);
-            }
-
-            if (data.riwayatBelanjaStok) {
-                let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
-                let mergedRbMap = {};
-                cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
-                window.riwayatBelanjaStok = Object.values(mergedRbMap);
-            }
-
-            if (data.setoran) {
-                let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
-                let mergedSetorMap = {};
-                cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
-                window.setoranOwnerList = Object.values(mergedSetorMap);
-            }
-
-            if (data.operasional) {
-                let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
-                let mergedOpMap = {};
-                cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
-                window.operasionalList = Object.values(mergedOpMap);
-            }
-        }
-
-        // Perbarui stempel waktu sinkronisasi sukses
-        localStorage.setItem('zencell_last_sync', Date.now().toString());
-
-        window.saveLocalBackup();
-        if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
-
-        window.syncPendingQueue();
-        window.initDropdowns();
-        window.initVlookupAutoFill();
-        window.renderAll();
-        isFirebaseSyncing = false;
-    } else {
-        isFirebaseSyncing = false;
-    }
-}, (error) => {
-    console.error("Firebase Connection Error:", error);
-    if (statusEl) {
-        statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
-    }
-});
+        });
 
         window.saveLocalBackup = function() {
             localStorage.setItem('zencell_transaksi', JSON.stringify(window.transaksiJurnal));
@@ -2651,8 +2644,8 @@
                     <td style="text-align: right; font-weight: bold; color: #2563eb;">Rp${(item.total || 0).toLocaleString('id-ID')}</td>
                     <td><span style="color: #7c3aed; font-weight: 500; font-size: 12px;">${item.sumberKas || '-'}</span></td>
                     <td style="text-align: center;">
-                        <button onclick="editRiwayatBelanja(${item.id})" class="btn-edit">Edit</button>
-                        <button onclick="hapusRiwayatBelanja(${item.id})" class="btn-delete">Hapus</button>
+                        <button onclick="editRiwayatBelanja('${item.id}')" class="btn-edit">Edit</button>
+                        <button onclick="hapusRiwayatBelanja('${item.id}')" class="btn-delete">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2685,41 +2678,12 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        window.hapusRiwayatBelanja = function(id) {
-            if(!confirm("Yakin ingin menghapus data belanja ini? Saldo kas akan dikembalikan dan stok terkait akan dihapus.")) return;
-            
-            const targetRiwayat = window.riwayatBelanjaStok.find(r => r.id == id);
-            if (targetRiwayat) {
-                if (window.stokOpnameItems) {
-                    window.stokOpnameItems = window.stokOpnameItems.filter(s => {
-                        const isIdMatch = (s.id == id);
-                        const isNameMatch = (s.nama.trim().toUpperCase() === targetRiwayat.nama.trim().toUpperCase() && s.kat === targetRiwayat.kat);
-                        return !(isIdMatch || isNameMatch);
-                    });
-                }
-            }
-
-            window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
-            
-            if (typeof window.saveAllToFirebase === 'function') {
-                window.saveAllToFirebase();
-            } else {
-                window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
-                if (window.stokOpnameItems) window.saveToFirebaseNode('stok', window.stokOpnameItems);
-            }
-            
-            if (typeof window.renderAll === 'function') {
-                window.renderAll();
-            }
-            
-            alert("✅ Berhasil! Riwayat belanja dan stok terkait dibersihkan.");
-        };
-
+        // FUNGSI SIMPAN STOK OPNAME (MURNI SEBAGAI STOK & MUTASI SALDO, TIDAK MASUK KE JURNAL TRANSAKSI KASIR)
         window.simpanStokOpname = function(e) {
             if (e) e.preventDefault();
             
             const editId = document.getElementById('editStokId').value;
-            const kat = document.getElementById('stokKat').value;
+            const kat = document.getElementById('stokKat').value; // VOUCHER, SP, ACC
             const nama = document.getElementById('stokNama').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
@@ -2728,7 +2692,7 @@
             const totalNilai = qty * modal;
             
             const now = new Date();
-            const tglInput = now.toLocaleDateString('id-ID');
+            const tglInput = window.getTodayIso();
             const waktuInput = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
             if (!nama || qty <= 0 || modal <= 0) {
@@ -2778,18 +2742,23 @@
             }
             if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
 
-            if (typeof window.saveAllToFirebase === 'function') {
-                window.saveAllToFirebase();
-            } else {
-                window.saveToFirebaseNode('stok', window.stokOpnameItems);
-                window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
-            }
+            window.saveAllToFirebase();
+            window.renderAll();
 
-            if (typeof window.renderAll === 'function') {
-                window.renderAll();
-            }
+            alert(`✅ Belanja Stok [${nama}] (${kat}) berhasil disimpan! Saldo ${sumberKas} terpotong & masuk ke saldo akun ${kat}.`);
+        };
 
-            alert(`✅ Stok [${nama}] berhasil disimpan!`);
+        // FUNGSI HAPUS BELANJA STOK / STOK OPNAME YANG BERSIH & AMAN
+        window.hapusRiwayatBelanja = function(id) {
+            if(!confirm("Yakin ingin menghapus data belanja ini? Saldo kas akan dikembalikan dan item stok terkait akan dihapus.")) return;
+            
+            window.stokOpnameItems = window.stokOpnameItems.filter(s => s.id != id);
+            window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
+            
+            window.saveAllToFirebase();
+            window.renderAll();
+            
+            alert("✅ Berhasil! Riwayat belanja dan stok terkait dibersihkan.");
         };
 
         window.simpanPiutang = function(e) {
@@ -3061,25 +3030,21 @@
         }
 
         window.hapusPiutang = function(id) {
-    if (confirm("Apakah Anda yakin ingin menghapus data utang ini? Saldo asal akan dikembalikan dan saldo piutang akan di-rollback.")) {
-        // 1. Cari data piutang yang akan dihapus untuk tahu akun sumber & nominalnya
-        const targetPiutang = window.piutangList.find(p => p.id === id);
-        
-        if (targetPiutang) {
-            // 2. Hapus jurnal transaksi inisial / pelunasan yang terkait dengan idPiutangRef ini
-            window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
+            if (confirm("Apakah Anda yakin ingin menghapus data utang ini? Saldo asal akan dikembalikan dan saldo piutang akan di-rollback.")) {
+                const targetPiutang = window.piutangList.find(p => p.id === id);
+                
+                if (targetPiutang) {
+                    window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
+                }
+
+                window.piutangList = window.piutangList.filter(p => p.id !== id);
+
+                window.saveAllToFirebase();
+                window.renderAll();
+                
+                alert("✅ Data utang dan saldo piutang terkait berhasil dibersihkan!");
+            }
         }
-
-        // 3. Hapus data dari list piutang
-        window.piutangList = window.piutangList.filter(p => p.id !== id);
-
-        // 4. Simpan perubahan ke Firebase & lokal
-        window.saveAllToFirebase();
-        window.renderAll();
-        
-        alert("✅ Data utang dan saldo piutang terkait berhasil dibersihkan!");
-    }
-}
 
         window.hapusJurnalTrx = function(origIdx) {
             const t = window.transaksiJurnal[origIdx];
@@ -3533,7 +3498,7 @@
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
-                bStok.innerHTML = window.stokOpnameItems.map((s, idx) => {
+                bStok.innerHTML = window.stokOpnameItems.map((s) => {
                     const sisa = s.awal - s.terjual;
                     const nilaiSisa = sisa * s.modal;
                     
@@ -3671,9 +3636,17 @@
                 }
             });
 
+            // Akumulasi Mutasi Belanja Stok secara mandiri (Tanpa masuk ke jurnal transaksi)
             if (window.riwayatBelanjaStok) {
                 window.riwayatBelanjaStok.forEach(r => {
+                    if (r.kat && r.total > 0) {
+                        // Masuk ke saldo akun kategori (VOUCHER, SP, ACC)
+                        if (masukAkun[r.kat] !== undefined) {
+                            masukAkun[r.kat] += Number(r.total || 0);
+                        }
+                    }
                     if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO') {
+                        // Keluar dari kas sumber
                         if (keluarAkun[r.sumberKas] !== undefined) {
                             keluarAkun[r.sumberKas] += Number(r.total || 0);
                         }
