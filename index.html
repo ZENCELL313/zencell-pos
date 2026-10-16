@@ -157,6 +157,9 @@
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 
+        /* MENCEGAH BUG MUNCUL SAAT REFRESH */
+        .split-box { display: none; background: var(--primary-light); padding: 8px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; }
+
         .sticky-subnav { position: sticky; top: 110px; z-index: 8900; background: var(--bg); padding: 4px 0 8px 0; }
         .sub-nav-tabs { display: flex; gap: 6px; background: var(--primary-light); padding: 5px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; }
         .sub-tab-btn { flex: 1; padding: 8px 6px; border: none; background: transparent; font-size: 10.5px; font-weight: 700; color: var(--primary); border-radius: 6px; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
@@ -2144,6 +2147,9 @@
 
             window.initDropdowns();
             window.initVlookupAutoFill();
+            
+            // MEMASTIKAN STATUS SPLIT TERTUTUP SEMPURNA SAAT AWAL LOAD
+            window.cancelEditTrx();
 
             window.saveStateSnapshot();
             window.renderAll();
@@ -2281,9 +2287,15 @@
         }
 
         window.toggleSplitMode = function(isSplit) {
-            document.getElementById('boxSingleModeInputs').style.display = isSplit ? 'none' : 'block';
-            document.getElementById('boxSplitMasuk').style.display = isSplit ? 'block' : 'none';
-            document.getElementById('boxSplitKeluar').style.display = isSplit ? 'block' : 'none';
+            const boxSingle = document.getElementById('boxSingleModeInputs');
+            const boxSplitM = document.getElementById('boxSplitMasuk');
+            const boxSplitK = document.getElementById('boxSplitKeluar');
+            const chk = document.getElementById('chkSplit');
+
+            if (boxSingle) boxSingle.style.display = isSplit ? 'none' : 'block';
+            if (boxSplitM) boxSplitM.style.display = isSplit ? 'block' : 'none';
+            if (boxSplitK) boxSplitK.style.display = isSplit ? 'block' : 'none';
+            if (chk) chk.checked = isSplit;
 
             if (isSplit) {
                 if (!document.getElementById('splitAkunMasuk1').value) {
@@ -3048,37 +3060,40 @@
             if (!t) return;
 
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${t.ket}"?`)) {
+                const ketUpper = (t.ket || '').trim().toUpperCase();
+
                 // 1. Jika ini transaksi pencatatan utang awal
                 if (t.isPencatatanUtangAwal && t.idPiutangRef) {
                     window.piutangList = window.piutangList.filter(p => p.id !== t.idPiutangRef);
                 } 
                 // 2. Jika ini transaksi PELUNASAN UTANG
-                else if (t.idPiutangRef && (t.akunKeluar1 === 'PIUTANG' || t.isPelunasanUtang)) {
-                    const matchPiutang = window.piutangList.find(p => p.id === t.idPiutangRef);
+                else if (t.idPiutangRef || ketUpper.includes('PELUNASAN UTANG') || (t.akunKeluar1 === 'PIUTANG')) {
+                    let matchPiutang = null;
+                    if (t.idPiutangRef) {
+                        matchPiutang = window.piutangList.find(p => p.id === t.idPiutangRef);
+                    }
+                    if (!matchPiutang) {
+                        matchPiutang = window.piutangList.find(p => ketUpper.includes(p.nama.toUpperCase()));
+                    }
+
                     if (matchPiutang) {
-                        // Kembalikan sisa pokok utang sebesar modal/pokok yang dibayar sebelumnya
-                        const pokokDikembalikan = Number(t.hargaModal || 0);
+                        const pokokDikembalikan = Number(t.hargaModal || t.hargaJual || 0);
                         matchPiutang.sisa += pokokDikembalikan;
-                        
-                        // Jika sebelumnya sudah LUNAS, kembalikan statusnya menjadi BELUM LUNAS
                         matchPiutang.status = 'BELUM LUNAS';
 
-                        // Hapus histori cicilan terakhir yang sesuai dengan transaksi ini
-                        if (matchPiutang.riwayatCicilan) {
-                            matchPiutang.riwayatCicilan = matchPiutang.riwayatCicilan.filter(c => c.bayar !== Number(t.hargaJual || 0));
+                        if (matchPiutang.riwayatCicilan && matchPiutang.riwayatCicilan.length > 0) {
+                            matchPiutang.riwayatCicilan.pop();
                         }
                         matchPiutang.syncStatus = 'pending';
                     }
                 } 
-                // 3. LOGIKA TAMBAHAN: Jika transaksi ini adalah pelunasan Service Sparepart
-                else {
-                    // Cek apakah ada sparepart service yang namanya cocok dengan keterangan transaksi ini
-                    const ketUpper = (t.ket || '').trim().toUpperCase();
+                // 3. Jika ini transaksi Service / Sparepart
+                else if (t.kat === 'SERVICE' || t.akunKeluar1 === 'SPAREPART') {
                     window.sparepartList.forEach(sp => {
                         const namaSp = (sp.namaUnit || '').trim().toUpperCase();
                         if (namaSp && (ketUpper.includes(namaSp) || namaSp.includes(ketUpper))) {
-                            // Kembalikan status sparepart service menjadi BELUM LUNAS
                             sp.status = 'BELUM LUNAS';
+                            sp.syncStatus = 'pending';
                         }
                     });
                 }
@@ -3092,7 +3107,7 @@
                 window.saveToFirebaseNode('sparepart', window.sparepartList);
                 window.renderAll();
                 
-                alert("✅ Transaksi berhasil dihapus dan status piutang/service berhasil dikembalikan menjadi Belum Lunas!");
+                alert("✅ Transaksi berhasil dihapus dan status piutang/service telah dikembalikan menjadi Belum Lunas!");
             }
         }
 
