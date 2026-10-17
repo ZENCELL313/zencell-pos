@@ -40,6 +40,7 @@
             --primary: #059669;
             --primary-dark: #0F172A;
             --primary-light: #1E293B;
+            --accent: #34D399;
             --bg: #0F172A;
             --card: #1E293B;
             --text: #F8FAFC;
@@ -57,6 +58,8 @@
             padding-bottom: 105px; 
             transition: background-color 0.3s ease, color 0.3s ease; 
         }
+
+        input[type="text"], textarea, select { text-transform: uppercase; }
 
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -157,8 +160,6 @@
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 
-        .split-box { display: none; background: var(--primary-light); padding: 8px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; }
-
         .sticky-subnav { position: sticky; top: 110px; z-index: 8900; background: var(--bg); padding: 4px 0 8px 0; }
         .sub-nav-tabs { display: flex; gap: 6px; background: var(--primary-light); padding: 5px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; }
         .sub-tab-btn { flex: 1; padding: 8px 6px; border: none; background: transparent; font-size: 10.5px; font-weight: 700; color: var(--primary); border-radius: 6px; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
@@ -167,6 +168,7 @@
         .tab-content, .sub-tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
         .tab-content.active, .sub-tab-content.active { display: block; opacity: 1; transform: translateY(0); }
 
+        /* FAB SPEED DIAL CONTAINER */
         .fab-container { position: fixed; bottom: 75px; right: 20px; z-index: 9998; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
         .fab-main {
             width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;
@@ -201,7 +203,6 @@
         .btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background-color: var(--primary); color: white; font-weight: 700; font-size: 12.5px; cursor: pointer; }
         .btn-edit { background-color: #F59E0B; color: #FFF; border: none; padding: 4px 7px; border-radius: 6px; font-size: 10.5px; font-weight: bold; cursor: pointer; margin-right: 2px; }
         .btn-delete { background-color: #EF4444; color: #FFF; border: none; padding: 4px 7px; border-radius: 6px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
-        .btn-pay { background-color: #16A34A; color: #FFF; border: none; padding: 4px 7px; border-radius: 6px; font-size: 10.5px; font-weight: bold; cursor: pointer; margin-right: 2px; }
         .btn-print { background-color: #0284C7; color: #FFF; border: none; padding: 4px 7px; border-radius: 6px; font-size: 10.5px; font-weight: bold; cursor: pointer; margin-right: 2px; }
 
         .filter-container { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; background: var(--primary-light); padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
@@ -264,7 +265,7 @@
             .fab-container { bottom: 85px; right: 30px; }
             .fab-main { width: 58px; height: 58px; font-size: 30px; }
             .modal-content { max-width: 520px; padding: 22px; }
-            .btn-edit, .btn-delete, .btn-pay, .btn-print { padding: 5px 8px; font-size: 11px; }
+            .btn-edit, .btn-delete, .btn-print { padding: 5px 8px; font-size: 11px; }
             .date-picker-input { font-size: 12px; padding: 6px 10px; }
         }
     </style>
@@ -278,7 +279,9 @@
             <span>💰 SALDO REALTIME</span>
             <button onclick="toggleSaldoSidebar()" style="background:none; border:none; color:white; font-size:18px; font-weight:bold; cursor:pointer;">✕</button>
         </div>
-        <div class="sidebar-content" id="sidebarSaldoListContent"></div>
+        <div class="sidebar-content" id="sidebarSaldoListContent">
+            <!-- Di-generate otomatis via JS -->
+        </div>
     </div>
 
     <input type="file" id="fileRestoreJson" accept=".json" style="display:none;" onchange="restoreJSON(event)">
@@ -294,7 +297,7 @@
                         <option value="Owner">👤 OWNER</option>
                         <option value="Fina">👩‍💼 FINA (KASIR 1)</option>
                         <option value="Eca">👩‍💼 ECA (KASIR 2)</option>
-                        <option value="Admin">🔑 ADMIN / CADANGAN</option>
+                        <option value="Tamu">🔑TAMU</option>
                     </select>
                 </div>
                 <div class="form-group" style="text-align:left; margin-bottom:18px;">
@@ -429,7 +432,7 @@
         <div class="row-3" style="margin-bottom:10px;">
             <div class="card auto-collapse-card" id="cardVlookupFast" style="margin-bottom:0; padding:8px;">
                 <div class="card-header card-header-toggle" onclick="toggleAccordion('boxVlookupFast', 'arrowVlookup')" style="font-size:11px; padding:6px 8px; margin-bottom:0;">
-                    <span>+ VLOOKUP</span>
+                    <span>+ DATA OTOMATIS</span>
                     <span id="arrowVlookup" style="font-size:9px;">▼</span>
                 </div>
                 <div id="boxVlookupFast" style="display:none; margin-top:8px;">
@@ -442,14 +445,14 @@
                         <input type="hidden" id="v_jual_fast" value="0">
                         <input type="text" id="v_modal_fastDisplay" class="form-control" placeholder="H. MODAL RP" inputmode="decimal" pattern="[0-9.]*" style="margin-bottom:6px;" oninput="formatNominal(this, 'v_modal_fast')">
                         <input type="hidden" id="v_modal_fast" value="0">
-                        <button type="submit" class="btn">+ VLOOKUP</button>
+                        <button type="submit" class="btn">SIMPAN</button>
                     </form>
                 </div>
             </div>
 
             <div class="card auto-collapse-card" id="cardTfFast" style="margin-bottom:0; padding:8px;">
                 <div class="card-header card-header-toggle" onclick="toggleAccordion('boxTfFast', 'arrowTf')" style="font-size:11px; padding:6px 8px; margin-bottom:0;">
-                    <span>🔀 PINDAH</span>
+                    <span>🔀 PINDAH SALDO</span>
                     <span id="arrowTf" style="font-size:9px;">▼</span>
                 </div>
                 <div id="boxTfFast" style="display:none; margin-top:8px;">
@@ -464,14 +467,14 @@
                         <label style="font-size:10px;">Biaya Admin Rp (Opsional)</label>
                         <input type="text" id="tfAdminDisplay_fast" class="form-control" placeholder="ADMIN" inputmode="decimal" pattern="[0-9.]*" style="margin-bottom:6px;" oninput="formatNominal(this, 'tfAdmin_fast')">
                         <input type="hidden" id="tfAdmin_fast" value="0">
-                        <button type="submit" class="btn">PROSES PINDAH</button>
+                        <button type="submit" class="btn">PROSES</button>
                     </form>
                 </div>
             </div>
 
             <div class="card auto-collapse-card" id="cardSetorFast" style="margin-bottom:0; padding:8px; background:#FEF2F2; border-color:#FECACA;">
                 <div class="card-header card-header-toggle" onclick="toggleAccordion('boxSetorFast', 'arrowSetor')" style="font-size:11px; padding:6px 8px; margin-bottom:0; background:#FEE2E2; color:#991B1B;">
-                    <span>💸 SETORAN</span>
+                    <span>💸 SETORAN PROFIT</span>
                     <span id="arrowSetor" style="font-size:9px;">▼</span>
                 </div>
                 <div id="boxSetorFast" style="display:none; margin-top:8px;">
@@ -491,7 +494,7 @@
         <div class="card">
             <div class="card-header">
                 <span>📖 Jurnal Transaksi Harian</span>
-                <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalKasir()">+ Input Baru</button>
+                <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
             </div>
 
             <div class="filter-container">
@@ -670,7 +673,7 @@
     <div id="tab-piutang" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>🤝 Rekap Piutang Konsumen</span>
+                <span>🤝 REKAP PIUTANG KONSUMEN</span>
                 <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
             </div>
             <div class="table-responsive">
@@ -1092,27 +1095,27 @@
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchMainTab(event, 'tab-kasir')">
             <span class="icon">🛒</span>
-            <span>Kasir</span>
+            <span>KASIR</span>
         </button>
         <button class="nav-item" onclick="switchMainTab(event, 'tab-service')">
             <span class="icon">🛠️</span>
-            <span>Service</span>
+            <span>SERVICE</span>
         </button>
         <button class="nav-item" onclick="switchMainTab(event, 'tab-stok')">
             <span class="icon">📦</span>
-            <span>Stok</span>
+            <span>STOK</span>
         </button>
         <button class="nav-item" onclick="switchMainTab(event, 'tab-piutang')">
             <span class="icon">🤝</span>
-            <span>Piutang</span>
+            <span>PIUTANG</span>
         </button>
         <button class="nav-item" onclick="switchMainTab(event, 'tab-operasional')">
             <span class="icon">💸</span>
-            <span>Operasional</span>
+            <span>OPERATIONAL</span>
         </button>
         <button class="nav-item" onclick="switchMainTab(event, 'tab-laporan')">
             <span class="icon">📊</span>
-            <span>Laporan</span>
+            <span>LAPORAN</span>
         </button>
     </nav>
 
@@ -1199,7 +1202,7 @@
             </div>
             <p style="font-size:12px; margin-bottom:12px; line-height:1.5;">Tindakan ini akan menghapus seluruh data transaksi, piutang, stok opname, dan setoran secara permanen. Ketik teks <b>KONFIRMASI HAPUS</b> di bawah ini untuk melanjutkan:</p>
             <div class="form-group">
-                <input type="text" id="inputResetKonfirmasi" class="form-control" placeholder="KETIK: KONFIRMASI HAPUS" oninput="cekValidasiReset(this.value)" style="border-color:#EF4444; font-weight:bold; text-align:center;">
+                <input type="text" id="inputResetKonfirmasi" class="form-control" placeholder="KETIK: KONFIRMASI HAPUS" oninput="cekValidasiReset(this)" style="border-color:#EF4444; font-weight:bold; text-align:center;">
             </div>
             <div class="row-2" style="margin-top:14px;">
                 <button type="button" id="btnEksekusiReset" class="btn" style="background:#EF4444;" disabled onclick="eksekusiResetDataTotal()">HAPUS SEMUA DATA</button>
@@ -1282,59 +1285,6 @@
 
     <div id="printArea" style="display:none;"></div>
 
-    <!-- MODAL BAYAR PIUTANG -->
-    <div id="modalBayarPiutangOverlay" class="modal-overlay">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="font-size:15px; color:var(--primary);">💳 Pelunasan Utang / Cicilan</h3>
-                <button onclick="closeModalBayarPiutang()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
-            </div>
-
-            <form onsubmit="prosesBayarPiutangDetail(event)">
-                <input type="hidden" id="bpId" value="">
-                <input type="hidden" id="bpPokokUtang" value="0">
-
-                <div class="form-group">
-                    <label>Nama Pengutang</label>
-                    <input type="text" id="bpNama" class="form-control" readonly style="font-weight:bold; background:var(--primary-light);">
-                </div>
-
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Kategori Transaksi</label>
-                        <select id="bpKat" class="form-control" required style="font-weight:bold; border-color:var(--primary);"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Masuk Ke Akun</label>
-                        <select id="bpAkunMasuk" class="form-control" required></select>
-                    </div>
-                </div>
-
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Sisa Pokok Utang</label>
-                        <input type="text" id="bpSisaDisplay" class="form-control" readonly style="color:#EF4444; font-weight:bold;">
-                    </div>
-                    <div class="form-group">
-                        <label style="color:var(--primary); font-weight:bold;">Jumlah Diterima / Cicil (Rp)</label>
-                        <input type="text" id="bpNomBayarDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'bpNomBayar'); hitungCuanPiutang();">
-                        <input type="hidden" id="bpNomBayar" value="0">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Keuntungan / Cuan Lebih Utang</label>
-                    <input type="text" id="bpCuanDisplay" class="form-control text-cuan" placeholder="Rp0" readonly style="font-weight:bold; background-color:#FEF3C7;">
-                </div>
-
-                <div class="row-2" style="margin-top:12px;">
-                    <button type="submit" class="btn" style="background:#16A34A;">Proses Pembayaran</button>
-                    <button type="button" class="btn" style="background:#64748B;" onclick="closeModalBayarPiutang()">Batal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- MODAL INPUT KASIR -->
     <div id="modalKasirOverlay" class="modal-overlay">
         <div class="modal-content">
@@ -1359,7 +1309,7 @@
 
                 <div class="form-group">
                     <label>Keterangan Transaksi / Nama Barang</label>
-                    <input type="text" id="keterangan" list="listVlookup" class="form-control" placeholder="KETIK KATA KUNCI (CONTOH: V TRI 5/3)..." required autocomplete="off">
+                    <input type="text" id="keterangan" list="listVlookup" class="form-control" placeholder="KETIK KATA KUNCI (CONTOH: V TRI 5/3 / BAYAR NAMA)..." required autocomplete="off">
                     <datalist id="listVlookup"></datalist>
                     <div id="vlookupNotice" class="badge-vlookup">⚡ Auto-Fill VLOOKUP / Sparepart / Utang Terdeteksi!</div>
                     <div id="stokWarningBadge" class="badge-warn-stok">⚠️ Stok Tinggal Sedikit!</div>
@@ -1478,7 +1428,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
         const manifestData = {
             "name": "POS ZENCELL 1",
@@ -1558,11 +1508,6 @@
         onValue(ref(db, 'zencellNodes'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                const lastSyncTime = parseInt(localStorage.getItem('zencell_last_sync') || '0');
-                const nowTime = Date.now();
-                const sixHours = 6 * 60 * 60 * 1000;
-                const isOfflineTooLong = (nowTime - lastSyncTime) > sixHours;
-
                 isFirebaseSyncing = true;
                 
                 if (data.vlookup) window.masterVlookup = data.vlookup;
@@ -1570,68 +1515,56 @@
                 if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
                 if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
-                if (isOfflineTooLong) {
-                    window.transaksiJurnal = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi || {});
-                    window.piutangList = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang || {});
-                    window.stokOpnameItems = Array.isArray(data.stok) ? data.stok : Object.values(data.stok || {});
-                    window.sparepartList = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart || {});
-                    window.riwayatBelanjaStok = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok || {});
-                    window.setoranOwnerList = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran || {});
-                    window.operasionalList = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional || {});
-                } else {
-                    if (data.transaksi) {
-                        let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
-                        let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
-                        let mergedMap = {};
-                        cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                        localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                        window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
-                    }
-
-                    if (data.piutang) {
-                        let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
-                        let mergedPMap = {};
-                        cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
-                        window.piutangList = Object.values(mergedPMap);
-                    }
-
-                    if (data.stok) {
-                        let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
-                        let mergedSMap = {};
-                        cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
-                        window.stokOpnameItems = Object.values(mergedSMap);
-                    }
-
-                    if (data.sparepart) {
-                        let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
-                        let mergedSpMap = {};
-                        cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
-                        window.sparepartList = Object.values(mergedSpMap);
-                    }
-
-                    if (data.riwayatBelanjaStok) {
-                        let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
-                        let mergedRbMap = {};
-                        cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
-                        window.riwayatBelanjaStok = Object.values(mergedRbMap);
-                    }
-
-                    if (data.setoran) {
-                        let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
-                        let mergedSetorMap = {};
-                        cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
-                        window.setoranOwnerList = Object.values(mergedSetorMap);
-                    }
-
-                    if (data.operasional) {
-                        let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
-                        let mergedOpMap = {};
-                        cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
-                        window.operasionalList = Object.values(mergedOpMap);
-                    }
+                if (data.transaksi) {
+                    let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
+                    let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
+                    let mergedMap = {};
+                    cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                    localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
+                    window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
                 }
 
-                localStorage.setItem('zencell_last_sync', Date.now().toString());
+                if (data.piutang) {
+                    let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
+                    let mergedPMap = {};
+                    cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
+                    window.piutangList = Object.values(mergedPMap);
+                }
+
+                if (data.stok) {
+                    let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
+                    let mergedSMap = {};
+                    cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
+                    window.stokOpnameItems = Object.values(mergedSMap);
+                }
+
+                if (data.sparepart) {
+                    let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
+                    let mergedSpMap = {};
+                    cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
+                    window.sparepartList = Object.values(mergedSpMap);
+                }
+
+                if (data.riwayatBelanjaStok) {
+                    let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
+                    let mergedRbMap = {};
+                    cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
+                    window.riwayatBelanjaStok = Object.values(mergedRbMap);
+                }
+
+                if (data.setoran) {
+                    let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
+                    let mergedSetorMap = {};
+                    cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
+                    window.setoranOwnerList = Object.values(mergedSetorMap);
+                }
+
+                if (data.operasional) {
+                    let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
+                    let mergedOpMap = {};
+                    cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
+                    window.operasionalList = Object.values(mergedOpMap);
+                }
 
                 window.saveLocalBackup();
                 if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
@@ -1873,7 +1806,7 @@
             let valid = false;
             if (user === 'Owner' && pass === '212') valid = true;
             if ((user === 'Fina' || user === 'Eca') && pass === '313') valid = true;
-            if (user === 'Admin' && pass === '414') valid = true;
+            if (user === 'Tamu' && pass === '414') valid = true;
 
             if (valid) {
                 sessionStorage.setItem('zencell_user', user);
@@ -1908,10 +1841,10 @@
             document.getElementById('modalResetOverlay').classList.remove('show');
         }
 
-        window.cekValidasiReset = function(val) {
+        window.cekValidasiReset = function(el) {
             const btn = document.getElementById('btnEksekusiReset');
-            const cleanVal = (val || '').trim().toUpperCase();
-            if (cleanVal === 'KONFIRMASI HAPUS') {
+            const val = el.value.trim().toUpperCase();
+            if (val === 'KONFIRMASI HAPUS') {
                 btn.disabled = false;
             } else {
                 btn.disabled = true;
@@ -1933,10 +1866,12 @@
             alert("✅ Seluruh data testing berhasil di-reset bersih!");
         }
 
-        window.openModalKasir = function() { 
+       window.openModalKasir = function() { 
             const overlay = document.getElementById('modalKasirOverlay');
             if (document.getElementById('editTrxIdx').value === '-1') {
                 document.getElementById('trxDateInput').value = window.getTodayIso();
+                document.getElementById('chkSplit').checked = false;
+                window.toggleSplitMode(false);
             }
             overlay.classList.add('show');
         }
@@ -1944,6 +1879,24 @@
         window.closeModalKasir = function() { 
             document.getElementById('modalKasirOverlay').classList.remove('show');
             window.cancelEditTrx(); 
+        }
+
+        window.cancelEditTrx = function() {
+            document.getElementById('formTrx').reset();
+            document.getElementById('editTrxIdx').value = '-1';
+            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('hargaJual').value = '0';
+            document.getElementById('hargaModal').value = '0';
+            document.getElementById('jualSplit1').value = '0';
+            document.getElementById('jualSplit2').value = '0';
+            document.getElementById('modalSplit1').value = '0';
+            document.getElementById('modalSplit2').value = '0';
+            document.getElementById('cuanDisplay').value = 'Rp0';
+            document.getElementById('vlookupNotice').style.display = 'none';
+            document.getElementById('stokWarningBadge').style.display = 'none';
+            
+            document.getElementById('chkSplit').checked = false;
+            window.toggleSplitMode(false);
         }
 
         window.switchMainTab = function(evt, tabId) {
@@ -2145,8 +2098,6 @@
 
             window.initDropdowns();
             window.initVlookupAutoFill();
-            
-            window.cancelEditTrx();
 
             window.saveStateSnapshot();
             window.renderAll();
@@ -2284,15 +2235,9 @@
         }
 
         window.toggleSplitMode = function(isSplit) {
-            const boxSingle = document.getElementById('boxSingleModeInputs');
-            const boxSplitM = document.getElementById('boxSplitMasuk');
-            const boxSplitK = document.getElementById('boxSplitKeluar');
-            const chk = document.getElementById('chkSplit');
-
-            if (boxSingle) boxSingle.style.display = isSplit ? 'none' : 'block';
-            if (boxSplitM) boxSplitM.style.display = isSplit ? 'block' : 'none';
-            if (boxSplitK) boxSplitK.style.display = isSplit ? 'block' : 'none';
-            if (chk) chk.checked = isSplit;
+            document.getElementById('boxSingleModeInputs').style.display = isSplit ? 'none' : 'block';
+            document.getElementById('boxSplitMasuk').style.display = isSplit ? 'block' : 'none';
+            document.getElementById('boxSplitKeluar').style.display = isSplit ? 'block' : 'none';
 
             if (isSplit) {
                 if (!document.getElementById('splitAkunMasuk1').value) {
@@ -2347,14 +2292,12 @@
             const vKatFast = document.getElementById('v_kat_fast');
             const fKat = document.getElementById('jurnalFilterKat');
             const pKat = document.getElementById('pKat');
-            const bpKat = document.getElementById('bpKat');
             const stokKas = document.getElementById('stokSumberKas');
             const cfgAkun = document.getElementById('cfgAkunTarget');
             
             if (!kSel) return;
             kSel.innerHTML = ''; vKat.innerHTML = ''; if (vKatFast) vKatFast.innerHTML = '';
             if (pKat) pKat.innerHTML = '';
-            if (bpKat) bpKat.innerHTML = '';
             if (cfgAkun) cfgAkun.innerHTML = '<option value="">-- Pilih Akun Saldo --</option>';
             fKat.innerHTML = '<option value="">-- All Kategori --</option>';
 
@@ -2363,7 +2306,6 @@
                 vKat.innerHTML += `<option value="${k}">${k}</option>`;
                 if (vKatFast) vKatFast.innerHTML += `<option value="${k}">${k}</option>`;
                 if (pKat) pKat.innerHTML += `<option value="${k}">${k}</option>`;
-                if (bpKat) bpKat.innerHTML += `<option value="${k}">${k}</option>`;
                 fKat.innerHTML += `<option value="${k}">${k}</option>`;
             });
 
@@ -2382,7 +2324,7 @@
                 });
             }
 
-            const dropList = ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunKeluar', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'pSumber', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'bpAkunMasuk', 'setorSumber', 'opSumber'];
+            const dropList = ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunKeluar', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'pSumber', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'setorSumber', 'opSumber'];
             dropList.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -2480,7 +2422,7 @@
                     options.push(`<option value="${sp.namaUnit}">`);
                 });
                 window.piutangList.forEach(p => {
-                    if (p.sisa > 0) options.push(`<option value="BAYAR UTANG ${p.nama.toUpperCase()}">`);
+                    if (p.sisa > 0) options.push(`<option value="BAYAR ${p.nama.toUpperCase()}">`);
                 });
                 dList.innerHTML = options.join('');
             }
@@ -2507,6 +2449,7 @@
                     op.ket = ket;
                     op.nominal = nominal;
                     op.sumber = sumber;
+                    op.isoDate = tglStr;
                 }
                 document.getElementById('editOperasionalId').value = '';
                 document.getElementById('formOperasionalTitle').innerText = '💸 Catat Pengeluaran Operasional Konter';
@@ -2514,6 +2457,7 @@
             } else {
                 window.operasionalList.unshift({
                     id: Date.now(),
+                    isoDate: tglStr,
                     tgl: tglStr,
                     waktu: waktuStr,
                     ket,
@@ -2577,11 +2521,14 @@
                     sp.modal = modal;
                     sp.sumber = sumber;
                     sp.estJual = estJual;
+                    sp.isoDate = tglStr;
+                    sp.tgl = tglStr;
                 }
                 document.getElementById('editSparepartId').value = '';
             } else {
                 window.sparepartList.unshift({
                     id: Date.now(),
+                    isoDate: tglStr,
                     tgl: tglStr,
                     waktu: waktuStr,
                     namaUnit,
@@ -2644,7 +2591,7 @@
             window.riwayatBelanjaStok.forEach((item) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${item.waktu || '-'} <br><small style="color: gray;">${item.tgl || '-'}</small></td>
+                    <td>${item.waktu || '-'} <br><small style="color: gray;">${item.isoDate || item.tgl || '-'}</small></td>
                     <td><span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${item.kat}</span></td>
                     <td style="font-weight: bold;">${item.nama}</td>
                     <td style="text-align: center;">${item.qty}</td>
@@ -2652,8 +2599,8 @@
                     <td style="text-align: right; font-weight: bold; color: #2563eb;">Rp${(item.total || 0).toLocaleString('id-ID')}</td>
                     <td><span style="color: #7c3aed; font-weight: 500; font-size: 12px;">${item.sumberKas || '-'}</span></td>
                     <td style="text-align: center;">
-                        <button onclick="editRiwayatBelanja('${item.id}')" class="btn-edit">Edit</button>
-                        <button onclick="hapusRiwayatBelanja('${item.id}')" class="btn-delete">Hapus</button>
+                        <button onclick="editRiwayatBelanja(${item.id})" class="btn-edit">Edit</button>
+                        <button onclick="hapusRiwayatBelanja(${item.id})" class="btn-delete">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2686,11 +2633,21 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
+        window.hapusRiwayatBelanja = function(id) {
+            if (confirm("Yakin ingin menghapus riwayat belanja stok ini?")) {
+                window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
+                window.stokOpnameItems = window.stokOpnameItems.filter(s => s.id != id);
+                window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
+                window.saveToFirebaseNode('stok', window.stokOpnameItems);
+                window.renderAll();
+            }
+        };
+
         window.simpanStokOpname = function(e) {
             if (e) e.preventDefault();
             
             const editId = document.getElementById('editStokId').value;
-            const kat = document.getElementById('stokKat').value; 
+            const kat = document.getElementById('stokKat').value;
             const nama = document.getElementById('stokNama').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
@@ -2708,35 +2665,59 @@
             }
 
             if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
-            if (!window.stokOpnameItems) window.stokOpnameItems = [];
-
-            const recordId = editId ? editId : ('stok_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
 
             if (editId) {
-                window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != editId);
-                window.stokOpnameItems = window.stokOpnameItems.filter(s => s.id != editId);
+                let riwayat = window.riwayatBelanjaStok.find(r => r.id == editId);
+                if (riwayat) {
+                    riwayat.kat = kat;
+                    riwayat.nama = nama;
+                    riwayat.qty = qty;
+                    riwayat.modal = modal;
+                    riwayat.total = totalNilai;
+                    riwayat.sumberKas = sumberKas;
+                    riwayat.isoDate = tglInput;
+                }
+
+                let item = window.stokOpnameItems.find(i => i.id == editId || (i.nama === nama && i.kat === kat));
+                if (item) {
+                    item.awal = qty;
+                    item.modal = modal;
+                }
+
+                document.getElementById('editStokId').value = '';
+                const titleEl = document.getElementById('formStokTitle');
+                if (titleEl) titleEl.innerText = '+ Input Stok Opname';
+            } else {
+                const recordId = Date.now();
+                
+                window.riwayatBelanjaStok.unshift({
+                    id: recordId,
+                    waktu: waktuInput,
+                    isoDate: tglInput,
+                    tgl: tglInput,
+                    kat: kat,
+                    nama: nama,
+                    qty: qty,
+                    modal: modal,
+                    total: totalNilai,
+                    sumberKas: sumberKas
+                });
+
+                let item = window.stokOpnameItems.find(i => i.nama === nama && i.kat === kat);
+                if (item) {
+                    item.awal += qty;
+                    item.modal = modal;
+                } else {
+                    window.stokOpnameItems.push({
+                        id: recordId,
+                        kat: kat,
+                        nama: nama,
+                        awal: qty,
+                        terjual: 0,
+                        modal: modal
+                    });
+                }
             }
-
-            window.riwayatBelanjaStok.unshift({
-                id: recordId,
-                waktu: waktuInput,
-                tgl: tglInput,
-                kat: kat,
-                nama: nama,
-                qty: qty,
-                modal: modal,
-                total: totalNilai,
-                sumberKas: sumberKas
-            });
-
-            window.stokOpnameItems.unshift({
-                id: recordId,
-                kat: kat,
-                nama: nama,
-                awal: qty,
-                terjual: 0,
-                modal: modal
-            });
 
             document.getElementById('formStokOpname').reset();
             document.getElementById('editStokId').value = '';
@@ -2744,27 +2725,13 @@
             if (document.getElementById('stokTotalDisplay')) {
                 document.getElementById('stokTotalDisplay').value = 'Rp0';
             }
-            if (document.getElementById('formStokTitle')) {
-                document.getElementById('formStokTitle').innerText = '+ Input Stok Opname';
-            }
             if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
 
-            window.saveAllToFirebase();
+            window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
+            window.saveToFirebaseNode('stok', window.stokOpnameItems);
             window.renderAll();
 
-            alert(`✅ Belanja Stok [${nama}] (${kat}) berhasil disimpan! Saldo ${sumberKas} terpotong & masuk ke saldo akun ${kat}.`);
-        };
-
-        window.hapusRiwayatBelanja = function(id) {
-            if(!confirm("Yakin ingin menghapus data belanja ini? Saldo kas akan dikembalikan dan item stok terkait akan dihapus.")) return;
-            
-            window.stokOpnameItems = window.stokOpnameItems.filter(s => s.id != id);
-            window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
-            
-            window.saveAllToFirebase();
-            window.renderAll();
-            
-            alert("✅ Berhasil! Riwayat belanja dan stok terkait dibersihkan.");
+            alert("Data belanja stok berhasil disimpan!");
         };
 
         window.simpanPiutang = function(e) {
@@ -2802,82 +2769,6 @@
 
             window.closeModalInputPiutang();
             alert(`✅ Utang a/n ${nama} sebesar ${window.formatRp(nom)} dicatat! Saldo ${sumber} berkurang & Saldo PIUTANG bertambah.`);
-            window.initDropdowns();
-            window.saveToFirebaseNode('piutang', window.piutangList);
-            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
-            window.renderAll();
-        }
-
-        window.openModalBayarPiutang = function(id) {
-            const item = window.piutangList.find(p => p.id === id);
-            if (!item) return;
-
-            document.getElementById('bpId').value = item.id;
-            document.getElementById('bpNama').value = item.nama;
-            document.getElementById('bpPokokUtang').value = item.sisa;
-            document.getElementById('bpSisaDisplay').value = window.formatRp(item.sisa);
-            document.getElementById('bpKat').value = item.kategori || 'TOPUP';
-            document.getElementById('bpAkunMasuk').value = 'LACI';
-            document.getElementById('bpNomBayarDisplay').value = item.sisa ? Number(item.sisa).toLocaleString('id-ID') : '';
-            document.getElementById('bpNomBayar').value = item.sisa;
-
-            window.hitungCuanPiutang();
-            document.getElementById('modalBayarPiutangOverlay').classList.add('show');
-        }
-
-        window.closeModalBayarPiutang = function() { document.getElementById('modalBayarPiutangOverlay').classList.remove('show'); }
-
-        window.hitungCuanPiutang = function() {
-            const pokok = parseFloat(document.getElementById('bpPokokUtang').value) || 0;
-            const bayar = parseFloat(document.getElementById('bpNomBayar').value) || 0;
-            const selisihCuan = bayar > pokok ? (bayar - pokok) : 0;
-            document.getElementById('bpCuanDisplay').value = window.formatRp(selisihCuan);
-        }
-
-        window.prosesBayarPiutangDetail = function(e) {
-            e.preventDefault();
-            const id = parseInt(document.getElementById('bpId').value);
-            const item = window.piutangList.find(p => p.id === id);
-            if (!item) return;
-
-            const katPelunasan = document.getElementById('bpKat').value;
-            const akunMasuk = document.getElementById('bpAkunMasuk').value;
-            const nomBayar = parseFloat(document.getElementById('bpNomBayar').value) || 0;
-            const pokokUtang = item.sisa;
-
-            if (!akunMasuk) { alert("Pilih Akun Masuk Penerimaan Pembayaran!"); return; }
-            if (nomBayar <= 0) { alert("Nominal pembayaran harus lebih dari 0!"); return; }
-
-            const cuanLebih = nomBayar > pokokUtang ? (nomBayar - pokokUtang) : 0;
-            const pokokTerpotong = nomBayar > pokokUtang ? pokokUtang : nomBayar;
-
-            const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-            const tglStr = window.getTodayIso();
-            const recordId = Date.now();
-
-            item.sisa -= pokokTerpotong;
-            if (!item.riwayatCicilan) item.riwayatCicilan = [];
-            item.riwayatCicilan.push({ idCicilan: recordId, tgl: tglStr, waktu: timeStr, bayar: nomBayar, akun: akunMasuk, pokokTerpotong });
-
-            if (item.sisa <= 0) {
-                item.sisa = 0;
-                item.status = 'LUNAS';
-            }
-            item.syncStatus = 'pending';
-
-            window.transaksiJurnal.unshift({
-                id: 'trx_pay_piutang_' + recordId,
-                waktu: timeStr, isoDate: tglStr,
-                ket: `PELUNASAN UTANG ${item.nama}`, qty: 1, kat: katPelunasan,
-                isNewCustomer: true,
-                hargaJual: nomBayar, akunMasuk1: akunMasuk, jualSplit1: nomBayar, akunMasuk2: '', jualSplit2: 0,
-                hargaModal: pokokTerpotong, akunKeluar1: 'PIUTANG', modalSplit1: pokokTerpotong, akunKeluar2: '', modalSplit2: 0,
-                cuan: cuanLebih, isSplit: false, idPiutangRef: item.id, isPelunasanUtang: true,
-                syncStatus: 'pending'
-            });
-
-            window.closeModalBayarPiutang();
-            alert(`✅ Pelunasan Utang a/n ${item.nama} sebesar ${window.formatRp(nomBayar)} berhasil dicatat!`);
             window.initDropdowns();
             window.saveToFirebaseNode('piutang', window.piutangList);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
@@ -3010,9 +2901,10 @@
 
             const now = new Date();
             const timeStr = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            const tglStr = window.getTodayIso();
 
             window.setoranOwnerList.unshift({
-                id: Date.now(), waktu: timeStr, isoDate: window.getTodayIso(), sumber, nominal: nom, catatan: ket, syncStatus: 'pending'
+                id: Date.now(), waktu: timeStr, isoDate: tglStr, tgl: tglStr, sumber, nominal: nom, catatan: ket, syncStatus: 'pending'
             });
 
             document.getElementById('setorNomDisplay').value = '';
@@ -3036,19 +2928,15 @@
         }
 
         window.hapusPiutang = function(id) {
-            if (confirm("Apakah Anda yakin ingin menghapus data utang ini? Saldo asal akan dikembalikan dan saldo piutang akan di-rollback.")) {
-                const targetPiutang = window.piutangList.find(p => p.id === id);
-                
-                if (targetPiutang) {
-                    window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
-                }
-
+            if (confirm("Apakah Anda yakin ingin menghapus catatan piutang ini beserta data di jurnal transaksi?")) {
                 window.piutangList = window.piutangList.filter(p => p.id !== id);
+                window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
 
-                window.saveAllToFirebase();
+                window.initDropdowns();
+                window.saveToFirebaseNode('piutang', window.piutangList);
+                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
                 window.renderAll();
-                
-                alert("✅ Data utang dan saldo piutang terkait berhasil dibersihkan!");
+                alert("✅ Catatan piutang dan transaksi jurnal terkait berhasil dihapus!");
             }
         }
 
@@ -3057,54 +2945,38 @@
             if (!t) return;
 
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${t.ket}"?`)) {
-                const ketUpper = (t.ket || '').trim().toUpperCase();
+                let matchPiutang = null;
 
-                // 1. Jika ini transaksi pencatatan utang awal
-                if (t.isPencatatanUtangAwal && t.idPiutangRef) {
-                    window.piutangList = window.piutangList.filter(p => p.id !== t.idPiutangRef);
-                } 
-                // 2. Jika ini transaksi PELUNASAN UTANG
-                else if (t.idPiutangRef || ketUpper.includes('PELUNASAN UTANG') || (t.akunKeluar1 === 'PIUTANG')) {
-                    let matchPiutang = null;
-                    if (t.idPiutangRef) {
-                        matchPiutang = window.piutangList.find(p => p.id === t.idPiutangRef);
-                    }
-                    if (!matchPiutang) {
-                        matchPiutang = window.piutangList.find(p => ketUpper.includes(p.nama.toUpperCase()));
-                    }
-
-                    if (matchPiutang) {
-                        const pokokDikembalikan = Number(t.hargaModal || t.hargaJual || 0);
-                        matchPiutang.sisa += pokokDikembalikan;
-                        matchPiutang.status = 'BELUM LUNAS';
-
-                        if (matchPiutang.riwayatCicilan && matchPiutang.riwayatCicilan.length > 0) {
-                            matchPiutang.riwayatCicilan.pop();
-                        }
-                        matchPiutang.syncStatus = 'pending';
-                    }
-                } 
-                // 3. Jika ini transaksi Service / Sparepart
-                else {
-                    window.sparepartList.forEach(sp => {
-                        const namaSp = (sp.namaUnit || '').trim().toUpperCase();
-                        if (namaSp && (ketUpper.includes(namaSp) || namaSp.includes(ketUpper))) {
-                            sp.status = 'BELUM LUNAS';
-                            sp.syncStatus = 'pending';
-                        }
-                    });
+                if (t.idPiutangRef) {
+                    matchPiutang = window.piutangList.find(p => Number(p.id) === Number(t.idPiutangRef));
                 }
 
-                // Hapus transaksi dari jurnal
+                if (!matchPiutang && t.ket) {
+                    const ketUpper = t.ket.toUpperCase();
+                    matchPiutang = window.piutangList.find(p => p.nama && ketUpper.includes(p.nama.toUpperCase()));
+                }
+
+                if (matchPiutang) {
+                    const pokokKembalian = Number(t.hargaJual || t.hargaModal || 0);
+                    
+                    matchPiutang.sisa += pokokKembalian;
+                    if (matchPiutang.sisa > matchPiutang.pokokAwal) {
+                        matchPiutang.sisa = matchPiutang.pokokAwal;
+                    }
+                    matchPiutang.status = 'BELUM LUNAS';
+                    
+                    if (matchPiutang.riwayatCicilan && matchPiutang.riwayatCicilan.length > 0) {
+                        matchPiutang.riwayatCicilan.pop();
+                    }
+                    matchPiutang.syncStatus = 'pending';
+                }
+
                 window.transaksiJurnal.splice(origIdx, 1);
-                
                 window.initDropdowns();
                 window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
                 window.saveToFirebaseNode('piutang', window.piutangList);
-                window.saveToFirebaseNode('sparepart', window.sparepartList);
                 window.renderAll();
-                
-                alert("✅ Transaksi berhasil dihapus dan status piutang/service telah dikembalikan menjadi Belum Lunas!");
+                alert("✅ Transaksi berhasil dihapus dan status piutang dikembalikan menjadi Belum Lunas!");
             }
         }
 
@@ -3265,7 +3137,6 @@
 
             let akunMasuk1 = '', akunMasuk2 = '';
             let jualSplit1 = 0, jualSplit2 = 0, hargaJualTotal = 0;
-
             let akunKeluar1 = '', akunKeluar2 = '';
             let modalSplit1 = 0, modalSplit2 = 0, hargaModalTotal = 0;
 
@@ -3293,27 +3164,35 @@
 
             if (!akunMasuk1) { alert("Pilih Uang Masuk Ke (Akun 1)!"); return; }
 
-            let isSparepartUpdated = false;
-            if (window.sparepartList && window.sparepartList.length > 0) {
-                window.sparepartList.forEach(sp => {
-                    const namaSp = (sp.namaUnit || '').trim().toUpperCase();
-                    if (namaSp && (ket.includes(namaSp) || namaSp.includes(ket))) {
-                        sp.status = 'LUNAS';
-                        isSparepartUpdated = true;
-                    }
-                });
-            }
+            window.sparepartList.forEach(sp => {
+                if (ket.includes(sp.namaUnit.toUpperCase()) || sp.namaUnit.toUpperCase().includes(ket)) {
+                    sp.status = 'LUNAS';
+                }
+            });
 
-            if (akunKeluar1 === 'PIUTANG') {
-                const matchUtang = window.piutangList.find(p => ket.toUpperCase().includes(p.nama.toUpperCase()) || p.nama.toUpperCase().includes(ket.toUpperCase()));
-                if (matchUtang) {
-                    const bayarPokok = hargaJualTotal > hargaModalTotal ? hargaModalTotal : hargaJualTotal;
-                    matchUtang.sisa -= bayarPokok;
-                    if (matchUtang.sisa <= 0) {
-                        matchUtang.sisa = 0;
-                        matchUtang.status = 'LUNAS';
+            let matchedPiutangId = null;
+            if (ket.includes("BAYAR") || ket.includes("PELUNASAN")) {
+                const targetPiutang = window.piutangList.find(p => p.status === 'BELUM LUNAS' && ket.includes(p.nama.toUpperCase()));
+                if (targetPiutang) {
+                    matchedPiutangId = targetPiutang.id;
+                    const bayarNominal = hargaJualTotal;
+                    
+                    targetPiutang.sisa -= bayarNominal;
+                    if (!targetPiutang.riwayatCicilan) targetPiutang.riwayatCicilan = [];
+                    targetPiutang.riwayatCicilan.push({
+                        idCicilan: Date.now(),
+                        tgl: selectedDate,
+                        waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
+                        bayar: bayarNominal,
+                        akun: akunMasuk1,
+                        pokokTerpotong: bayarNominal
+                    });
+
+                    if (targetPiutang.sisa <= 0) {
+                        targetPiutang.sisa = 0;
+                        targetPiutang.status = 'LUNAS';
                     }
-                    matchUtang.syncStatus = 'pending';
+                    targetPiutang.syncStatus = 'pending';
                 }
             }
 
@@ -3322,6 +3201,8 @@
 
             const trxData = {
                 id: itemUnikId,
+                idPiutangRef: matchedPiutangId || (editIdx >= 0 ? window.transaksiJurnal[editIdx].idPiutangRef : null),
+                isPelunasanUtang: !!matchedPiutangId,
                 waktu: (editIdx >= 0) ? window.transaksiJurnal[editIdx].waktu : timeStr,
                 isoDate: selectedDate, ket, qty, kat, isNewCustomer,
                 hargaJual: hargaJualTotal, akunMasuk1, jualSplit1, akunMasuk2, jualSplit2,
@@ -3330,9 +3211,6 @@
             };
 
             if (editIdx >= 0) {
-                if (window.transaksiJurnal[editIdx].idPiutangRef) trxData.idPiutangRef = window.transaksiJurnal[editIdx].idPiutangRef;
-                if (window.transaksiJurnal[editIdx].isPencatatanUtangAwal) trxData.isPencatatanUtangAwal = window.transaksiJurnal[editIdx].isPencatatanUtangAwal;
-                if (window.transaksiJurnal[editIdx].isPindahSaldo) trxData.isPindahSaldo = window.transaksiJurnal[editIdx].isPindahSaldo;
                 window.transaksiJurnal[editIdx] = trxData;
             } else {
                 window.transaksiJurnal.unshift(trxData);
@@ -3340,11 +3218,7 @@
 
             window.closeModalKasir();
             window.initDropdowns();
-            
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
-            if (isSparepartUpdated) {
-                window.saveToFirebaseNode('sparepart', window.sparepartList);
-            }
             window.saveToFirebaseNode('piutang', window.piutangList);
             window.renderAll();
         });
@@ -3387,7 +3261,7 @@
 
                 document.getElementById('akunKeluar1').value = t.akunKeluar1 || '';
                 document.getElementById('hargaModal').value = t.hargaModal || 0;
-                document.getElementById('hargaModalDisplay').value = t.hargaModal ? Number(t.hargaModal).toLocaleString('id-ID') : '';
+                document.getElementById('hargaModalDisplay').value = t.hargaModal ? Number(t.hargaModal).toLocaleString('id-ID') : '0';
             }
 
             window.hitungCuan();
@@ -3411,22 +3285,6 @@
         }
 
         window.renderAll = function() {
-            // PEMINDAI OTOMATIS AMAN: Hanya set LUNAS jika transaksi kasirnya benar-benar ada di jurnal
-            if (window.sparepartList && window.transaksiJurnal) {
-                window.sparepartList.forEach(sp => {
-                    const namaSp = (sp.namaUnit || '').trim().toUpperCase();
-                    const matchTrx = window.transaksiJurnal.find(t => {
-                        const tKet = (t.ket || '').trim().toUpperCase();
-                        return namaSp && (tKet.includes(namaSp) || namaSp.includes(tKet));
-                    });
-                    if (matchTrx) {
-                        sp.status = 'LUNAS';
-                    } else {
-                        sp.status = 'BELUM LUNAS';
-                    }
-                });
-            }
-
             const fMode = document.getElementById('jurnalFilterMode').value;
             const fDate = document.getElementById('jurnalDatePicker').value;
             const fMonth = document.getElementById('jurnalMonthPicker').value;
@@ -3438,15 +3296,20 @@
 
             let filteredTrx = [];
             window.transaksiJurnal.forEach((t, origIdx) => {
-                const ketUpper = (t.ket || '').toUpperCase();
+                const ketUpper = (t.ket || '').toUpperCase().trim();
+                
                 window.stokOpnameItems.forEach(s => {
-                    const namaUpper = s.nama.toUpperCase();
-                    if (ketUpper.includes(namaUpper) || namaUpper.includes(ketUpper)) {
+                    const namaUpper = s.nama.toUpperCase().trim();
+                    if (ketUpper === namaUpper || ketUpper.includes(' ' + namaUpper + ' ') || ketUpper.startsWith(namaUpper + ' ') || ketUpper.endsWith(' ' + namaUpper)) {
                         s.terjual += Number(t.qty || 1);
                     }
                 });
 
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') {
+                    return;
+                }
+
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) {
                     return;
                 }
 
@@ -3503,16 +3366,18 @@
                 const sMonth = document.getElementById('serviceMonthPicker').value;
 
                 let filteredService = window.sparepartList.filter(s => {
-                    if (sMode === 'DAILY' && s.tgl !== sDate) return false;
-                    if (sMode === 'MONTHLY' && (!s.tgl || !s.tgl.startsWith(sMonth))) return false;
+                    const itemDate = s.isoDate || s.tgl || '';
+                    if (sMode === 'DAILY' && itemDate !== sDate) return false;
+                    if (sMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(sMonth))) return false;
                     return true;
                 });
 
                 bSparepart.innerHTML = filteredService.map(s => {
                     const isLunas = s.status === 'LUNAS';
+                    const displayDate = s.isoDate || s.tgl || '-';
                     return `
                         <tr>
-                            <td>${s.tgl}</td>
+                            <td>${displayDate}</td>
                             <td><b>${s.namaUnit}</b></td>
                             <td class="text-debit">${window.formatRp(s.modal)}</td>
                             <td>${s.sumber}</td>
@@ -3520,7 +3385,7 @@
                             <td><span style="color:${isLunas ? '#16A34A' : '#EF4444'}; font-weight:bold;">${isLunas ? 'LUNAS' : 'BELUM LUNAS'}</span></td>
                             <td>
                                 <button class="btn-edit" onclick="editSparepart(${s.id})">Edit</button>
-                                ${!isLunas ? `<button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>` : '<span style="font-size:10px; color:#16A34A; font-weight:bold;">(Terkunci)</span>'}
+                                <button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>
                             </td>
                         </tr>
                     `;
@@ -3534,15 +3399,17 @@
                 const opMonth = document.getElementById('opMonthPicker').value;
 
                 let filteredOp = window.operasionalList.filter(o => {
-                    if (opMode === 'DAILY' && o.tgl !== opDate) return false;
-                    if (opMode === 'MONTHLY' && (!o.tgl || !o.tgl.startsWith(opMonth))) return false;
+                    const itemDate = o.isoDate || o.tgl || '';
+                    if (opMode === 'DAILY' && itemDate !== opDate) return false;
+                    if (opMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(opMonth))) return false;
                     return true;
                 });
 
                 bOperasional.innerHTML = filteredOp.map(o => {
+                    const displayDate = o.isoDate || o.tgl || '-';
                     return `
                         <tr>
-                            <td><b>${o.waktu}</b><br><small style="color:gray;">${o.tgl}</small></td>
+                            <td><b>${o.waktu}</b><br><small style="color:gray;">${displayDate}</small></td>
                             <td><b>${o.ket}</b></td>
                             <td><span style="color:#DC2626; font-weight:bold;">${o.sumber}</span></td>
                             <td class="text-debit"><b>${window.formatRp(o.nominal)}</b></td>
@@ -3558,7 +3425,7 @@
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
-                bStok.innerHTML = window.stokOpnameItems.map((s) => {
+                bStok.innerHTML = window.stokOpnameItems.map((s, idx) => {
                     const sisa = s.awal - s.terjual;
                     const nilaiSisa = sisa * s.modal;
                     
@@ -3577,8 +3444,8 @@
                             <td>${window.formatRp(s.modal)}</td>
                             <td class="text-kredit"><b>${window.formatRp(nilaiSisa)}</b></td>
                             <td>
-                                <button class="btn-edit" onclick="editRiwayatBelanja('${s.id}')">Edit</button>
-                                <button class="btn-delete" onclick="hapusRiwayatBelanja('${s.id}')">Hapus</button>
+                                <button class="btn-edit" onclick="document.getElementById('editStokId').value='${s.id}'; document.getElementById('stokKat').value='${s.kat}'; document.getElementById('stokNama').value='${s.nama}'; document.getElementById('stokQty').value='${s.awal}'; document.getElementById('stokModal').value='${s.modal}'; document.getElementById('stokModalDisplay').value=Number('${s.modal}').toLocaleString('id-ID'); hitungTotalStokOpname();">Edit</button>
+                                <button class="btn-delete" onclick="hapusRiwayatBelanja(${s.id});">Hapus</button>
                             </td>
                         </tr>
                     `;
@@ -3613,7 +3480,6 @@
                             <td>${p.catatan}</td>
                             <td><span style="color:${isLunas ? '#16A34A' : '#EF4444'}; font-weight:bold;">${isLunas ? 'LUNAS' : 'BELUM LUNAS'}</span></td>
                             <td>
-                                ${!isLunas ? `<button class="btn-pay" onclick="openModalBayarPiutang(${p.id})">Bayar</button>` : ''}
                                 <button class="btn-delete" onclick="hapusPiutang(${p.id})">Hapus</button>
                             </td>
                         </tr>
@@ -3661,16 +3527,18 @@
                 const setorMonth = document.getElementById('setorMonthPicker').value;
 
                 let listSetorFiltered = window.setoranOwnerList.filter(s => {
-                    if (setorMode === 'DAILY' && s.isoDate !== setorDate) return false;
-                    if (setorMode === 'MONTHLY' && (!s.isoDate || !s.isoDate.startsWith(setorMonth))) return false;
+                    const itemDate = s.isoDate || s.tgl || '';
+                    if (setorMode === 'DAILY' && itemDate !== setorDate) return false;
+                    if (setorMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(setorMonth))) return false;
                     return true;
                 });
 
                 bSetor.innerHTML = listSetorFiltered.map(s => {
+                    const displayDate = s.isoDate || s.tgl || '-';
                     return `
                         <tr>
                             <td><b>${s.waktu}</b></td>
-                            <td>${s.isoDate}</td>
+                            <td>${displayDate}</td>
                             <td><b>${s.sumber}</b></td>
                             <td class="text-debit"><b>${window.formatRp(s.nominal)}</b></td>
                             <td>${s.catatan}</td>
@@ -3698,14 +3566,12 @@
 
             if (window.riwayatBelanjaStok) {
                 window.riwayatBelanjaStok.forEach(r => {
-                    if (r.kat && r.total > 0) {
-                        if (masukAkun[r.kat] !== undefined) {
-                            masukAkun[r.kat] += Number(r.total || 0);
-                        }
-                    }
                     if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO') {
                         if (keluarAkun[r.sumberKas] !== undefined) {
                             keluarAkun[r.sumberKas] += Number(r.total || 0);
+                        }
+                        if (r.kat && masukAkun[r.kat] !== undefined) {
+                            masukAkun[r.kat] += Number(r.total || 0);
                         }
                     }
                 });
@@ -3817,7 +3683,7 @@
             let totalTrxCount = 0, pelangganCount = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
 
                 let matchFilter = false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) matchFilter = true;
@@ -3894,7 +3760,7 @@
             }
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
                 
                 if (t.isoDate && t.isoDate.startsWith(targetMonth)) {
                     const cuanVal = Number(t.cuan || 0);
@@ -4009,7 +3875,7 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let filteredTrx = window.transaksiJurnal.filter(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) return true;
                 if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) return true;
                 return false;
@@ -4071,7 +3937,7 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let filteredTrx = window.transaksiJurnal.filter(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) return true;
                 if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) return true;
                 return false;
@@ -4201,7 +4067,6 @@
                         if (data.masterBatasMinSaldo) window.masterBatasMinSaldo = data.masterBatasMinSaldo;
                         if (data.masterVlookup) window.masterVlookup = data.masterVlookup;
                         if (data.transaksiJurnal) window.transaksiJurnal = data.transaksiJurnal;
-                        if (data.piutangList) window.piutangList = data.piutangList;
                         if (data.setoranOwnerList) window.setoranOwnerList = data.setoranOwnerList;
                         if (data.stokOpnameItems) window.stokOpnameItems = data.stokOpnameItems;
                         if (data.sparepartList) window.sparepartList = data.sparepartList;
@@ -4221,5 +4086,6 @@
             reader.readAsText(file);
         }
     </script>
+    
 </body>
 </html>
