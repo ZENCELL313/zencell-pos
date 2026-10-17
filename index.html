@@ -3059,10 +3059,12 @@
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${t.ket}"?`)) {
                 const ketUpper = (t.ket || '').trim().toUpperCase();
 
+                // 1. Jika ini transaksi pencatatan utang awal
                 if (t.isPencatatanUtangAwal && t.idPiutangRef) {
                     window.piutangList = window.piutangList.filter(p => p.id !== t.idPiutangRef);
                 } 
-                else if (t.idPiutangRef || ketUpper.includes('PELUNASAN UTANG') || (t.akunKeluar1 === 'PIUTANG') || t.isPelunasanUtang) {
+                // 2. Jika ini transaksi PELUNASAN UTANG
+                else if (t.idPiutangRef || ketUpper.includes('PELUNASAN UTANG') || (t.akunKeluar1 === 'PIUTANG')) {
                     let matchPiutang = null;
                     if (t.idPiutangRef) {
                         matchPiutang = window.piutangList.find(p => p.id === t.idPiutangRef);
@@ -3082,7 +3084,8 @@
                         matchPiutang.syncStatus = 'pending';
                     }
                 } 
-                else if (t.kat === 'SERVICE' || t.akunKeluar1 === 'SPAREPART') {
+                // 3. Jika ini transaksi Service / Sparepart
+                else {
                     window.sparepartList.forEach(sp => {
                         const namaSp = (sp.namaUnit || '').trim().toUpperCase();
                         if (namaSp && (ketUpper.includes(namaSp) || namaSp.includes(ketUpper))) {
@@ -3092,6 +3095,7 @@
                     });
                 }
 
+                // Hapus transaksi dari jurnal
                 window.transaksiJurnal.splice(origIdx, 1);
                 
                 window.initDropdowns();
@@ -3100,7 +3104,7 @@
                 window.saveToFirebaseNode('sparepart', window.sparepartList);
                 window.renderAll();
                 
-                alert("✅ Transaksi berhasil dihapus dan status piutang berhasil dikembalikan menjadi BELUM LUNAS beserta sisa utangnya!");
+                alert("✅ Transaksi berhasil dihapus dan status piutang/service telah dikembalikan menjadi Belum Lunas!");
             }
         }
 
@@ -3407,6 +3411,7 @@
         }
 
         window.renderAll = function() {
+            // PEMINDAI OTOMATIS AMAN: Hanya set LUNAS jika transaksi kasirnya benar-benar ada di jurnal
             if (window.sparepartList && window.transaksiJurnal) {
                 window.sparepartList.forEach(sp => {
                     const namaSp = (sp.namaUnit || '').trim().toUpperCase();
@@ -3416,6 +3421,8 @@
                     });
                     if (matchTrx) {
                         sp.status = 'LUNAS';
+                    } else {
+                        sp.status = 'BELUM LUNAS';
                     }
                 });
             }
@@ -3810,7 +3817,7 @@
             let totalTrxCount = 0, pelangganCount = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') return;
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
 
                 let matchFilter = false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) matchFilter = true;
@@ -3887,7 +3894,7 @@
             }
 
             window.transaksiJurnal.forEach(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') return;
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
                 
                 if (t.isoDate && t.isoDate.startsWith(targetMonth)) {
                     const cuanVal = Number(t.cuan || 0);
@@ -4002,7 +4009,7 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let filteredTrx = window.transaksiJurnal.filter(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') return false;
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) return true;
                 if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) return true;
                 return false;
@@ -4064,7 +4071,7 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let filteredTrx = window.transaksiJurnal.filter(t => {
-                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') return false;
+                if (t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return false;
                 if (mode === 'DAILY' && t.isoDate === targetDate) return true;
                 if (mode === 'MONTHLY' && t.isoDate && t.isoDate.startsWith(targetMonth)) return true;
                 return false;
