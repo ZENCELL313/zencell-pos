@@ -620,15 +620,21 @@
                         <input type="hidden" id="stokModal" value="0">
                     </div>
                     <div class="form-group">
+                        <label>Harga Jual / Pcs (Default)</label>
+                        <input type="text" id="stokJualDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'stokJual')">
+                        <input type="hidden" id="stokJual" value="0">
+                    </div>
+                    <div class="form-group">
                         <label>Total Nilai Awal</label>
                         <input type="text" id="stokTotalDisplay" class="form-control" placeholder="0" readonly>
                     </div>
-                    <div class="form-group">
-                        <label>Sumber Saldo (Potong Kas)</label>
-                        <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
-                            <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
-                        </select>
-                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sumber Saldo (Potong Kas)</label>
+                    <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
+                        <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
+                    </select>
                 </div>
 
                 <button type="submit" id="btnSubmitStok" class="btn">Simpan Stok Opname & Potong Kas</button>
@@ -647,6 +653,7 @@
                             <th>TERJUAL</th>
                             <th>SISA</th>
                             <th>MODAL</th>
+                            <th>JUAL</th>
                             <th>NILAI SISA</th>
                             <th>AKSI</th>
                         </tr>
@@ -821,13 +828,14 @@
                                     <th>Nama Barang</th>
                                     <th style="text-align: center;">Qty</th>
                                     <th style="text-align: right;">Harga Modal</th>
+                                    <th style="text-align: right;">Harga Jual</th>
                                     <th style="text-align: right;">Total Belanja</th>
                                     <th>Sumber Saldo (Kas)</th>
                                     <th style="text-align: center;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelRiwayatBelanjaStok">
-                                <tr><td colspan="8" style="text-align: center; color: gray;">Belum ada riwayat belanja stok.</td></tr>
+                                <tr><td colspan="9" style="text-align: center; color: gray;">Belum ada riwayat belanja stok.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1923,9 +1931,17 @@
                     document.getElementById('kategori').value = matchStok.kat;
                     document.getElementById('akunKeluar1').value = matchStok.kat;
                     document.getElementById('splitAkunKeluar1').value = matchStok.kat;
-                    const mStok = matchStok.modal * qtyVal;
+                    
+                    const mStok = Number(matchStok.modal || 0) * qtyVal;
                     document.getElementById('hargaModal').value = mStok;
                     document.getElementById('hargaModalDisplay').value = Number(mStok).toLocaleString('id-ID');
+
+                    if (matchStok.jual) {
+                        const jStok = Number(matchStok.jual || 0) * qtyVal;
+                        document.getElementById('hargaJual').value = jStok;
+                        document.getElementById('hargaJualDisplay').value = Number(jStok).toLocaleString('id-ID');
+                    }
+
                     window.hitungCuan();
                     notice.style.display = 'block';
                     notice.innerText = `⚡ Auto-Fill Stok (${matchStok.kat})`;
@@ -2179,6 +2195,7 @@
             const nama = document.getElementById('stokNama').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
+            const jual = parseFloat(document.getElementById('stokJual').value) || 0;
             const sumberKas = document.getElementById('stokSumberKas')?.value || "TIDAK POTONG SALDO";
             const totalNilai = qty * modal;
 
@@ -2192,32 +2209,34 @@
 
             if (editId) {
                 let r = window.riwayatBelanjaStok.find(x => x.id == editId);
-                if (r) { r.kat = kat; r.nama = nama; r.qty = qty; r.modal = modal; r.total = totalNilai; r.sumberKas = sumberKas; }
+                if (r) { r.kat = kat; r.nama = nama; r.qty = qty; r.modal = modal; r.jual = jual; r.total = totalNilai; r.sumberKas = sumberKas; }
                 let i = window.stokOpnameItems.find(x => x.id == editId || (x.nama.toUpperCase() === nama && x.kat === kat));
-                if (i) { i.awal = qty; i.modal = modal; }
+                if (i) { i.awal = qty; i.modal = modal; i.jual = jual; }
                 document.getElementById('editStokId').value = '';
                 document.getElementById('formStokTitle').innerText = '+ Input Stok Opname';
             } else {
                 const recordId = Date.now();
-                window.riwayatBelanjaStok.unshift({ id: recordId, waktu, isoDate: tgl, tgl, kat, nama, qty, modal, total: totalNilai, sumberKas });
+                window.riwayatBelanjaStok.unshift({ id: recordId, waktu, isoDate: tgl, tgl, kat, nama, qty, modal, jual, total: totalNilai, sumberKas });
                 
                 let existingStok = window.stokOpnameItems.find(x => x.nama.toUpperCase() === nama && x.kat === kat);
                 if (existingStok) {
                     existingStok.awal += qty;
                     existingStok.modal = modal;
+                    existingStok.jual = jual;
                 } else {
-                    window.stokOpnameItems.push({ id: recordId, kat, nama, awal: qty, terjual: 0, modal });
+                    window.stokOpnameItems.push({ id: recordId, kat, nama, awal: qty, terjual: 0, modal, jual });
                 }
             }
 
             document.getElementById('formStokOpname').reset();
             document.getElementById('stokModal').value = '0';
+            document.getElementById('stokJual').value = '0';
             document.getElementById('stokTotalDisplay').value = 'Rp0';
             
             window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
             window.saveToFirebaseNode('stok', window.stokOpnameItems);
             window.renderAll();
-            alert("✅ Stok berhasil disimpan!");
+            alert("✅ Stok & harga jual default berhasil disimpan!");
         }
 
         window.hapusRiwayatBelanja = function(id) {
@@ -2667,11 +2686,12 @@
                             <td style="color:#EF4444;">${s.terjual || 0}</td>
                             <td><b style="color:${sisa <= 3 ? '#EF4444' : 'inherit'};">${sisa}</b></td>
                             <td>${window.formatRp(s.modal)}</td>
+                            <td>${window.formatRp(s.jual || 0)}</td>
                             <td class="text-kredit"><b>${window.formatRp(nilai)}</b></td>
                             <td><button class="btn-delete" onclick="hapusRiwayatBelanja(${s.id})">Hapus</button></td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="8" style="text-align:center; color:#94A3B8;">Belum ada stok.</td></tr>`;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8;">Belum ada stok.</td></tr>`;
             }
 
             // Tabel Riwayat Belanja Stok
@@ -2684,11 +2704,12 @@
                         <td><b>${r.nama}</b></td>
                         <td style="text-align: center;">${r.qty}</td>
                         <td style="text-align: right;">${window.formatRp(r.modal)}</td>
+                        <td style="text-align: right;">${window.formatRp(r.jual || 0)}</td>
                         <td style="text-align: right;" class="text-kredit">${window.formatRp(r.total)}</td>
                         <td>${r.sumberKas}</td>
                         <td style="text-align: center;"><button class="btn-delete" onclick="hapusRiwayatBelanja(${r.id})">Hapus</button></td>
                     </tr>
-                `).join('') || `<tr><td colspan="8" style="text-align: center; color: gray;">Belum ada riwayat belanja stok.</td></tr>`;
+                `).join('') || `<tr><td colspan="9" style="text-align: center; color: gray;">Belum ada riwayat belanja stok.</td></tr>`;
             }
 
             document.getElementById('valNilaiStokVoucher').innerText = window.formatRp(nVoucher);
