@@ -297,7 +297,7 @@
                         <option value="Owner">👤 OWNER</option>
                         <option value="Fina">👩‍💼 FINA (KASIR 1)</option>
                         <option value="Eca">👩‍💼 ECA (KASIR 2)</option>
-                        <option value="Tamu">🔑TAMU</option>
+                        <option value="Tamu">🔑 TAMU</option>
                     </select>
                 </div>
                 <div class="form-group" style="text-align:left; margin-bottom:18px;">
@@ -355,7 +355,7 @@
                 </div>
             </div>
             <div class="header-status-bar">
-                <span>👤 <span id="hdrUserActive">OWNER</span> <span id="cloudStatus" style="color:#FFF; font-weight:800; background:rgba(52,211,153,0.35); padding:2px 8px; border-radius:6px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>TERHUBUNG REALTIME</span></span>
+                <span>👤 <span id="hdrUserActive">OWNER</span> <span id="cloudStatus" style="color:#FFF; font-weight:800; background:rgba(52,211,153,0.35); padding:2px 8px; border-radius:6px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>MENYINKRONKAN SERVER...</span></span>
                 <span id="hdrRealtimeClock">RABU, 14 OKTOBER 2026 00:00:00</span>
             </div>
         </header>
@@ -1294,7 +1294,7 @@
             </div>
 
             <form id="formTrx">
-                <input type="hidden" id="editTrxIdx" value="-1">
+                <input type="hidden" id="editTrxId" value="">
 
                 <div class="row-2" style="margin-bottom:8px;">
                     <div class="form-group" style="margin-bottom:0;">
@@ -1517,59 +1517,56 @@
 
                 if (data.transaksi) {
                     let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
-                    let localPending = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
-                    let mergedMap = {};
-                    cloudTrx.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                    localPending.forEach(t => { if(t && t.id) mergedMap[t.id] = t; });
-                    window.transaksiJurnal = Object.values(mergedMap).sort((a,b) => String(b.id).localeCompare(String(a.id)));
+                    window.transaksiJurnal = cloudTrx.filter(t => t && t.id).sort((a,b) => String(b.id).localeCompare(String(a.id)));
+                } else {
+                    window.transaksiJurnal = [];
                 }
 
                 if (data.piutang) {
                     let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
-                    let mergedPMap = {};
-                    cloudPiutang.forEach(p => { if(p && p.id) mergedPMap[p.id] = p; });
-                    window.piutangList = Object.values(mergedPMap);
+                    window.piutangList = cloudPiutang.filter(p => p && p.id);
+                } else {
+                    window.piutangList = [];
                 }
 
                 if (data.stok) {
                     let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
-                    let mergedSMap = {};
-                    cloudStok.forEach(s => { if(s && s.id) mergedSMap[s.id] = s; });
-                    window.stokOpnameItems = Object.values(mergedSMap);
+                    window.stokOpnameItems = cloudStok.filter(s => s && s.id);
+                } else {
+                    window.stokOpnameItems = [];
                 }
 
                 if (data.sparepart) {
                     let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
-                    let mergedSpMap = {};
-                    cloudSp.forEach(sp => { if(sp && sp.id) mergedSpMap[sp.id] = sp; });
-                    window.sparepartList = Object.values(mergedSpMap);
+                    window.sparepartList = cloudSp.filter(sp => sp && sp.id);
+                } else {
+                    window.sparepartList = [];
                 }
 
                 if (data.riwayatBelanjaStok) {
                     let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
-                    let mergedRbMap = {};
-                    cloudRb.forEach(r => { if(r && r.id) mergedRbMap[r.id] = r; });
-                    window.riwayatBelanjaStok = Object.values(mergedRbMap);
+                    window.riwayatBelanjaStok = cloudRb.filter(r => r && r.id);
+                } else {
+                    window.riwayatBelanjaStok = [];
                 }
 
                 if (data.setoran) {
                     let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
-                    let mergedSetorMap = {};
-                    cloudSetor.forEach(st => { if(st && st.id) mergedSetorMap[st.id] = st; });
-                    window.setoranOwnerList = Object.values(mergedSetorMap);
+                    window.setoranOwnerList = cloudSetor.filter(st => st && st.id);
+                } else {
+                    window.setoranOwnerList = [];
                 }
 
                 if (data.operasional) {
                     let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
-                    let mergedOpMap = {};
-                    cloudOp.forEach(op => { if(op && op.id) mergedOpMap[op.id] = op; });
-                    window.operasionalList = Object.values(mergedOpMap);
+                    window.operasionalList = cloudOp.filter(op => op && op.id);
+                } else {
+                    window.operasionalList = [];
                 }
 
                 window.saveLocalBackup();
                 if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
 
-                window.syncPendingQueue();
                 window.initDropdowns();
                 window.initVlookupAutoFill();
                 window.renderAll();
@@ -1593,14 +1590,6 @@
             localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
             localStorage.setItem('zencell_operasional', JSON.stringify(window.operasionalList));
             localStorage.setItem('zencell_batas_min', JSON.stringify(window.masterBatasMinSaldo));
-        }
-
-        window.syncPendingQueue = function() {
-            let pendingItems = window.transaksiJurnal.filter(t => t.syncStatus === 'pending');
-            if (pendingItems.length > 0) {
-                pendingItems.forEach(t => t.syncStatus = 'synced');
-                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
-            }
         }
 
         window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
@@ -1868,7 +1857,7 @@
 
        window.openModalKasir = function() { 
             const overlay = document.getElementById('modalKasirOverlay');
-            if (document.getElementById('editTrxIdx').value === '-1') {
+            if (!document.getElementById('editTrxId').value) {
                 document.getElementById('trxDateInput').value = window.getTodayIso();
                 document.getElementById('chkSplit').checked = false;
                 window.toggleSplitMode(false);
@@ -1883,7 +1872,7 @@
 
         window.cancelEditTrx = function() {
             document.getElementById('formTrx').reset();
-            document.getElementById('editTrxIdx').value = '-1';
+            document.getElementById('editTrxId').value = '';
             document.getElementById('trxDateInput').value = window.getTodayIso();
             document.getElementById('hargaJual').value = '0';
             document.getElementById('hargaModal').value = '0';
@@ -2462,8 +2451,7 @@
                     waktu: waktuStr,
                     ket,
                     nominal,
-                    sumber,
-                    syncStatus: 'pending'
+                    sumber
                 });
             }
 
@@ -2535,8 +2523,7 @@
                     modal,
                     sumber,
                     estJual,
-                    status: 'BELUM LUNAS',
-                    syncStatus: 'pending'
+                    status: 'BELUM LUNAS'
                 });
             }
 
@@ -2752,7 +2739,7 @@
 
             window.piutangList.unshift({ 
                 id: idUnik, nama, sisa: nom, pokokAwal: nom, kategori: katUtang, sumber, catatan: ket, status: 'BELUM LUNAS',
-                riwayatCicilan: [], syncStatus: 'pending'
+                riwayatCicilan: []
             });
 
             window.transaksiJurnal.unshift({
@@ -2763,8 +2750,7 @@
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: 'PIUTANG', jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, akunKeluar2: '', modalSplit2: 0,
-                cuan: 0, isSplit: false, isPencatatanUtangAwal: true,
-                syncStatus: 'pending'
+                cuan: 0, isSplit: false, isPencatatanUtangAwal: true
             });
 
             window.closeModalInputPiutang();
@@ -2775,11 +2761,11 @@
             window.renderAll();
         }
 
-        window.openModalCetak = function(origIdx) {
-            const t = window.transaksiJurnal[origIdx];
+        window.openModalCetak = function(idTrx) {
+            const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
 
-            document.getElementById('pIdxTrx').value = origIdx;
+            document.getElementById('pIdxTrx').value = idTrx;
             document.getElementById('pKasir').value = sessionStorage.getItem('zencell_user') || 'Owner';
             document.getElementById('pPelanggan').value = 'UMUM';
             document.getElementById('pKetItem').value = t.ket;
@@ -2809,8 +2795,8 @@
             const syaratsGaransi = document.getElementById('pPeringatanGaransi').value;
             const printerType = document.getElementById('pPrinterType').value;
 
-            const origIdx = parseInt(document.getElementById('pIdxTrx').value);
-            const t = (origIdx >= 0) ? window.transaksiJurnal[origIdx] : { waktu: new Date().toLocaleTimeString('id-ID'), isoDate: window.getTodayIso() };
+            const idTrxTarget = document.getElementById('pIdxTrx').value;
+            const t = window.transaksiJurnal.find(item => item.id == idTrxTarget) || { waktu: new Date().toLocaleTimeString('id-ID'), isoDate: window.getTodayIso() };
 
             const printArea = document.getElementById('printArea');
             printArea.style.display = 'block';
@@ -2904,7 +2890,7 @@
             const tglStr = window.getTodayIso();
 
             window.setoranOwnerList.unshift({
-                id: Date.now(), waktu: timeStr, isoDate: tglStr, tgl: tglStr, sumber, nominal: nom, catatan: ket, syncStatus: 'pending'
+                id: Date.now(), waktu: timeStr, isoDate: tglStr, tgl: tglStr, sumber, nominal: nom, catatan: ket
             });
 
             document.getElementById('setorNomDisplay').value = '';
@@ -2940,8 +2926,8 @@
             }
         }
 
-        window.hapusJurnalTrx = function(origIdx) {
-            const t = window.transaksiJurnal[origIdx];
+        window.hapusJurnalTrx = function(idTrx) {
+            const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
 
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${t.ket}"?`)) {
@@ -2968,10 +2954,9 @@
                     if (matchPiutang.riwayatCicilan && matchPiutang.riwayatCicilan.length > 0) {
                         matchPiutang.riwayatCicilan.pop();
                     }
-                    matchPiutang.syncStatus = 'pending';
                 }
 
-                window.transaksiJurnal.splice(origIdx, 1);
+                window.transaksiJurnal = window.transaksiJurnal.filter(item => item.id != idTrx);
                 window.initDropdowns();
                 window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
                 window.saveToFirebaseNode('piutang', window.piutangList);
@@ -3026,7 +3011,7 @@
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
-                cuan: -admin, isSplit: false, isPindahSaldo: true, syncStatus: 'pending'
+                cuan: -admin, isSplit: false, isPindahSaldo: true
             });
 
             document.getElementById('tfNomDisplay_fast').value = '';
@@ -3113,7 +3098,7 @@
                 isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, akunMasuk2: '', jualSplit2: 0,
                 hargaModal: totalKeluar, akunKeluar1: sumber, modalSplit1: totalKeluar, akunKeluar2: '', modalSplit2: 0,
-                cuan: -admin, isSplit: false, isPindahSaldo: true, syncStatus: 'pending'
+                cuan: -admin, isSplit: false, isPindahSaldo: true
             });
 
             document.getElementById('tfNomDisplay').value = '';
@@ -3127,7 +3112,7 @@
 
         document.getElementById('formTrx').addEventListener('submit', function(e) {
             e.preventDefault();
-            const editIdx = parseInt(document.getElementById('editTrxIdx').value);
+            const editId = document.getElementById('editTrxId').value;
             const selectedDate = document.getElementById('trxDateInput').value || window.getTodayIso();
             const ket = document.getElementById('keterangan').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('trxQty').value) || 1;
@@ -3192,26 +3177,36 @@
                         targetPiutang.sisa = 0;
                         targetPiutang.status = 'LUNAS';
                     }
-                    targetPiutang.syncStatus = 'pending';
                 }
             }
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-            const itemUnikId = (editIdx >= 0 && window.transaksiJurnal[editIdx].id) ? window.transaksiJurnal[editIdx].id : 'trx_' + Date.now();
+            
+            let existingTrxRef = null;
+            if (editId) {
+                existingTrxRef = window.transaksiJurnal.find(item => item.id == editId);
+            }
+
+            const itemUnikId = editId ? editId : 'trx_' + Date.now();
 
             const trxData = {
                 id: itemUnikId,
-                idPiutangRef: matchedPiutangId || (editIdx >= 0 ? window.transaksiJurnal[editIdx].idPiutangRef : null),
+                idPiutangRef: matchedPiutangId || (existingTrxRef ? existingTrxRef.idPiutangRef : null),
                 isPelunasanUtang: !!matchedPiutangId,
-                waktu: (editIdx >= 0) ? window.transaksiJurnal[editIdx].waktu : timeStr,
+                waktu: existingTrxRef ? existingTrxRef.waktu : timeStr,
                 isoDate: selectedDate, ket, qty, kat, isNewCustomer,
                 hargaJual: hargaJualTotal, akunMasuk1, jualSplit1, akunMasuk2, jualSplit2,
                 hargaModal: hargaModalTotal, akunKeluar1, modalSplit1, akunKeluar2, modalSplit2,
-                cuan: hargaJualTotal - hargaModalTotal, isSplit, syncStatus: 'pending'
+                cuan: hargaJualTotal - hargaModalTotal, isSplit
             };
 
-            if (editIdx >= 0) {
-                window.transaksiJurnal[editIdx] = trxData;
+            if (editId) {
+                const idx = window.transaksiJurnal.findIndex(item => item.id == editId);
+                if (idx !== -1) {
+                    window.transaksiJurnal[idx] = trxData;
+                } else {
+                    window.transaksiJurnal.unshift(trxData);
+                }
             } else {
                 window.transaksiJurnal.unshift(trxData);
             }
@@ -3223,11 +3218,11 @@
             window.renderAll();
         });
 
-        window.editTrx = function(origIdx) {
-            const t = window.transaksiJurnal[origIdx];
+        window.editTrx = function(idTrx) {
+            const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
 
-            document.getElementById('editTrxIdx').value = origIdx;
+            document.getElementById('editTrxId').value = t.id;
             document.getElementById('trxDateInput').value = t.isoDate || window.getTodayIso();
             document.getElementById('keterangan').value = t.ket;
             document.getElementById('trxQty').value = t.qty || 1;
@@ -3270,7 +3265,7 @@
 
         window.cancelEditTrx = function() {
             document.getElementById('formTrx').reset();
-            document.getElementById('editTrxIdx').value = '-1';
+            document.getElementById('editTrxId').value = '';
             document.getElementById('trxDateInput').value = window.getTodayIso();
             document.getElementById('hargaJual').value = '0';
             document.getElementById('hargaModal').value = '0';
@@ -3295,7 +3290,7 @@
             window.stokOpnameItems.forEach(s => { s.terjual = 0; });
 
             let filteredTrx = [];
-            window.transaksiJurnal.forEach((t, origIdx) => {
+            window.transaksiJurnal.forEach((t) => {
                 const ketUpper = (t.ket || '').toUpperCase().trim();
                 
                 window.stokOpnameItems.forEach(s => {
@@ -3320,13 +3315,12 @@
                 if (fMasuk && (t.akunMasuk1 !== fMasuk && t.akunMasuk2 !== fMasuk)) match = false;
                 if (fKeluar && (t.akunKeluar1 !== fKeluar && t.akunKeluar2 !== fKeluar)) match = false;
 
-                if (match) filteredTrx.push({ data: t, origIdx });
+                if (match) filteredTrx.push({ data: t });
             });
 
             const bJurnal = document.getElementById('bodyJurnal');
             bJurnal.innerHTML = filteredTrx.map((item, idx) => {
                 const t = item.data;
-                const origIdx = item.origIdx;
 
                 let txtMasuk = t.akunMasuk1 || '-';
                 if (t.isSplit && t.akunMasuk2) {
@@ -3342,7 +3336,7 @@
                     <tr>
                         <td>${idx + 1}</td>
                         <td><b>${t.waktu}</b><br><span style="font-size:9px; opacity:0.7;">${t.isoDate || ''}</span></td>
-                        <td><b>${t.ket}</b> ${t.syncStatus === 'pending' ? '<span style="color:#EF4444; font-size:9px;">(Offline)</span>' : ''}</td>
+                        <td><b>${t.ket}</b></td>
                         <td>${t.qty}</td>
                         <td><span style="color:var(--primary); font-weight:bold;">${t.kat}</span></td>
                         <td class="text-kredit">${window.formatRp(t.hargaJual)}</td>
@@ -3351,9 +3345,9 @@
                         <td>${txtKeluar}</td>
                         <td class="text-cuan">${window.formatRp(t.cuan)}</td>
                         <td>
-                            <button class="btn-print" onclick="openModalCetak(${origIdx})">🖨️ Cetak</button>
-                            <button class="btn-edit" onclick="editTrx(${origIdx})">Edit</button>
-                            <button class="btn-delete" onclick="hapusJurnalTrx(${origIdx})">Hapus</button>
+                            <button class="btn-print" onclick="openModalCetak('${t.id}')">🖨️ Cetak</button>
+                            <button class="btn-edit" onclick="editTrx('${t.id}')">Edit</button>
+                            <button class="btn-delete" onclick="hapusJurnalTrx('${t.id}')">Hapus</button>
                         </td>
                     </tr>
                 `;
@@ -3425,7 +3419,7 @@
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
-                bStok.innerHTML = window.stokOpnameItems.map((s, idx) => {
+                bStok.innerHTML = window.stokOpnameItems.map((s) => {
                     const sisa = s.awal - s.terjual;
                     const nilaiSisa = sisa * s.modal;
                     
@@ -3495,18 +3489,17 @@
                 const tfMonth = document.getElementById('tfMonthPicker').value;
 
                 let listTfFiltered = [];
-                window.transaksiJurnal.forEach((t, origIdx) => {
+                window.transaksiJurnal.forEach((t) => {
                     if (t.kat === 'GADAI' || t.isPindahSaldo) {
                         let match = true;
                         if (tfMode === 'DAILY' && t.isoDate !== tfDate) match = false;
                         if (tfMode === 'MONTHLY' && (!t.isoDate || !t.isoDate.startsWith(tfMonth))) match = false;
-                        if (match) listTfFiltered.push({ data: t, origIdx });
+                        if (match) listTfFiltered.push({ data: t });
                     }
                 });
 
                 bPindah.innerHTML = listTfFiltered.map(item => {
                     const t = item.data;
-                    const origIdx = item.origIdx;
                     return `
                         <tr>
                             <td><b>${t.waktu}</b></td>
@@ -3514,7 +3507,7 @@
                             <td><span style="color:#DC2626; font-weight:bold;">${t.akunKeluar1}</span></td>
                             <td><span style="color:#16A34A; font-weight:bold;">${t.akunMasuk1}</span></td>
                             <td class="text-kredit"><b>${window.formatRp(t.hargaModal)}</b></td>
-                            <td><button class="btn-delete" onclick="hapusJurnalTrx(${origIdx})">Hapus</button></td>
+                            <td><button class="btn-delete" onclick="hapusJurnalTrx('${t.id}')">Hapus</button></td>
                         </tr>
                     `;
                 }).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Belum ada catatan pindah saldo sesuai filter.</td></tr>`;
