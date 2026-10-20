@@ -1519,6 +1519,7 @@
         const statusEl = document.getElementById('cloudStatus');
 
         onValue(ref(db, 'zencellNodes'), (snapshot) => {
+            if (isFirebaseSyncing) return;
             const data = snapshot.val();
             if (data) {
                 isFirebaseSyncing = true;
@@ -1596,13 +1597,19 @@
         window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
             window.saveLocalBackup();
             if (isFirebaseSyncing) return;
-            set(ref(db, `zencellNodes/${nodeName}`), dataValue).catch(() => {});
+            isFirebaseSyncing = true;
+            set(ref(db, `zencellNodes/${nodeName}`), dataValue).then(() => {
+                isFirebaseSyncing = false;
+            }).catch(() => {
+                isFirebaseSyncing = false;
+            });
             if (!skipSnapshot) window.saveStateSnapshot();
         }
 
         window.saveAllToFirebase = function(skipSnapshot = false) {
             window.saveLocalBackup();
             if (isFirebaseSyncing) return;
+            isFirebaseSyncing = true;
             let cleanVlookup = {};
             for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
 
@@ -1618,7 +1625,11 @@
                 saldoAwal: window.masterSaldoAwal,
                 saldoListCustom: window.saldoList,
                 batasMinSaldo: window.masterBatasMinSaldo
-            }).catch(() => {});
+            }).then(() => {
+                isFirebaseSyncing = false;
+            }).catch(() => {
+                isFirebaseSyncing = false;
+            });
             if (!skipSnapshot) window.saveStateSnapshot();
         }
 
@@ -2307,11 +2318,12 @@
                     riwayat.waktu = waktuInput;
                 }
 
-                let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
+                let item = window.stokOpnameItems.find(i => ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
                 if (item) {
                     item.awal = qty;
                     item.modal = modal;
                     item.jual = jual;
+                    item.nama = nama;
                 }
 
                 document.getElementById('editStokId').value = '';
@@ -2339,6 +2351,7 @@
                     item.awal = Number(item.awal || 0) + qty;
                     item.modal = modal;
                     item.jual = jual;
+                    item.nama = nama;
                 } else {
                     window.stokOpnameItems.push({
                         id: recordId,
@@ -2362,11 +2375,10 @@
             if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
 
             window.saveLocalBackup();
-            window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
-            window.saveToFirebaseNode('stok', window.stokOpnameItems);
+            window.saveAllToFirebase(false);
             window.renderAll();
 
-            alert("✅ Data belanja stok berhasil disimpan!");
+            alert("✅ Data belanja stok dan opname berhasil disinkronkan!");
         };
 
         window.hapusRiwayatBelanja = function(id) {
@@ -2382,8 +2394,7 @@
                 window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
                 window.stokOpnameItems = window.stokOpnameItems.filter(s => Number(s.awal) > 0 || Number(s.terjual) > 0);
 
-                window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
-                window.saveToFirebaseNode('stok', window.stokOpnameItems);
+                window.saveAllToFirebase(false);
                 window.renderAll();
             }
         }
@@ -2408,8 +2419,7 @@
             });
 
             window.closeModalInputPiutang();
-            window.saveToFirebaseNode('piutang', window.piutangList);
-            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+            window.saveAllToFirebase(false);
             window.renderAll();
             alert("✅ Utang baru berhasil dicatat dan saldo kas sumber telah dipotong!");
         }
@@ -2418,8 +2428,7 @@
             if (confirm("Hapus piutang ini?")) {
                 window.piutangList = window.piutangList.filter(p => p.id !== id);
                 window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
-                window.saveToFirebaseNode('piutang', window.piutangList);
-                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+                window.saveAllToFirebase(false);
                 window.renderAll();
             }
         }
@@ -2652,9 +2661,7 @@
             } else { window.transaksiJurnal.unshift(trxData); }
 
             window.closeModalKasir();
-            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
-            window.saveToFirebaseNode('piutang', window.piutangList);
-            window.saveToFirebaseNode('sparepart', window.sparepartList);
+            window.saveAllToFirebase(false);
             window.renderAll();
         });
 
