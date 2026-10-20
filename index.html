@@ -1484,6 +1484,9 @@
             const isOnline = navigator.onLine;
             let overlayOffline = document.getElementById('strictOfflineOverlay');
             
+            const allInputs = document.querySelectorAll('input, select, textarea');
+            const allButtons = document.querySelectorAll('button:not(#btnUndo):not(#btnRedo)');
+
             if (!overlayOffline) {
                 overlayOffline = document.createElement('div');
                 overlayOffline.id = 'strictOfflineOverlay';
@@ -1491,7 +1494,7 @@
                 overlayOffline.innerHTML = `
                     <div style="font-size:50px; margin-bottom:15px;">⚠️</div>
                     <h2 style="color:#EF4444; font-size:24px; margin-bottom:10px;">KONEKSI INTERNET TERPUTUS!</h2>
-                    <p style="font-size:14px; max-width:350px; opacity:0.8; line-height:1.5;">Aplikasi POS ZENCELL dikunci sementara demi keamanan data agar tidak terjadi selisih atau data tertimpa.</p>
+                    <p style="font-size:14px; max-width:350px; opacity:0.8; line-height:1.5;">Aplikasi POS ZENCELL dikunci sementara. Pencatatan transaksi dan pengeditan data dinonaktifkan demi keamanan data agar tidak terjadi selisih.</p>
                     <p style="font-size:12px; margin-top:20px; background:rgba(239,68,68,0.2); padding:8px 16px; border-radius:8px; border:1px solid #EF4444; color:#FCA5A5;">Mohon sambungkan kembali internet ke perangkat kasir.</p>
                 `;
                 document.body.appendChild(overlayOffline);
@@ -1499,8 +1502,12 @@
 
             if (isOnline) {
                 overlayOffline.style.display = 'none';
+                allInputs.forEach(el => el.removeAttribute('disabled'));
+                allButtons.forEach(el => el.removeAttribute('disabled'));
             } else {
                 overlayOffline.style.display = 'flex';
+                allInputs.forEach(el => el.setAttribute('disabled', 'true'));
+                allButtons.forEach(el => el.setAttribute('disabled', 'true'));
             }
         }
         window.addEventListener('online', cekStatusKoneksiOnline);
