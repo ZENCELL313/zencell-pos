@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>POS ZENCELL 1</title>
     
-    <!-- Dinamis PWA Manifest Link -->
     <link id="dynamicManifest" rel="stylesheet" href="">
     <meta name="theme-color" content="#059669">
 
@@ -154,7 +153,7 @@
 
         .sticky-subnav { position: sticky; top: 110px; z-index: 8900; background: var(--bg); padding: 4px 0 8px 0; }
         .sub-nav-tabs { display: flex; gap: 6px; background: var(--primary-light); padding: 5px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; }
-        .sub-tab-btn { flex: 1; padding: 8px 6px; border: none; background: transparent; font-size: 10.5px; font-weight: 700; color: var(--primary); border-radius: 6px; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
+        .sub-tab-btn { flex: 1; padding: 8px 6px; border: none; background: transparent; font-size: 10px; font-weight: 700; color: var(--primary); border-radius: 6px; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
         .sub-tab-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 
         .tab-content, .sub-tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
@@ -229,9 +228,9 @@
 
         @media print {
             body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: 'Courier New', Courier, monospace; color: #000; }
-            @page { margin: 0; }
+            #printAreaReport, #printAreaReport * { visibility: visible; }
+            #printAreaReport { position: absolute; left: 0; top: 0; width: 100%; font-family: sans-serif; color: #000; background: #FFF; padding: 20px; }
+            @page { margin: 1cm; size: A4; }
         }
 
         @media (min-width: 768px) {
@@ -249,7 +248,7 @@
             .form-group label { font-size: 11.5px; }
             .btn { font-size: 12.5px; padding: 10px; }
             .card-header { font-size: 13.5px; padding: 10px 14px; }
-            .sub-tab-btn { font-size: 11.5px; padding: 10px; }
+            .sub-tab-btn { font-size: 11px; padding: 10px; }
             .bottom-nav { max-width: 1250px; padding: 10px 0; }
             .nav-item { font-size: 11px; }
             .nav-item .icon { font-size: 18px; }
@@ -263,7 +262,6 @@
 </head>
 <body>
 
-    <!-- LEFT SIDEBAR SALDO REALTIME -->
     <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSaldoSidebar()"></div>
     <div id="leftSaldoSidebar" class="left-sidebar">
         <div class="sidebar-header">
@@ -298,7 +296,34 @@
         </div>
     </div>
 
-    <!-- MODAL MENU SETTING / BACKUP & RESTORE JSON -->
+    <!-- MODAL LOG AKTIVITAS -->
+    <div id="modalLogOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 650px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; color:var(--primary);">🕒 Log Aktivitas & Riwayat Sistem</h3>
+                <button onclick="closeModalLogAktivitas()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+            <div class="filter-container" style="margin-bottom:8px;">
+                <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 CARI LOG:</span>
+                <input type="date" id="logFilterDate" class="date-picker-input" onchange="renderLogAktivitas()">
+                <button type="button" class="btn" onclick="window.logAktivitasList = []; saveToFirebaseNode('logAktivitas', []); renderLogAktivitas();" style="background:#EF4444; padding:6px 10px; font-size:11px; width:auto; margin-left:auto;">🗑️ Bersihkan Log</button>
+            </div>
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">WAKTU</th>
+                            <th style="text-align:left;">TIPE PERUBAHAN</th>
+                            <th style="text-align:left;">NAMA AKUN</th>
+                            <th style="text-align:left;">DESKRIPSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyLogAktivitas"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div id="modalSettingOverlay" class="modal-overlay">
         <div class="modal-content" style="max-width: 380px; text-align: center;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -335,6 +360,13 @@
                 <div class="header-actions">
                     <button class="btn-icon-hdr" id="btnUndo" onclick="doUndo()" title="Undo (Batal Langkah)" disabled>↩️</button>
                     <button class="btn-icon-hdr" id="btnRedo" onclick="doRedo()" title="Redo (Ulang Langkah)" disabled>↪️</button>
+                    <button class="btn-icon-hdr" onclick="bukaModalLogAktivitas()" title="Log Aktivitas Sistem">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                            <path d="M12 7v5l4 2"></path>
+                        </svg>
+                    </button>
                     <button class="btn-icon-hdr" onclick="switchTheme()" title="Ganti Tema">🎨</button>
                     <button class="btn-icon-hdr" id="btnResetDataGlobal" onclick="bukaModalResetData()" title="Reset Data Testing" style="background:#DC2626; display:none;">🗑️</button>
                     <button class="btn-icon-hdr" onclick="bukaMenuSettingJSON()" title="Setting / Backup / Restore JSON">⚙️</button>
@@ -396,7 +428,6 @@
         </div>
     </div>
 
-    <!-- FAB SPEED DIAL MENU -->
     <div class="fab-container" id="fabContainer">
         <button class="fab-main" id="fabMainBtn" onclick="toggleFabMenu()" title="Menu Cepat">+</button>
         <div class="fab-sub-menu">
@@ -415,7 +446,6 @@
         </div>
     </div>
 
-    <!-- TAB KASIR -->
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
         <div class="row-3" style="margin-bottom:10px;">
             <div class="card auto-collapse-card" id="cardVlookupFast" style="margin-bottom:0; padding:8px;">
@@ -533,7 +563,6 @@
         </div>
     </div>
 
-    <!-- TAB SERVICE -->
     <div id="tab-service" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -569,7 +598,6 @@
         </div>
     </div>
 
-    <!-- TAB STOK -->
     <div id="tab-stok" class="tab-content" style="margin-top:6px;">
         <div class="summary-grid" style="margin-bottom:10px;">
             <div class="summary-card" style="background:#E0F2FE; border-color:#BAE6FD;">
@@ -664,7 +692,6 @@
         </div>
     </div>
 
-    <!-- TAB PIUTANG -->
     <div id="tab-piutang" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -691,7 +718,6 @@
         </div>
     </div>
 
-    <!-- TAB OPERASIONAL -->
     <div id="tab-operasional" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" id="formOperasionalTitle">💸 Catat Pengeluaran Operasional Konter</div>
@@ -745,14 +771,14 @@
         </div>
     </div>
 
-    <!-- TAB LAPORAN -->
     <div id="tab-laporan" class="tab-content">
         <div class="sticky-subnav">
             <div class="sub-nav-tabs">
-                <button class="sub-tab-btn active" onclick="switchSubTab(event, 'sub-pembukuan-saldo')">📊 Pembukuan Kategori</button>
-                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-harian')">🗓️ Rekap Harian (Omset & Profit)</button>
-                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-saldo')">💰 Rekap Saldo</button>
-                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-vlookup')">⚙️ Master Vlookup</button>
+                <button class="sub-tab-btn active" onclick="switchSubTab(event, 'sub-pembukuan-saldo')">📊 Pembukuan</button>
+                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-harian')">🗓️ Omset & Profit</button>
+                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-saldo')">💰 Saldo</button>
+                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-laporan-shift')">📑 Laporan Shift</button>
+                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-vlookup')">⚙️ Vlookup</button>
             </div>
         </div>
 
@@ -1037,6 +1063,48 @@
             </div>
         </div>
 
+        <div id="sub-laporan-shift" class="sub-tab-content">
+            <div class="card" style="border-color:var(--primary);">
+                <div class="card-header">📑 Cetak Laporan Akhir Shift / Rekap Owner (PDF)</div>
+                <p style="font-size:11.5px; opacity:0.85; margin-bottom:12px; line-height:1.5;">Gunakan form di bawah ini untuk mencetak laporan rekap shift lengkap beserta audit fisik uang kas (pencatatan selisih) untuk diserahkan kepada Owner atau arsip shift.</p>
+                
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Pilih Tanggal Laporan Shift</label>
+                        <input type="date" id="shiftReportDate" class="form-control" style="font-weight:bold;">
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Kasir / Petugas Shift</label>
+                        <input type="text" id="shiftKasirName" class="form-control" value="FINA" placeholder="NAMA KASIR...">
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Shift Jaga</label>
+                        <select id="shiftJagaOption" class="form-control">
+                            <option value="Shift 1 (Pagi)">Shift 1 (Pagi)</option>
+                            <option value="Shift 2 (Siang/Sore)">Shift 2 (Siang/Sore)</option>
+                            <option value="Shift 3 (Malam)">Shift 3 (Malam)</option>
+                            <option value="Full Day (Owner)">Full Day (Owner)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Hitung Fisik Uang Tunai Laci (Rp)</label>
+                        <input type="text" id="shiftFisikLaciDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'shiftFisikLaci')">
+                        <input type="hidden" id="shiftFisikLaci" value="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Catatan / Kendala Shift (Opsional)</label>
+                    <textarea id="shiftCatatanText" class="form-control" rows="2" placeholder="CONTOH: KONEKSI ATM SEPATU GANGGUAN 10 MENIT..."></textarea>
+                </div>
+
+                <button type="button" class="btn" onclick="cetakLaporanShiftPDF()" style="background:#0284C7; margin-top:6px;">🖨️ Cetak / Simpan PDF Laporan Shift</button>
+            </div>
+        </div>
+
         <div id="sub-vlookup" class="sub-tab-content">
             <div class="card">
                 <div class="card-header" id="formVlookupTitle">+ Aturan Auto-Fill VLOOKUP</div>
@@ -1098,7 +1166,6 @@
         </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchMainTab(event, 'tab-kasir')">
             <span class="icon">🛒</span>
@@ -1126,7 +1193,6 @@
         </button>
     </nav>
 
-    <!-- MODAL SPAREPART / SERVICE -->
     <div id="modalSparepartOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1161,7 +1227,6 @@
         </div>
     </div>
 
-    <!-- MODAL CATAT UTANG BARU -->
     <div id="modalInputPiutangOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1200,7 +1265,6 @@
         </div>
     </div>
 
-    <!-- MODAL RESET DATA -->
     <div id="modalResetOverlay" class="modal-overlay">
         <div class="modal-content" style="border-color:#EF4444;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1218,7 +1282,6 @@
         </div>
     </div>
 
-    <!-- MODAL CETAK NOTA -->
     <div id="modalCetakOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1271,8 +1334,8 @@
     </div>
 
     <div id="printArea" style="display:none;"></div>
+    <div id="printAreaReport" style="display:none;"></div>
 
-    <!-- MODAL INPUT KASIR -->
     <div id="modalKasirOverlay" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1417,7 +1480,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-        // --- TAMBAHAN PENGAMAN STRICT ONLINE-FIRST (KUNCI OTOMATIS SAAT OFFLINE) ---
         function cekStatusKoneksiOnline() {
             const isOnline = navigator.onLine;
             let overlayOffline = document.getElementById('strictOfflineOverlay');
@@ -1444,7 +1506,6 @@
         window.addEventListener('online', cekStatusKoneksiOnline);
         window.addEventListener('offline', cekStatusKoneksiOnline);
         setInterval(cekStatusKoneksiOnline, 1000);
-        // --------------------------------------------------------------------------
 
         const manifestData = {
             "name": "POS ZENCELL 1",
@@ -1510,6 +1571,7 @@
         window.sparepartList = JSON.parse(localStorage.getItem('zencell_sparepart') || '[]');
         window.riwayatBelanjaStok = JSON.parse(localStorage.getItem('zencell_riwayat_belanja') || '[]');
         window.operasionalList = JSON.parse(localStorage.getItem('zencell_operasional') || '[]');
+        window.logAktivitasList = JSON.parse(localStorage.getItem('zencell_log_aktivitas') || '[]');
 
         window.undoStack = [];
         window.redoStack = [];
@@ -1571,6 +1633,11 @@
                     window.operasionalList = cloudOp.filter(op => op && op.id);
                 } else { window.operasionalList = []; }
 
+                if (data.logAktivitas) {
+                    let cloudLog = Array.isArray(data.logAktivitas) ? data.logAktivitas : Object.values(data.logAktivitas);
+                    window.logAktivitasList = cloudLog.filter(l => l && l.id);
+                } else { window.logAktivitasList = []; }
+
                 window.saveLocalBackup();
                 if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
 
@@ -1583,6 +1650,53 @@
             if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
         });
 
+        window.catatLogAktivitas = function(tipe, deskripsi) {
+            const now = new Date();
+            const waktuStr = `${now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })} | ${window.getTodayIso()}`;
+            const akunActive = sessionStorage.getItem('zencell_user') || 'Owner';
+            
+            if (!window.logAktivitasList) window.logAktivitasList = [];
+            window.logAktivitasList.unshift({
+                id: Date.now(),
+                waktu: waktuStr,
+                isoDate: window.getTodayIso(),
+                tipe: tipe,
+                akun: akunActive,
+                deskripsi: deskripsi
+            });
+            if (window.logAktivitasList.length > 200) window.logAktivitasList.pop();
+            window.saveToFirebaseNode('logAktivitas', window.logAktivitasList, true);
+        };
+
+        window.bukaModalLogAktivitas = function() {
+            document.getElementById('logFilterDate').value = window.getTodayIso();
+            window.renderLogAktivitas();
+            document.getElementById('modalLogOverlay').classList.add('show');
+        };
+        window.closeModalLogAktivitas = function() {
+            document.getElementById('modalLogOverlay').classList.remove('show');
+        };
+
+        window.renderLogAktivitas = function() {
+            const filterDate = document.getElementById('logFilterDate').value;
+            const bLog = document.getElementById('bodyLogAktivitas');
+            if (!bLog) return;
+
+            let filteredLogs = (window.logAktivitasList || []).filter(l => {
+                if (!filterDate) return true;
+                return l.isoDate === filterDate;
+            });
+
+            bLog.innerHTML = filteredLogs.map(l => `
+                <tr>
+                    <td style="text-align:left;"><b>${l.waktu}</b></td>
+                    <td style="text-align:left;"><span style="color:var(--primary); font-weight:bold;">${l.tipe}</span></td>
+                    <td style="text-align:left;"><b>${l.akun}</b></td>
+                    <td style="text-align:left; word-break:break-all;">${l.deskripsi}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="4" style="text-align:center; color:#94A3B8;">Belum ada log aktivitas.</td></tr>`;
+        };
+
         window.saveLocalBackup = function() {
             localStorage.setItem('zencell_transaksi', JSON.stringify(window.transaksiJurnal));
             localStorage.setItem('zencell_stok', JSON.stringify(window.stokOpnameItems));
@@ -1591,6 +1705,7 @@
             localStorage.setItem('zencell_sparepart', JSON.stringify(window.sparepartList));
             localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
             localStorage.setItem('zencell_operasional', JSON.stringify(window.operasionalList));
+            localStorage.setItem('zencell_log_aktivitas', JSON.stringify(window.logAktivitasList));
             localStorage.setItem('zencell_batas_min', JSON.stringify(window.masterBatasMinSaldo));
         }
 
@@ -1622,6 +1737,7 @@
                 sparepart: window.sparepartList,
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 operasional: window.operasionalList,
+                logAktivitas: window.logAktivitasList,
                 saldoAwal: window.masterSaldoAwal,
                 saldoListCustom: window.saldoList,
                 batasMinSaldo: window.masterBatasMinSaldo
@@ -1732,6 +1848,7 @@
             const newTheme = themes[currentThemeIdx];
             document.body.className = newTheme === 'default' ? '' : newTheme;
             localStorage.setItem('zencell_theme', document.body.className);
+            window.catatLogAktivitas('GANTI TEMA', `Mengubah tema tampilan ke ${newTheme || 'Default'}`);
         }
 
         setInterval(() => {
@@ -1744,10 +1861,12 @@
         window.checkSessionLogin = function() {
             const activeUser = sessionStorage.getItem('zencell_user');
             const btnResetGlobal = document.getElementById('btnResetDataGlobal');
+            const shiftKasirInput = document.getElementById('shiftKasirName');
             if (activeUser) {
                 document.getElementById('hdrUserActive').innerText = activeUser;
                 document.getElementById('loginOverlay').style.display = 'none';
                 if (btnResetGlobal) btnResetGlobal.style.display = (activeUser === 'Owner') ? 'flex' : 'none';
+                if (shiftKasirInput && activeUser !== 'Tamu') shiftKasirInput.value = activeUser.toUpperCase();
             } else { document.getElementById('loginOverlay').style.display = 'flex'; }
         }
 
@@ -1766,11 +1885,13 @@
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('loginPass').value = '';
                 window.checkSessionLogin();
+                window.catatLogAktivitas('LOGIN', `Pengguna ${user} masuk ke aplikasi`);
             } else { alert('Kata Sandi / PIN Salah!'); }
         }
 
         window.prosesLogout = function() {
             if (confirm("Apakah Anda yakin ingin keluar / logout dari akun ini?")) {
+                window.catatLogAktivitas('LOGOUT', `Pengguna keluar dari aplikasi`);
                 sessionStorage.removeItem('zencell_user');
                 document.getElementById('loginOverlay').style.display = 'flex';
             }
@@ -1790,6 +1911,7 @@
             document.getElementById('btnEksekusiReset').disabled = (el.value.trim().toUpperCase() !== 'KONFIRMASI HAPUS');
         }
         window.eksekusiResetDataTotal = function() {
+            window.catatLogAktivitas('RESET DATA', 'Melakukan reset seluruh data testing aplikasi secara permanen');
             window.transaksiJurnal = []; window.piutangList = []; window.setoranOwnerList = [];
             window.stokOpnameItems = []; window.sparepartList = []; window.riwayatBelanjaStok = []; window.operasionalList = [];
             localStorage.clear();
@@ -1885,6 +2007,7 @@
                 stokOpnameItems: window.stokOpnameItems, piutangList: window.piutangList,
                 setoranOwnerList: window.setoranOwnerList, sparepartList: window.sparepartList,
                 riwayatBelanjaStok: window.riwayatBelanjaStok, operasionalList: window.operasionalList,
+                logAktivitasList: window.logAktivitasList,
                 masterSaldoAwal: window.masterSaldoAwal, saldoList: window.saldoList, masterBatasMinSaldo: window.masterBatasMinSaldo
             });
             if (window.undoStack.length === 0 || window.undoStack[window.undoStack.length - 1] !== snap) {
@@ -1905,6 +2028,7 @@
                 window.redoStack.push(window.undoStack.pop());
                 window.applyStateSnapshot(window.undoStack[window.undoStack.length - 1]);
                 window.updateUndoRedoBtnState();
+                window.catatLogAktivitas('UNDO', 'Membatalkan langkah terakhir (Undo)');
             }
         }
         window.doRedo = function() {
@@ -1913,6 +2037,7 @@
                 window.undoStack.push(nextSnap);
                 window.applyStateSnapshot(nextSnap);
                 window.updateUndoRedoBtnState();
+                window.catatLogAktivitas('REDO', 'Mengulang kembali langkah (Redo)');
             }
         }
         window.applyStateSnapshot = function(snapStr) {
@@ -1926,6 +2051,7 @@
             window.sparepartList = state.sparepartList || [];
             window.riwayatBelanjaStok = state.riwayatBelanjaStok || [];
             window.operasionalList = state.operasionalList || [];
+            window.logAktivitasList = state.logAktivitasList || [];
             window.masterSaldoAwal = state.masterSaldoAwal || {};
             window.saldoList = state.saldoList || [];
             window.masterBatasMinSaldo = state.masterBatasMinSaldo || {};
@@ -1942,7 +2068,7 @@
             
             const today = window.getTodayIso();
             const currMonth = window.getCurrentMonthIso();
-            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker'].forEach(id => {
+            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker', 'logFilterDate', 'shiftReportDate'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = today;
             });
             ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker', 'saldoMonthPicker'].forEach(id => {
@@ -1966,7 +2092,6 @@
                 const qtyVal = parseFloat(document.getElementById('trxQty').value) || 1;
                 if (!val) { notice.style.display = 'none'; warnStok.style.display = 'none'; return; }
 
-                // 1. Cek Auto-Fill Pelunasan Piutang
                 const matchPiutang = window.piutangList.find(p => p.status !== 'LUNAS' && (p.nama.toUpperCase() === val || val.includes(p.nama.toUpperCase())));
                 if (matchPiutang) {
                     document.getElementById('kategori').value = matchPiutang.kategori || 'TOPUP';
@@ -1978,8 +2103,9 @@
                     const sisaUtang = Number(matchPiutang.sisa || matchPiutang.pokokAwal || 0);
                     document.getElementById('hargaJual').value = sisaUtang;
                     document.getElementById('hargaJualDisplay').value = Number(sisaUtang).toLocaleString('id-ID');
-                    document.getElementById('hargaModal').value = 0;
-                    document.getElementById('hargaModalDisplay').value = '0';
+                    
+                    document.getElementById('hargaModal').value = sisaUtang;
+                    document.getElementById('hargaModalDisplay').value = Number(sisaUtang).toLocaleString('id-ID');
 
                     window.hitungCuan();
                     notice.style.display = 'block';
@@ -1987,7 +2113,6 @@
                     return;
                 }
 
-                // 2. Cek Auto-Fill Sparepart
                 const matchSparepart = window.sparepartList.find(s => s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase()));
                 if (matchSparepart) {
                     document.getElementById('kategori').value = 'SERVICE';
@@ -2007,7 +2132,6 @@
                     return;
                 }
 
-                // 3. Cek Auto-Fill Stok & Modal Default
                 const matchStok = window.stokOpnameItems.find(s => (s.nama || s.namaBarang || '').toUpperCase() === val || val.includes((s.nama || s.namaBarang || '').toUpperCase()));
                 if (matchStok) {
                     const sisa = Number(matchStok.awal || 0) - Number(matchStok.terjual || 0);
@@ -2036,7 +2160,6 @@
                     return;
                 } else { warnStok.style.display = 'none'; }
 
-                // 4. Cek VLOOKUP Master
                 if (window.masterVlookup[val]) {
                     const rule = window.masterVlookup[val];
                     if (rule.kat) document.getElementById('kategori').value = rule.kat;
@@ -2162,6 +2285,7 @@
             } else { window.masterSaldoAwal[lama] = awal; }
             window.masterBatasMinSaldo[baru] = min;
 
+            window.catatLogAktivitas('SETTING AKUN', `Mengubah pengaturan akun ${lama} menjadi ${baru}`);
             alert("✅ Pengaturan akun disimpan!");
             window.initDropdowns();
             window.saveAllToFirebase();
@@ -2195,8 +2319,10 @@
                 if (op) { op.ket = ket; op.nominal = nom; op.sumber = sumber; }
                 document.getElementById('editOperasionalId').value = '';
                 document.getElementById('formOperasionalTitle').innerText = '💸 Catat Pengeluaran Operasional Konter';
+                window.catatLogAktivitas('EDIT OPERASIONAL', `Mengubah operasional "${ket}" (${window.formatRp(nom)}) dari ${sumber}`);
             } else {
                 window.operasionalList.unshift({ id: Date.now(), isoDate: tgl, tgl, waktu, ket, nominal: nom, sumber });
+                window.catatLogAktivitas('TAMBAH OPERASIONAL', `Mencatat operasional "${ket}" sebesar ${window.formatRp(nom)} dari ${sumber}`);
             }
             document.getElementById('formOperasional').reset();
             document.getElementById('opNom').value = '0';
@@ -2218,7 +2344,9 @@
         }
 
         window.hapusOperasional = function(id) {
+            const op = window.operasionalList.find(o => o.id == id);
             if (confirm("Hapus operasional ini?")) {
+                if (op) window.catatLogAktivitas('HAPUS OPERASIONAL', `Menghapus operasional "${op.ket}" (${window.formatRp(op.nominal)})`);
                 window.operasionalList = window.operasionalList.filter(o => o.id !== id);
                 window.saveToFirebaseNode('operasional', window.operasionalList);
                 window.renderAll();
@@ -2241,8 +2369,10 @@
                 let sp = window.sparepartList.find(s => s.id == editId);
                 if (sp) { sp.namaUnit = namaUnit; sp.modal = modal; sp.sumber = sumber; sp.estJual = estJual; }
                 document.getElementById('editSparepartId').value = '';
+                window.catatLogAktivitas('EDIT SPAREPART', `Mengubah sparepart service "${namaUnit}" modal ${window.formatRp(modal)}`);
             } else {
                 window.sparepartList.unshift({ id: Date.now(), isoDate: tgl, tgl, waktu, namaUnit, modal, sumber, estJual, status: 'BELUM LUNAS' });
+                window.catatLogAktivitas('BELANJA SPAREPART', `Mencatat belanja sparepart "${namaUnit}" seharga ${window.formatRp(modal)} dari ${sumber}`);
             }
             window.closeModalSparepart();
             window.saveToFirebaseNode('sparepart', window.sparepartList);
@@ -2265,7 +2395,9 @@
         }
 
         window.hapusSparepart = function(id) {
+            const sp = window.sparepartList.find(s => s.id == id);
             if (confirm("Hapus sparepart ini?")) {
+                if (sp) window.catatLogAktivitas('HAPUS SPAREPART', `Menghapus data sparepart "${sp.namaUnit}"`);
                 window.sparepartList = window.sparepartList.filter(s => s.id !== id);
                 window.saveToFirebaseNode('sparepart', window.sparepartList);
                 window.renderAll();
@@ -2314,21 +2446,21 @@
                     riwayat.jual = jual;
                     riwayat.total = totalNilai;
                     riwayat.sumberKas = sumberKas;
-                    riwayat.isoDate = tglInput;
-                    riwayat.waktu = waktuInput;
                 }
 
-                let item = window.stokOpnameItems.find(i => ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
+                let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
                 if (item) {
+                    item.kat = kat;
+                    item.nama = nama;
                     item.awal = qty;
                     item.modal = modal;
                     item.jual = jual;
-                    item.nama = nama;
                 }
 
                 document.getElementById('editStokId').value = '';
                 const titleEl = document.getElementById('formStokTitle');
                 if (titleEl) titleEl.innerText = '+ Input Stok Opname';
+                window.catatLogAktivitas('EDIT STOK', `Memperbarui data stok opname [${kat}] ${nama} (Qty: ${qty})`);
             } else {
                 const recordId = Date.now();
                 
@@ -2363,6 +2495,7 @@
                         jual: jual
                     });
                 }
+                window.catatLogAktivitas('INPUT STOK', `Menambah stok opname [${kat}] ${nama} sebanyak ${qty} pcs`);
             }
 
             document.getElementById('formStokOpname').reset();
@@ -2378,18 +2511,42 @@
             window.saveAllToFirebase(false);
             window.renderAll();
 
-            alert("✅ Data belanja stok dan opname berhasil disinkronkan!");
+            alert("✅ Data stok opname berhasil disimpan!");
+        };
+
+        window.editStokOpname = function(id) {
+            const stok = window.stokOpnameItems.find(s => s.id == id);
+            if (!stok) return;
+
+            document.getElementById('editStokId').value = stok.id;
+            document.getElementById('stokKat').value = stok.kat;
+            document.getElementById('stokNama').value = stok.nama || stok.namaBarang || '';
+            document.getElementById('stokQty').value = stok.awal;
+            
+            document.getElementById('stokModal').value = stok.modal;
+            document.getElementById('stokModalDisplay').value = Number(stok.modal).toLocaleString('id-ID');
+            
+            document.getElementById('stokJual').value = stok.jual || 0;
+            document.getElementById('stokJualDisplay').value = Number(stok.jual || 0).toLocaleString('id-ID');
+
+            window.hitungTotalStokOpname();
+
+            const titleEl = document.getElementById('formStokTitle');
+            if (titleEl) titleEl.innerText = '✏️ Edit Stok Opname';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.hapusRiwayatBelanja = function(id) {
+            const targetRiwayat = window.riwayatBelanjaStok.find(r => r.id == id);
             if (confirm("Hapus data stok ini?")) {
-                const targetRiwayat = window.riwayatBelanjaStok.find(r => r.id == id);
                 if (targetRiwayat) {
                     let stokItem = window.stokOpnameItems.find(s => ((s.nama || s.namaBarang) || '').trim().toUpperCase() === targetRiwayat.nama.trim().toUpperCase() && s.kat === targetRiwayat.kat);
                     if (stokItem) {
                         stokItem.awal -= Number(targetRiwayat.qty || 0);
                         if (stokItem.awal < 0) stokItem.awal = 0;
                     }
+                    window.catatLogAktivitas('HAPUS STOK', `Menghapus riwayat stok [${targetRiwayat.kat}] ${targetRiwayat.nama}`);
                 }
                 window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
                 window.stokOpnameItems = window.stokOpnameItems.filter(s => Number(s.awal) > 0 || Number(s.terjual) > 0);
@@ -2418,6 +2575,7 @@
                 hargaJual: 0, akunMasuk1: 'PIUTANG', jualSplit1: 0, hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, cuan: 0, isSplit: false, isPencatatanUtangAwal: true
             });
 
+            window.catatLogAktivitas('UTANG BARU', `Mencatat utang atas nama ${nama} sebesar ${window.formatRp(nom)} dari ${sumber}`);
             window.closeModalInputPiutang();
             window.saveAllToFirebase(false);
             window.renderAll();
@@ -2425,7 +2583,9 @@
         }
 
         window.hapusPiutang = function(id) {
+            const p = window.piutangList.find(item => item.id === id);
             if (confirm("Hapus piutang ini?")) {
+                if (p) window.catatLogAktivitas('HAPUS UTANG', `Menghapus catatan piutang atas nama ${p.nama}`);
                 window.piutangList = window.piutangList.filter(p => p.id !== id);
                 window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
                 window.saveAllToFirebase(false);
@@ -2481,9 +2641,154 @@
                     <b>TERIMA KASIH</b>
                 </div>
             `;
+            window.catatLogAktivitas('CETAK STRUK', `Mencetak struk thermal untuk transaksi "${ket}" (${window.formatRp(harga)})`);
             window.closeModalCetak();
             window.print();
             setTimeout(() => { printArea.style.display = 'none'; }, 1000);
+        }
+
+        window.cetakLaporanShiftPDF = function() {
+            const shiftDate = document.getElementById('shiftReportDate').value || window.getTodayIso();
+            const kasirName = document.getElementById('shiftKasirName').value || 'FINA';
+            const shiftName = document.getElementById('shiftJagaOption').value;
+            const fisikLaci = parseFloat(document.getElementById('shiftFisikLaci').value) || 0;
+            const catatan = document.getElementById('shiftCatatanText').value.trim() || '-';
+
+            let omsetTotal = 0, modalTotal = 0, cuanTotal = 0, trxCount = 0, custCount = 0;
+            let cuanAtm = 0, cuanKonter = 0, cuanService = 0;
+            let katRekap = {};
+            window.kategoriList.forEach(k => { katRekap[k] = { count: 0, omset: 0, cuan: 0 }; });
+
+            window.transaksiJurnal.forEach(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isoDate === shiftDate) {
+                    omsetTotal += Number(t.hargaJual || 0);
+                    modalTotal += Number(t.hargaModal || 0);
+                    cuanTotal += Number(t.cuan || 0);
+                    trxCount += 1;
+                    if (t.isNewCustomer !== false) custCount += 1;
+
+                    if (window.katAtm.includes(t.kat)) cuanAtm += Number(t.cuan || 0);
+                    if (window.katKonter.includes(t.kat)) cuanKonter += Number(t.cuan || 0);
+                    if (window.katService.includes(t.kat)) cuanService += Number(t.cuan || 0);
+
+                    if (katRekap[t.kat]) {
+                        katRekap[t.kat].count += 1;
+                        katRekap[t.kat].omset += Number(t.hargaJual || 0);
+                        katRekap[t.kat].cuan += Number(t.cuan || 0);
+                    }
+                }
+            });
+
+            let totalOp = 0;
+            window.operasionalList.forEach(o => { if (o.isoDate === shiftDate) totalOp += Number(o.nominal || 0); });
+
+            let totalSetor = 0;
+            window.setoranOwnerList.forEach(s => { if (s.isoDate === shiftDate) totalSetor += Number(s.nominal || 0); });
+
+            const laciAwal = window.masterSaldoAwal['LACI'] || 1000000;
+            let laciMasuk = 0, laciKeluar = 0;
+            window.transaksiJurnal.forEach(t => {
+                if (t.isoDate !== shiftDate || t.isPindahSaldo || t.isPencatatanUtangAwal) return;
+                if (t.isSplit) {
+                    if (t.akunMasuk1 === 'LACI') laciMasuk += Number(t.jualSplit1 || 0);
+                    if (t.akunMasuk2 === 'LACI') laciMasuk += Number(t.jualSplit2 || 0);
+                    if (t.akunKeluar1 === 'LACI') laciKeluar += Number(t.modalSplit1 || 0);
+                    if (t.akunKeluar2 === 'LACI') laciKeluar += Number(t.modalSplit2 || 0);
+                } else {
+                    if (t.akunMasuk1 === 'LACI') laciMasuk += Number(t.hargaJual || 0);
+                    if (t.akunKeluar1 === 'LACI') laciKeluar += Number(t.hargaModal || 0);
+                }
+            });
+            window.operasionalList.forEach(o => { if (o.isoDate === shiftDate && o.sumber === 'LACI') laciKeluar += Number(o.nominal || 0); });
+            window.setoranOwnerList.forEach(s => { if (s.isoDate === shiftDate && s.sumber === 'LACI') laciKeluar += Number(s.nominal || 0); });
+
+            const laciSistem = laciAwal + laciMasuk - laciKeluar;
+            const selisihKas = fisikLaci > 0 ? (fisikLaci - laciSistem) : 0;
+
+            const printReport = document.getElementById('printAreaReport');
+            printReport.style.display = 'block';
+            printReport.innerHTML = `
+                <div style="font-family: sans-serif; color: #000; max-width: 700px; margin: 0 auto; padding: 15px;">
+                    <div style="text-align: center; border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h2 style="color: #059669; margin: 0; font-size: 20px;">POS ZENCELL 1 - LAPORAN AKHIR SHIFT / REKAP OWNER</h2>
+                        <p style="font-size: 11px; margin: 3px 0; color: #555;">Nanggerang, Jalaksana, Kabupaten Kuningan, Jawa Barat</p>
+                    </div>
+
+                    <table style="width: 100%; font-size: 12px; margin-bottom: 15px; border: none;">
+                        <tr>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Tanggal Laporan:</b> ${shiftDate}</td>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Petugas Kasir:</b> ${kasirName}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Shift Jaga:</b> ${shiftName}</td>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Waktu Cetak:</b> ${new Date().toLocaleString('id-ID')}</td>
+                        </tr>
+                    </table>
+
+                    <h3 style="font-size: 13px; background: #E0F2FE; color: #0369A1; padding: 6px 10px; margin-bottom: 8px; border-radius: 4px;">1. RINGKASAN EKSEKUTIF KEUANGAN</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
+                        <tr>
+                            <th style="background:#F1F5F9; text-align:left; padding:6px;">Keterangan</th>
+                            <th style="background:#F1F5F9; text-align:right; padding:6px;">Nominal (Rp)</th>
+                        </tr>
+                        <tr><td style="padding:5px;">Total Omset Penjualan (Uang Masuk)</td><td style="text-align:right; padding:5px; color:#16A34A; font-weight:bold;">${window.formatRp(omsetTotal)}</td></tr>
+                        <tr><td style="padding:5px;">Total Modal Keluar (HPP Barang)</td><td style="text-align:right; padding:5px; color:#EF4444; font-weight:bold;">${window.formatRp(modalTotal)}</td></tr>
+                        <tr><td style="padding:5px; background:#FEF3C7;"><b>Total Keuntungan Bersih (Cuan)</b></td><td style="text-align:right; padding:5px; background:#FEF3C7; color:#D97706; font-weight:bold;">${window.formatRp(cuanTotal)}</td></tr>
+                        <tr><td style="padding:5px;">Total Transaksi / Pelanggan Baru</td><td style="text-align:right; padding:5px;">${trxCount} TRX / ${custCount} Orang</td></tr>
+                        <tr><td style="padding:5px;">Total Pengeluaran Operasional</td><td style="text-align:right; padding:5px; color:#EF4444;">${window.formatRp(totalOp)}</td></tr>
+                        <tr><td style="padding:5px;">Total Setoran Profit ke Owner</td><td style="text-align:right; padding:5px; color:#DC2626;">${window.formatRp(totalSetor)}</td></tr>
+                    </table>
+
+                    <h3 style="font-size: 13px; background: #E0F2FE; color: #0369A1; padding: 6px 10px; margin-bottom: 8px; border-radius: 4px;">2. REKAP PROFIT BERDASARKAN SEKTOR</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
+                        <tr>
+                            <th style="background:#F1F5F9; text-align:left; padding:6px;">Sektor Layanan</th>
+                            <th style="background:#F1F5F9; text-align:right; padding:6px;">Perolehan Cuan</th>
+                        </tr>
+                        <tr><td style="padding:5px;">Sektor ATM Link (Topup, Transfer, Tarik Tunai, EDC)</td><td style="text-align:right; padding:5px; font-weight:bold; color:var(--primary);">${window.formatRp(cuanAtm)}</td></tr>
+                        <tr><td style="padding:5px;">Sektor Konter (Voucher, Kuota, Pulsa, SP, ACC)</td><td style="text-align:right; padding:5px; font-weight:bold; color:#16A34A;">${window.formatRp(cuanKonter)}</td></tr>
+                        <tr><td style="padding:5px;">Sektor Service HP & Sparepart</td><td style="text-align:right; padding:5px; font-weight:bold; color:#9333EA;">${window.formatRp(cuanService)}</td></tr>
+                    </table>
+
+                    <h3 style="font-size: 13px; background: #E0F2FE; color: #0369A1; padding: 6px 10px; margin-bottom: 8px; border-radius: 4px;">3. AUDIT KAS FISIK LACI (CASH MISMATCH)</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
+                        <tr><td style="padding:5px;">Saldo Awal Kas Laci</td><td style="text-align:right; padding:5px;">${window.formatRp(laciAwal)}</td></tr>
+                        <tr><td style="padding:5px;">Pemasukan Kasir ke Laci (Shift Ini)</td><td style="text-align:right; padding:5px; color:#16A34A;">+${window.formatRp(laciMasuk)}</td></tr>
+                        <tr><td style="padding:5px;">Pengeluaran / Setoran dari Laci</td><td style="text-align:right; padding:5px; color:#EF4444;">-${window.formatRp(laciKeluar)}</td></tr>
+                        <tr><td style="padding:5px; background:#F8FAFC;"><b>Saldo Akhir Menurut Sistem</b></td><td style="text-align:right; padding:5px; background:#F8FAFC; font-weight:bold;">${window.formatRp(laciSistem)}</td></tr>
+                        <tr><td style="padding:5px; background:#F1F5F9;"><b>Hitung Fisik Uang di Laci (Riil)</b></td><td style="text-align:right; padding:5px; background:#F1F5F9; font-weight:bold; color:#2563EB;">${fisikLaci > 0 ? window.formatRp(fisikLaci) : '(Belum diinput)'}</td></tr>
+                        <tr>
+                            <td style="padding:5px; background:${selisihKas < 0 ? '#FEE2E2' : '#DCFCE7'};"><b>Selisih Kas (Minus / Plus)</b></td>
+                            <td style="text-align:right; padding:5px; background:${selisihKas < 0 ? '#FEE2E2' : '#DCFCE7'}; font-weight:bold; color:${selisihKas < 0 ? '#EF4444' : '#16A34A'};">
+                                ${fisikLaci > 0 ? (selisihKas === 0 ? 'PAS (Rp0)' : window.formatRp(selisihKas)) : 'N/A'}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="font-size: 12px; margin-bottom: 25px; border: 1px solid #CBD5E1; padding: 8px; border-radius: 6px; background: #F8FAFC;">
+                        <b>Catatan / Kendala Shift:</b><br>
+                        <span>${catatan}</span>
+                    </div>
+
+                    <table style="width: 100%; font-size: 12px; margin-top: 30px; border: none; text-align: center;">
+                        <tr>
+                            <td style="border: none; width: 50%; padding: 10px;">
+                                Dibuat Oleh (Kasir Shift),<br><br><br><br>
+                                <b>(${kasirName})</b>
+                            </td>
+                            <td style="border: none; width: 50%; padding: 10px;">
+                                Mengetahui (Owner),<br><br><br><br>
+                                <b>(HAMZAH NAUFAL)</b>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+
+            window.catatLogAktivitas('CETAK LAPORAN SHIFT', `Mencetak laporan akhir shift ${shiftName} oleh ${kasirName}`);
+            window.print();
+            setTimeout(() => { printReport.style.display = 'none'; }, 1000);
         }
 
         window.prosesSetoranOwner = function(e) {
@@ -2497,14 +2802,17 @@
             document.getElementById('setorNomDisplay').value = '';
             document.getElementById('setorNom').value = '0';
             document.getElementById('boxSetorFast').style.display = 'none';
+            window.catatLogAktivitas('SETORAN PROFIT', `Mencatat setoran profit ${window.formatRp(nom)} dari akun ${sumber}`);
             window.saveToFirebaseNode('setoran', window.setoranOwnerList);
             window.renderAll();
             alert("✅ Setoran profit dicatat!");
         }
 
         window.hapusSetoranOwner = function(id) {
+            const s = window.setoranOwnerList.find(item => item.id === id);
             if (confirm("Hapus setoran ini?")) {
-                window.setoranOwnerList = window.setoranOwnerList.filter(s => s.id !== id);
+                if (s) window.catatLogAktivitas('HAPUS SETORAN', `Menghapus setoran profit ${window.formatRp(s.nominal)} dari ${s.sumber}`);
+                window.setoranOwnerList = window.setoranOwnerList.filter(st => st.id !== id);
                 window.saveToFirebaseNode('setoran', window.setoranOwnerList);
                 window.renderAll();
             }
@@ -2514,6 +2822,7 @@
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
             if (confirm(`Hapus transaksi "${t.ket}"?`)) {
+                window.catatLogAktivitas('HAPUS TRX', `Menghapus transaksi "${t.ket}" (${window.formatRp(t.hargaJual)})`);
                 window.transaksiJurnal = window.transaksiJurnal.filter(item => item.id != idTrx);
                 window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
                 window.renderAll();
@@ -2531,6 +2840,7 @@
                 defModal: parseFloat(document.getElementById('v_modal_fast').value) || 0
             };
             document.getElementById('boxVlookupFast').style.display = 'none';
+            window.catatLogAktivitas('TAMBAH VLOOKUP', `Menambah master auto-fill cepat "${ket}"`);
             window.saveToFirebaseNode('vlookup', window.masterVlookup);
             window.renderAll();
             alert("✅ VLOOKUP cepat disimpan!");
@@ -2550,6 +2860,7 @@
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true
             });
             document.getElementById('boxTfFast').style.display = 'none';
+            window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
             alert("✅ Pindah saldo berhasil!");
@@ -2569,6 +2880,7 @@
             };
             document.getElementById('editVlookupKey').value = '';
             document.getElementById('formVlookup').reset();
+            window.catatLogAktivitas('MASTER VLOOKUP', `Menyimpan aturan master vlookup "${ket}"`);
             window.saveToFirebaseNode('vlookup', window.masterVlookup);
             window.renderAll();
             alert("✅ VLOOKUP disimpan!");
@@ -2602,6 +2914,7 @@
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'GADAI', isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true
             });
+            window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
             alert("✅ Transfer saldo berhasil!");
@@ -2658,7 +2971,11 @@
                 const idx = window.transaksiJurnal.findIndex(item => item.id == editId);
                 if (idx !== -1) window.transaksiJurnal[idx] = trxData;
                 else window.transaksiJurnal.unshift(trxData);
-            } else { window.transaksiJurnal.unshift(trxData); }
+                window.catatLogAktivitas('EDIT TRX', `Mengubah transaksi "${ket}" (${window.formatRp(hargaJualTotal)})`);
+            } else { 
+                window.transaksiJurnal.unshift(trxData);
+                window.catatLogAktivitas('TAMBAH TRX', `Mencatat transaksi baru [${kat}] "${ket}" (${window.formatRp(hargaJualTotal)})`);
+            }
 
             window.closeModalKasir();
             window.saveAllToFirebase(false);
@@ -2854,7 +3171,9 @@
                             <td>${window.formatRp(s.modal)}</td>
                             <td>${window.formatRp(s.jual || 0)}</td>
                             <td class="text-kredit"><b>${window.formatRp(nilai)}</b></td>
-                            <td><span style="font-size:10px; color:gray;">Aktif</span></td>
+                            <td>
+                                <button class="btn-edit" onclick="editStokOpname(${s.id})">Edit</button>
+                            </td>
                         </tr>
                     `;
                 }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8;">Belum ada stok.</td></tr>`;
@@ -2920,7 +3239,13 @@
 
                 if (t.isPencatatanUtangAwal) {
                     if (t.akunKeluar1 && keluarAkun[t.akunKeluar1] !== undefined) keluarAkun[t.akunKeluar1] += Number(t.modalSplit1 || t.hargaModal || 0);
-                    if (t.akunMasuk1 && masukAkun[t.akunMasuk1] !== undefined) masukAkun[t.akunMasuk1] += Number(t.jualSplit1 || t.hargaJual || 0);
+                    if (t.akunMasuk1) {
+                        if (t.akunMasuk1 === 'PIUTANG') {
+                            if (masukAkun['PIUTANG'] !== undefined) masukAkun['PIUTANG'] += Number(t.modalSplit1 || t.hargaModal || 0);
+                        } else if (masukAkun[t.akunMasuk1] !== undefined) {
+                            masukAkun[t.akunMasuk1] += Number(t.jualSplit1 || t.hargaJual || 0);
+                        }
+                    }
                     return;
                 }
 
@@ -2931,7 +3256,13 @@
                     if (t.akunKeluar2) keluarAkun[t.akunKeluar2] += Number(t.modalSplit2 || 0);
                 } else {
                     if (t.akunMasuk1) masukAkun[t.akunMasuk1] += Number(t.hargaJual || 0);
-                    if (t.akunKeluar1) keluarAkun[t.akunKeluar1] += Number(t.hargaModal || 0);
+                    if (t.akunKeluar1) {
+                        if (t.akunKeluar1 === 'PIUTANG') {
+                            if (keluarAkun['PIUTANG'] !== undefined) keluarAkun['PIUTANG'] += Number(t.hargaJual || 0);
+                        } else if (keluarAkun[t.akunKeluar1] !== undefined) {
+                            keluarAkun[t.akunKeluar1] += Number(t.hargaModal || 0);
+                        }
+                    }
                 }
             });
 
@@ -2974,13 +3305,17 @@
             let totalSaldoRiil = 0;
             document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
                 const awal = window.masterSaldoAwal[s] || 0;
-                const akhir = awal + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
-                if (s !== 'SPAREPART') totalSaldoRiil += akhir;
+                let akhir = awal + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
+                if (s === 'PIUTANG') {
+                    akhir = totalPiutang;
+                }
+                if (s !== 'SPAREPART' && s !== 'PIUTANG') totalSaldoRiil += akhir;
                 return `<tr><td><b>${s}</b></td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><b>${window.formatRp(akhir)}</b></td></tr>`;
             }).join('');
 
             document.getElementById('sidebarSaldoListContent').innerHTML = window.saldoList.map(s => {
-                const akhir = (window.masterSaldoAwal[s] || 0) + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
+                let akhir = (window.masterSaldoAwal[s] || 0) + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
+                if (s === 'PIUTANG') akhir = totalPiutang;
                 return `<div class="saldo-item-row"><div><b>${s}</b></div><span class="${akhir < 0 ? 'text-debit' : 'text-kredit'}">${window.formatRp(akhir)}</span></div>`;
             }).join('');
             document.getElementById('topTotalSaldoRiil').innerText = window.formatRp(totalSaldoRiil);
@@ -3087,6 +3422,7 @@
             dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data)));
             dl.setAttribute("download", `BACKUP_ZENCELL_${window.getTodayIso()}.json`);
             dl.click(); dl.remove();
+            window.catatLogAktivitas('BACKUP JSON', 'Mengunduh file cadangan data (Backup JSON)');
         }
         window.restoreJSON = function(e) {
             const file = e.target.files[0];
@@ -3097,6 +3433,7 @@
                     const d = JSON.parse(evt.target.result);
                     if (d.transaksiJurnal) window.transaksiJurnal = d.transaksiJurnal;
                     window.saveAllToFirebase(); window.renderAll();
+                    window.catatLogAktivitas('RESTORE JSON', 'Melakukan pemulihan data dari file JSON');
                     alert("✅ Restore sukses!");
                 } catch(err) { alert("❌ File tidak valid."); }
             };
