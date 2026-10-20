@@ -537,7 +537,7 @@
     <div id="tab-service" class="tab-content" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>🛠️ Service Dalam Pengerjaan & Rekap</span>
+                <span>🛠️ REKAP BELANJA SPAREPART</span>
                 <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalSparepart()">+ Belanja Sparepart</button>
             </div>
             <div class="filter-container">
@@ -974,7 +974,18 @@
             </div>
 
             <div class="card">
-                <div class="card-header">💰 Rekap Saldo Realtime</div>
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <span>💰 Rekap Saldo Realtime</span>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <select id="saldoFilterMode" class="date-picker-input" onchange="toggleFilterSaldoDate(this.value)" style="padding:4px 6px; font-size:10px;">
+                            <option value="ALL">📅 Semua Tanggal</option>
+                            <option value="DAILY">📆 Per Hari</option>
+                            <option value="MONTHLY">🗓️ Per Bulan</option>
+                        </select>
+                        <input type="date" id="saldoDatePicker" class="date-picker-input" style="display:none; padding:4px 6px; font-size:10px;" onchange="renderAll()">
+                        <input type="month" id="saldoMonthPicker" class="date-picker-input" style="display:none; padding:4px 6px; font-size:10px;" onchange="renderAll()">
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -1284,7 +1295,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Keterangan Transaksi / Nama Barang</label>
+                    <label>Keterangan Transaksi / Nama Barang / Pelanggan Utang</label>
                     <input type="text" id="keterangan" list="listVlookup" class="form-control" placeholder="KETIK KATA KUNCI..." required autocomplete="off">
                     <datalist id="listVlookup"></datalist>
                     <div id="vlookupNotice" class="badge-vlookup">⚡ Auto-Fill Terdeteksi!</div>
@@ -1406,6 +1417,35 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
+        // --- TAMBAHAN PENGAMAN STRICT ONLINE-FIRST (KUNCI OTOMATIS SAAT OFFLINE) ---
+        function cekStatusKoneksiOnline() {
+            const isOnline = navigator.onLine;
+            let overlayOffline = document.getElementById('strictOfflineOverlay');
+            
+            if (!overlayOffline) {
+                overlayOffline = document.createElement('div');
+                overlayOffline.id = 'strictOfflineOverlay';
+                overlayOffline.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;text-align:center;padding:20px;font-family:sans-serif;';
+                overlayOffline.innerHTML = `
+                    <div style="font-size:50px; margin-bottom:15px;">⚠️</div>
+                    <h2 style="color:#EF4444; font-size:24px; margin-bottom:10px;">KONEKSI INTERNET TERPUTUS!</h2>
+                    <p style="font-size:14px; max-width:350px; opacity:0.8; line-height:1.5;">Aplikasi POS ZENCELL dikunci sementara demi keamanan data agar tidak terjadi selisih atau data tertimpa.</p>
+                    <p style="font-size:12px; margin-top:20px; background:rgba(239,68,68,0.2); padding:8px 16px; border-radius:8px; border:1px solid #EF4444; color:#FCA5A5;">Mohon sambungkan kembali internet ke perangkat kasir.</p>
+                `;
+                document.body.appendChild(overlayOffline);
+            }
+
+            if (isOnline) {
+                overlayOffline.style.display = 'none';
+            } else {
+                overlayOffline.style.display = 'flex';
+            }
+        }
+        window.addEventListener('online', cekStatusKoneksiOnline);
+        window.addEventListener('offline', cekStatusKoneksiOnline);
+        setInterval(cekStatusKoneksiOnline, 1000);
+        // --------------------------------------------------------------------------
+
         const manifestData = {
             "name": "POS ZENCELL 1",
             "short_name": "ZENCELL",
@@ -1499,7 +1539,15 @@
 
                 if (data.stok) {
                     let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
-                    window.stokOpnameItems = cloudStok.filter(s => s && s.id);
+                    window.stokOpnameItems = cloudStok.filter(s => s && (s.nama || s.namaBarang)).map(s => ({
+                        id: s.id || Date.now(),
+                        kat: s.kat || 'VOUCHER',
+                        nama: (s.nama || s.namaBarang || '').trim().toUpperCase(),
+                        awal: Number(s.awal || 0),
+                        terjual: Number(s.terjual || 0),
+                        modal: Number(s.modal || 0),
+                        jual: Number(s.jual || 0)
+                    }));
                 } else { window.stokOpnameItems = []; }
 
                 if (data.sparepart) {
@@ -1813,6 +1861,11 @@
             document.getElementById('setorMonthPicker').style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
             window.renderAll();
         }
+        window.toggleFilterSaldoDate = function(mode) {
+            document.getElementById('saldoDatePicker').style.display = mode === 'DAILY' ? 'inline-block' : 'none';
+            document.getElementById('saldoMonthPicker').style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            window.renderAll();
+        }
 
         window.saveStateSnapshot = function() {
             if (window.isUndoRedoAction) return;
@@ -1878,10 +1931,10 @@
             
             const today = window.getTodayIso();
             const currMonth = window.getCurrentMonthIso();
-            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker'].forEach(id => {
+            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = today;
             });
-            ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker'].forEach(id => {
+            ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker', 'saldoMonthPicker'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = currMonth;
             });
 
@@ -1902,6 +1955,28 @@
                 const qtyVal = parseFloat(document.getElementById('trxQty').value) || 1;
                 if (!val) { notice.style.display = 'none'; warnStok.style.display = 'none'; return; }
 
+                // 1. Cek Auto-Fill Pelunasan Piutang
+                const matchPiutang = window.piutangList.find(p => p.status !== 'LUNAS' && (p.nama.toUpperCase() === val || val.includes(p.nama.toUpperCase())));
+                if (matchPiutang) {
+                    document.getElementById('kategori').value = matchPiutang.kategori || 'TOPUP';
+                    document.getElementById('akunMasuk1').value = 'LACI';
+                    document.getElementById('splitAkunMasuk1').value = 'LACI';
+                    document.getElementById('akunKeluar1').value = 'PIUTANG';
+                    document.getElementById('splitAkunKeluar1').value = 'PIUTANG';
+
+                    const sisaUtang = Number(matchPiutang.sisa || matchPiutang.pokokAwal || 0);
+                    document.getElementById('hargaJual').value = sisaUtang;
+                    document.getElementById('hargaJualDisplay').value = Number(sisaUtang).toLocaleString('id-ID');
+                    document.getElementById('hargaModal').value = 0;
+                    document.getElementById('hargaModalDisplay').value = '0';
+
+                    window.hitungCuan();
+                    notice.style.display = 'block';
+                    notice.innerText = `⚡ Auto-Fill Pelunasan Piutang [${matchPiutang.nama}] (${window.formatRp(sisaUtang)})`;
+                    return;
+                }
+
+                // 2. Cek Auto-Fill Sparepart
                 const matchSparepart = window.sparepartList.find(s => s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase()));
                 if (matchSparepart) {
                     document.getElementById('kategori').value = 'SERVICE';
@@ -1921,11 +1996,13 @@
                     return;
                 }
 
-                const matchStok = window.stokOpnameItems.find(s => s.nama.toUpperCase() === val || val.includes(s.nama.toUpperCase()));
+                // 3. Cek Auto-Fill Stok & Modal Default
+                const matchStok = window.stokOpnameItems.find(s => (s.nama || s.namaBarang || '').toUpperCase() === val || val.includes((s.nama || s.namaBarang || '').toUpperCase()));
                 if (matchStok) {
                     const sisa = Number(matchStok.awal || 0) - Number(matchStok.terjual || 0);
-                    if (sisa <= 0) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Stok [${matchStok.nama}] Habis!`; }
-                    else if (sisa <= 3) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Sisa Stok [${matchStok.nama}] Tinggal ${sisa}!`; }
+                    const namaStok = matchStok.nama || matchStok.namaBarang || '';
+                    if (sisa <= 0) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Stok [${namaStok}] Habis!`; }
+                    else if (sisa <= 3) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Sisa Stok [${namaStok}] Tinggal ${sisa}!`; }
                     else { warnStok.style.display = 'none'; }
 
                     document.getElementById('kategori').value = matchStok.kat;
@@ -1944,10 +2021,11 @@
 
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = `⚡ Auto-Fill Stok (${matchStok.kat})`;
+                    notice.innerText = `⚡ Auto-Fill Stok & Modal (${matchStok.kat})`;
                     return;
                 } else { warnStok.style.display = 'none'; }
 
+                // 4. Cek VLOOKUP Master
                 if (window.masterVlookup[val]) {
                     const rule = window.masterVlookup[val];
                     if (rule.kat) document.getElementById('kategori').value = rule.kat;
@@ -2083,8 +2161,9 @@
             const dList = document.getElementById('listVlookup');
             if (dList) {
                 let opts = Object.keys(window.masterVlookup).map(k => `<option value="${k}">`);
-                window.stokOpnameItems.forEach(s => opts.push(`<option value="${s.nama}">`));
+                window.stokOpnameItems.forEach(s => opts.push(`<option value="${s.nama || s.namaBarang}">`));
                 window.sparepartList.forEach(sp => opts.push(`<option value="${sp.namaUnit}">`));
+                window.piutangList.forEach(p => { if (p.status !== 'LUNAS') opts.push(`<option value="${p.nama}">`); });
                 dList.innerHTML = opts.join('');
             }
         }
@@ -2190,59 +2269,119 @@
 
         window.simpanStokOpname = function(e) {
             if (e) e.preventDefault();
+            
             const editId = document.getElementById('editStokId').value;
             const kat = document.getElementById('stokKat').value;
             const nama = document.getElementById('stokNama').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
             const jual = parseFloat(document.getElementById('stokJual').value) || 0;
-            const sumberKas = document.getElementById('stokSumberKas')?.value || "TIDAK POTONG SALDO";
+            
+            const sumberKasSelect = document.getElementById('stokSumberKas');
+            const sumberKas = sumberKasSelect ? sumberKasSelect.value : "TIDAK POTONG SALDO";
             const totalNilai = qty * modal;
+            
+            const now = new Date();
+            const tglInput = window.getTodayIso();
+            const waktuInput = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-            if (!nama || qty <= 0 || modal <= 0) return alert("Lengkapi data stok!");
-
-            const tgl = window.getTodayIso();
-            const waktu = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            if (!nama || qty <= 0 || modal <= 0) {
+                alert("Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!");
+                return;
+            }
 
             if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
             if (!window.stokOpnameItems) window.stokOpnameItems = [];
 
             if (editId) {
-                let r = window.riwayatBelanjaStok.find(x => x.id == editId);
-                if (r) { r.kat = kat; r.nama = nama; r.qty = qty; r.modal = modal; r.jual = jual; r.total = totalNilai; r.sumberKas = sumberKas; }
-                let i = window.stokOpnameItems.find(x => x.id == editId || (x.nama.toUpperCase() === nama && x.kat === kat));
-                if (i) { i.awal = qty; i.modal = modal; i.jual = jual; }
+                let riwayat = window.riwayatBelanjaStok.find(r => r.id == editId);
+                if (riwayat) {
+                    riwayat.kat = kat;
+                    riwayat.nama = nama;
+                    riwayat.qty = qty;
+                    riwayat.modal = modal;
+                    riwayat.jual = jual;
+                    riwayat.total = totalNilai;
+                    riwayat.sumberKas = sumberKas;
+                    riwayat.isoDate = tglInput;
+                    riwayat.waktu = waktuInput;
+                }
+
+                let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
+                if (item) {
+                    item.awal = qty;
+                    item.modal = modal;
+                    item.jual = jual;
+                }
+
                 document.getElementById('editStokId').value = '';
-                document.getElementById('formStokTitle').innerText = '+ Input Stok Opname';
+                const titleEl = document.getElementById('formStokTitle');
+                if (titleEl) titleEl.innerText = '+ Input Stok Opname';
             } else {
                 const recordId = Date.now();
-                window.riwayatBelanjaStok.unshift({ id: recordId, waktu, isoDate: tgl, tgl, kat, nama, qty, modal, jual, total: totalNilai, sumberKas });
                 
-                let existingStok = window.stokOpnameItems.find(x => x.nama.toUpperCase() === nama && x.kat === kat);
-                if (existingStok) {
-                    existingStok.awal += qty;
-                    existingStok.modal = modal;
-                    existingStok.jual = jual;
+                window.riwayatBelanjaStok.unshift({
+                    id: recordId,
+                    waktu: waktuInput,
+                    isoDate: tglInput,
+                    tgl: tglInput,
+                    kat: kat,
+                    nama: nama,
+                    qty: qty,
+                    modal: modal,
+                    jual: jual,
+                    total: totalNilai,
+                    sumberKas: sumberKas
+                });
+
+                let item = window.stokOpnameItems.find(i => ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
+                if (item) {
+                    item.awal = Number(item.awal || 0) + qty;
+                    item.modal = modal;
+                    item.jual = jual;
                 } else {
-                    window.stokOpnameItems.push({ id: recordId, kat, nama, awal: qty, terjual: 0, modal, jual });
+                    window.stokOpnameItems.push({
+                        id: recordId,
+                        kat: kat,
+                        nama: nama,
+                        awal: qty,
+                        terjual: 0,
+                        modal: modal,
+                        jual: jual
+                    });
                 }
             }
 
             document.getElementById('formStokOpname').reset();
+            document.getElementById('editStokId').value = '';
             document.getElementById('stokModal').value = '0';
             document.getElementById('stokJual').value = '0';
-            document.getElementById('stokTotalDisplay').value = 'Rp0';
-            
+            if (document.getElementById('stokTotalDisplay')) {
+                document.getElementById('stokTotalDisplay').value = 'Rp0';
+            }
+            if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
+
+            window.saveLocalBackup();
             window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
             window.saveToFirebaseNode('stok', window.stokOpnameItems);
             window.renderAll();
-            alert("✅ Stok & harga jual default berhasil disimpan!");
-        }
+
+            alert("✅ Data belanja stok berhasil disimpan!");
+        };
 
         window.hapusRiwayatBelanja = function(id) {
             if (confirm("Hapus data stok ini?")) {
+                const targetRiwayat = window.riwayatBelanjaStok.find(r => r.id == id);
+                if (targetRiwayat) {
+                    let stokItem = window.stokOpnameItems.find(s => ((s.nama || s.namaBarang) || '').trim().toUpperCase() === targetRiwayat.nama.trim().toUpperCase() && s.kat === targetRiwayat.kat);
+                    if (stokItem) {
+                        stokItem.awal -= Number(targetRiwayat.qty || 0);
+                        if (stokItem.awal < 0) stokItem.awal = 0;
+                    }
+                }
                 window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
-                window.stokOpnameItems = window.stokOpnameItems.filter(s => s.id != id);
+                window.stokOpnameItems = window.stokOpnameItems.filter(s => Number(s.awal) > 0 || Number(s.terjual) > 0);
+
                 window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok);
                 window.saveToFirebaseNode('stok', window.stokOpnameItems);
                 window.renderAll();
@@ -2260,18 +2399,19 @@
 
             const idUnik = Date.now();
             window.piutangList.unshift({ id: idUnik, nama, sisa: nom, pokokAwal: nom, kategori: kat, sumber, catatan: ket, status: 'BELUM LUNAS', riwayatCicilan: [] });
+            
             window.transaksiJurnal.unshift({
                 id: 'trx_init_piutang_' + idUnik, idPiutangRef: idUnik,
                 waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(),
-                ket: `[UTANG AWAL] ${nama} (${ket})`, qty: 1, kat: 'PIUTANG_INIT', isNewCustomer: false,
-                hargaJual: nom, akunMasuk1: 'PIUTANG', jualSplit1: nom, hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, cuan: 0, isSplit: false, isPencatatanUtangAwal: true
+                ket: `[UTANG BARU] ${nama} (${ket})`, qty: 1, kat: 'PIUTANG_INIT', isNewCustomer: false,
+                hargaJual: 0, akunMasuk1: 'PIUTANG', jualSplit1: 0, hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, cuan: 0, isSplit: false, isPencatatanUtangAwal: true
             });
 
             window.closeModalInputPiutang();
             window.saveToFirebaseNode('piutang', window.piutangList);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
-            alert("✅ Piutang dicatat!");
+            alert("✅ Utang baru berhasil dicatat dan saldo kas sumber telah dipotong!");
         }
 
         window.hapusPiutang = function(id) {
@@ -2495,10 +2635,6 @@
 
             if (!akunMasuk1) return alert("Pilih Akun Masuk!");
 
-            window.sparepartList.forEach(sp => {
-                if (ket.includes(sp.namaUnit.toUpperCase())) sp.status = 'LUNAS';
-            });
-
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const trxData = {
                 id: editId ? editId : 'trx_' + Date.now(),
@@ -2517,6 +2653,8 @@
 
             window.closeModalKasir();
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+            window.saveToFirebaseNode('piutang', window.piutangList);
+            window.saveToFirebaseNode('sparepart', window.sparepartList);
             window.renderAll();
         });
 
@@ -2567,14 +2705,37 @@
             const fMasuk = document.getElementById('jurnalFilterMasuk').value;
             const fKeluar = document.getElementById('jurnalFilterKeluar').value;
 
+            window.sparepartList.forEach(sp => {
+                const spName = (sp.namaUnit || '').trim().toUpperCase();
+                const isLunas = window.transaksiJurnal.some(t => {
+                    if (t.isPencatatanUtangAwal || t.isPindahSaldo) return false;
+                    const ketTrx = (t.ket || '').trim().toUpperCase();
+                    return ketTrx === spName || ketTrx.includes(spName);
+                });
+                sp.status = isLunas ? 'LUNAS' : 'BELUM LUNAS';
+            });
+
+            window.piutangList.forEach(p => {
+                const pName = (p.nama || '').trim().toUpperCase();
+                const isBayar = window.transaksiJurnal.some(t => {
+                    if (t.isPencatatanUtangAwal || t.isPindahSaldo) return false;
+                    const ketTrx = (t.ket || '').trim().toUpperCase();
+                    return ketTrx === pName || ketTrx.includes(pName);
+                });
+                p.status = isBayar ? 'LUNAS' : 'BELUM LUNAS';
+                p.sisa = isBayar ? 0 : (p.pokokAwal || p.sisa || 0);
+            });
+
             window.stokOpnameItems.forEach(s => { s.terjual = 0; });
 
             let filteredTrx = [];
             window.transaksiJurnal.forEach((t) => {
                 const ketUpper = (t.ket || '').toUpperCase().trim();
                 window.stokOpnameItems.forEach(s => {
-                    const namaUpper = (s.nama || '').toUpperCase().trim();
-                    if (ketUpper === namaUpper || ketUpper.includes(' ' + namaUpper + ' ') || ketUpper.includes(namaUpper)) s.terjual += Number(t.qty || 1);
+                    const namaUpper = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
+                    if (namaUpper && (ketUpper === namaUpper || ketUpper.includes(' ' + namaUpper + ' ') || ketUpper.includes(namaUpper))) {
+                        s.terjual += Number(t.qty || 1);
+                    }
                 });
 
                 if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
@@ -2613,7 +2774,6 @@
                 `;
             }).join('') || `<tr><td colspan="11" style="text-align:center; color:#94A3B8;">Tidak ada transaksi.</td></tr>`;
 
-            // Sparepart
             const bSparepart = document.getElementById('bodySparepartList');
             if (bSparepart) {
                 const sMode = document.getElementById('serviceFilterMode').value;
@@ -2641,7 +2801,6 @@
                 `).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada sparepart.</td></tr>`;
             }
 
-            // Operasional
             const bOperasional = document.getElementById('bodyOperasional');
             if (bOperasional) {
                 const opMode = document.getElementById('opFilterMode').value;
@@ -2667,13 +2826,13 @@
                 `).join('') || `<tr><td colspan="5" style="text-align:center; color:#94A3B8;">Belum ada operasional.</td></tr>`;
             }
 
-            // Stok Opname
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
                 bStok.innerHTML = window.stokOpnameItems.map(s => {
                     const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
                     const nilai = sisa * Number(s.modal || 0);
+                    const namaItem = s.nama || s.namaBarang || '-';
                     if (s.kat === 'VOUCHER') nVoucher += nilai;
                     else if (s.kat === 'SP') nSp += nilai;
                     else if (s.kat === 'ACC') nAcc += nilai;
@@ -2681,32 +2840,31 @@
                     return `
                         <tr>
                             <td><b>${s.kat}</b></td>
-                            <td><b>${s.nama}</b></td>
+                            <td><b>${namaItem}</b></td>
                             <td>${s.awal}</td>
                             <td style="color:#EF4444;">${s.terjual || 0}</td>
                             <td><b style="color:${sisa <= 3 ? '#EF4444' : 'inherit'};">${sisa}</b></td>
                             <td>${window.formatRp(s.modal)}</td>
                             <td>${window.formatRp(s.jual || 0)}</td>
                             <td class="text-kredit"><b>${window.formatRp(nilai)}</b></td>
-                            <td><button class="btn-delete" onclick="hapusRiwayatBelanja(${s.id})">Hapus</button></td>
+                            <td><span style="font-size:10px; color:gray;">Aktif</span></td>
                         </tr>
                     `;
                 }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8;">Belum ada stok.</td></tr>`;
             }
 
-            // Tabel Riwayat Belanja Stok
             const tRiwayatStok = document.getElementById('tabelRiwayatBelanjaStok');
             if (tRiwayatStok) {
                 tRiwayatStok.innerHTML = (window.riwayatBelanjaStok || []).map(r => `
                     <tr>
                         <td><b>${r.waktu || ''}</b><br><small>${r.isoDate || r.tgl || ''}</small></td>
-                        <td><b>${r.kat}</b></td>
-                        <td><b>${r.nama}</b></td>
-                        <td style="text-align: center;">${r.qty}</td>
-                        <td style="text-align: right;">${window.formatRp(r.modal)}</td>
+                        <td><b>${r.kat || '-'}</b></td>
+                        <td><b>${r.nama || r.namaBarang || '-'}</b></td>
+                        <td style="text-align: center;">${r.qty || 0}</td>
+                        <td style="text-align: right;">${window.formatRp(r.modal || 0)}</td>
                         <td style="text-align: right;">${window.formatRp(r.jual || 0)}</td>
-                        <td style="text-align: right;" class="text-kredit">${window.formatRp(r.total)}</td>
-                        <td>${r.sumberKas}</td>
+                        <td style="text-align: right;" class="text-kredit">${window.formatRp(r.total || ((r.qty || 0) * (r.modal || 0)))}</td>
+                        <td>${r.sumberKas || 'TIDAK POTONG SALDO'}</td>
                         <td style="text-align: center;"><button class="btn-delete" onclick="hapusRiwayatBelanja(${r.id})">Hapus</button></td>
                     </tr>
                 `).join('') || `<tr><td colspan="9" style="text-align: center; color: gray;">Belum ada riwayat belanja stok.</td></tr>`;
@@ -2718,17 +2876,17 @@
             document.getElementById('valNilaiStokTotal').innerText = window.formatRp(nTotalStok);
             document.getElementById('topStokOpnameVal').innerText = window.formatRp(nTotalStok);
 
-            // Piutang
             let totalPiutang = 0;
             const bPiutang = document.getElementById('bodyPiutang');
             if (bPiutang) {
                 bPiutang.innerHTML = window.piutangList.map(p => {
-                    totalPiutang += p.sisa;
+                    const activeSisa = p.status === 'LUNAS' ? 0 : p.sisa;
+                    totalPiutang += activeSisa;
                     const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
                     return `
                         <tr>
                             <td><b>${p.nama}</b></td>
-                            <td class="text-debit"><b>${window.formatRp(p.sisa)}</b></td>
+                            <td class="text-debit"><b>${window.formatRp(activeSisa)}</b></td>
                             <td style="font-size:10px;">${p.riwayatCicilan?.map(c => `• ${c.tgl}:${window.formatRp(c.bayar)}`).join('<br>') || 'Belum ada'}</td>
                             <td>${p.kategori}</td>
                             <td>${p.sumber}</td>
@@ -2741,10 +2899,24 @@
             }
             document.getElementById('topTotalPiutangVal').innerText = window.formatRp(totalPiutang);
 
-            // Saldo & Hitung Akun
+            const saldoMode = document.getElementById('saldoFilterMode')?.value || 'ALL';
+            const saldoDate = document.getElementById('saldoDatePicker')?.value || '';
+            const saldoMonth = document.getElementById('saldoMonthPicker')?.value || '';
+
             let masukAkun = {}, keluarAkun = {};
             window.saldoList.forEach(s => { masukAkun[s] = 0; keluarAkun[s] = 0; });
+
             window.transaksiJurnal.forEach(t => {
+                const itemDate = t.isoDate || '';
+                if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
+                if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
+
+                if (t.isPencatatanUtangAwal) {
+                    if (t.akunKeluar1 && keluarAkun[t.akunKeluar1] !== undefined) keluarAkun[t.akunKeluar1] += Number(t.modalSplit1 || t.hargaModal || 0);
+                    if (t.akunMasuk1 && masukAkun[t.akunMasuk1] !== undefined) masukAkun[t.akunMasuk1] += Number(t.jualSplit1 || t.hargaJual || 0);
+                    return;
+                }
+
                 if (t.isSplit) {
                     if (t.akunMasuk1) masukAkun[t.akunMasuk1] += Number(t.jualSplit1 || 0);
                     if (t.akunMasuk2) masukAkun[t.akunMasuk2] += Number(t.jualSplit2 || 0);
@@ -2757,17 +2929,40 @@
             });
 
             window.riwayatBelanjaStok?.forEach(r => {
+                const itemDate = r.isoDate || r.tgl || '';
+                if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
+                if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
+
                 if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO') {
                     if (keluarAkun[r.sumberKas] !== undefined) keluarAkun[r.sumberKas] += Number(r.total || 0);
                     if (r.kat && masukAkun[r.kat] !== undefined) masukAkun[r.kat] += Number(r.total || 0);
                 }
             });
+
             window.sparepartList?.forEach(sp => {
+                const itemDate = sp.isoDate || sp.tgl || '';
+                if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
+                if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
+
                 if (keluarAkun[sp.sumber] !== undefined) keluarAkun[sp.sumber] += Number(sp.modal || 0);
                 if (masukAkun['SPAREPART'] !== undefined) masukAkun['SPAREPART'] += Number(sp.modal || 0);
             });
-            window.operasionalList?.forEach(op => { if (keluarAkun[op.sumber] !== undefined) keluarAkun[op.sumber] += Number(op.nominal || 0); });
-            window.setoranOwnerList?.forEach(s => { if (keluarAkun[s.sumber] !== undefined) keluarAkun[s.sumber] += Number(s.nominal || 0); });
+
+            window.operasionalList?.forEach(op => {
+                const itemDate = op.isoDate || op.tgl || '';
+                if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
+                if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
+
+                if (keluarAkun[op.sumber] !== undefined) keluarAkun[op.sumber] += Number(op.nominal || 0);
+            });
+
+            window.setoranOwnerList?.forEach(s => {
+                const itemDate = s.isoDate || s.tgl || '';
+                if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
+                if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
+
+                if (keluarAkun[s.sumber] !== undefined) keluarAkun[s.sumber] += Number(s.nominal || 0);
+            });
 
             let totalSaldoRiil = 0;
             document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
