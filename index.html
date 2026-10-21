@@ -1571,24 +1571,25 @@
         window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
         window.masterVlookup = { 'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 } };
 
-        window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
-        window.stokOpnameItems = JSON.parse(localStorage.getItem('zencell_stok') || '[]');
-        window.piutangList = JSON.parse(localStorage.getItem('zencell_piutang') || '[]');
-        window.setoranOwnerList = JSON.parse(localStorage.getItem('zencell_setoran') || '[]');
-        window.sparepartList = JSON.parse(localStorage.getItem('zencell_sparepart') || '[]');
-        window.riwayatBelanjaStok = JSON.parse(localStorage.getItem('zencell_riwayat_belanja') || '[]');
-        window.operasionalList = JSON.parse(localStorage.getItem('zencell_operasional') || '[]');
-        window.logAktivitasList = JSON.parse(localStorage.getItem('zencell_log_aktivitas') || '[]');
+        window.transaksiJurnal = [];
+        window.stokOpnameItems = [];
+        window.piutangList = [];
+        window.setoranOwnerList = [];
+        window.sparepartList = [];
+        window.riwayatBelanjaStok = [];
+        window.operasionalList = [];
+        window.logAktivitasList = [];
 
         window.undoStack = [];
         window.redoStack = [];
         window.isUndoRedoAction = false;
-        let isFirebaseSyncing = false;
+        let isFirebaseSyncing = true;
+        window.isSavingToFirebase = false; // Flag pengaman anti-timpa saat input lokal
 
         const statusEl = document.getElementById('cloudStatus');
 
         onValue(ref(db, 'zencellNodes'), (snapshot) => {
-            if (isFirebaseSyncing) return;
+            if (window.isSavingToFirebase) return; // Jangan timpa lokal saat proses simpan
             const data = snapshot.val();
             if (data) {
                 isFirebaseSyncing = true;
@@ -1652,7 +1653,10 @@
                 window.initVlookupAutoFill();
                 window.renderAll();
                 isFirebaseSyncing = false;
-            } else { isFirebaseSyncing = false; }
+            } else {
+                isFirebaseSyncing = false;
+                window.saveAllToFirebase();
+            }
         }, (error) => {
             if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
         });
@@ -1719,11 +1723,11 @@
         window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
             window.saveLocalBackup();
             if (isFirebaseSyncing) return;
-            isFirebaseSyncing = true;
+            window.isSavingToFirebase = true;
             set(ref(db, `zencellNodes/${nodeName}`), dataValue).then(() => {
-                isFirebaseSyncing = false;
+                window.isSavingToFirebase = false;
             }).catch(() => {
-                isFirebaseSyncing = false;
+                window.isSavingToFirebase = false;
             });
             if (!skipSnapshot) window.saveStateSnapshot();
         }
@@ -1731,7 +1735,7 @@
         window.saveAllToFirebase = function(skipSnapshot = false) {
             window.saveLocalBackup();
             if (isFirebaseSyncing) return;
-            isFirebaseSyncing = true;
+            window.isSavingToFirebase = true;
             let cleanVlookup = {};
             for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
 
@@ -1749,9 +1753,9 @@
                 saldoListCustom: window.saldoList,
                 batasMinSaldo: window.masterBatasMinSaldo
             }).then(() => {
-                isFirebaseSyncing = false;
+                window.isSavingToFirebase = false;
             }).catch(() => {
-                isFirebaseSyncing = false;
+                window.isSavingToFirebase = false;
             });
             if (!skipSnapshot) window.saveStateSnapshot();
         }
@@ -2798,6 +2802,144 @@
             setTimeout(() => { printReport.style.display = 'none'; }, 1000);
         }
 
+        // --- FUNGSI DOWNLOAD EXCEL PEMBUKUAN ---
+        window.exportLaporanExcel = function() {
+            const mode = document.getElementById('rekapModeSelect').value;
+            const targetDate = document.getElementById('rekapDatePicker').value;
+            const targetMonth = document.getElementById('rekapMonthPicker').value;
+
+            let rekapMap = {};
+            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'GADAI').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+
+            let totalOmset = 0, totalModal = 0, totalCuan = 0;
+
+            window.transaksiJurnal.forEach(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
+                    if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                    rekapMap[t.kat].omset += Number(t.hargaJual || 0);
+                    rekapMap[t.kat].modal += Number(t.hargaModal || 0);
+                    rekapMap[t.kat].cuan += Number(t.cuan || 0);
+                    rekapMap[t.kat].count += 1;
+
+                    totalOmset += Number(t.hargaJual || 0);
+                    totalModal += Number(t.hargaModal || 0);
+                    totalCuan += Number(t.cuan || 0);
+                }
+            });
+
+            let excelData = [];
+            excelData.push(["LAPORAN PEMBUKUAN KATEGORI & TRANSAKSI - ZENCELL"]);
+            excelData.push([`Periode: ${mode === 'DAILY' ? targetDate : 'Bulan ' + targetMonth}`]);
+            excelData.push([]);
+            excelData.push(["KATEGORI TRANSAKSI", "JUMLAH TRX", "OMSET (Uang Masuk)", "MODAL (Uang Keluar)", "CUAN (Keuntungan)"]);
+
+            Object.keys(rekapMap).forEach(k => {
+                let r = rekapMap[k];
+                excelData.push([k, r.count, r.omset, r.modal, r.cuan]);
+            });
+
+            excelData.push([]);
+            excelData.push(["TOTAL KESELURUHAN", "", totalOmset, totalModal, totalCuan]);
+
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Pembukuan Zencell");
+            
+            const fileName = `PEMBUKUAN_ZENCELL_${mode === 'DAILY' ? targetDate : targetMonth}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            window.catatLogAktivitas('EXPORT EXCEL', `Mengunduh file laporan Excel pembukuan (${fileName})`);
+            alert("✅ File Excel pembukuan berhasil di-download!");
+        };
+
+        // --- FUNGSI CETAK PDF LAPORAN PEMBUKUAN ---
+        window.exportLaporanPDF = function() {
+            const mode = document.getElementById('rekapModeSelect').value;
+            const targetDate = document.getElementById('rekapDatePicker').value;
+            const targetMonth = document.getElementById('rekapMonthPicker').value;
+
+            let rekapMap = {};
+            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'GADAI').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+
+            let totalOmset = 0, totalModal = 0, totalCuan = 0;
+
+            window.transaksiJurnal.forEach(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
+                    if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                    rekapMap[t.kat].omset += Number(t.hargaJual || 0);
+                    rekapMap[t.kat].modal += Number(t.hargaModal || 0);
+                    rekapMap[t.kat].cuan += Number(t.cuan || 0);
+                    rekapMap[t.kat].count += 1;
+
+                    totalOmset += Number(t.hargaJual || 0);
+                    totalModal += Number(t.hargaModal || 0);
+                    totalCuan += Number(t.cuan || 0);
+                }
+            });
+
+            const printReport = document.getElementById('printAreaReport');
+            printReport.style.display = 'block';
+            printReport.innerHTML = `
+                <div style="font-family: sans-serif; color: #000; max-width: 700px; margin: 0 auto; padding: 15px;">
+                    <div style="text-align: center; border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h2 style="color: #059669; margin: 0; font-size: 20px;">POS ZENCELL 1 - LAPORAN PEMBUKUAN KEUANGAN</h2>
+                        <p style="font-size: 11px; margin: 3px 0; color: #555;">Nanggerang, Jalaksana, Kabupaten Kuningan, Jawa Barat</p>
+                    </div>
+
+                    <table style="width: 100%; font-size: 12px; margin-bottom: 15px; border: none;">
+                        <tr>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Periode Laporan:</b> ${mode === 'DAILY' ? targetDate : 'Bulan ' + targetMonth}</td>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Waktu Cetak:</b> ${new Date().toLocaleString('id-ID')}</td>
+                        </tr>
+                    </table>
+
+                    <h3 style="font-size: 13px; background: #E0F2FE; color: #0369A1; padding: 6px 10px; margin-bottom: 8px; border-radius: 4px;">REKAPITULASI KATEGORI TRANSAKSI</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 15px;">
+                        <thead>
+                            <tr style="background:#F1F5F9;">
+                                <th style="text-align:left; padding:6px;">Kategori</th>
+                                <th style="text-align:center; padding:6px;">Trx</th>
+                                <th style="text-align:right; padding:6px;">Omset</th>
+                                <th style="text-align:right; padding:6px;">Modal</th>
+                                <th style="text-align:right; padding:6px;">Cuan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(rekapMap).map(k => `
+                                <tr>
+                                    <td style="padding:5px;"><b>${k}</b></td>
+                                    <td style="text-align:center; padding:5px;">${rekapMap[k].count} TRX</td>
+                                    <td style="text-align:right; padding:5px; color:#16A34A;">${window.formatRp(rekapMap[k].omset)}</td>
+                                    <td style="text-align:right; padding:5px; color:#EF4444;">${window.formatRp(rekapMap[k].modal)}</td>
+                                    <td style="text-align:right; padding:5px; color:#D97706; font-weight:bold;">${window.formatRp(rekapMap[k].cuan)}</td>
+                                </tr>
+                            `).join('')}
+                            <tr style="background:#FEF3C7; font-weight:bold;">
+                                <td style="padding:6px;" colspan="2">TOTAL KESELURUHAN</td>
+                                <td style="text-align:right; padding:6px; color:#16A34A;">${window.formatRp(totalOmset)}</td>
+                                <td style="text-align:right; padding:6px; color:#EF4444;">${window.formatRp(totalModal)}</td>
+                                <td style="text-align:right; padding:6px; color:#D97706;">${window.formatRp(totalCuan)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table style="width: 100%; font-size: 12px; margin-top: 40px; border: none; text-align: center;">
+                        <tr>
+                            <td style="border: none; width: 100%; padding: 10px; text-align: right;">
+                                Mengetahui (Owner Zencell),<br><br><br><br>
+                                <b>(HAMZAH NAUFAL)</b>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+
+            window.catatLogAktivitas('CETAK PDF', `Mencetak laporan PDF pembukuan periode ${mode === 'DAILY' ? targetDate : targetMonth}`);
+            window.print();
+            setTimeout(() => { printReport.style.display = 'none'; }, 1000);
+        };
+
         window.prosesSetoranOwner = function(e) {
             e.preventDefault();
             const sumber = document.getElementById('setorSumber').value;
@@ -3419,8 +3561,6 @@
             `;
         }
 
-        window.exportLaporanExcel = function() { alert("Fitur Excel siap digunakan."); }
-        window.exportLaporanPDF = function() { alert("Fitur PDF siap digunakan."); }
         window.bukaMenuSettingJSON = function() { document.getElementById('modalSettingOverlay').classList.add('show'); }
         window.closeModalSetting = function() { document.getElementById('modalSettingOverlay').classList.remove('show'); }
         window.backupJSON = function() {
