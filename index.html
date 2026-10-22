@@ -2072,7 +2072,11 @@
             if (data) {
                 isFirebaseSyncing = true;
                 if (data.vlookup) window.masterVlookup = data.vlookup;
-                if (data.saldoAwal) window.masterSaldoAwal = data.saldoAwal;
+                if (data.saldoAwal) {
+                    window.masterSaldoAwal = data.saldoAwal;
+                    window.masterSaldoAwal['SPAREPART'] = 0;
+                    window.masterSaldoAwal['PIUTANG'] = 0;
+                }
                 if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
                 if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
@@ -2479,8 +2483,15 @@
             document.getElementById('hargaJualDisplay').value = Number(hargaJual).toLocaleString('id-ID');
             document.getElementById('akunMasuk1').value = 'LACI';
 
+            const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
+
             if (t.perluSparepart && Number(t.modalPart || 0) > 0) {
                 const modal = Number(t.modalPart || 0);
+                document.getElementById('hargaModal').value = modal;
+                document.getElementById('hargaModalDisplay').value = Number(modal).toLocaleString('id-ID');
+                document.getElementById('akunKeluar1').value = 'SPAREPART';
+            } else if (spLinked && Number(spLinked.modal || 0) > 0) {
+                const modal = Number(spLinked.modal || 0);
                 document.getElementById('hargaModal').value = modal;
                 document.getElementById('hargaModalDisplay').value = Number(modal).toLocaleString('id-ID');
                 document.getElementById('akunKeluar1').value = 'SPAREPART';
@@ -2493,8 +2504,10 @@
             window.hitungCuan();
             window.openModalKasir();
 
-            // Set hook: jika disimpan, tandai tiket ini LUNAS
+            // Set hook: jika disimpan, tandai tiket & sparepart ini LUNAS
             window._pendingTiketIdToLunas = t.id;
+            window._pendingSparepartIdToLunas = spLinked ? spLinked.id : null;
+            window._pendingPiutangIdToLunas = null;
         }
 
         window.ubahStatusTiket = function(id, statusBaru) {
@@ -3073,13 +3086,26 @@
         window.eksekusiResetDataTotal = function() {
             if (!window.isUserOwner()) return;
             window.catatLogAktivitas('RESET DATA', 'Melakukan reset seluruh data testing aplikasi secara permanen');
-            window.transaksiJurnal = []; window.piutangList = []; window.setoranOwnerList = [];
-            window.stokOpnameItems = []; window.sparepartList = []; window.riwayatBelanjaStok = []; window.operasionalList = []; window.tiketServisList = [];
+            window.transaksiJurnal = []; 
+            window.piutangList = []; 
+            window.setoranOwnerList = [];
+            window.stokOpnameItems = []; 
+            window.sparepartList = []; 
+            window.riwayatBelanjaStok = []; 
+            window.operasionalList = []; 
+            window.tiketServisList = [];
+            
+            if (window.masterSaldoAwal) {
+                window.masterSaldoAwal['SPAREPART'] = 0;
+                window.masterSaldoAwal['PIUTANG'] = 0;
+            }
+
             localStorage.clear();
-            window.saveAllToFirebase();
+            isFirebaseSyncing = false;
+            window.saveAllToFirebase(true);
             window.renderAll();
             window.closeModalResetData();
-            window.showToast("✅ Seluruh data testing berhasil di-reset bersih!", "warn");
+            window.showToast("✅ Seluruh data testing berhasil di-reset bersih (Saldo Sparepart & Piutang Rp0)!", "warn");
         };
 
         window.openModalKasir = function() { 
@@ -3108,6 +3134,9 @@
             document.getElementById('cuanDisplay').value = 'Rp0';
             document.getElementById('vlookupNotice').style.display = 'none';
             document.getElementById('stokWarningBadge').style.display = 'none';
+            window._pendingTiketIdToLunas = null;
+            window._pendingSparepartIdToLunas = null;
+            window._pendingPiutangIdToLunas = null;
             window.toggleSplitMode(false);
         }
 
@@ -3269,8 +3298,15 @@
                     document.getElementById('hargaJual').value = hargaJual;
                     document.getElementById('hargaJualDisplay').value = Number(hargaJual).toLocaleString('id-ID');
 
+                    const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == matchTiket.id);
                     if (matchTiket.perluSparepart && Number(matchTiket.modalPart || 0) > 0) {
                         const m = Number(matchTiket.modalPart || 0);
+                        document.getElementById('hargaModal').value = m;
+                        document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                        document.getElementById('akunKeluar1').value = 'SPAREPART';
+                        document.getElementById('splitAkunKeluar1').value = 'SPAREPART';
+                    } else if (spLinked && Number(spLinked.modal || 0) > 0) {
+                        const m = Number(spLinked.modal || 0);
                         document.getElementById('hargaModal').value = m;
                         document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
                         document.getElementById('akunKeluar1').value = 'SPAREPART';
@@ -3284,6 +3320,8 @@
 
                     window.hitungCuan();
                     window._pendingTiketIdToLunas = matchTiket.id;
+                    window._pendingSparepartIdToLunas = spLinked ? spLinked.id : null;
+                    window._pendingPiutangIdToLunas = null;
 
                     notice.style.display = 'block';
                     notice.innerText = `⚡ Auto-Fill Service [${matchTiket.noServis} - ${matchTiket.nama} (${matchTiket.tipeHp})] Biaya: ${window.formatRp(hargaJual)}`;
@@ -3292,18 +3330,22 @@
 
                 const matchPiutang = window.piutangList.find(p => p.status !== 'LUNAS' && (p.nama.toUpperCase() === val || val.includes(p.nama.toUpperCase())));
                 if (matchPiutang) {
-                    document.getElementById('kategori').value = matchPiutang.kategori || 'TOPUP';
+                    document.getElementById('kategori').value = 'PIUTANG';
                     document.getElementById('akunMasuk1').value = 'LACI';
                     document.getElementById('splitAkunMasuk1').value = 'LACI';
                     document.getElementById('akunKeluar1').value = 'PIUTANG';
                     document.getElementById('splitAkunKeluar1').value = 'PIUTANG';
 
-                    const sisaUtang = Number(matchPiutang.sisa || matchPiutang.pokokAwal || 0);
+                    const sisaUtang = Number(matchPiutang.sisa !== undefined ? matchPiutang.sisa : (matchPiutang.pokokAwal || 0));
                     document.getElementById('hargaJual').value = sisaUtang;
                     document.getElementById('hargaJualDisplay').value = Number(sisaUtang).toLocaleString('id-ID');
                     
                     document.getElementById('hargaModal').value = sisaUtang;
                     document.getElementById('hargaModalDisplay').value = Number(sisaUtang).toLocaleString('id-ID');
+
+                    window._pendingPiutangIdToLunas = matchPiutang.id;
+                    window._pendingSparepartIdToLunas = null;
+                    window._pendingTiketIdToLunas = null;
 
                     window.hitungCuan();
                     notice.style.display = 'block';
@@ -3311,7 +3353,7 @@
                     return;
                 }
 
-                const matchSparepart = window.sparepartList.find(s => s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase()));
+                const matchSparepart = window.sparepartList.find(s => s.status !== 'LUNAS' && (s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase())));
                 if (matchSparepart) {
                     document.getElementById('kategori').value = 'SERVICE';
                     document.getElementById('akunKeluar1').value = 'SPAREPART';
@@ -3324,6 +3366,9 @@
                         document.getElementById('hargaJual').value = j;
                         document.getElementById('hargaJualDisplay').value = Number(j).toLocaleString('id-ID');
                     }
+                    window._pendingSparepartIdToLunas = matchSparepart.id;
+                    window._pendingTiketIdToLunas = matchSparepart.idTiketRef || null;
+                    window._pendingPiutangIdToLunas = null;
                     window.hitungCuan();
                     notice.style.display = 'block';
                     notice.innerText = `⚡ Auto-Fill Service [${matchSparepart.namaUnit}]`;
@@ -3603,6 +3648,44 @@
             }
         }
 
+        window.bukaKasirUntukSparepart = function(id) {
+            const sp = window.sparepartList.find(x => x.id === id);
+            if (!sp) return;
+            if (sp.status === 'LUNAS') {
+                window.showToast("Sparepart ini sudah LUNAS!", "info");
+                return;
+            }
+
+            window._pendingSparepartIdToLunas = sp.id;
+            window._pendingPiutangIdToLunas = null;
+            window._pendingTiketIdToLunas = null;
+
+            window.openModalKasir();
+            document.getElementById('editTrxId').value = '';
+            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('keterangan').value = `[SERVIS PART] ${sp.namaUnit}`;
+            document.getElementById('trxQty').value = 1;
+            document.getElementById('kategori').value = 'SERVICE';
+
+            const jual = Number(sp.estJual || sp.modal || 0);
+            const modal = Number(sp.modal || 0);
+            document.getElementById('hargaJual').value = jual;
+            document.getElementById('hargaJualDisplay').value = Number(jual).toLocaleString('id-ID');
+            document.getElementById('hargaModal').value = modal;
+            document.getElementById('hargaModalDisplay').value = Number(modal).toLocaleString('id-ID');
+
+            document.getElementById('akunKeluar1').value = 'SPAREPART';
+            if (document.getElementById('akunMasuk1').value === 'SPAREPART') {
+                document.getElementById('akunMasuk1').value = 'LACI';
+            }
+
+            document.getElementById('chkSplit').checked = false;
+            window.toggleSplitMode(false);
+            window.hitungCuan();
+        };
+
+        window.prosesLunasiSparepartLangsung = window.bukaKasirUntukSparepart;
+
         window.hitungTotalStokOpname = function() {
             const q = parseFloat(document.getElementById('stokQty').value) || 0;
             const m = parseFloat(document.getElementById('stokModal').value) || 0;
@@ -3792,6 +3875,43 @@
                 window.renderAll();
             }
         }
+
+        window.bukaKasirUntukPiutang = function(id) {
+            const p = window.piutangList.find(x => x.id === id);
+            if (!p) return;
+            const sisa = p.status === 'LUNAS' ? 0 : (p.sisa !== undefined ? p.sisa : (p.pokokAwal || 0));
+            if (sisa <= 0) {
+                window.showToast("Piutang ini sudah LUNAS!", "info");
+                return;
+            }
+
+            window._pendingPiutangIdToLunas = p.id;
+            window._pendingSparepartIdToLunas = null;
+            window._pendingTiketIdToLunas = null;
+
+            window.openModalKasir();
+            document.getElementById('editTrxId').value = '';
+            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('keterangan').value = `[PELUNASAN UTANG] ${p.nama}`;
+            document.getElementById('trxQty').value = 1;
+            document.getElementById('kategori').value = 'PIUTANG';
+
+            document.getElementById('hargaJual').value = sisa;
+            document.getElementById('hargaJualDisplay').value = Number(sisa).toLocaleString('id-ID');
+            document.getElementById('hargaModal').value = sisa;
+            document.getElementById('hargaModalDisplay').value = Number(sisa).toLocaleString('id-ID');
+
+            document.getElementById('akunKeluar1').value = 'PIUTANG';
+            if (document.getElementById('akunMasuk1').value === 'PIUTANG' || !document.getElementById('akunMasuk1').value) {
+                document.getElementById('akunMasuk1').value = 'LACI';
+            }
+
+            document.getElementById('chkSplit').checked = false;
+            window.toggleSplitMode(false);
+            window.hitungCuan();
+        };
+
+        window.prosesBayarPiutangCepat = window.bukaKasirUntukPiutang;
 
         window.cetakLaporanShiftPDF = function() {
             const shiftDate = document.getElementById('shiftReportDate').value || window.getTodayIso();
@@ -4110,12 +4230,53 @@
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
             if (confirm(`Hapus transaksi "${t.ket}"?`)) {
+                // PEMULIHAN PIUTANG JIKA TRANSAKSI PELUNASAN / CICILAN DIHAPUS
+                if (t.idPiutangRef || t.kat === 'PIUTANG' || (t.ket && t.ket.includes('[PELUNASAN UTANG]'))) {
+                    let p = window.piutangList.find(x => x.id === t.idPiutangRef);
+                    if (!p && t.ket) {
+                        const cleanKet = t.ket.replace('[PELUNASAN UTANG]', '').trim().toUpperCase();
+                        p = window.piutangList.find(x => (x.nama || '').trim().toUpperCase() === cleanKet);
+                    }
+                    if (p) {
+                        const bayarVal = Number(t.hargaJual || 0);
+                        p.sisa = Number(p.sisa || 0) + bayarVal;
+                        p.status = 'BELUM LUNAS';
+                        if (p.riwayatCicilan && Array.isArray(p.riwayatCicilan)) {
+                            p.riwayatCicilan = p.riwayatCicilan.filter(c => c.trxId !== t.id);
+                        }
+                        window.catatLogAktivitas('PEMULIHAN UTANG', `Pelunasan dihapus, sisa piutang ${p.nama} dikembalikan menjadi ${window.formatRp(p.sisa)}`);
+                    }
+                }
+
+                // PEMULIHAN SPAREPART JIKA TRANSAKSI PENJUALAN / PELUNASAN PART DIHAPUS
+                if (t.idSparepartRef || t.akunKeluar1 === 'SPAREPART' || t.akunKeluar2 === 'SPAREPART' || (t.ket && t.ket.includes('[SERVIS PART]'))) {
+                    let sp = window.sparepartList.find(x => x.id === t.idSparepartRef || x.trxIdRef === t.id);
+                    if (!sp && t.ket) {
+                        const cleanKet = t.ket.replace('[SERVIS PART]', '').trim().toUpperCase();
+                        sp = window.sparepartList.find(x => (x.namaUnit || '').trim().toUpperCase() === cleanKet || cleanKet.includes((x.namaUnit || '').trim().toUpperCase()));
+                    }
+                    if (sp) {
+                        sp.status = 'BELUM LUNAS';
+                        sp.trxIdRef = null;
+                        window.catatLogAktivitas('PEMULIHAN PART', `Penjualan dihapus, sparepart "${sp.namaUnit}" dikembalikan ke status BELUM LUNAS (Aset Aktif)`);
+                    }
+                }
+
+                // PEMULIHAN STATUS TIKET SERVIS
+                if (t.idTiketRef) {
+                    const tk = window.tiketServisList.find(x => x.id === t.idTiketRef);
+                    if (tk) {
+                        tk.status = 'SELESAI';
+                    }
+                }
+
                 window.catatLogAktivitas('HAPUS TRX', `Menghapus transaksi "${t.ket}" (${window.formatRp(t.hargaJual)})`);
                 window.transaksiJurnal = window.transaksiJurnal.filter(item => item.id != idTrx);
-                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+                window.saveAllToFirebase(false);
                 window.renderAll();
+                window.showToast("✅ Transaksi dihapus & saldo/status berhasil dipulihkan!", "success");
             }
-        }
+        };
 
         window.simpanVlookupCepat = function(e) {
             e.preventDefault();
@@ -4246,13 +4407,17 @@
             if (!akunMasuk1) return alert("Pilih Akun Masuk!");
 
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
             const trxData = {
                 id: editId ? editId : 'trx_' + Date.now(),
-                waktu: editId ? (window.transaksiJurnal.find(x => x.id == editId)?.waktu || timeStr) : timeStr,
+                waktu: existingTrx ? existingTrx.waktu : timeStr,
                 isoDate: selectedDate, ket, qty, kat, isNewCustomer,
                 hargaJual: hargaJualTotal, akunMasuk1, jualSplit1, akunMasuk2, jualSplit2,
                 hargaModal: hargaModalTotal, akunKeluar1, modalSplit1, akunKeluar2, modalSplit2,
-                cuan: hargaJualTotal - hargaModalTotal, isSplit
+                cuan: hargaJualTotal - hargaModalTotal, isSplit,
+                idTiketRef: window._pendingTiketIdToLunas || (existingTrx ? existingTrx.idTiketRef : null),
+                idSparepartRef: window._pendingSparepartIdToLunas || (existingTrx ? existingTrx.idSparepartRef : null),
+                idPiutangRef: window._pendingPiutangIdToLunas || (existingTrx ? existingTrx.idPiutangRef : null)
             };
 
             if (editId) {
@@ -4266,13 +4431,39 @@
             }
 
             if (window._pendingTiketIdToLunas) {
-                const tk = window.tiketServisList.find(x => x.id === window._pendingTiketIdToLunas);
+                const tk = window.tiketServisList.find(x => x.id == window._pendingTiketIdToLunas);
                 if (tk) {
                     tk.status = 'LUNAS';
                     window.catatLogAktivitas('SERVIS LUNAS', `Tiket ${tk.noServis} (${tk.nama}) otomatis LUNAS via kasir`);
                 }
+                const spFromTiket = window.sparepartList.find(s => s.idTiketRef == window._pendingTiketIdToLunas);
+                if (spFromTiket) {
+                    spFromTiket.status = 'LUNAS';
+                    spFromTiket.trxIdRef = trxData.id;
+                    trxData.idSparepartRef = spFromTiket.id;
+                }
                 window._pendingTiketIdToLunas = null;
                 window.saveToFirebaseNode('tiketServis', window.tiketServisList);
+            }
+
+            if (window._pendingSparepartIdToLunas) {
+                const sp = window.sparepartList.find(x => x.id == window._pendingSparepartIdToLunas);
+                if (sp) {
+                    sp.status = 'LUNAS';
+                    sp.trxIdRef = trxData.id;
+                    window.catatLogAktivitas('LUNAS SPAREPART', `Sparepart "${sp.namaUnit}" otomatis LUNAS via kasir`);
+                }
+                window._pendingSparepartIdToLunas = null;
+                window.saveToFirebaseNode('sparepart', window.sparepartList);
+            }
+
+            if (window._pendingPiutangIdToLunas) {
+                const p = window.piutangList.find(x => x.id == window._pendingPiutangIdToLunas);
+                if (p) {
+                    window.catatLogAktivitas('PELUNASAN UTANG', `Menerima pembayaran piutang ${p.nama} sebesar ${window.formatRp(hargaJualTotal)} masuk ke ${akunMasuk1}`);
+                }
+                window._pendingPiutangIdToLunas = null;
+                window.saveToFirebaseNode('piutang', window.piutangList);
             }
 
             window.closeModalKasir();
@@ -4387,23 +4578,47 @@
 
             window.sparepartList.forEach(sp => {
                 const spName = (sp.namaUnit || '').trim().toUpperCase();
+                const linkedTiket = sp.idTiketRef ? window.tiketServisList.find(tk => tk.id == sp.idTiketRef) : null;
                 const isLunas = window.transaksiJurnal.some(t => {
                     if (t.isPencatatanUtangAwal || t.isPindahSaldo) return false;
+                    if (t.idSparepartRef && t.idSparepartRef == sp.id) return true;
+                    if (sp.trxIdRef && sp.trxIdRef == t.id) return true;
+                    if (sp.idTiketRef && t.idTiketRef && t.idTiketRef == sp.idTiketRef) return true;
                     const ketTrx = (t.ket || '').trim().toUpperCase();
-                    return ketTrx === spName || ketTrx.includes(spName);
+                    if (linkedTiket) {
+                        const noSrv = (linkedTiket.noServis || '').trim().toUpperCase();
+                        if (noSrv && ketTrx.includes(noSrv)) return true;
+                    }
+                    return spName && (ketTrx === spName || ketTrx.includes(spName));
                 });
                 sp.status = isLunas ? 'LUNAS' : 'BELUM LUNAS';
             });
 
             window.piutangList.forEach(p => {
+                if (!p.pokokAwal) p.pokokAwal = Number(p.sisa || 0);
                 const pName = (p.nama || '').trim().toUpperCase();
-                const isBayar = window.transaksiJurnal.some(t => {
-                    if (t.isPencatatanUtangAwal || t.isPindahSaldo) return false;
+                let totalTerbayar = 0;
+                let listCicilan = [];
+                window.transaksiJurnal.forEach(t => {
+                    if (t.isPencatatanUtangAwal || t.isPindahSaldo || t.kat === 'PIUTANG_INIT') return;
                     const ketTrx = (t.ket || '').trim().toUpperCase();
-                    return ketTrx === pName || ketTrx.includes(pName);
+                    const isMatch = (t.idPiutangRef && t.idPiutangRef == p.id) ||
+                                    ((t.kat === 'PIUTANG' || t.akunKeluar1 === 'PIUTANG') && pName && (ketTrx === pName || ketTrx.includes(pName)));
+                    if (isMatch) {
+                        const nomBayar = Number(t.hargaJual || 0);
+                        totalTerbayar += nomBayar;
+                        listCicilan.push({
+                            trxId: t.id,
+                            tgl: t.isoDate || window.getTodayIso(),
+                            waktu: t.waktu || '',
+                            bayar: nomBayar,
+                            keAkun: t.akunMasuk1 || 'LACI'
+                        });
+                    }
                 });
-                p.status = isBayar ? 'LUNAS' : 'BELUM LUNAS';
-                p.sisa = isBayar ? 0 : (p.pokokAwal || p.sisa || 0);
+                p.riwayatCicilan = listCicilan;
+                p.sisa = Math.max(0, Number(p.pokokAwal || 0) - totalTerbayar);
+                p.status = (p.sisa <= 0 && Number(p.pokokAwal || 0) > 0) ? 'LUNAS' : 'BELUM LUNAS';
             });
 
             window.stokOpnameItems.forEach(s => { s.terjual = 0; });
@@ -4418,7 +4633,7 @@
                     }
                 });
 
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
 
                 let match = true;
                 if (fMode === 'DAILY' && t.isoDate !== fDate) match = false;
@@ -4480,8 +4695,11 @@
                         <td class="text-kredit">${window.formatRp(s.estJual)}</td>
                         <td><span style="color:${s.status === 'LUNAS' ? '#16A34A' : '#EF4444'}; font-weight:bold;">${s.status}</span></td>
                         <td>
-                            <button class="btn-edit" onclick="editSparepart(${s.id})">Edit</button>
-                            <button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>
+                            <div style="display:flex; gap:3px; justify-content:center;">
+                                ${s.status !== 'LUNAS' ? `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="bukaKasirUntukSparepart(${s.id})" title="Jual/Pasang & Lunasi ke Kasir">💰 Lunasi</button>` : ''}
+                                <button class="btn-edit" onclick="editSparepart(${s.id})">Edit</button>
+                                <button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>
+                            </div>
                         </td>
                     </tr>
                 `).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada sparepart.</td></tr>`;
@@ -4575,13 +4793,14 @@
                         <tr>
                             <td><b>${p.nama}</b><br><small style="color:#0284C7; font-weight:600;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small></td>
                             <td class="text-debit"><b>${window.formatRp(activeSisa)}</b></td>
-                            <td style="font-size:10px;">${p.riwayatCicilan?.map(c => `• ${c.tgl}:${window.formatRp(c.bayar)}`).join('<br>') || 'Belum ada'}</td>
+                            <td style="font-size:10px;">${p.riwayatCicilan?.map(c => `• ${c.tgl}:${window.formatRp(c.bayar)} (${c.keAkun || 'LACI'})`).join('<br>') || 'Belum ada'}</td>
                             <td>${p.kategori}</td>
                             <td>${p.sumber}</td>
                             <td>${p.catatan}</td>
                             <td><span style="color:${isLunas ? '#16A34A' : '#EF4444'}; font-weight:bold;">${isLunas ? 'LUNAS' : 'BELUM'}</span></td>
                             <td>
                                 <div style="display:flex; gap:3px; justify-content:center;">
+                                    ${!isLunas ? `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="bukaKasirUntukPiutang(${p.id})" title="Buka Kasir & Catat Pelunasan / Cicilan">💰 Lunasi</button>` : ''}
                                     ${!isLunas ? `<button class="btn" style="background:#25D366; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="kirimWaPengingatPiutang(${p.id})" title="Kirim Pesan Tagihan ke WhatsApp Pelanggan">📲 WA</button>` : ''}
                                     <button class="btn-delete" style="padding:3px 7px; font-size:10px;" onclick="hapusPiutang(${p.id})">Hapus</button>
                                 </div>
@@ -4625,7 +4844,7 @@
                     if (t.akunMasuk1) masukAkun[t.akunMasuk1] += Number(t.hargaJual || 0);
                     if (t.akunKeluar1) {
                         if (t.akunKeluar1 === 'PIUTANG') {
-                            if (keluarAkun['PIUTANG'] !== undefined) keluarAkun['PIUTANG'] += Number(t.hargaJual || 0);
+                            if (keluarAkun['PIUTANG'] !== undefined) keluarAkun['PIUTANG'] += Number(t.hargaModal || t.hargaJual || 0);
                         } else if (keluarAkun[t.akunKeluar1] !== undefined) {
                             keluarAkun[t.akunKeluar1] += Number(t.hargaModal || 0);
                         }
@@ -4646,6 +4865,7 @@
                 }
             });
 
+            let totalSparepartStok = 0;
             window.sparepartList?.forEach(sp => {
                 const itemDate = sp.isoDate || sp.tgl || '';
                 if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
@@ -4653,6 +4873,9 @@
 
                 if (keluarAkun[sp.sumber] !== undefined) keluarAkun[sp.sumber] += Number(sp.modal || 0);
                 if (masukAkun['SPAREPART'] !== undefined) masukAkun['SPAREPART'] += Number(sp.modal || 0);
+                if (sp.status !== 'LUNAS') {
+                    totalSparepartStok += Number(sp.modal || 0);
+                }
             });
 
             window.operasionalList?.forEach(op => {
@@ -4672,8 +4895,9 @@
             });
 
             let totalKasCair = 0;
-            let totalPiutangVal = totalPiutang || 0;
-            let totalSparepartVal = 0;
+            let totalPiutangVal = Math.max(0, (window.masterSaldoAwal['PIUTANG'] || 0) + (masukAkun['PIUTANG'] || 0) - (keluarAkun['PIUTANG'] || 0));
+            if (saldoMode === 'ALL') totalPiutangVal = totalPiutang || 0;
+            let totalSparepartVal = Math.max(0, (window.masterSaldoAwal['SPAREPART'] || 0) + (masukAkun['SPAREPART'] || 0) - (keluarAkun['SPAREPART'] || 0));
             let totalSaldoKeseluruhan = 0;
 
             document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
@@ -4682,7 +4906,7 @@
                 if (s === 'PIUTANG') {
                     akhir = totalPiutangVal;
                 } else if (s === 'SPAREPART') {
-                    totalSparepartVal = akhir;
+                    akhir = totalSparepartVal;
                 } else {
                     totalKasCair += akhir;
                 }
@@ -4728,6 +4952,7 @@
                 const listItemsHtml = window.saldoList.map(s => {
                     let akhir = (window.masterSaldoAwal[s] || 0) + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                     if (s === 'PIUTANG') akhir = totalPiutangVal;
+                    else if (s === 'SPAREPART') akhir = totalSparepartVal;
                     const badgeTag = s === 'PIUTANG' ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 4px; border-radius:4px;">Piutang</span>' : (s === 'SPAREPART' ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 4px; border-radius:4px;">Part</span>' : '');
                     return `<div class="saldo-item-row"><div><b>${s}</b>${badgeTag}</div><span class="${akhir < 0 ? 'text-debit' : 'text-kredit'}">${window.formatRp(akhir)}</span></div>`;
                 }).join('');
