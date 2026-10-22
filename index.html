@@ -104,19 +104,53 @@
             100% { opacity: 1; transform: scale(1); }
         }
         .realtime-dot {
-            display: inline-block; width: 8px; height: 8px; background-color: #4ADE80; border-radius: 50%;
-            margin-right: 4px; animation: realtimePulse 1.2s infinite ease-in-out; box-shadow: 0 0 8px #4ADE80;
+            display: inline-block; width: 7px; height: 7px; background-color: #4ADE80; border-radius: 50%;
+            margin-right: 5px; animation: realtimePulse 1.2s infinite ease-in-out; box-shadow: 0 0 8px #4ADE80;
         }
 
-        .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 5px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6px; }
         .summary-card { 
-            background: var(--card); padding: 7px 3px; border-radius: 8px; border: 1px solid var(--border); 
-            text-align: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+            background: var(--card); padding: 8px 6px; border-radius: 10px; border: 1px solid var(--border); 
+            text-align: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; position: relative; overflow: hidden;
         }
-        .summary-card.clickable { cursor: pointer; transition: transform 0.15s, background-color 0.15s; }
-        .summary-card.clickable:active { transform: scale(0.96); background: var(--primary-light); }
-        .summary-card .lbl { font-size: 8.5px; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 2px; }
-        .summary-card .val { font-size: 11px; font-weight: 800; word-break: break-all; }
+        .summary-card.clickable { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .summary-card.clickable:active { transform: scale(0.97); }
+        .summary-card .lbl { 
+            font-size: 9px; font-weight: 800; color: #64748B; text-transform: uppercase; 
+            margin-bottom: 3px; letter-spacing: 0.3px; display: flex; align-items: center; justify-content: center; gap: 3px;
+        }
+        .summary-card .val { font-size: 12px; font-weight: 800; word-break: break-all; line-height: 1.2; }
+
+        .saldo-banner-bar {
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+            background: linear-gradient(135deg, var(--primary-light), var(--card)); color: var(--text);
+            padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; cursor: pointer;
+            border: 1.5px solid var(--border); border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .saldo-banner-bar:active { transform: scale(0.99); }
+        .saldo-banner-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #FFFFFF;
+            padding: 6px 11px; border-radius: 8px; font-size: 10.5px; font-weight: 800;
+            letter-spacing: 0.3px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); flex-shrink: 0;
+        }
+        .saldo-banner-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right; }
+        .saldo-banner-info { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+        .saldo-banner-title { font-size: 9px; font-weight: 800; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase; }
+        body.theme-dark .saldo-banner-title { color: #94A3B8; }
+        .saldo-banner-val-wrap { display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; flex-wrap: wrap; }
+        .saldo-banner-val { font-size: 14px; font-weight: 900; color: var(--primary); letter-spacing: 0.2px; }
+        body.theme-dark .saldo-banner-val { color: var(--accent); }
+        .saldo-banner-sub { font-size: 9.5px; color: #64748B; font-weight: 700; }
+        body.theme-dark .saldo-banner-sub { color: #CBD5E1; }
+        .saldo-banner-icon {
+            width: 30px; height: 30px; border-radius: 8px; background: var(--card);
+            border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0;
+        }
 
         .left-sidebar {
             position: fixed; top: 0; left: -320px; width: 310px; height: 100%; background: var(--card);
@@ -682,64 +716,71 @@
             </div>
             <div class="header-status-bar">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <div id="hdrUserAvatarContainer" onclick="bukaModalGantiFotoUserAktif()" title="Klik untuk ganti foto profil akun ini" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.22); padding:2px 8px 2px 4px; border-radius:18px; border:1px solid rgba(255,255,255,0.4); transition:all 0.2s;">
+                    <div id="hdrUserAvatarContainer" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.2); padding:2px 10px 2px 4px; border-radius:999px; border:1px solid rgba(255,255,255,0.35);">
                         <div id="hdrUserAvatarBox" style="width:22px; height:22px; border-radius:50%; background:#FFF; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1.5px solid #FFF; box-shadow:0 1px 3px rgba(0,0,0,0.25); flex-shrink:0;">
                             <span id="hdrUserAvatarIcon" style="font-size:12px; line-height:1;">👤</span>
                             <img id="hdrUserAvatarImg" src="" style="display:none; width:100%; height:100%; object-fit:cover;" alt="Avatar">
                         </div>
-                        <span id="hdrUserActive" style="font-weight:800; font-size:11.5px; letter-spacing:0.3px;">OWNER</span>
-                        <span style="font-size:10px; opacity:0.85;">📷</span>
+                        <span id="hdrUserActive" style="font-weight:800; font-size:11px; letter-spacing:0.4px;">OWNER</span>
                     </div>
-                    <span id="cloudStatus" style="color:#FFF; font-weight:800; background:rgba(52,211,153,0.35); padding:2px 8px; border-radius:6px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>MENYINKRONKAN SERVER...</span>
+                    <span id="cloudStatus" style="color:#FFF; font-weight:800; font-size:10px; letter-spacing:0.6px; background:rgba(15,23,42,0.35); border:1px solid rgba(74,222,128,0.5); padding:2px 9px; border-radius:999px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>SYNC...</span>
                 </div>
                 <span id="hdrRealtimeClock">RABU, 14 OKTOBER 2026 00:00:00</span>
             </div>
         </header>
 
         <div class="summary-grid">
-            <div class="summary-card">
-                <div class="lbl">CUAN HARIAN</div>
+            <div class="summary-card" style="border-top: 3px solid #D97706; background: linear-gradient(180deg, #FFFBEB 0%, var(--card) 100%);">
+                <div class="lbl" style="color:#B45309;">🔥 CUAN HARIAN</div>
                 <div class="val text-cuan" id="cuanTotalVal">Rp0</div>
             </div>
-            <div class="summary-card">
-                <div class="lbl">CUAN ATM</div>
+            <div class="summary-card" style="border-top: 3px solid var(--primary);">
+                <div class="lbl" style="color:var(--primary);">🏧 CUAN ATM</div>
                 <div class="val" id="cuanAtmVal" style="color:var(--primary);">Rp0</div>
             </div>
-            <div class="summary-card">
-                <div class="lbl">CUAN KONTER</div>
+            <div class="summary-card" style="border-top: 3px solid #16A34A;">
+                <div class="lbl" style="color:#15803D;">📱 CUAN KONTER</div>
                 <div class="val text-kredit" id="cuanKonterVal">Rp0</div>
             </div>
-            <div class="summary-card">
-                <div class="lbl">CUAN SERVICE</div>
+            <div class="summary-card" style="border-top: 3px solid #9333EA;">
+                <div class="lbl" style="color:#7E22CE;">🛠️ CUAN SERVICE</div>
                 <div class="val" id="cuanServiceVal" style="color:#9333EA;">Rp0</div>
-            </div>
-            <div class="summary-card clickable" onclick="toggleSaldoSidebar()" title="Klik untuk lihat rincian kas cair dan piutang">
-                <div class="lbl">SALDO KONTER</div>
-                <div class="val text-kredit" id="topTotalSaldoRiil">Rp0</div>
-                <div id="topTotalSaldoSub" style="font-size:8px; color:#64748B; font-weight:700; margin-top:1px; line-height:1.1;">Rp0</div>
             </div>
         </div>
 
-        <div class="summary-grid" style="margin-bottom:6px;">
-            <div class="summary-card clickable" onclick="toggleSaldoSidebar()" title="Klik untuk lihat rekap saldo realtime di kiri">
-                <div class="lbl" style="color:#0284C7;">💰 CEK SALDO</div>
-                <div class="val" style="color:#0284C7; font-size:10px;">➔ BUKA KIRI</div>
-            </div>
-            <div class="summary-card">
-                <div class="lbl">TOTAL TRX</div>
+        <div class="summary-grid">
+            <div class="summary-card" style="border-top: 3px solid #2563EB;">
+                <div class="lbl" style="color:#1D4ED8;">🧾 TOTAL TRX</div>
                 <div class="val" id="topTotalTrxVal" style="color:#2563EB;">0 TRX</div>
             </div>
-            <div class="summary-card">
-                <div class="lbl">PELANGGAN</div>
-                <div class="val" id="topTotalPelangganVal" style="color:#D97706;">0 ORG</div>
+            <div class="summary-card" style="border-top: 3px solid #EA580C;">
+                <div class="lbl" style="color:#C2410C;">👥 PELANGGAN</div>
+                <div class="val" id="topTotalPelangganVal" style="color:#EA580C;">0 ORG</div>
             </div>
-            <div class="summary-card">
-                <div class="lbl">STOK OPNAME</div>
-                <div class="val" id="topStokOpnameVal" style="color:var(--primary);">Rp0</div>
+            <div class="summary-card" style="border-top: 3px solid #0284C7;">
+                <div class="lbl" style="color:#0369A1;">📦 STOK OPNAME</div>
+                <div class="val" id="topStokOpnameVal" style="color:#0284C7;">Rp0</div>
             </div>
-            <div class="summary-card">
-                <div class="lbl">PIUTANG</div>
+            <div class="summary-card" style="border-top: 3px solid #EF4444;">
+                <div class="lbl" style="color:#DC2626;">🤝 PIUTANG</div>
                 <div class="val text-debit" id="topTotalPiutangVal">Rp0</div>
+            </div>
+        </div>
+
+        <div class="saldo-banner-bar" onclick="toggleSaldoSidebar()" title="Klik untuk lihat rincian kas cair, sparepart, dan piutang">
+            <div class="saldo-banner-btn">
+                <span>💰 CEK SALDO</span>
+                <span>➔</span>
+            </div>
+            <div class="saldo-banner-right">
+                <div class="saldo-banner-info">
+                    <span class="saldo-banner-title">TOTAL SALDO KONTER</span>
+                    <div class="saldo-banner-val-wrap">
+                        <span class="saldo-banner-sub" id="topTotalSaldoSub">(100% Kas Cair)</span>
+                        <span class="saldo-banner-val" id="topTotalSaldoRiil">Rp0</span>
+                    </div>
+                </div>
+                <div class="saldo-banner-icon">🏦</div>
             </div>
         </div>
     </div>
@@ -889,19 +930,19 @@
             <div class="filter-container">
                 <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER TIKET:</span>
                 <select id="tiketFilterMode" class="date-picker-input" onchange="toggleFilterTiketDate(this.value)">
-                    <option value="ALL">📅 Semua Tanggal</option>
-                    <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
+                    <option value="ALL" selected>📅 Semua Tanggal</option>
+                    <option value="DAILY">📆 Per Hari (Tanggal)</option>
                     <option value="MONTHLY">🗓️ Per Bulan</option>
                 </select>
-                <input type="date" id="tiketDatePicker" class="date-picker-input" onchange="renderAll()">
+                <input type="date" id="tiketDatePicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
                 <input type="month" id="tiketMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
 
                 <select id="tiketFilterStatus" class="date-picker-input" onchange="renderAll()">
                     <option value="">-- Semua Status Servis --</option>
                     <option value="MENUNGGU KONFIRMASI">MENUNGGU KONFIRMASI</option>
-                    <option value="PROSES">PROSES</option>
-                    <option value="SELESAI">SELESAI</option>
-                    <option value="LUNAS">LUNAS</option>
+                    <option value="PROSES">PROSES (DIKERJAKAN)</option>
+                    <option value="SIAP DIAMBIL">SIAP DIAMBIL (BERES TEKNISI)</option>
+                    <option value="SELESAI_SISTEM">✅ SELESAI / LUNAS (SUDAH DIBAYAR)</option>
                     <option value="CANCEL">CANCEL</option>
                 </select>
             </div>
@@ -2150,7 +2191,7 @@
                 } else { window.logAktivitasList = []; }
 
                 window.saveLocalBackup();
-                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>TERHUBUNG REALTIME';
+                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
 
                 window.initDropdowns();
                 window.initVlookupAutoFill();
@@ -2164,7 +2205,7 @@
                 window.saveAllToFirebase();
             }
         }, (error) => {
-            if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; background-color:#EF4444; border-radius:50%; margin-right:4px;"></span>TERPUTUS (LOKAL AMAN)';
+            if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:7px; height:7px; background-color:#EF4444; border-radius:50%; margin-right:5px; box-shadow:0 0 6px #EF4444;"></span>OFFLINE';
         });
 
         window.catatLogAktivitas = function(tipe, deskripsi) {
@@ -2892,6 +2933,13 @@
         window.hapusTiketServis = function(id) {
             if (confirm("Hapus tiket servis ini?")) {
                 window.tiketServisList = window.tiketServisList.filter(t => t.id !== id);
+                if (window.sparepartList) {
+                    const beforeLen = window.sparepartList.length;
+                    window.sparepartList = window.sparepartList.filter(sp => !(sp.idTiketRef == id && sp.status !== 'LUNAS'));
+                    if (window.sparepartList.length !== beforeLen) {
+                        window.saveToFirebaseNode('sparepart', window.sparepartList);
+                    }
+                }
                 window.saveToFirebaseNode('tiketServis', window.tiketServisList);
                 window.renderAll();
             }
@@ -4266,7 +4314,8 @@
                 if (t.idTiketRef) {
                     const tk = window.tiketServisList.find(x => x.id === t.idTiketRef);
                     if (tk) {
-                        tk.status = 'SELESAI';
+                        tk.status = 'SIAP DIAMBIL';
+                        tk.isSettledInKasir = false;
                     }
                 }
 
@@ -4432,11 +4481,13 @@
 
             if (window._pendingTiketIdToLunas) {
                 const tk = window.tiketServisList.find(x => x.id == window._pendingTiketIdToLunas);
-                if (tk) {
-                    tk.status = 'LUNAS';
-                    window.catatLogAktivitas('SERVIS LUNAS', `Tiket ${tk.noServis} (${tk.nama}) otomatis LUNAS via kasir`);
-                }
                 const spFromTiket = window.sparepartList.find(s => s.idTiketRef == window._pendingTiketIdToLunas);
+                if (tk) {
+                    const pakaiModal = Boolean((tk.perluSparepart && Number(tk.modalPart || 0) > 0) || (spFromTiket && Number(spFromTiket.modal || 0) > 0));
+                    tk.isSettledInKasir = true;
+                    tk.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
+                    window.catatLogAktivitas('SERVIS SELESAI', `Tiket ${tk.noServis} (${tk.nama}) otomatis ${tk.status} via kasir`);
+                }
                 if (spFromTiket) {
                     spFromTiket.status = 'LUNAS';
                     spFromTiket.trxIdRef = trxData.id;
@@ -4511,6 +4562,32 @@
         }
 
         window.renderAll = function() {
+            // Sinkronisasi Status Tiket Servis terhadap Jurnal Kasir & Sparepart
+            (window.tiketServisList || []).forEach(t => {
+                const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
+                const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
+                const noSrv = (t.noServis || '').trim().toUpperCase();
+                const isSettled = (window.transaksiJurnal || []).some(trx => {
+                    if (trx.isPencatatanUtangAwal || trx.isPindahSaldo) return false;
+                    if (trx.idTiketRef && trx.idTiketRef == t.id) return true;
+                    if (spLinked && trx.idSparepartRef && trx.idSparepartRef == spLinked.id) return true;
+                    const ketTrx = (trx.ket || '').trim().toUpperCase();
+                    return noSrv && ketTrx.includes(noSrv);
+                });
+
+                if (isSettled) {
+                    t.isSettledInKasir = true;
+                    t.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
+                    if (pakaiModal) t.statusPart = 'SELESAI & LUNAS';
+                } else {
+                    if (t.isSettledInKasir || t.status === 'LUNAS' || t.status === 'SELESAI & LUNAS' || t.status === 'SELESAI') {
+                        t.status = 'SIAP DIAMBIL';
+                    }
+                    t.isSettledInKasir = false;
+                    if (pakaiModal) t.statusPart = 'MODAL DI SALDO PART';
+                }
+            });
+
             const bTiket = document.getElementById('bodyTiketServis');
             if (bTiket) {
                 const tMode = document.getElementById('tiketFilterMode')?.value || 'DAILY';
@@ -4522,18 +4599,70 @@
                     const itemDate = t.isoDate || '';
                     if (tMode === 'DAILY' && itemDate !== tDate) return false;
                     if (tMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(tMonth))) return false;
-                    if (tStatus && t.status !== tStatus) return false;
+                    if (tStatus) {
+                        if (tStatus === 'SELESAI_SISTEM') {
+                            if (!t.isSettledInKasir) return false;
+                        } else if (t.status !== tStatus) {
+                            return false;
+                        }
+                    }
                     return true;
                 });
 
                 bTiket.innerHTML = filteredTiket.map(t => {
-                    const infoPart = (t.perluSparepart && t.namaPart)
-                        ? `<div><b>${t.namaPart}</b></div><div style="font-size:10px; color:#EF4444; font-weight:bold;">Modal: ${window.formatRp(t.modalPart)} <small>(${t.sumberKasPart || 'LACI'})</small></div><span style="background:#DCFCE7; color:#15803D; font-size:9px; padding:1px 5px; border-radius:4px; font-weight:bold;">${t.statusPart || 'SUDAH DIBELI'}</span>`
-                        : `<span style="color:#059669; font-size:10px; font-weight:bold;">JASA MURNI (TANPA PART)</span><br><button class="btn" style="width:auto; padding:2px 6px; font-size:9.5px; background:#0284C7; margin-top:2px;" onclick="bukaModalBeliPartTiket(${t.id})">+ Beli Part</button>`;
+                    const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
+                    const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
+                    const modalNom = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
+                    const namaPartTxt = t.namaPart || (spLinked ? spLinked.namaUnit : 'Sparepart Service');
+                    const sumberKasTxt = t.sumberKasPart || (spLinked ? spLinked.sumber : 'LACI');
 
-                    const btnLunasi = (t.status !== 'LUNAS')
-                        ? `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10.5px; font-weight:bold; margin-right:2px;" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="Buka Kasir & Lunasi">💰 Lunasi</button>`
-                        : `<button class="btn-nota-service" onclick='cetakNotaLunasServiceTrxTiket(${JSON.stringify(t)})' title="Cetak Nota Lunas">📄 Lunas</button>`;
+                    const infoPart = pakaiModal
+                        ? `<div><b>${namaPartTxt}</b></div>
+                           <div style="font-size:10px; color:#EF4444; font-weight:bold;">Modal: ${window.formatRp(modalNom)} <small>(${sumberKasTxt})</small></div>
+                           ${t.isSettledInKasir
+                               ? `<span style="background:#DCFCE7; color:#15803D; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-top:2px;">✅ MODAL KEMBALI (LUNAS)</span>`
+                               : `<span style="background:#FEF3C7; color:#B45309; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-top:2px;">⏳ TERTAHAN DI SALDO PART</span>`}`
+                        : `<span style="color:#059669; font-size:10px; font-weight:bold;">🛠️ NON-MODAL (JASA MURNI)</span>
+                           ${(!t.isSettledInKasir && t.status !== 'CANCEL') ? `<br><button class="btn" style="width:auto; padding:2px 6px; font-size:9.5px; background:#0284C7; margin-top:2px;" onclick="bukaModalBeliPartTiket(${t.id})">+ Beli Part</button>` : ''}`;
+
+                    // Kolom Status: Terkunci oleh sistem jika sudah dibayar di Kasir, atau Dropdown Teknisi jika belum dibayar
+                    let kolomStatusHtml = '';
+                    if (t.isSettledInKasir) {
+                        if (pakaiModal) {
+                            kolomStatusHtml = `
+                                <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800; text-align:center; line-height:1.25;" title="Status otomatis oleh sistem karena sudah dilunasi di Kasir & modal sparepart telah kembali">
+                                    ✅ SELESAI & LUNAS<br>
+                                    <span style="font-size:8.5px; font-weight:600; color:#166534;">(Ada Modal Sparepart)</span>
+                                </div>`;
+                        } else {
+                            kolomStatusHtml = `
+                                <div style="background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800; text-align:center; line-height:1.25;" title="Status otomatis oleh sistem karena service non-modal sudah selesai & dibayar di Kasir">
+                                    ✅ SELESAI<br>
+                                    <span style="font-size:8.5px; font-weight:600; color:#075985;">(Jasa Non-Modal)</span>
+                                </div>`;
+                        }
+                    } else {
+                        const selColor = t.status === 'SIAP DIAMBIL' ? '#0284C7' : (t.status === 'CANCEL' ? '#EF4444' : 'inherit');
+                        kolomStatusHtml = `
+                            <select class="form-control" style="padding:4px; font-size:10.5px; font-weight:bold; width:auto; color:${selColor};" onchange="ubahStatusTiket(${t.id}, this.value)">
+                                <option value="MENUNGGU KONFIRMASI" ${t.status === 'MENUNGGU KONFIRMASI' ? 'selected' : ''}>MENUNGGU KONFIRMASI</option>
+                                <option value="PROSES" ${t.status === 'PROSES' ? 'selected' : ''}>PROSES (DIKERJAKAN)</option>
+                                <option value="SIAP DIAMBIL" ${t.status === 'SIAP DIAMBIL' ? 'selected' : ''}>SIAP DIAMBIL (BERES)</option>
+                                <option value="CANCEL" ${t.status === 'CANCEL' ? 'selected' : ''}>CANCEL</option>
+                            </select>`;
+                    }
+
+                    // Kolom Aksi: Diselaraskan dengan tipe service (Pakai Modal vs Non-Modal) & status pembayaran
+                    let btnAksiKasir = '';
+                    if (t.isSettledInKasir) {
+                        btnAksiKasir = `<button class="btn-nota-service" onclick='cetakNotaLunasServiceTrxTiket(${JSON.stringify(t)})' title="Cetak Nota Garansi / Bukti Selesai">${pakaiModal ? '📄 Nota Lunas' : '📄 Nota Selesai'}</button>`;
+                    } else if (t.status !== 'CANCEL') {
+                        if (pakaiModal) {
+                            btnAksiKasir = `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10.5px; font-weight:bold; margin-right:2px;" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="Buka Kasir: Lunasi Service & Cairkan Modal Sparepart">💰 Lunasi</button>`;
+                        } else {
+                            btnAksiKasir = `<button class="btn" style="background:#0284C7; width:auto; padding:3px 7px; font-size:10.5px; font-weight:bold; margin-right:2px;" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="Buka Kasir: Catat Pembayaran Jasa & Selesaikan">💰 Bayar</button>`;
+                        }
+                    }
 
                     return `
                         <tr>
@@ -4546,21 +4675,13 @@
                             <td style="text-align:left;">${infoPart}</td>
                             <td style="color:#0284C7; font-weight:bold;">${window.formatRp(t.dpNom)}<br><small style="font-size:9px; color:#64748B;">(Hanya Info)</small></td>
                             <td style="color:var(--primary); font-weight:bold;">${window.formatRp(t.estBiaya || 0)}</td>
-                            <td>
-                                <select class="form-control" style="padding:4px; font-size:10.5px; font-weight:bold; width:auto; color:${t.status === 'LUNAS' ? '#16A34A' : (t.status === 'CANCEL' ? '#EF4444' : 'inherit')};" onchange="ubahStatusTiket(${t.id}, this.value)">
-                                    <option value="MENUNGGU KONFIRMASI" ${t.status === 'MENUNGGU KONFIRMASI' ? 'selected' : ''}>MENUNGGU KONFIRMASI</option>
-                                    <option value="PROSES" ${t.status === 'PROSES' ? 'selected' : ''}>PROSES</option>
-                                    <option value="SELESAI" ${t.status === 'SELESAI' ? 'selected' : ''}>SELESAI</option>
-                                    <option value="LUNAS" ${t.status === 'LUNAS' ? 'selected' : ''}>LUNAS</option>
-                                    <option value="CANCEL" ${t.status === 'CANCEL' ? 'selected' : ''}>CANCEL</option>
-                                </select>
-                            </td>
+                            <td>${kolomStatusHtml}</td>
                             <td>
                                 <div style="display:flex; flex-wrap:wrap; gap:3px; justify-content:center;">
-                                    <button class="btn-edit" style="background:#0284C7; padding:3px 7px; font-size:10px;" onclick='cetakNotaTiketServis(${JSON.stringify(t)})' title="Cetak Nota">Nota</button>
+                                    <button class="btn-edit" style="background:#0284C7; padding:3px 7px; font-size:10px;" onclick='cetakNotaTiketServis(${JSON.stringify(t)})' title="Cetak Nota Tanda Terima">Nota</button>
                                     <button class="btn" style="background:#25D366; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick='kirimWaTiketServis(${JSON.stringify(t)})' title="Kirim Tanda Terima ke WhatsApp Pelanggan">📲 WA</button>
-                                    ${t.status === 'SELESAI' ? `<button class="btn" style="background:#059669; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick='kirimWaServisSelesai(${JSON.stringify(t)})' title="Kirim Notifikasi HP Selesai Siap Diambil">🔔 Siap</button>` : ''}
-                                    ${btnLunasi}
+                                    ${(!t.isSettledInKasir && t.status === 'SIAP DIAMBIL') ? `<button class="btn" style="background:#059669; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick='kirimWaServisSelesai(${JSON.stringify(t)})' title="Kirim Notifikasi HP Selesai & Siap Diambil">🔔 Siap</button>` : ''}
+                                    ${btnAksiKasir}
                                     <button class="btn-delete" style="padding:3px 7px; font-size:10px;" onclick="hapusTiketServis(${t.id})">Hapus</button>
                                 </div>
                             </td>
@@ -4693,10 +4814,15 @@
                         <td class="text-debit">${window.formatRp(s.modal)}</td>
                         <td>${s.sumber}</td>
                         <td class="text-kredit">${window.formatRp(s.estJual)}</td>
-                        <td><span style="color:${s.status === 'LUNAS' ? '#16A34A' : '#EF4444'}; font-weight:bold;">${s.status}</span></td>
+                        <td>
+                            ${s.status === 'LUNAS'
+                                ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:3px 7px; border-radius:6px; font-weight:800; font-size:10px; display:inline-block;">✅ SELESAI & LUNAS</span>`
+                                : `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; padding:3px 7px; border-radius:6px; font-weight:800; font-size:10px; display:inline-block;">⏳ BELUM LUNAS (MODAL AKTIF)</span>`
+                            }
+                        </td>
                         <td>
                             <div style="display:flex; gap:3px; justify-content:center;">
-                                ${s.status !== 'LUNAS' ? `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="bukaKasirUntukSparepart(${s.id})" title="Jual/Pasang & Lunasi ke Kasir">💰 Lunasi</button>` : ''}
+                                ${s.status !== 'LUNAS' ? `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="bukaKasirUntukSparepart(${s.id})" title="Buka Kasir: Lunasi Service & Kembalikan Modal Sparepart">💰 Lunasi</button>` : ''}
                                 <button class="btn-edit" onclick="editSparepart(${s.id})">Edit</button>
                                 <button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>
                             </div>
