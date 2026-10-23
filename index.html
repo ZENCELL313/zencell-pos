@@ -7,6 +7,9 @@
     
     <link id="dynamicManifest" rel="stylesheet" href="">
     <meta name="theme-color" content="#059669">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -94,8 +97,25 @@
         .btn-icon-hdr:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .header-status-bar {
-            display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.15);
+            display: flex; justify-content: space-between; align-items: center; gap: 6px; background: rgba(255,255,255,0.15);
             padding: 6px 10px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: 600;
+        }
+        .status-marquee-box {
+            flex: 1; min-width: 0; overflow: hidden; margin: 0 6px;
+            background: rgba(15, 23, 42, 0.25); border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px; padding: 3px 10px; display: flex; align-items: center; position: relative;
+        }
+        .status-marquee-track {
+            display: inline-block; white-space: nowrap; padding-left: 100%;
+            font-size: 10px; font-weight: 800; color: #FEF08A; letter-spacing: 0.4px;
+            animation: statusMarqueeScroll 22s linear infinite;
+        }
+        .status-marquee-box:hover .status-marquee-track {
+            animation-play-state: paused;
+        }
+        @keyframes statusMarqueeScroll {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-100%); }
         }
 
         @keyframes realtimePulse {
@@ -110,17 +130,25 @@
 
         .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6px; }
         .summary-card { 
-            background: var(--card); padding: 8px 6px; border-radius: 10px; border: 1px solid var(--border); 
+            background: var(--card); padding: 9px 5px; border-radius: 10px; border: 1px solid var(--border); 
             text-align: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column;
             justify-content: center; align-items: center; position: relative; overflow: hidden;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', Roboto, -apple-system, sans-serif;
         }
         .summary-card.clickable { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
         .summary-card.clickable:active { transform: scale(0.97); }
         .summary-card .lbl { 
-            font-size: 9px; font-weight: 800; color: #64748B; text-transform: uppercase; 
-            margin-bottom: 3px; letter-spacing: 0.3px; display: flex; align-items: center; justify-content: center; gap: 3px;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', Roboto, -apple-system, sans-serif;
+            font-size: 9px; font-weight: 700; color: #334155; text-transform: uppercase; 
+            margin-bottom: 3px; letter-spacing: 0.35px; display: flex; align-items: center; justify-content: center; gap: 3px; white-space: nowrap;
         }
-        .summary-card .val { font-size: 12px; font-weight: 800; word-break: break-all; line-height: 1.2; }
+        .summary-card .val {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', Roboto, -apple-system, sans-serif;
+            font-size: 12px; font-weight: 800; color: #0F172A !important; font-variant-numeric: tabular-nums;
+            letter-spacing: -0.15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; word-break: normal; line-height: 1.25;
+        }
+        body.theme-dark .summary-card .lbl { color: #CBD5E1 !important; }
+        body.theme-dark .summary-card .val { color: #F8FAFC !important; }
 
         .saldo-banner-bar {
             display: flex; justify-content: space-between; align-items: center; gap: 10px;
@@ -299,10 +327,13 @@
             header { padding: 14px 18px; }
             .header-title h1 { font-size: 18px; }
             .header-status-bar { font-size: 12.5px; padding: 6px 12px; }
+            .status-marquee-box { margin: 0 12px; padding: 4px 14px; }
+            .status-marquee-track { font-size: 11px; }
             .btn-icon-hdr { width: 38px; height: 38px; font-size: 16px; }
-            .summary-card { padding: 8px 4px; }
-            .summary-card .lbl { font-size: 9px; }
-            .summary-card .val { font-size: 12px; }
+            .summary-grid { gap: 10px; margin-bottom: 10px; }
+            .summary-card { padding: 11px 10px; border-radius: 12px; }
+            .summary-card .lbl { font-size: 10px; margin-bottom: 4px; letter-spacing: 0.3px; }
+            .summary-card .val { font-size: 14px; }
             table { font-size: 12.5px; }
             th, td { padding: 8px 10px; }
             .form-control { font-size: 12.5px; padding: 8px 10px; }
@@ -452,6 +483,11 @@
                             <label>No. WA Owner (Penerima Laporan Shift)</label>
                             <input type="text" id="setWaOwner" class="form-control" placeholder="Cth: 08123456789">
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>📢 Teks Berjalan Status Bar (Pemberitahuan / SOP Kasir)</label>
+                        <input type="text" id="setTeksBerjalan" class="form-control" placeholder="Cth: HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER">
+                        <small style="color:#64748B; font-size:10px; display:block; margin-top:3px;">Teks ini berjalan dari kanan ke kiri di area tengah status bar atas sebagai pengingat SOP harian.</small>
                     </div>
                     <div style="display:flex; gap:8px; margin-top:12px;">
                         <button type="submit" id="btnSimpanIdentitas" class="btn" style="background:#0F172A; font-weight:700; flex:1; transition:all 0.25s ease;">💾 SIMPAN PERUBAHAN</button>
@@ -715,7 +751,7 @@
                 </div>
             </div>
             <div class="header-status-bar">
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
                     <div id="hdrUserAvatarContainer" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.2); padding:2px 10px 2px 4px; border-radius:999px; border:1px solid rgba(255,255,255,0.35);">
                         <div id="hdrUserAvatarBox" style="width:22px; height:22px; border-radius:50%; background:#FFF; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1.5px solid #FFF; box-shadow:0 1px 3px rgba(0,0,0,0.25); flex-shrink:0;">
                             <span id="hdrUserAvatarIcon" style="font-size:12px; line-height:1;">👤</span>
@@ -725,45 +761,48 @@
                     </div>
                     <span id="cloudStatus" style="color:#FFF; font-weight:800; font-size:10px; letter-spacing:0.6px; background:rgba(15,23,42,0.35); border:1px solid rgba(74,222,128,0.5); padding:2px 9px; border-radius:999px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>SYNC...</span>
                 </div>
-                <span id="hdrRealtimeClock">RABU, 14 OKTOBER 2026 00:00:00</span>
+                <div class="status-marquee-box" id="hdrMarqueeBox" title="Pemberitahuan / SOP Toko">
+                    <span class="status-marquee-track" id="hdrRunningText">📢 HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER</span>
+                </div>
+                <span id="hdrRealtimeClock" style="flex-shrink:0; white-space:nowrap;">RABU, 14 OKTOBER 2026 00:00:00</span>
             </div>
         </header>
 
         <div class="summary-grid">
             <div class="summary-card" style="border-top: 3px solid #D97706; background: linear-gradient(180deg, #FFFBEB 0%, var(--card) 100%);">
                 <div class="lbl" style="color:#B45309;">🔥 CUAN HARIAN</div>
-                <div class="val text-cuan" id="cuanTotalVal">Rp0</div>
+                <div class="val" id="cuanTotalVal">Rp0</div>
             </div>
             <div class="summary-card" style="border-top: 3px solid var(--primary);">
                 <div class="lbl" style="color:var(--primary);">🏧 CUAN ATM</div>
-                <div class="val" id="cuanAtmVal" style="color:var(--primary);">Rp0</div>
+                <div class="val" id="cuanAtmVal">Rp0</div>
             </div>
             <div class="summary-card" style="border-top: 3px solid #16A34A;">
                 <div class="lbl" style="color:#15803D;">📱 CUAN KONTER</div>
-                <div class="val text-kredit" id="cuanKonterVal">Rp0</div>
+                <div class="val" id="cuanKonterVal">Rp0</div>
             </div>
             <div class="summary-card" style="border-top: 3px solid #9333EA;">
                 <div class="lbl" style="color:#7E22CE;">🛠️ CUAN SERVICE</div>
-                <div class="val" id="cuanServiceVal" style="color:#9333EA;">Rp0</div>
+                <div class="val" id="cuanServiceVal">Rp0</div>
             </div>
         </div>
 
         <div class="summary-grid">
             <div class="summary-card" style="border-top: 3px solid #2563EB;">
                 <div class="lbl" style="color:#1D4ED8;">🧾 TOTAL TRX</div>
-                <div class="val" id="topTotalTrxVal" style="color:#2563EB;">0 TRX</div>
+                <div class="val" id="topTotalTrxVal">0 TRX</div>
             </div>
             <div class="summary-card" style="border-top: 3px solid #EA580C;">
                 <div class="lbl" style="color:#C2410C;">👥 PELANGGAN</div>
-                <div class="val" id="topTotalPelangganVal" style="color:#EA580C;">0 ORG</div>
+                <div class="val" id="topTotalPelangganVal">0 ORG</div>
             </div>
             <div class="summary-card" style="border-top: 3px solid #0284C7;">
                 <div class="lbl" style="color:#0369A1;">📦 STOK OPNAME</div>
-                <div class="val" id="topStokOpnameVal" style="color:#0284C7;">Rp0</div>
+                <div class="val" id="topStokOpnameVal">Rp0</div>
             </div>
             <div class="summary-card" style="border-top: 3px solid #EF4444;">
                 <div class="lbl" style="color:#DC2626;">🤝 PIUTANG</div>
-                <div class="val text-debit" id="topTotalPiutangVal">Rp0</div>
+                <div class="val" id="topTotalPiutangVal">Rp0</div>
             </div>
         </div>
 
@@ -2093,7 +2132,8 @@
             kontakToko: 'WA: 0812-3456-7890',
             logoUrl: '',
             printerUkuran: '58mm',
-            teksStruk: 'Terima kasih telah berbelanja di ZENCELL!\nBarang yang sudah dibeli tidak dapat ditukar/dikembalikan.'
+            teksStruk: 'Terima kasih telah berbelanja di ZENCELL!\nBarang yang sudah dibeli tidak dapat ditukar/dikembalikan.',
+            teksBerjalan: 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER'
         };
 
         window.daftarKaryawan = JSON.parse(localStorage.getItem('zencell_karyawan') || 'null') || [
@@ -2681,7 +2721,9 @@
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t || t.kat !== 'SERVICE') return;
 
-            const tiketMatch = window.tiketServisList.find(tk => tk.nama.toUpperCase() === (t.ket || '').toUpperCase() || (t.ket || '').toUpperCase().includes(tk.nama.toUpperCase()) || (t.ket || '').toUpperCase().includes(tk.noServis));
+            const ketUpper = (t.ket || '').toUpperCase();
+            const tiketMatch = (t.idTiketRef ? window.tiketServisList.find(tk => tk.id == t.idTiketRef) : null) ||
+                window.tiketServisList.find(tk => (tk.noServis && ketUpper.includes(tk.noServis.toUpperCase())) || tk.nama.toUpperCase() === ketUpper || ketUpper.includes(tk.nama.toUpperCase()));
             
             const noServis = tiketMatch ? tiketMatch.noServis : ('SRV-' + Math.floor(100000 + Math.random() * 900000));
             const namaPelanggan = tiketMatch ? tiketMatch.nama : t.ket;
@@ -3427,7 +3469,11 @@
                     return;
                 }
 
-                const matchStok = window.stokOpnameItems.find(s => (s.nama || s.namaBarang || '').toUpperCase() === val || val.includes((s.nama || s.namaBarang || '').toUpperCase()));
+                const matchStokCandidates = window.stokOpnameItems.filter(s => {
+                    const nm = (s.nama || s.namaBarang || '').toUpperCase().trim();
+                    return nm && (nm === val || val.includes(nm));
+                }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
+                const matchStok = matchStokCandidates[0];
                 if (matchStok) {
                     const sisa = Number(matchStok.awal || 0) - Number(matchStok.terjual || 0);
                     const namaStok = matchStok.nama || matchStok.namaBarang || '';
@@ -3663,7 +3709,25 @@
 
             if (editId) {
                 let sp = window.sparepartList.find(s => s.id == editId);
-                if (sp) { sp.namaUnit = namaUnit; sp.modal = modal; sp.sumber = sumber; sp.estJual = estJual; }
+                if (sp) {
+                    sp.namaUnit = namaUnit;
+                    sp.modal = modal;
+                    sp.sumber = sumber;
+                    sp.estJual = estJual;
+                    if (sp.idTiketRef) {
+                        const tk = (window.tiketServisList || []).find(t => t.id == sp.idTiketRef);
+                        if (tk) {
+                            tk.modalPart = modal;
+                            tk.sumberKasPart = sumber;
+                        }
+                    }
+                    const linkedTrx = (window.transaksiJurnal || []).find(t => (t.idSparepartRef && t.idSparepartRef == sp.id) || (sp.trxIdRef && t.id == sp.trxIdRef));
+                    if (linkedTrx && !linkedTrx.isSplit) {
+                        linkedTrx.hargaModal = modal;
+                        linkedTrx.modalSplit1 = modal;
+                        linkedTrx.cuan = Number(linkedTrx.hargaJual || 0) - modal;
+                    }
+                }
                 document.getElementById('editSparepartId').value = '';
                 window.catatLogAktivitas('EDIT SPAREPART', `Mengubah sparepart service "${namaUnit}" modal ${window.formatRp(modal)}`);
             } else {
@@ -3671,7 +3735,7 @@
                 window.catatLogAktivitas('BELANJA SPAREPART', `Mencatat belanja sparepart "${namaUnit}" seharga ${window.formatRp(modal)} dari ${sumber}`);
             }
             window.closeModalSparepart();
-            window.saveToFirebaseNode('sparepart', window.sparepartList);
+            window.saveAllToFirebase(false);
             window.renderAll();
             alert("✅ Sparepart disimpan!");
         }
@@ -3771,24 +3835,46 @@
             if (!window.stokOpnameItems) window.stokOpnameItems = [];
 
             if (editId) {
-                let riwayat = window.riwayatBelanjaStok.find(r => r.id == editId);
-                if (riwayat) {
-                    riwayat.kat = kat;
-                    riwayat.nama = nama;
-                    riwayat.qty = qty;
-                    riwayat.modal = modal;
-                    riwayat.jual = jual;
-                    riwayat.total = totalNilai;
-                    riwayat.sumberKas = sumberKas;
-                }
-
                 let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
+                const oldNama = item ? (item.nama || item.namaBarang || '').trim().toUpperCase() : nama;
+                const oldKat = item ? item.kat : kat;
+
                 if (item) {
                     item.kat = kat;
                     item.nama = nama;
                     item.awal = qty;
                     item.modal = modal;
                     item.jual = jual;
+                }
+
+                const matchingRiwayat = window.riwayatBelanjaStok.filter(r => r.id == editId || (((r.nama || r.namaBarang || '').trim().toUpperCase() === oldNama) && r.kat === oldKat));
+                if (matchingRiwayat.length > 0) {
+                    const primaryR = matchingRiwayat[0];
+                    primaryR.kat = kat;
+                    primaryR.nama = nama;
+                    primaryR.qty = qty;
+                    primaryR.modal = modal;
+                    primaryR.jual = jual;
+                    primaryR.total = totalNilai;
+                    primaryR.sumberKas = sumberKas;
+                    if (matchingRiwayat.length > 1) {
+                        const extraIds = new Set(matchingRiwayat.slice(1).map(r => r.id));
+                        window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => !extraIds.has(r.id));
+                    }
+                } else {
+                    window.riwayatBelanjaStok.unshift({
+                        id: item ? item.id : Date.now(),
+                        waktu: waktuInput,
+                        isoDate: tglInput,
+                        tgl: tglInput,
+                        kat: kat,
+                        nama: nama,
+                        qty: qty,
+                        modal: modal,
+                        jual: jual,
+                        total: totalNilai,
+                        sumberKas: sumberKas
+                    });
                 }
 
                 document.getElementById('editStokId').value = '';
@@ -3978,23 +4064,35 @@
             window.kategoriList.forEach(k => { katRekap[k] = { count: 0, omset: 0, cuan: 0 }; });
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
-                if (t.isoDate === shiftDate) {
-                    omsetTotal += Number(t.hargaJual || 0);
-                    modalTotal += Number(t.hargaModal || 0);
-                    cuanTotal += Number(t.cuan || 0);
-                    trxCount += 1;
-                    if (t.isNewCustomer !== false) custCount += 1;
-
-                    if (window.katAtm.includes(t.kat)) cuanAtm += Number(t.cuan || 0);
-                    if (window.katKonter.includes(t.kat)) cuanKonter += Number(t.cuan || 0);
-                    if (window.katService.includes(t.kat)) cuanService += Number(t.cuan || 0);
-
-                    if (katRekap[t.kat]) {
-                        katRekap[t.kat].count += 1;
-                        katRekap[t.kat].omset += Number(t.hargaJual || 0);
-                        katRekap[t.kat].cuan += Number(t.cuan || 0);
+                if (t.isoDate !== shiftDate) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.kat === 'PIUTANG') {
+                    const cuanPiutang = Number(t.cuan || 0);
+                    if (cuanPiutang > 0) {
+                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                        const katAsli = (pRef && pRef.kategori) ? pRef.kategori : 'TOPUP';
+                        cuanTotal += cuanPiutang;
+                        if (window.katAtm.includes(katAsli)) cuanAtm += cuanPiutang;
+                        else if (window.katKonter.includes(katAsli)) cuanKonter += cuanPiutang;
+                        else if (window.katService.includes(katAsli)) cuanService += cuanPiutang;
+                        if (katRekap[katAsli]) katRekap[katAsli].cuan += cuanPiutang;
                     }
+                    return;
+                }
+                omsetTotal += Number(t.hargaJual || 0);
+                modalTotal += Number(t.hargaModal || 0);
+                cuanTotal += Number(t.cuan || 0);
+                trxCount += 1;
+                if (t.isNewCustomer !== false) custCount += 1;
+
+                if (window.katAtm.includes(t.kat)) cuanAtm += Number(t.cuan || 0);
+                if (window.katKonter.includes(t.kat)) cuanKonter += Number(t.cuan || 0);
+                if (window.katService.includes(t.kat)) cuanService += Number(t.cuan || 0);
+
+                if (katRekap[t.kat]) {
+                    katRekap[t.kat].count += 1;
+                    katRekap[t.kat].omset += Number(t.hargaJual || 0);
+                    katRekap[t.kat].cuan += Number(t.cuan || 0);
                 }
             });
 
@@ -4007,7 +4105,12 @@
             const laciAwal = window.masterSaldoAwal['LACI'] || 1000000;
             let laciMasuk = 0, laciKeluar = 0;
             window.transaksiJurnal.forEach(t => {
-                if (t.isoDate !== shiftDate || t.isPindahSaldo || t.isPencatatanUtangAwal) return;
+                if (t.isoDate !== shiftDate) return;
+                if (t.isPencatatanUtangAwal) {
+                    if (t.akunKeluar1 === 'LACI') laciKeluar += Number(t.modalSplit1 || t.hargaModal || 0);
+                    if (t.akunMasuk1 === 'LACI') laciMasuk += Number(t.jualSplit1 || t.hargaJual || 0);
+                    return;
+                }
                 if (t.isSplit) {
                     if (t.akunMasuk1 === 'LACI') laciMasuk += Number(t.jualSplit1 || 0);
                     if (t.akunMasuk2 === 'LACI') laciMasuk += Number(t.jualSplit2 || 0);
@@ -4018,6 +4121,8 @@
                     if (t.akunKeluar1 === 'LACI') laciKeluar += Number(t.hargaModal || 0);
                 }
             });
+            window.riwayatBelanjaStok?.forEach(r => { if ((r.isoDate || r.tgl) === shiftDate && r.sumberKas === 'LACI') laciKeluar += Number(r.total || 0); });
+            window.sparepartList?.forEach(sp => { if ((sp.isoDate || sp.tgl) === shiftDate && sp.sumber === 'LACI') laciKeluar += Number(sp.modal || 0); });
             window.operasionalList.forEach(o => { if (o.isoDate === shiftDate && o.sumber === 'LACI') laciKeluar += Number(o.nominal || 0); });
             window.setoranOwnerList.forEach(s => { if (s.isoDate === shiftDate && s.sumber === 'LACI') laciKeluar += Number(s.nominal || 0); });
 
@@ -4126,8 +4231,19 @@
             let totalOmset = 0, totalModal = 0, totalCuan = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
                 if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
+                    if (t.kat === 'PIUTANG') {
+                        const cuanPiutang = Number(t.cuan || 0);
+                        if (cuanPiutang > 0) {
+                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                            rekapMap[katAsli].cuan += cuanPiutang;
+                            totalCuan += cuanPiutang;
+                        }
+                        return;
+                    }
                     if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                     rekapMap[t.kat].omset += Number(t.hargaJual || 0);
                     rekapMap[t.kat].modal += Number(t.hargaModal || 0);
@@ -4175,8 +4291,19 @@
             let totalOmset = 0, totalModal = 0, totalCuan = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
                 if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
+                    if (t.kat === 'PIUTANG') {
+                        const cuanPiutang = Number(t.cuan || 0);
+                        if (cuanPiutang > 0) {
+                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                            rekapMap[katAsli].cuan += cuanPiutang;
+                            totalCuan += cuanPiutang;
+                        }
+                        return;
+                    }
                     if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                     rekapMap[t.kat].omset += Number(t.hargaJual || 0);
                     rekapMap[t.kat].modal += Number(t.hargaModal || 0);
@@ -4454,6 +4581,9 @@
 
                 akunKeluar1 = document.getElementById('akunKeluar1').value;
                 hargaModalTotal = parseFloat(document.getElementById('hargaModal').value) || 0;
+                if ((kat === 'PIUTANG' || akunKeluar1 === 'PIUTANG') && hargaJualTotal > 0 && hargaJualTotal < hargaModalTotal) {
+                    hargaModalTotal = hargaJualTotal;
+                }
                 modalSplit1 = hargaModalTotal;
             }
 
@@ -4730,13 +4860,15 @@
                     const isMatch = (t.idPiutangRef && t.idPiutangRef == p.id) ||
                                     ((t.kat === 'PIUTANG' || t.akunKeluar1 === 'PIUTANG') && pName && (ketTrx === pName || ketTrx.includes(pName)));
                     if (isMatch) {
-                        const nomBayar = Number(t.hargaJual || 0);
-                        totalTerbayar += nomBayar;
+                        const nomJual = Number(t.hargaJual || 0);
+                        const nomModal = Number(t.hargaModal || 0);
+                        const nomPokokBayar = (nomModal > 0 && nomJual >= nomModal) ? nomModal : nomJual;
+                        totalTerbayar += nomPokokBayar;
                         listCicilan.push({
                             trxId: t.id,
                             tgl: t.isoDate || window.getTodayIso(),
                             waktu: t.waktu || '',
-                            bayar: nomBayar,
+                            bayar: nomPokokBayar,
                             keAkun: t.akunMasuk1 || 'LACI'
                         });
                     }
@@ -4751,12 +4883,22 @@
             let filteredTrx = [];
             window.transaksiJurnal.forEach((t) => {
                 const ketUpper = (t.ket || '').toUpperCase().trim();
-                window.stokOpnameItems.forEach(s => {
-                    const namaUpper = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
-                    if (namaUpper && (ketUpper === namaUpper || ketUpper.includes(' ' + namaUpper + ' ') || ketUpper.includes(namaUpper))) {
-                        s.terjual += Number(t.qty || 1);
+                if (!t.isPencatatanUtangAwal && !t.isPindahSaldo && t.kat !== 'PIUTANG_INIT') {
+                    let bestStokMatch = null;
+                    let bestLen = 0;
+                    window.stokOpnameItems.forEach(s => {
+                        const namaUpper = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
+                        if (namaUpper && (ketUpper === namaUpper || ketUpper.includes(namaUpper))) {
+                            if (namaUpper.length > bestLen) {
+                                bestLen = namaUpper.length;
+                                bestStokMatch = s;
+                            }
+                        }
+                    });
+                    if (bestStokMatch) {
+                        bestStokMatch.terjual += Number(t.qty || 1);
                     }
-                });
+                }
 
                 if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
 
@@ -5040,6 +5182,9 @@
                 } else if (s === 'SPAREPART') {
                     akhir = totalSparepartVal;
                 } else if (akunStokFisik.includes(s)) {
+                    if (saldoMode === 'ALL' && (window.stokOpnameItems || []).some(item => item.kat === s)) {
+                        akhir = s === 'VOUCHER' ? nVoucher : (s === 'SP' ? nSp : nAcc);
+                    }
                     totalStokOpnameAkunVal += akhir;
                 } else {
                     totalKasCair += akhir;
@@ -5103,6 +5248,9 @@
                     let akhir = (window.masterSaldoAwal[s] || 0) + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                     if (s === 'PIUTANG') akhir = totalPiutangVal;
                     else if (s === 'SPAREPART') akhir = totalSparepartVal;
+                    else if (akunStokFisik.includes(s) && saldoMode === 'ALL' && (window.stokOpnameItems || []).some(item => item.kat === s)) {
+                        akhir = s === 'VOUCHER' ? nVoucher : (s === 'SP' ? nSp : nAcc);
+                    }
                     const badgeTag = s === 'PIUTANG'
                         ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 4px; border-radius:4px;">Piutang</span>'
                         : (s === 'SPAREPART'
@@ -5175,8 +5323,22 @@
             let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0, totalTrx = 0, custCount = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
                 if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
+                    if (t.kat === 'PIUTANG') {
+                        const cuanPiutang = Number(t.cuan || 0);
+                        if (cuanPiutang > 0) {
+                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                            rekapMap[katAsli].cuan += cuanPiutang;
+                            rCuanTotal += cuanPiutang;
+                            if (window.katAtm.includes(katAsli)) rCuanAtm += cuanPiutang;
+                            else if (window.katKonter.includes(katAsli)) rCuanKonter += cuanPiutang;
+                            else if (window.katService.includes(katAsli)) rCuanService += cuanPiutang;
+                        }
+                        return;
+                    }
                     if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                     rekapMap[t.kat].omset += Number(t.hargaJual || 0);
                     rekapMap[t.kat].modal += Number(t.hargaModal || 0);
@@ -5228,8 +5390,20 @@
             }
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
                 if (t.isoDate?.startsWith(targetMonth)) {
+                    if (t.kat === 'PIUTANG') {
+                        const cuanPiutang = Number(t.cuan || 0);
+                        if (cuanPiutang > 0) {
+                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            if (window.katAtm.includes(katAsli)) profitAtm += cuanPiutang;
+                            else if (window.katKonter.includes(katAsli)) profitKonter += cuanPiutang;
+                            else if (window.katService.includes(katAsli)) profitService += cuanPiutang;
+                            if (dailyMap[t.isoDate]) dailyMap[t.isoDate].profit += cuanPiutang;
+                        }
+                        return;
+                    }
                     const cuan = Number(t.cuan || 0);
                     if (window.katAtm.includes(t.kat)) profitAtm += cuan;
                     if (window.katKonter.includes(t.kat)) profitKonter += cuan;
@@ -5347,6 +5521,12 @@
             document.getElementById('setKontakToko').value = p.kontakToko || '';
             const setWaEl = document.getElementById('setWaOwner');
             if (setWaEl) setWaEl.value = p.waOwner || '';
+            const setTeksBerjalanEl = document.getElementById('setTeksBerjalan');
+            if (setTeksBerjalanEl) {
+                setTeksBerjalanEl.value = p.teksBerjalan !== undefined
+                    ? p.teksBerjalan
+                    : 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER';
+            }
             document.getElementById('setPrinterUkuran').value = p.printerUkuran || '58mm';
             document.getElementById('setTeksStruk').value = p.teksStruk || '';
 
@@ -5394,6 +5574,20 @@
                 headerTitle.innerText = storeName;
             }
             document.title = `${storeName} - Pembukuan & Kasir Konter`;
+
+            const runningTextEl = document.getElementById('hdrRunningText');
+            const marqueeBoxEl = document.getElementById('hdrMarqueeBox');
+            if (runningTextEl) {
+                const defaultMarquee = 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER';
+                const rawMarquee = p.teksBerjalan !== undefined ? String(p.teksBerjalan).trim() : defaultMarquee;
+                if (rawMarquee) {
+                    runningTextEl.innerText = `📢 ${rawMarquee}`;
+                    if (marqueeBoxEl) marqueeBoxEl.style.display = 'flex';
+                } else {
+                    runningTextEl.innerText = '';
+                    if (marqueeBoxEl) marqueeBoxEl.style.display = 'none';
+                }
+            }
 
             const logoBox = document.getElementById('appHeaderLogoBox');
             if (logoBox) {
@@ -5462,6 +5656,7 @@
             const alamat = document.getElementById('setAlamatToko').value.trim();
             const kontak = document.getElementById('setKontakToko').value.trim();
             const waOwner = (document.getElementById('setWaOwner')?.value || '').trim();
+            const teksBerjalan = (document.getElementById('setTeksBerjalan')?.value || '').trim();
 
             if (!nama) {
                 window.showSettingBanner("⚠️ Nama toko wajib diisi!", true);
@@ -5472,15 +5667,17 @@
             window.pengaturanToko.alamatToko = alamat;
             window.pengaturanToko.kontakToko = kontak;
             window.pengaturanToko.waOwner = waOwner;
+            window.pengaturanToko.teksBerjalan = teksBerjalan;
 
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
             window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
             window.applyPengaturanTokoKeUI();
-            window.catatLogAktivitas('PENGATURAN TOKO', `Memperbarui nama toko: ${nama}`);
+            window.catatLogAktivitas('PENGATURAN TOKO', `Memperbarui identitas & pengumuman toko: ${nama}`);
 
             // Visual tactile feedback
             window.flashButtonSuccess('btnSimpanIdentitas', '✅ TERSIMPAN!', '💾 SIMPAN PERUBAHAN');
-            window.showSettingBanner(`✅ Identitas toko "${nama}" berhasil disimpan & langsung aktif!`);
-            window.showToast(`✅ Identitas toko "${nama}" berhasil disimpan!`, 'success');
+            window.showSettingBanner(`✅ Identitas & teks berjalan toko "${nama}" berhasil disimpan & langsung aktif!`);
+            window.showToast(`✅ Pengaturan identitas & teks berjalan berhasil disimpan!`, 'success');
         };
 
         window.simpanPengaturanPrinter = function(e) {
@@ -5985,17 +6182,28 @@
             let cuanAtm = 0, cuanKonter = 0, cuanService = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'PIUTANG' || t.kat === 'GADAI' || t.isPindahSaldo) return;
-                if (t.isoDate === shiftDate) {
-                    omsetTotal += Number(t.hargaJual || 0);
-                    modalTotal += Number(t.hargaModal || 0);
-                    cuanTotal += Number(t.cuan || 0);
-                    trxCount += 1;
-
-                    if (window.katAtm.includes(t.kat)) cuanAtm += Number(t.cuan || 0);
-                    if (window.katKonter.includes(t.kat)) cuanKonter += Number(t.cuan || 0);
-                    if (window.katService.includes(t.kat)) cuanService += Number(t.cuan || 0);
+                if (t.isoDate !== shiftDate) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.kat === 'PIUTANG') {
+                    const cuanPiutang = Number(t.cuan || 0);
+                    if (cuanPiutang > 0) {
+                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                        const katAsli = (pRef && pRef.kategori) ? pRef.kategori : 'TOPUP';
+                        cuanTotal += cuanPiutang;
+                        if (window.katAtm.includes(katAsli)) cuanAtm += cuanPiutang;
+                        else if (window.katKonter.includes(katAsli)) cuanKonter += cuanPiutang;
+                        else if (window.katService.includes(katAsli)) cuanService += cuanPiutang;
+                    }
+                    return;
                 }
+                omsetTotal += Number(t.hargaJual || 0);
+                modalTotal += Number(t.hargaModal || 0);
+                cuanTotal += Number(t.cuan || 0);
+                trxCount += 1;
+
+                if (window.katAtm.includes(t.kat)) cuanAtm += Number(t.cuan || 0);
+                if (window.katKonter.includes(t.kat)) cuanKonter += Number(t.cuan || 0);
+                if (window.katService.includes(t.kat)) cuanService += Number(t.cuan || 0);
             });
 
             let totalOp = 0;
@@ -6007,7 +6215,12 @@
             const laciAwal = window.masterSaldoAwal['LACI'] || 1000000;
             let laciMasuk = 0, laciKeluar = 0;
             window.transaksiJurnal.forEach(t => {
-                if (t.isoDate !== shiftDate || t.isPindahSaldo || t.isPencatatanUtangAwal) return;
+                if (t.isoDate !== shiftDate) return;
+                if (t.isPencatatanUtangAwal) {
+                    if (t.akunKeluar1 === 'LACI') laciKeluar += Number(t.modalSplit1 || t.hargaModal || 0);
+                    if (t.akunMasuk1 === 'LACI') laciMasuk += Number(t.jualSplit1 || t.hargaJual || 0);
+                    return;
+                }
                 if (t.isSplit) {
                     if (t.akunMasuk1 === 'LACI') laciMasuk += Number(t.jualSplit1 || 0);
                     if (t.akunMasuk2 === 'LACI') laciMasuk += Number(t.jualSplit2 || 0);
@@ -6018,6 +6231,8 @@
                     if (t.akunKeluar1 === 'LACI') laciKeluar += Number(t.hargaModal || 0);
                 }
             });
+            window.riwayatBelanjaStok?.forEach(r => { if ((r.isoDate || r.tgl) === shiftDate && r.sumberKas === 'LACI') laciKeluar += Number(r.total || 0); });
+            window.sparepartList?.forEach(sp => { if ((sp.isoDate || sp.tgl) === shiftDate && sp.sumber === 'LACI') laciKeluar += Number(sp.modal || 0); });
             window.operasionalList.forEach(o => { if (o.isoDate === shiftDate && o.sumber === 'LACI') laciKeluar += Number(o.nominal || 0); });
             window.setoranOwnerList.forEach(s => { if (s.isoDate === shiftDate && s.sumber === 'LACI') laciKeluar += Number(s.nominal || 0); });
 
