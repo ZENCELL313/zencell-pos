@@ -368,6 +368,76 @@
             .btn-edit, .btn-delete, .btn-nota-service { padding: 5px 8px; font-size: 11px; }
             .date-picker-input { font-size: 12px; padding: 6px 10px; }
         }
+
+        /* Filter Kategori Stok Opname & Global Search (Find Ala Excel) */
+        .stok-filter-bar {
+            display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between;
+            background: var(--primary-light); padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px;
+        }
+        .stok-cat-pills { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+        .stok-cat-pill {
+            border: 1px solid var(--border); background: var(--card); color: var(--text);
+            padding: 5px 11px; border-radius: 999px; font-size: 10.5px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .stok-cat-pill:hover { border-color: var(--primary); transform: translateY(-1px); }
+        .stok-cat-pill.active {
+            background: var(--primary); color: #FFFFFF; border-color: var(--primary-dark);
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.28);
+        }
+        .stok-search-wrap {
+            display: flex; align-items: center; gap: 6px; flex: 1; min-width: 210px;
+        }
+        .stok-search-input-box {
+            position: relative; flex: 1; display: flex; align-items: center;
+        }
+        .stok-search-input-box input {
+            width: 100%; padding: 7px 28px 7px 30px; font-size: 11.5px; font-weight: 600;
+            border: 1.5px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); outline: none;
+        }
+        .stok-search-input-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15); }
+        .stok-search-icon { position: absolute; left: 9px; font-size: 12px; pointer-events: none; opacity: 0.7; }
+        .stok-search-clear {
+            position: absolute; right: 7px; background: none; border: none; color: #64748B;
+            font-size: 13px; font-weight: bold; cursor: pointer; display: none; padding: 2px;
+        }
+        .stok-filter-info-bar {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
+            padding: 6px 10px; border-radius: 8px; background: #F8FAFC; border: 1px dashed #CBD5E1;
+            font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 8px;
+        }
+        body.theme-dark .stok-filter-info-bar { background: #0F172A; border-color: #334155; color: #E2E8F0; }
+
+        .find-tab-pills { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .find-tab-pill {
+            padding: 5px 10px; border-radius: 8px; font-size: 10.5px; font-weight: 800;
+            background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; cursor: pointer; white-space: nowrap;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        body.theme-dark .find-tab-pill { background: #0F172A; color: #CBD5E1; border-color: #334155; }
+        .find-tab-pill.active { background: var(--primary); color: #FFF; border-color: var(--primary-dark); }
+        .find-result-item {
+            padding: 9px 11px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+            margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            transition: transform 0.12s, border-color 0.12s;
+        }
+        .find-result-item:hover { border-color: var(--primary); }
+        .find-badge-mod {
+            font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; display: inline-block;
+        }
+        .kbd-shortcut {
+            background: rgba(15, 23, 42, 0.35); border: 1px solid rgba(255, 255, 255, 0.35);
+            color: #FEF08A; border-radius: 5px; padding: 1px 5px; font-size: 9.5px; font-family: monospace; font-weight: 800;
+        }
+        @keyframes excelRowFlash {
+            0%, 100% { background-color: transparent; }
+            20%, 60% { background-color: #FEF08A !important; color: #0F172A !important; }
+            40%, 80% { background-color: #FDE047 !important; color: #0F172A !important; }
+        }
+        .excel-find-highlight {
+            animation: excelRowFlash 2.6s ease-in-out;
+            outline: 2px solid #EAB308;
+        }
     </style>
 <script src="/_aistudio-iframe.js?v=6634132a"></script></head>
 <body>
@@ -429,6 +499,48 @@
                     </thead>
                     <tbody id="bodyLogAktivitas"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Global Search / Find Ala Excel (Ctrl+F / Ctrl+K) -->
+    <div id="modalGlobalFindOverlay" class="modal-overlay" onclick="if(event.target === this) closeModalGlobalFind()">
+        <div class="modal-content" style="max-width: 680px; width: 96%; padding: 16px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">🔍</span>
+                    <div>
+                        <h3 style="font-size:15px; font-weight:800; color:var(--primary); margin:0; display:flex; align-items:center; gap:6px;">
+                            <span>PENCARIAN PINTAR (FIND ALA EXCEL)</span>
+                            <span style="font-size:10px; background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; padding:1px 6px; border-radius:5px; font-family:monospace;">Ctrl+F / Ctrl+K</span>
+                        </h3>
+                        <p style="font-size:10.5px; color:#64748B; margin:1px 0 0 0;">Cari stok barang, harga modal/jual, transaksi kasir, piutang konsumen, tiket servis, atau VLOOKUP secara instan.</p>
+                    </div>
+                </div>
+                <button onclick="closeModalGlobalFind()" style="background:none; border:none; font-size:19px; font-weight:bold; cursor:pointer; color:var(--text); padding:2px 6px;">✕</button>
+            </div>
+
+            <div style="position:relative; margin-bottom:10px;">
+                <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:15px; opacity:0.75;">🔎</span>
+                <input type="text" id="globalFindInput" class="form-control" placeholder="KETIK NAMA BARANG / NAMA ORANG NGUTANG / TRANSAKSI / NOMINAL / TIKET SERVIS..." style="padding:10px 75px 10px 36px; font-size:13px; font-weight:700; border:2px solid var(--primary); border-radius:10px; box-shadow:0 3px 10px rgba(5,150,105,0.12);" oninput="renderGlobalFindResults()" autocomplete="off">
+                <button type="button" id="btnClearGlobalFind" onclick="document.getElementById('globalFindInput').value=''; renderGlobalFindResults(); document.getElementById('globalFindInput').focus();" style="display:none; position:absolute; right:8px; top:50%; transform:translateY(-50%); background:#EF4444; color:#FFF; border:none; border-radius:6px; padding:4px 8px; font-size:10px; font-weight:800; cursor:pointer;">HAPUS ✕</button>
+            </div>
+
+            <div class="find-tab-pills" id="globalFindTabContainer">
+                <button type="button" class="find-tab-pill active" data-tab="ALL" onclick="setGlobalFindTab('ALL')">🌐 Semua (<span id="cntFindAll">0</span>)</button>
+                <button type="button" class="find-tab-pill" data-tab="STOK" onclick="setGlobalFindTab('STOK')">📦 Stok Barang (<span id="cntFindStok">0</span>)</button>
+                <button type="button" class="find-tab-pill" data-tab="PIUTANG" onclick="setGlobalFindTab('PIUTANG')">🤝 Piutang (<span id="cntFindPiutang">0</span>)</button>
+                <button type="button" class="find-tab-pill" data-tab="TRX" onclick="setGlobalFindTab('TRX')">🧾 Transaksi (<span id="cntFindTrx">0</span>)</button>
+                <button type="button" class="find-tab-pill" data-tab="SERVIS" onclick="setGlobalFindTab('SERVIS')">🛠️ Servis & Part (<span id="cntFindServis">0</span>)</button>
+                <button type="button" class="find-tab-pill" data-tab="OP" onclick="setGlobalFindTab('OP')">💸 Operasional (<span id="cntFindOp">0</span>)</button>
+                <button type="button" class="find-tab-pill" data-tab="VLOOKUP" onclick="setGlobalFindTab('VLOOKUP')">⚡ VLOOKUP (<span id="cntFindVlookup">0</span>)</button>
+            </div>
+
+            <div id="globalFindResultsBox" style="max-height: 58vh; overflow-y: auto; padding-right: 2px;"></div>
+
+            <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#64748B; flex-wrap:wrap; gap:4px;">
+                <span>💡 <b>Tips Ala Excel:</b> Tekan <b>Ctrl+F</b> atau <b>Ctrl+K</b> kapan saja untuk mencari data, dan <b>ESC</b> untuk menutup.</span>
+                <span id="globalFindSummaryCount" style="font-weight:800; color:var(--primary);">Siap mencari di 6 modul</span>
             </div>
         </div>
     </div>
@@ -752,6 +864,11 @@
                     <h1 id="appHeaderShopName">POS ZENCELL 1</h1>
                 </div>
                 <div class="header-actions">
+                    <button class="btn-icon-hdr" id="btnHeaderGlobalFind" onclick="bukaModalGlobalFind()" title="Cari Data Cepat Ala Excel (Shortcut: Ctrl+F atau Ctrl+K)" style="width:auto; padding:0 11px; border-radius:999px; background:rgba(15,23,42,0.32); border:1.5px solid rgba(254,240,138,0.75); gap:5px; font-size:12px; font-weight:800; color:#FEF08A; box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+                        <span>🔍</span>
+                        <span style="font-size:11px; letter-spacing:0.3px;">CARI</span>
+                        <span class="kbd-shortcut" style="display:inline-block;">Ctrl+F</span>
+                    </button>
                     <button class="btn-icon-hdr" id="btnUndo" onclick="doUndo()" title="Undo (Batal Langkah)" disabled>↩️</button>
                     <button class="btn-icon-hdr" id="btnRedo" onclick="doRedo()" title="Redo (Ulang Langkah)" disabled>↪️</button>
                     <button class="btn-icon-hdr" onclick="bukaModalLogAktivitas()" title="Log Aktivitas Sistem">
@@ -1027,19 +1144,19 @@
 
     <div id="tab-stok" class="tab-content" style="margin-top:6px;">
         <div class="summary-grid" style="margin-bottom:10px;">
-            <div class="summary-card" style="background:#E0F2FE; border-color:#BAE6FD;">
+            <div class="summary-card clickable" onclick="setFilterKatStok('VOUCHER')" title="Klik untuk filter hanya kategori VOUCHER" style="background:#E0F2FE; border-color:#BAE6FD;">
                 <div class="lbl">🎫 VOUCHER</div>
                 <div class="val" id="valNilaiStokVoucher" style="color:#0284C7;">Rp0</div>
             </div>
-            <div class="summary-card" style="background:#DCFCE7; border-color:#BBF7D0;">
+            <div class="summary-card clickable" onclick="setFilterKatStok('SP')" title="Klik untuk filter hanya kategori SP (Perdana)" style="background:#DCFCE7; border-color:#BBF7D0;">
                 <div class="lbl">📱 SP</div>
                 <div class="val" id="valNilaiStokSp" style="color:#15803D;">Rp0</div>
             </div>
-            <div class="summary-card" style="background:#FEF3C7; border-color:#FDE68A;">
+            <div class="summary-card clickable" onclick="setFilterKatStok('ACC')" title="Klik untuk filter hanya kategori ACC (Aksesoris)" style="background:#FEF3C7; border-color:#FDE68A;">
                 <div class="lbl">🎧 ACC</div>
                 <div class="val" id="valNilaiStokAcc" style="color:#B45309;">Rp0</div>
             </div>
-            <div class="summary-card" style="background:#FAF5FF; border-color:#E9D5FF;" colspan="2">
+            <div class="summary-card clickable" onclick="setFilterKatStok('ALL')" title="Klik untuk tampilkan SEMUA kategori stok" style="background:#FAF5FF; border-color:#E9D5FF;" colspan="2">
                 <div class="lbl">TOTAL STOK</div>
                 <div class="val" id="valNilaiStokTotal" style="color:#7E22CE;">Rp0</div>
             </div>
@@ -1097,7 +1214,44 @@
         </div>
 
         <div class="card">
-            <div class="card-header">📦 Stok Opname Realtime</div>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <span>📦 Stok Opname Realtime</span>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button type="button" class="btn" style="width:auto; padding:4px 10px; font-size:10.5px; background:#0F172A;" onclick="bukaModalGlobalFind('STOK')">🔍 Find Cepat (Ctrl+F)</button>
+                    <button type="button" class="btn" style="width:auto; padding:4px 10px; font-size:10.5px; background:#0284C7;" onclick="muatDefaultStokSpKonter()">🔄 Muat Stok Awal SP (11 Item)</button>
+                </div>
+            </div>
+
+            <!-- Filter Kategori, Kondisi & Search Stok Opname -->
+            <div class="stok-filter-bar">
+                <div class="stok-cat-pills" id="stokCatPillsContainer">
+                    <button type="button" class="stok-cat-pill active" data-kat="ALL" onclick="setFilterKatStok('ALL')">🌐 SEMUA (<span id="cntStokAll">0</span>)</button>
+                    <button type="button" class="stok-cat-pill" data-kat="ACC" onclick="setFilterKatStok('ACC')">🎧 ACC (<span id="cntStokAcc">0</span>)</button>
+                    <button type="button" class="stok-cat-pill" data-kat="SP" onclick="setFilterKatStok('SP')">📱 SP (<span id="cntStokSp">0</span>)</button>
+                    <button type="button" class="stok-cat-pill" data-kat="VOUCHER" onclick="setFilterKatStok('VOUCHER')">🎫 VOUCHER (<span id="cntStokVoucher">0</span>)</button>
+                </div>
+
+                <div class="stok-search-wrap">
+                    <select id="stokFilterKondisi" class="date-picker-input" onchange="renderAll()" style="font-size:11px; padding:6px 8px;">
+                        <option value="ALL">📊 Semua Kondisi</option>
+                        <option value="AMAN">✅ Stok Aman (&gt; 3)</option>
+                        <option value="KRITIS">⚠️ Menipis (1 - 3)</option>
+                        <option value="HABIS">🚨 Stok Habis (0)</option>
+                    </select>
+
+                    <div class="stok-search-input-box">
+                        <span class="stok-search-icon">🔍</span>
+                        <input type="text" id="stokSearchInput" placeholder="CARI NAMA BARANG / HARGA..." oninput="renderAll()" autocomplete="off">
+                        <button type="button" id="btnClearStokSearch" class="stok-search-clear" onclick="resetFilterStokOpname()" title="Bersihkan Pencarian">✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stok-filter-info-bar" id="stokFilterInfoBar">
+                <span id="txtStokFilterCount">Menampilkan 0 barang</span>
+                <span id="txtStokFilterNilai" style="color:var(--primary);">Nilai Stok Terfilter: Rp0</span>
+            </div>
+
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -1121,20 +1275,24 @@
 
     <div id="tab-piutang" class="tab-content" style="margin-top:6px;">
         <div class="card">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>🤝 REKAP PIUTANG KONSUMEN</span>
-                <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#0284C7;" onclick="muatDefaultPiutangKonter()">🔄 Muat 69 Data Awal</button>
+                    <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
+                </div>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>NAMA</th>
+                            <th>TGL & WAKTU</th>
+                            <th>NAMA PELANGGAN</th>
+                            <th>KETERANGAN</th>
                             <th>SISA UTANG</th>
                             <th>HISTORI CICILAN</th>
                             <th>KATEGORI</th>
                             <th>KELUAR DR</th>
-                            <th>CATATAN</th>
                             <th>STATUS</th>
                             <th>AKSI</th>
                         </tr>
@@ -1272,6 +1430,19 @@
                     <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Sembunyikan / Munculkan ▼</span>
                 </div>
                 <div id="bodyStokOpnameCard" class="p-3">
+                    <div class="filter-container" style="margin-bottom:8px; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER RIWAYAT STOK:</span>
+                            <select id="riwayatStokFilterKat" class="date-picker-input" onchange="renderAll()">
+                                <option value="ALL">🌐 Semua Kategori</option>
+                                <option value="ACC">🎧 ACC (Aksesoris)</option>
+                                <option value="SP">📱 SP (Perdana)</option>
+                                <option value="VOUCHER">🎫 VOUCHER</option>
+                            </select>
+                            <input type="text" id="riwayatStokSearchInput" class="date-picker-input" placeholder="KETIK NAMA BARANG..." oninput="renderAll()" style="min-width:170px;">
+                        </div>
+                        <span id="txtRiwayatStokSummary" style="font-size:11px; font-weight:800; color:var(--primary);">Total: Rp0</span>
+                    </div>
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -2263,15 +2434,48 @@
             { id: 1760000069, isoDate: '2026-06-01', waktu: '00:56', tglDisplay: 'Senin, 01 Jun, 00:56', nama: 'DS NANGGERANG', noHp: '', catatan: 'TGL 6 MEI', sisa: 101850, pokokAwal: 101850, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', status: 'BELUM LUNAS', riwayatCicilan: [] }
         ];
 
+        window.DEFAULT_STOK_SP_KONTER = [
+            { id: 1761000001, kat: 'SP', nama: 'SP AXIS REG', awal: 1, terjual: 0, modal: 7500, jual: 20000 },
+            { id: 1761000002, kat: 'SP', nama: 'SP AXIS 3GB', awal: 15, terjual: 0, modal: 15059, jual: 35000 },
+            { id: 1761000003, kat: 'SP', nama: 'SP AXIS 3GB A 1TH', awal: 10, terjual: 0, modal: 25000, jual: 50000 },
+            { id: 1761000004, kat: 'SP', nama: 'SP XL REG', awal: 19, terjual: 0, modal: 3000, jual: 20000 },
+            { id: 1761000005, kat: 'SP', nama: 'SP XL 3GB', awal: 5, terjual: 0, modal: 13533, jual: 35000 },
+            { id: 1761000006, kat: 'SP', nama: 'SP IM3 3GB', awal: 4, terjual: 0, modal: 14961, jual: 35000 },
+            { id: 1761000007, kat: 'SP', nama: 'SP TRI 3GB', awal: 12, terjual: 0, modal: 15441, jual: 35000 },
+            { id: 1761000008, kat: 'SP', nama: 'SP TRI REG', awal: 1, terjual: 0, modal: 10000, jual: 35000 },
+            { id: 1761000009, kat: 'SP', nama: 'SP TRI 5GB', awal: 1, terjual: 0, modal: 25000, jual: 35000 },
+            { id: 1761000010, kat: 'SP', nama: 'SP BYU 3GB', awal: 6, terjual: 0, modal: 21930, jual: 35000 },
+            { id: 1761000011, kat: 'SP', nama: 'SP TSEL 3GB', awal: 7, terjual: 0, modal: 24910, jual: 35000 }
+        ];
+
+        window.DEFAULT_RIWAYAT_STOK_SP_KONTER = window.DEFAULT_STOK_SP_KONTER.map(item => ({
+            id: item.id,
+            waktu: '08:00',
+            isoDate: '2026-10-23',
+            tgl: '2026-10-23',
+            kat: 'SP',
+            nama: item.nama,
+            qty: item.awal,
+            modal: item.modal,
+            jual: item.jual,
+            total: item.awal * item.modal,
+            sumberKas: 'TIDAK POTONG SALDO'
+        }));
+
         window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
-        window.masterVlookup = { 'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 } };
+        window.masterVlookup = {
+            'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
+        };
+        window.DEFAULT_STOK_SP_KONTER.forEach(sp => {
+            window.masterVlookup[sp.nama] = { kat: 'SP', akunMasuk: 'LACI', akunKeluar: 'SP', defJual: sp.jual, defModal: sp.modal };
+        });
 
         window.transaksiJurnal = [];
-        window.stokOpnameItems = [];
+        window.stokOpnameItems = JSON.parse(JSON.stringify(window.DEFAULT_STOK_SP_KONTER));
         window.piutangList = JSON.parse(JSON.stringify(window.DEFAULT_PIUTANG_KONTER));
         window.setoranOwnerList = [];
         window.sparepartList = [];
-        window.riwayatBelanjaStok = [];
+        window.riwayatBelanjaStok = JSON.parse(JSON.stringify(window.DEFAULT_RIWAYAT_STOK_SP_KONTER));
         window.operasionalList = [];
         window.logAktivitasList = [];
         window.tiketServisList = [];
@@ -2386,6 +2590,29 @@
                     window.riwayatBelanjaStok = cloudRb.filter(r => r && r.id);
                 } else { window.riwayatBelanjaStok = []; }
 
+                if (!data.seedStokSpV1) {
+                    // Seed 11 data stok awal SP (Kartu Perdana) ke Stok Opname & Riwayat Belanja Stok (Audit / Tanpa Potong Saldo)
+                    window.DEFAULT_STOK_SP_KONTER.forEach(defSp => {
+                        const existingIdx = window.stokOpnameItems.findIndex(s => s.kat === 'SP' && (s.nama || '').trim().toUpperCase() === defSp.nama);
+                        if (existingIdx >= 0) {
+                            window.stokOpnameItems[existingIdx] = Object.assign({}, defSp);
+                        } else {
+                            window.stokOpnameItems.push(Object.assign({}, defSp));
+                        }
+                        if (!window.masterVlookup) window.masterVlookup = {};
+                        window.masterVlookup[defSp.nama] = { kat: 'SP', akunMasuk: 'LACI', akunKeluar: 'SP', defJual: defSp.jual, defModal: defSp.modal };
+                    });
+                    window.DEFAULT_RIWAYAT_STOK_SP_KONTER.forEach(defRb => {
+                        const existingRbIdx = window.riwayatBelanjaStok.findIndex(r => r.id === defRb.id || (r.kat === 'SP' && (r.nama || '').trim().toUpperCase() === defRb.nama));
+                        if (existingRbIdx >= 0) {
+                            window.riwayatBelanjaStok[existingRbIdx] = Object.assign({}, defRb);
+                        } else {
+                            window.riwayatBelanjaStok.push(Object.assign({}, defRb));
+                        }
+                    });
+                    window._needPushSeedStokSpV1 = true;
+                }
+
                 if (data.setoran) {
                     let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
                     window.setoranOwnerList = cloudSetor.filter(st => st && st.id);
@@ -2421,6 +2648,15 @@
                     window._needPushSeedPiutangV1 = false;
                     window.saveToFirebaseNode('piutang', window.piutangList, true);
                     window.saveToFirebaseNode('seedPiutangV1', true, true);
+                }
+                if (window._needPushSeedStokSpV1) {
+                    window._needPushSeedStokSpV1 = false;
+                    window.saveToFirebaseNode('stok', window.stokOpnameItems, true);
+                    window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok, true);
+                    let cleanVlookup = {};
+                    for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
+                    window.saveToFirebaseNode('vlookup', cleanVlookup, true);
+                    window.saveToFirebaseNode('seedStokSpV1', true, true);
                 }
             } else {
                 isFirebaseSyncing = false;
@@ -2525,6 +2761,8 @@
                 saldoAwal: window.masterSaldoAwal,
                 saldoListCustom: window.saldoList,
                 seedSaldoAwalV1: true,
+                seedPiutangV1: true,
+                seedStokSpV1: true,
                 batasMinSaldo: window.masterBatasMinSaldo,
                 pengaturan: window.pengaturanToko,
                 daftarKaryawan: window.daftarKaryawan
@@ -4220,6 +4458,45 @@
             }
         }
 
+        window.hapusStokOpnameItem = function(id) {
+            const target = (window.stokOpnameItems || []).find(s => s.id == id);
+            if (!target) return;
+            const namaItem = (target.nama || target.namaBarang || '').trim().toUpperCase();
+            if (confirm(`Hapus stok "${namaItem}" (${target.kat}) dari daftar Stok Opname?`)) {
+                window.stokOpnameItems = (window.stokOpnameItems || []).filter(s => s.id != id);
+                window.riwayatBelanjaStok = (window.riwayatBelanjaStok || []).filter(r => {
+                    if (r.id == id) return false;
+                    const rNama = (r.nama || r.namaBarang || '').trim().toUpperCase();
+                    return !(rNama === namaItem && r.kat === target.kat);
+                });
+                window.catatLogAktivitas('HAPUS STOK', `Menghapus item stok opname [${target.kat}] ${namaItem}`);
+                window.saveAllToFirebase(false);
+                window.renderAll();
+            }
+        }
+
+        window.muatDefaultStokSpKonter = function() {
+            if (!confirm("Muat kembali 11 data awal Stok Perdana (SP) senilai Rp 1.194.136 (Audit / Tanpa Potong Saldo)?")) return;
+            if (!window.stokOpnameItems) window.stokOpnameItems = [];
+            if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
+            window.DEFAULT_STOK_SP_KONTER.forEach(defSp => {
+                const idx = window.stokOpnameItems.findIndex(s => s.kat === 'SP' && (s.nama || '').trim().toUpperCase() === defSp.nama);
+                if (idx >= 0) window.stokOpnameItems[idx] = Object.assign({}, defSp);
+                else window.stokOpnameItems.push(Object.assign({}, defSp));
+                if (!window.masterVlookup) window.masterVlookup = {};
+                window.masterVlookup[defSp.nama] = { kat: 'SP', akunMasuk: 'LACI', akunKeluar: 'SP', defJual: defSp.jual, defModal: defSp.modal };
+            });
+            window.DEFAULT_RIWAYAT_STOK_SP_KONTER.forEach(defRb => {
+                const idx = window.riwayatBelanjaStok.findIndex(r => r.id === defRb.id || (r.kat === 'SP' && (r.nama || '').trim().toUpperCase() === defRb.nama));
+                if (idx >= 0) window.riwayatBelanjaStok[idx] = Object.assign({}, defRb);
+                else window.riwayatBelanjaStok.push(Object.assign({}, defRb));
+            });
+            window.catatLogAktivitas('MUAT STOK SP', 'Memuat ulang 11 data stok awal Kartu Perdana (SP) senilai Rp 1.194.136 (Audit / Tanpa Potong Saldo)');
+            window.saveAllToFirebase(false);
+            window.renderAll();
+            window.showToast("✅ 11 Data Stok Perdana (SP) senilai Rp 1.194.136 berhasil dimuat ke saldo SP!", "success");
+        }
+
         window.simpanPiutang = function(e) {
             e.preventDefault();
             let rawNama = document.getElementById('pNama').value.trim().toUpperCase();
@@ -5088,7 +5365,7 @@
                     }
 
                     return `
-                        <tr>
+                        <tr id="row-tiket-${t.id}">
                             <td><b>${t.noServis}</b></td>
                             <td><b>${t.waktu}</b><br><small style="color:#64748B;">${t.isoDate}</small></td>
                             <td><b>${t.nama}</b><br><small>${t.noHp} • <span style="color:var(--primary); font-weight:bold;">${t.tipeHp}</span></small></td>
@@ -5212,7 +5489,7 @@
                 const tombolNotaService = t.kat === 'SERVICE' ? `<button class="btn-nota-service" onclick="cetakNotaLunasServiceTrx('${t.id}')">📄 Nota Lunas</button>` : '';
 
                 return `
-                    <tr>
+                    <tr id="row-trx-${t.id}">
                         <td>${idx + 1}</td>
                         <td><b>${t.waktu}</b><br><span style="font-size:9px;">${t.isoDate || ''}</span></td>
                         <td><b>${t.ket}</b></td>
@@ -5282,7 +5559,7 @@
                     return true;
                 });
                 bOperasional.innerHTML = filteredOp.map(o => `
-                    <tr>
+                    <tr id="row-op-${o.id}">
                         <td><b>${o.waktu}</b><br><small>${o.isoDate}</small></td>
                         <td><b>${o.ket}</b></td>
                         <td>${o.sumber}</td>
@@ -5296,37 +5573,111 @@
             }
 
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
+            let countVoucher = 0, countSp = 0, countAcc = 0, countAllStok = 0;
+            (window.stokOpnameItems || []).forEach(s => {
+                const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
+                const nilai = sisa * Number(s.modal || 0);
+                countAllStok++;
+                if (s.kat === 'VOUCHER') { nVoucher += nilai; countVoucher++; }
+                else if (s.kat === 'SP') { nSp += nilai; countSp++; }
+                else if (s.kat === 'ACC') { nAcc += nilai; countAcc++; }
+                nTotalStok += nilai;
+            });
+
+            const elCntAll = document.getElementById('cntStokAll'); if (elCntAll) elCntAll.innerText = countAllStok;
+            const elCntAcc = document.getElementById('cntStokAcc'); if (elCntAcc) elCntAcc.innerText = countAcc;
+            const elCntSp = document.getElementById('cntStokSp'); if (elCntSp) elCntSp.innerText = countSp;
+            const elCntVcr = document.getElementById('cntStokVoucher'); if (elCntVcr) elCntVcr.innerText = countVoucher;
+
+            const activeKatFilter = window._stokActiveKatFilter || 'ALL';
+            const kondisiFilter = document.getElementById('stokFilterKondisi')?.value || 'ALL';
+            const searchStokQuery = (document.getElementById('stokSearchInput')?.value || '').trim().toUpperCase();
+            const btnClearStok = document.getElementById('btnClearStokSearch');
+            if (btnClearStok) {
+                btnClearStok.style.display = (searchStokQuery || activeKatFilter !== 'ALL' || kondisiFilter !== 'ALL') ? 'block' : 'none';
+            }
+
             const bStok = document.getElementById('bodyStokOpname');
             if (bStok) {
-                bStok.innerHTML = window.stokOpnameItems.map(s => {
+                let filteredStokList = (window.stokOpnameItems || []).filter(s => {
+                    const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
+                    const namaItem = (s.nama || s.namaBarang || '').toUpperCase();
+                    const katItem = (s.kat || '').toUpperCase();
+                    const modalStr = String(s.modal || '');
+                    const jualStr = String(s.jual || '');
+
+                    if (activeKatFilter !== 'ALL' && katItem !== activeKatFilter) return false;
+                    if (kondisiFilter === 'AMAN' && sisa <= 3) return false;
+                    if (kondisiFilter === 'KRITIS' && (sisa <= 0 || sisa > 3)) return false;
+                    if (kondisiFilter === 'HABIS' && sisa > 0) return false;
+                    if (searchStokQuery) {
+                        const matchName = namaItem.includes(searchStokQuery);
+                        const matchKat = katItem.includes(searchStokQuery);
+                        const matchPrice = modalStr.includes(searchStokQuery) || jualStr.includes(searchStokQuery);
+                        if (!matchName && !matchKat && !matchPrice) return false;
+                    }
+                    return true;
+                });
+
+                let filteredNilaiTotal = 0;
+                let filteredPcsTotal = 0;
+
+                bStok.innerHTML = filteredStokList.map(s => {
                     const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
                     const nilai = sisa * Number(s.modal || 0);
+                    filteredNilaiTotal += nilai;
+                    filteredPcsTotal += Math.max(0, sisa);
                     const namaItem = s.nama || s.namaBarang || '-';
-                    if (s.kat === 'VOUCHER') nVoucher += nilai;
-                    else if (s.kat === 'SP') nSp += nilai;
-                    else if (s.kat === 'ACC') nAcc += nilai;
-                    nTotalStok += nilai;
+                    const katBadgeColor = s.kat === 'ACC' ? 'background:#FEF3C7; color:#B45309; border:1px solid #FDE68A;' : (s.kat === 'SP' ? 'background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0;' : 'background:#E0F2FE; color:#0284C7; border:1px solid #BAE6FD;');
                     return `
-                        <tr>
-                            <td><b>${s.kat}</b></td>
+                        <tr id="row-stok-${s.id}">
+                            <td><span style="padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800; ${katBadgeColor}">${s.kat}</span></td>
                             <td><b>${namaItem}</b></td>
                             <td>${s.awal}</td>
                             <td style="color:#EF4444;">${s.terjual || 0}</td>
-                            <td><b style="color:${sisa <= 3 ? '#EF4444' : 'inherit'};">${sisa}</b></td>
+                            <td><b style="color:${sisa <= 0 ? '#DC2626' : (sisa <= 3 ? '#D97706' : 'inherit')};">${sisa}${sisa <= 0 ? ' (HABIS)' : (sisa <= 3 ? ' ⚠️' : '')}</b></td>
                             <td>${window.formatRp(s.modal)}</td>
                             <td>${window.formatRp(s.jual || 0)}</td>
                             <td class="text-kredit"><b>${window.formatRp(nilai)}</b></td>
                             <td>
-                                <button class="btn-edit" onclick="editStokOpname(${s.id})">Edit</button>
+                                <div style="display:flex; gap:3px; justify-content:center;">
+                                    <button class="btn" style="background:#059669; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="jualStokCepatDariFind(${s.id})" title="Jual Barang Ini di Kasir">🛒 Jual</button>
+                                    <button class="btn-edit" onclick="editStokOpname(${s.id})">Edit</button>
+                                    <button class="btn-delete" onclick="hapusStokOpnameItem(${s.id})">Hapus</button>
+                                </div>
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8;">Belum ada stok.</td></tr>`;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Tidak ada stok yang cocok dengan filter / pencarian. <button type="button" onclick="resetFilterStokOpname()" style="margin-left:6px; background:var(--primary); color:#fff; border:none; border-radius:6px; padding:3px 8px; font-size:10.5px; font-weight:bold; cursor:pointer;">Reset Filter</button></td></tr>`;
+
+                const txtCountEl = document.getElementById('txtStokFilterCount');
+                const txtNilaiEl = document.getElementById('txtStokFilterNilai');
+                if (txtCountEl) {
+                    const katLabel = activeKatFilter === 'ALL' ? 'Semua Kategori' : `Kategori ${activeKatFilter}`;
+                    txtCountEl.innerHTML = `📦 Menampilkan <b>${filteredStokList.length}</b> dari <b>${countAllStok}</b> jenis barang (${katLabel} • Total <b>${filteredPcsTotal} Pcs</b>)`;
+                }
+                if (txtNilaiEl) {
+                    txtNilaiEl.innerHTML = `💰 Nilai Stok Terfilter: <b>${window.formatRp(filteredNilaiTotal)}</b>`;
+                }
             }
 
             const tRiwayatStok = document.getElementById('tabelRiwayatBelanjaStok');
             if (tRiwayatStok) {
-                tRiwayatStok.innerHTML = (window.riwayatBelanjaStok || []).map(r => `
+                const rKatFilter = document.getElementById('riwayatStokFilterKat')?.value || 'ALL';
+                const rSearch = (document.getElementById('riwayatStokSearchInput')?.value || '').trim().toUpperCase();
+                let totalBelanjaFiltered = 0;
+                const filteredRiwayat = (window.riwayatBelanjaStok || []).filter(r => {
+                    const katR = (r.kat || '').toUpperCase();
+                    const namaR = (r.nama || r.namaBarang || '').toUpperCase();
+                    if (rKatFilter !== 'ALL' && katR !== rKatFilter) return false;
+                    if (rSearch && !namaR.includes(rSearch) && !katR.includes(rSearch)) return false;
+                    return true;
+                });
+
+                tRiwayatStok.innerHTML = filteredRiwayat.map(r => {
+                    const totVal = Number(r.total || ((r.qty || 0) * (r.modal || 0)));
+                    totalBelanjaFiltered += totVal;
+                    return `
                     <tr>
                         <td><b>${r.waktu || ''}</b><br><small>${r.isoDate || r.tgl || ''}</small></td>
                         <td><b>${r.kat || '-'}</b></td>
@@ -5334,11 +5685,16 @@
                         <td style="text-align: center;">${r.qty || 0}</td>
                         <td style="text-align: right;">${window.formatRp(r.modal || 0)}</td>
                         <td style="text-align: right;">${window.formatRp(r.jual || 0)}</td>
-                        <td style="text-align: right;" class="text-kredit">${window.formatRp(r.total || ((r.qty || 0) * (r.modal || 0)))}</td>
+                        <td style="text-align: right;" class="text-kredit">${window.formatRp(totVal)}</td>
                         <td>${r.sumberKas || 'TIDAK POTONG SALDO'}</td>
                         <td style="text-align: center;"><button class="btn-delete" onclick="hapusRiwayatBelanja(${r.id})">Hapus</button></td>
                     </tr>
-                `).join('') || `<tr><td colspan="9" style="text-align: center; color: gray;">Belum ada riwayat belanja stok.</td></tr>`;
+                `}).join('') || `<tr><td colspan="9" style="text-align: center; color: gray;">Tidak ada riwayat belanja stok yang cocok.</td></tr>`;
+
+                const txtRiwayatSum = document.getElementById('txtRiwayatStokSummary');
+                if (txtRiwayatSum) {
+                    txtRiwayatSum.innerText = `${filteredRiwayat.length} Item • Total: ${window.formatRp(totalBelanjaFiltered)}`;
+                }
             }
 
             document.getElementById('valNilaiStokVoucher').innerText = window.formatRp(nVoucher);
@@ -5356,7 +5712,7 @@
                     const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
                     const tglJamStr = window.formatTanggalJamPiutang(p.isoDate, p.waktu, p.tglDisplay);
                     return `
-                        <tr>
+                        <tr id="row-piutang-${p.id}">
                             <td style="white-space:nowrap;"><b>${tglJamStr}</b><br><small style="color:#64748B;">${p.isoDate || '-'}</small></td>
                             <td><b>${p.nama}</b><br><small style="color:#0284C7; font-weight:600;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small></td>
                             <td><span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? '#0F172A' : '#94A3B8'};">${p.catatan || '-'}</span></td>
@@ -6727,6 +7083,421 @@
             };
             r.readAsText(file);
         };
+
+        // --- FITUR FILTER STOK OPNAME & PENCARIAN PINTAR (FIND ALA EXCEL) ---
+        window._stokActiveKatFilter = 'ALL';
+        window._globalFindActiveTab = 'ALL';
+
+        window.setFilterKatStok = function(kat) {
+            window._stokActiveKatFilter = kat || 'ALL';
+            document.querySelectorAll('#stokCatPillsContainer .stok-cat-pill').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-kat') === window._stokActiveKatFilter);
+            });
+            window.renderAll();
+        };
+
+        window.resetFilterStokOpname = function() {
+            window._stokActiveKatFilter = 'ALL';
+            document.querySelectorAll('#stokCatPillsContainer .stok-cat-pill').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-kat') === 'ALL');
+            });
+            const sInput = document.getElementById('stokSearchInput');
+            if (sInput) sInput.value = '';
+            const sKondisi = document.getElementById('stokFilterKondisi');
+            if (sKondisi) sKondisi.value = 'ALL';
+            window.renderAll();
+        };
+
+        window.jualStokCepatDariFind = function(stokId) {
+            const item = (window.stokOpnameItems || []).find(s => s.id == stokId);
+            if (!item) return;
+            window.closeModalGlobalFind();
+            window.openModalKasir();
+            document.getElementById('editTrxId').value = '';
+            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('trxQty').value = 1;
+            const ketEl = document.getElementById('keterangan');
+            if (ketEl) {
+                ketEl.value = (item.nama || item.namaBarang || '').toUpperCase();
+                ketEl.dispatchEvent(new Event('input'));
+            }
+            const mMasuk = document.getElementById('akunMasuk1');
+            if (mMasuk && !mMasuk.value) mMasuk.value = 'LACI';
+            window.hitungCuan();
+        };
+
+        window.bukaModalGlobalFind = function(defaultTab) {
+            if (defaultTab) {
+                window._globalFindActiveTab = defaultTab;
+                document.querySelectorAll('#globalFindTabContainer .find-tab-pill').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-tab') === defaultTab);
+                });
+            }
+            const overlay = document.getElementById('modalGlobalFindOverlay');
+            if (overlay) overlay.classList.add('show');
+            window.renderGlobalFindResults();
+            setTimeout(() => {
+                const inp = document.getElementById('globalFindInput');
+                if (inp) { inp.focus(); inp.select(); }
+            }, 80);
+        };
+
+        window.closeModalGlobalFind = function() {
+            const overlay = document.getElementById('modalGlobalFindOverlay');
+            if (overlay) overlay.classList.remove('show');
+        };
+
+        window.setGlobalFindTab = function(tabName) {
+            window._globalFindActiveTab = tabName || 'ALL';
+            document.querySelectorAll('#globalFindTabContainer .find-tab-pill').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-tab') === window._globalFindActiveTab);
+            });
+            window.renderGlobalFindResults();
+        };
+
+        window.activateMainTabById = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+            const navMap = {
+                'tab-kasir': 0,
+                'tab-service': 1,
+                'tab-stok': 2,
+                'tab-piutang': 3,
+                'tab-operasional': 4,
+                'tab-laporan': 5
+            };
+            const navBtns = document.querySelectorAll('.bottom-nav .nav-item');
+            if (navBtns[navMap[tabId]]) navBtns[navMap[tabId]].classList.add('active');
+        };
+
+        window.highlightRowAndScroll = function(rowId) {
+            setTimeout(() => {
+                const el = document.getElementById(rowId);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.remove('excel-find-highlight');
+                    void el.offsetWidth;
+                    el.classList.add('excel-find-highlight');
+                }
+            }, 140);
+        };
+
+        window.lompatKeHasilFind = function(tipe, id, extraInfo) {
+            window.closeModalGlobalFind();
+            if (tipe === 'STOK') {
+                window.activateMainTabById('tab-stok');
+                window.resetFilterStokOpname();
+                window.highlightRowAndScroll(`row-stok-${id}`);
+            } else if (tipe === 'PIUTANG') {
+                window.activateMainTabById('tab-piutang');
+                window.highlightRowAndScroll(`row-piutang-${id}`);
+            } else if (tipe === 'TRX') {
+                window.activateMainTabById('tab-kasir');
+                if (extraInfo) {
+                    const modeEl = document.getElementById('jurnalFilterMode');
+                    const dateEl = document.getElementById('jurnalDatePicker');
+                    if (modeEl && dateEl) {
+                        modeEl.value = 'DAILY';
+                        dateEl.style.display = 'inline-block';
+                        document.getElementById('jurnalMonthPicker').style.display = 'none';
+                        dateEl.value = extraInfo;
+                    }
+                }
+                document.getElementById('jurnalFilterKat').value = '';
+                document.getElementById('jurnalFilterMasuk').value = '';
+                document.getElementById('jurnalFilterKeluar').value = '';
+                window.renderAll();
+                window.highlightRowAndScroll(`row-trx-${id}`);
+            } else if (tipe === 'SERVIS') {
+                window.activateMainTabById('tab-service');
+                const tMode = document.getElementById('tiketFilterMode');
+                if (tMode) {
+                    tMode.value = 'ALL';
+                    document.getElementById('tiketDatePicker').style.display = 'none';
+                    document.getElementById('tiketMonthPicker').style.display = 'none';
+                }
+                document.getElementById('tiketFilterStatus').value = '';
+                window.renderAll();
+                window.highlightRowAndScroll(`row-tiket-${id}`);
+            } else if (tipe === 'OP') {
+                window.activateMainTabById('tab-operasional');
+                const opMode = document.getElementById('opFilterMode');
+                if (opMode) {
+                    opMode.value = 'ALL';
+                    document.getElementById('opDatePicker').style.display = 'none';
+                    document.getElementById('opMonthPicker').style.display = 'none';
+                }
+                window.renderAll();
+                window.highlightRowAndScroll(`row-op-${id}`);
+            } else if (tipe === 'VLOOKUP') {
+                window.activateMainTabById('tab-laporan');
+                document.querySelectorAll('.sub-tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+                const vSub = document.getElementById('sub-vlookup');
+                if (vSub) vSub.classList.add('active');
+                const subBtns = document.querySelectorAll('.sub-tab-btn');
+                if (subBtns[4]) subBtns[4].classList.add('active');
+            }
+        };
+
+        window.renderGlobalFindResults = function() {
+            const rawQ = (document.getElementById('globalFindInput')?.value || '').trim();
+            const q = rawQ.toUpperCase();
+            const qNum = rawQ.replace(/\D/g, '');
+            const btnClear = document.getElementById('btnClearGlobalFind');
+            if (btnClear) btnClear.style.display = rawQ ? 'block' : 'none';
+
+            const activeTab = window._globalFindActiveTab || 'ALL';
+
+            // 1. Cari di Stok Opname
+            const resStok = (window.stokOpnameItems || []).filter(s => {
+                if (!q) return true;
+                const nm = (s.nama || s.namaBarang || '').toUpperCase();
+                const kat = (s.kat || '').toUpperCase();
+                const m = String(s.modal || '');
+                const j = String(s.jual || '');
+                return nm.includes(q) || kat.includes(q) || (qNum && (m.includes(qNum) || j.includes(qNum)));
+            });
+
+            // 2. Cari di Piutang Konsumen
+            const resPiutang = (window.piutangList || []).filter(p => {
+                if (!q) return true;
+                const nm = (p.nama || '').toUpperCase();
+                const cat = (p.catatan || '').toUpperCase();
+                const kat = (p.kategori || '').toUpperCase();
+                const tgl = (p.tglDisplay || p.isoDate || '').toUpperCase();
+                const sisa = String(p.sisa || p.pokokAwal || '');
+                return nm.includes(q) || cat.includes(q) || kat.includes(q) || tgl.includes(q) || (qNum && sisa.includes(qNum));
+            });
+
+            // 3. Cari di Transaksi Jurnal (Kecuali transaksi internal utang awal)
+            const resTrx = (window.transaksiJurnal || []).filter(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') return false;
+                if (!q) return true;
+                const ket = (t.ket || '').toUpperCase();
+                const kat = (t.kat || '').toUpperCase();
+                const msk = (t.akunMasuk1 || '').toUpperCase();
+                const klr = (t.akunKeluar1 || '').toUpperCase();
+                const tgl = (t.isoDate || '').toUpperCase();
+                const hj = String(t.hargaJual || '');
+                const hm = String(t.hargaModal || '');
+                return ket.includes(q) || kat.includes(q) || msk.includes(q) || klr.includes(q) || tgl.includes(q) || (qNum && (hj.includes(qNum) || hm.includes(qNum)));
+            });
+
+            // 4. Cari di Tiket Servis
+            const resServis = (window.tiketServisList || []).filter(t => {
+                if (!q) return true;
+                const no = (t.noServis || '').toUpperCase();
+                const nm = (t.nama || '').toUpperCase();
+                const hp = (t.tipeHp || '').toUpperCase();
+                const klh = (t.keluhan || '').toUpperCase();
+                const part = (t.namaPart || '').toUpperCase();
+                return no.includes(q) || nm.includes(q) || hp.includes(q) || klh.includes(q) || part.includes(q);
+            });
+
+            // 5. Cari di Operasional
+            const resOp = (window.operasionalList || []).filter(o => {
+                if (!q) return true;
+                const ket = (o.ket || '').toUpperCase();
+                const smb = (o.sumber || '').toUpperCase();
+                const nom = String(o.nominal || '');
+                return ket.includes(q) || smb.includes(q) || (qNum && nom.includes(qNum));
+            });
+
+            // 6. Cari di Master VLOOKUP
+            const vlookupKeys = Object.keys(window.masterVlookup || {});
+            const resVlookup = vlookupKeys.filter(k => {
+                const rule = window.masterVlookup[k] || {};
+                if (!q) return true;
+                const kUp = k.toUpperCase();
+                const katUp = (rule.kat || '').toUpperCase();
+                return kUp.includes(q) || katUp.includes(q);
+            });
+
+            const totalAll = resStok.length + resPiutang.length + resTrx.length + resServis.length + resOp.length + resVlookup.length;
+
+            document.getElementById('cntFindAll').innerText = totalAll;
+            document.getElementById('cntFindStok').innerText = resStok.length;
+            document.getElementById('cntFindPiutang').innerText = resPiutang.length;
+            document.getElementById('cntFindTrx').innerText = resTrx.length;
+            document.getElementById('cntFindServis').innerText = resServis.length;
+            document.getElementById('cntFindOp').innerText = resOp.length;
+            document.getElementById('cntFindVlookup').innerText = resVlookup.length;
+
+            const sumCountEl = document.getElementById('globalFindSummaryCount');
+            if (sumCountEl) {
+                sumCountEl.innerText = q ? `Ditemukan ${totalAll} data untuk "${q}"` : `Total ${totalAll} data tersedia`;
+            }
+
+            let htmlItems = [];
+            const maxPerCat = activeTab === 'ALL' ? (q ? 25 : 8) : 80;
+
+            if (activeTab === 'ALL' || activeTab === 'STOK') {
+                resStok.slice(0, maxPerCat).forEach(s => {
+                    const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
+                    const nm = s.nama || s.namaBarang || '-';
+                    const badgeBg = s.kat === 'ACC' ? 'background:#FEF3C7; color:#B45309;' : (s.kat === 'SP' ? 'background:#DCFCE7; color:#15803D;' : 'background:#E0F2FE; color:#0284C7;');
+                    htmlItems.push(`
+                        <div class="find-result-item">
+                            <div style="min-width:0; flex:1;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
+                                    <span class="find-badge-mod" style="${badgeBg}">📦 STOK ${s.kat}</span>
+                                    <b style="font-size:12px; color:var(--text);">${nm}</b>
+                                    <span style="font-size:10.5px; font-weight:800; color:${sisa <= 0 ? '#DC2626' : (sisa <= 3 ? '#D97706' : '#059669')};">• Sisa: ${sisa} Pcs</span>
+                                </div>
+                                <div style="font-size:11px; color:#64748B;">
+                                    HPP/Modal: <b>${window.formatRp(s.modal)}</b> • Harga Jual: <b style="color:#16A34A;">${window.formatRp(s.jual || 0)}</b> • Nilai Sisa: <b>${window.formatRp(sisa * Number(s.modal || 0))}</b>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#059669;" onclick="jualStokCepatDariFind(${s.id})">🛒 Jual</button>
+                                <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#0284C7;" onclick="lompatKeHasilFind('STOK', ${s.id})">👁️ Lihat</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            if (activeTab === 'ALL' || activeTab === 'PIUTANG') {
+                resPiutang.slice(0, maxPerCat).forEach(p => {
+                    const sisa = p.status === 'LUNAS' ? 0 : Number(p.sisa || 0);
+                    const isLunas = p.status === 'LUNAS' || sisa <= 0;
+                    const tglStr = window.formatTanggalJamPiutang(p.isoDate, p.waktu, p.tglDisplay);
+                    htmlItems.push(`
+                        <div class="find-result-item">
+                            <div style="min-width:0; flex:1;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
+                                    <span class="find-badge-mod" style="background:#FEE2E2; color:#B91C1C;">🤝 PIUTANG</span>
+                                    <b style="font-size:12px; color:var(--text);">${p.nama}</b>
+                                    ${p.catatan && p.catatan !== '-' ? `<span style="font-size:10.5px; background:#F1F5F9; color:#334155; padding:1px 6px; border-radius:4px; font-weight:700;">(${p.catatan})</span>` : ''}
+                                </div>
+                                <div style="font-size:11px; color:#64748B;">
+                                    📅 ${tglStr} • Sisa Utang: <b style="color:#DC2626;">${window.formatRp(sisa)}</b> • Status: <b style="color:${isLunas ? '#16A34A' : '#EF4444'};">${isLunas ? 'LUNAS' : 'BELUM LUNAS'}</b>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                ${!isLunas ? `<button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#16A34A;" onclick="closeModalGlobalFind(); bukaKasirUntukPiutang(${p.id});">💰 Lunasi</button>` : ''}
+                                <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#0284C7;" onclick="lompatKeHasilFind('PIUTANG', ${p.id})">👁️ Lihat</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            if (activeTab === 'ALL' || activeTab === 'TRX') {
+                resTrx.slice(0, maxPerCat).forEach(t => {
+                    htmlItems.push(`
+                        <div class="find-result-item">
+                            <div style="min-width:0; flex:1;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
+                                    <span class="find-badge-mod" style="background:#E0E7FF; color:#1D4ED8;">🧾 TRX • ${t.kat}</span>
+                                    <b style="font-size:12px; color:var(--text);">${t.ket}</b>
+                                </div>
+                                <div style="font-size:11px; color:#64748B;">
+                                    📅 ${t.isoDate || '-'} (${t.waktu || '-'}) • Jual: <b style="color:#16A34A;">${window.formatRp(t.hargaJual)}</b> (${t.akunMasuk1 || '-'}) • Modal: <b style="color:#EF4444;">${window.formatRp(t.hargaModal)}</b> (${t.akunKeluar1 || '-'}) • Cuan: <b style="color:#D97706;">${window.formatRp(t.cuan)}</b>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                <button type="button" class="btn-edit" style="padding:5px 8px; font-size:10px;" onclick="closeModalGlobalFind(); editTrx('${t.id}');">Edit</button>
+                                <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#0284C7;" onclick="lompatKeHasilFind('TRX', '${t.id}', '${t.isoDate || ''}')">👁️ Lihat</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            if (activeTab === 'ALL' || activeTab === 'SERVIS') {
+                resServis.slice(0, maxPerCat).forEach(t => {
+                    htmlItems.push(`
+                        <div class="find-result-item">
+                            <div style="min-width:0; flex:1;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
+                                    <span class="find-badge-mod" style="background:#F3E8FF; color:#7E22CE;">🛠️ SERVIS • ${t.noServis}</span>
+                                    <b style="font-size:12px; color:var(--text);">${t.nama} (${t.tipeHp})</b>
+                                </div>
+                                <div style="font-size:11px; color:#64748B;">
+                                    Keluhan: <b>${t.keluhan}</b> • Biaya: <b style="color:#059669;">${window.formatRp(t.estBiaya || 0)}</b> • Status: <b>${t.status}</b>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#0284C7;" onclick="lompatKeHasilFind('SERVIS', ${t.id})">👁️ Lihat</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            if (activeTab === 'ALL' || activeTab === 'OP') {
+                resOp.slice(0, maxPerCat).forEach(o => {
+                    htmlItems.push(`
+                        <div class="find-result-item">
+                            <div style="min-width:0; flex:1;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
+                                    <span class="find-badge-mod" style="background:#FFEDD5; color:#C2410C;">💸 OPERASIONAL</span>
+                                    <b style="font-size:12px; color:var(--text);">${o.ket}</b>
+                                </div>
+                                <div style="font-size:11px; color:#64748B;">
+                                    📅 ${o.isoDate || '-'} (${o.waktu || '-'}) • Sumber: <b>${o.sumber}</b> • Nominal: <b style="color:#EF4444;">${window.formatRp(o.nominal)}</b>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#0284C7;" onclick="lompatKeHasilFind('OP', ${o.id})">👁️ Lihat</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            if (activeTab === 'ALL' || activeTab === 'VLOOKUP') {
+                resVlookup.slice(0, maxPerCat).forEach(k => {
+                    const r = window.masterVlookup[k] || {};
+                    htmlItems.push(`
+                        <div class="find-result-item">
+                            <div style="min-width:0; flex:1;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
+                                    <span class="find-badge-mod" style="background:#ECFDF5; color:#047857;">⚡ VLOOKUP • ${r.kat || '-'}</span>
+                                    <b style="font-size:12px; color:var(--text);">${k}</b>
+                                </div>
+                                <div style="font-size:11px; color:#64748B;">
+                                    Jual: <b style="color:#16A34A;">${window.formatRp(r.defJual || 0)}</b> (${r.akunMasuk || '-'}) • Modal: <b style="color:#EF4444;">${window.formatRp(r.defModal || 0)}</b> (${r.akunKeluar || '-'})
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#0284C7;" onclick="lompatKeHasilFind('VLOOKUP', '${k}')">👁️ Master</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            const box = document.getElementById('globalFindResultsBox');
+            if (box) {
+                box.innerHTML = htmlItems.join('') || `
+                    <div style="text-align:center; padding:28px 14px; color:#64748B;">
+                        <div style="font-size:28px; margin-bottom:6px;">🔍</div>
+                        <div style="font-size:12.5px; font-weight:700;">Tidak ditemukan data untuk kata kunci "${rawQ}"</div>
+                        <div style="font-size:11px; margin-top:3px;">Coba ketik kata lain seperti nama barang (AXIS, ROBOT, KABEL), nama pengutang (ZIYAD, EARGI), atau nominal.</div>
+                    </div>
+                `;
+            }
+        };
+
+        // Shortcut Keyboard Global: Ctrl+F atau Ctrl+K untuk membuka Pencarian Pintar Ala Excel, ESC untuk menutup
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 'k')) {
+                const loginVisible = document.getElementById('loginOverlay')?.style.display !== 'none';
+                if (loginVisible) return;
+                e.preventDefault();
+                window.bukaModalGlobalFind();
+            } else if (e.key === 'Escape') {
+                const findModal = document.getElementById('modalGlobalFindOverlay');
+                if (findModal && findModal.classList.contains('show')) {
+                    window.closeModalGlobalFind();
+                }
+            }
+        });
     </script>
 </body>
 </html>
