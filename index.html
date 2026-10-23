@@ -1382,11 +1382,15 @@
                         <input type="month" id="saldoMonthPicker" class="date-picker-input" style="display:none; padding:4px 6px; font-size:10px;" onchange="renderAll()">
                     </div>
                 </div>
-                <!-- Ringkasan Saldo Cair vs Piutang -->
+                <!-- Ringkasan Saldo Cair vs Stok Barang vs Piutang -->
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; padding:10px 12px; background:#F8FAFC; border-bottom:1px solid #E2E8F0;">
                     <div style="background:#FFF; padding:8px 10px; border-radius:8px; border:1px solid #E2E8F0; text-align:center;">
                         <span style="font-size:10px; color:#64748B; font-weight:700; display:block;">💵 KAS & BANK CAIR</span>
                         <b id="lblKasCair" style="font-size:13px; color:var(--primary);">Rp0</b>
+                    </div>
+                    <div style="background:#FFF; padding:8px 10px; border-radius:8px; border:1px solid #E2E8F0; text-align:center;">
+                        <span style="font-size:10px; color:#7C3AED; font-weight:700; display:block;">📦 ASET STOK (BELUM CAIR)</span>
+                        <b id="lblStokBarangSaldo" style="font-size:13px; color:#7C3AED;">Rp0</b>
                     </div>
                     <div style="background:#FFF; padding:8px 10px; border-radius:8px; border:1px solid #E2E8F0; text-align:center;">
                         <span style="font-size:10px; color:#EF4444; font-weight:700; display:block;">📑 PIUTANG PELANGGAN</span>
@@ -5021,6 +5025,8 @@
             });
 
             let totalKasCair = 0;
+            let totalStokOpnameAkunVal = 0;
+            const akunStokFisik = ['VOUCHER', 'SP', 'ACC'];
             let totalPiutangVal = Math.max(0, (window.masterSaldoAwal['PIUTANG'] || 0) + (masukAkun['PIUTANG'] || 0) - (keluarAkun['PIUTANG'] || 0));
             if (saldoMode === 'ALL') totalPiutangVal = totalPiutang || 0;
             let totalSparepartVal = Math.max(0, (window.masterSaldoAwal['SPAREPART'] || 0) + (masukAkun['SPAREPART'] || 0) - (keluarAkun['SPAREPART'] || 0));
@@ -5033,16 +5039,29 @@
                     akhir = totalPiutangVal;
                 } else if (s === 'SPAREPART') {
                     akhir = totalSparepartVal;
+                } else if (akunStokFisik.includes(s)) {
+                    totalStokOpnameAkunVal += akhir;
                 } else {
                     totalKasCair += akhir;
                 }
                 totalSaldoKeseluruhan += akhir;
-                return `<tr><td><b>${s}</b></td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><b>${window.formatRp(akhir)}</b></td></tr>`;
+                const labelBadge = s === 'PIUTANG'
+                    ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Utang)</span>'
+                    : (s === 'SPAREPART'
+                        ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Part)</span>'
+                        : (akunStokFisik.includes(s)
+                            ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Stok)</span>'
+                            : ''));
+                return `<tr><td><b>${s}</b>${labelBadge}</td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><b>${window.formatRp(akhir)}</b></td></tr>`;
             }).join('');
+
+            const totalSemuaStokBelumCair = totalStokOpnameAkunVal + totalSparepartVal;
 
             // Update Ringkasan Tab Saldo (Badges & Table Footer)
             const lblKasEl = document.getElementById('lblKasCair');
             if (lblKasEl) lblKasEl.innerText = window.formatRp(totalKasCair);
+            const lblStokEl = document.getElementById('lblStokBarangSaldo');
+            if (lblStokEl) lblStokEl.innerText = window.formatRp(totalSemuaStokBelumCair);
             const lblPiuEl = document.getElementById('lblPiutangSaldo');
             if (lblPiuEl) lblPiuEl.innerText = window.formatRp(totalPiutangVal);
             const lblTotEl = document.getElementById('lblTotalSemuaSaldo');
@@ -5055,18 +5074,23 @@
                         <td colspan="4">💵 KAS & BANK / E-WALLET (UANG CAIR)</td>
                         <td class="text-kredit" style="font-size:12px;"><b>${window.formatRp(totalKasCair)}</b></td>
                     </tr>
-                    ${totalPiutangVal > 0 ? `
-                    <tr style="background:#FEF2F2; font-weight:700;">
-                        <td colspan="4" style="color:#B91C1C;">📑 PIUTANG PELANGGAN (TAGIHAN TEMPO)</td>
-                        <td class="text-debit" style="font-size:12px;"><b>${window.formatRp(totalPiutangVal)}</b></td>
+                    ${totalStokOpnameAkunVal !== 0 ? `
+                    <tr style="background:#FFFBEB; font-weight:700;">
+                        <td colspan="4" style="color:#B45309;">📦 STOK BARANG VOUCHER, SP & ACC (BELUM CAIR)</td>
+                        <td style="color:#B45309; font-size:12px;"><b>${window.formatRp(totalStokOpnameAkunVal)}</b></td>
                     </tr>` : ''}
                     ${totalSparepartVal > 0 ? `
                     <tr style="background:#F5F3FF; font-weight:700;">
-                        <td colspan="4" style="color:#6D28D9;">🔧 STOK SPAREPART SERVIS (ASET)</td>
+                        <td colspan="4" style="color:#6D28D9;">🔧 STOK SPAREPART SERVIS (BELUM CAIR)</td>
                         <td style="color:#6D28D9; font-size:12px;"><b>${window.formatRp(totalSparepartVal)}</b></td>
                     </tr>` : ''}
+                    ${totalPiutangVal > 0 ? `
+                    <tr style="background:#FEF2F2; font-weight:700;">
+                        <td colspan="4" style="color:#B91C1C;">📑 PIUTANG PELANGGAN / TAGIHAN TEMPO (BELUM CAIR)</td>
+                        <td class="text-debit" style="font-size:12px;"><b>${window.formatRp(totalPiutangVal)}</b></td>
+                    </tr>` : ''}
                     <tr style="background:#ECFDF5; font-weight:900; font-size:13px; border-top:2px solid #059669;">
-                        <td colspan="4" style="color:#065F46;">🏆 TOTAL KESELURUHAN SALDO</td>
+                        <td colspan="4" style="color:#065F46;">🏆 TOTAL KESELURUHAN SALDO (CAIR + STOK + PIUTANG)</td>
                         <td class="text-cuan" style="font-size:13.5px;"><b>${window.formatRp(totalSaldoKeseluruhan)}</b></td>
                     </tr>
                 `;
@@ -5079,25 +5103,36 @@
                     let akhir = (window.masterSaldoAwal[s] || 0) + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                     if (s === 'PIUTANG') akhir = totalPiutangVal;
                     else if (s === 'SPAREPART') akhir = totalSparepartVal;
-                    const badgeTag = s === 'PIUTANG' ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 4px; border-radius:4px;">Piutang</span>' : (s === 'SPAREPART' ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 4px; border-radius:4px;">Part</span>' : '');
+                    const badgeTag = s === 'PIUTANG'
+                        ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 4px; border-radius:4px;">Piutang</span>'
+                        : (s === 'SPAREPART'
+                            ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 4px; border-radius:4px;">Part</span>'
+                            : (akunStokFisik.includes(s)
+                                ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 4px; border-radius:4px;">Stok</span>'
+                                : ''));
                     return `<div class="saldo-item-row"><div><b>${s}</b>${badgeTag}</div><span class="${akhir < 0 ? 'text-debit' : 'text-kredit'}">${window.formatRp(akhir)}</span></div>`;
                 }).join('');
 
                 const summaryBoxHtml = `
                     <div style="margin-top:14px; padding:10px 12px; border-radius:8px; background:rgba(0,0,0,0.22); border:1px solid rgba(255,255,255,0.2); font-size:11px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; opacity:0.9;">
-                            <span>Kas & Bank Cair:</span>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; opacity:0.95;">
+                            <span>💵 Kas & Bank Cair:</span>
                             <b>${window.formatRp(totalKasCair)}</b>
                         </div>
-                        ${totalPiutangVal > 0 ? `
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#FCA5A5;">
-                            <span>Piutang Tempo:</span>
-                            <b>${window.formatRp(totalPiutangVal)}</b>
+                        ${totalStokOpnameAkunVal !== 0 ? `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#FDE68A;">
+                            <span>📦 Stok (VCR/SP/ACC):</span>
+                            <b>${window.formatRp(totalStokOpnameAkunVal)}</b>
                         </div>` : ''}
                         ${totalSparepartVal > 0 ? `
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#D8B4FE;">
-                            <span>Sparepart:</span>
+                            <span>🔧 Stok Sparepart:</span>
                             <b>${window.formatRp(totalSparepartVal)}</b>
+                        </div>` : ''}
+                        ${totalPiutangVal > 0 ? `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#FCA5A5;">
+                            <span>📑 Piutang Tempo:</span>
+                            <b>${window.formatRp(totalPiutangVal)}</b>
                         </div>` : ''}
                         <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:900; border-top:1px dashed rgba(255,255,255,0.35); padding-top:6px; margin-top:6px; color:#34D399;">
                             <span>TOTAL SALDO:</span>
@@ -5114,8 +5149,11 @@
 
             const topSaldoSub = document.getElementById('topTotalSaldoSub');
             if (topSaldoSub) {
-                if (totalPiutangVal > 0 || totalSparepartVal > 0) {
-                    topSaldoSub.innerText = `Cair: ${window.formatRp(totalKasCair)}${totalPiutangVal > 0 ? ' • Utang: ' + window.formatRp(totalPiutangVal) : ''}`;
+                if (totalSemuaStokBelumCair !== 0 || totalPiutangVal > 0) {
+                    let subParts = [`Cair: ${window.formatRp(totalKasCair)}`];
+                    if (totalSemuaStokBelumCair !== 0) subParts.push(`Stok: ${window.formatRp(totalSemuaStokBelumCair)}`);
+                    if (totalPiutangVal > 0) subParts.push(`Utang: ${window.formatRp(totalPiutangVal)}`);
+                    topSaldoSub.innerText = subParts.join(' • ');
                 } else {
                     topSaldoSub.innerText = '(100% Kas Cair)';
                 }
