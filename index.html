@@ -1406,6 +1406,10 @@
                     </div>
                 </div>
                 <button type="button" class="btn" onclick="simpanPengaturanAkun()" style="background:#0284C7; margin-top:4px;">Simpan Perubahan Akun & Limit</button>
+                <div class="row-2" style="margin-top:8px;">
+                    <button type="button" class="btn" onclick="resetSemuaSaldoAwalKeNol()" style="background:#EF4444; font-size:11px; padding:7px 10px;">🔄 Reset Semua Saldo Awal ke Rp 0</button>
+                    <button type="button" class="btn" onclick="muatDefaultSaldoAwalKonter()" style="background:#059669; font-size:11px; padding:7px 10px;">📥 Muat Data Saldo Awal Konter</button>
+                </div>
             </div>
 
             <div class="card">
@@ -1833,7 +1837,7 @@
                         <select id="pKat" class="form-control" required></select>
                     </div>
                     <div class="form-group">
-                        <label>Keluar Dari Akun (Asal Saldo)</label>
+                        <label>Keluar Dari Akun (Asal Saldo / Pindah Data)</label>
                         <select id="pSumber" class="form-control" required></select>
                     </div>
                 </div>
@@ -1855,7 +1859,13 @@
                 <h3 style="font-size:15px; color:#EF4444;">⚠️ KONFIRMASI RESET DATA TESTING</h3>
                 <button onclick="closeModalResetData()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
             </div>
-            <p style="font-size:12px; margin-bottom:12px; line-height:1.5;">Tindakan ini akan menghapus seluruh data transaksi, piutang, stok opname, dan setoran secara permanen. Ketik teks <b>KONFIRMASI HAPUS</b> di bawah ini untuk melanjutkan:</p>
+            <p style="font-size:12px; margin-bottom:10px; line-height:1.5;">Tindakan ini akan menghapus seluruh data transaksi, piutang, stok opname, dan setoran secara permanen. Ketik teks <b>KONFIRMASI HAPUS</b> di bawah ini untuk melanjutkan:</p>
+            <div class="form-group" style="background:#FEF2F2; border:1px solid #FECACA; padding:8px 10px; border-radius:8px; margin-bottom:10px;">
+                <label style="font-size:11.5px; font-weight:700; color:#B91C1C; cursor:pointer; display:flex; align-items:center; gap:6px; margin:0;">
+                    <input type="checkbox" id="chkResetSaldoAwalKeNol" checked style="width:15px; height:15px;">
+                    Ikut Reset Semua Nominal Saldo Awal menjadi Rp 0
+                </label>
+            </div>
             <div class="form-group">
                 <input type="text" id="inputResetKonfirmasi" class="form-control" placeholder="KETIK: KONFIRMASI HAPUS" oninput="cekValidasiReset(this)" style="border-color:#EF4444; font-weight:bold; text-align:center;">
             </div>
@@ -2102,15 +2112,41 @@
         window.katService = ['SERVICE'];
 
         window.saldoList = [
-            'LACI', 'SEA ECA', 'DANA NINING', 'DANA SRI', 'DANA FINA', 'OVO', 'GOPAY', 'O KUOTA', 
+            'LACI', 'SEA ECA', 'DANA ECA', 'DANA SRI', 'DANA FINA', 'OVO', 'GOPAY', 'O KUOTA', 
             'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL', 'VOUCHER', 'SP', 'QRIS', 'BRI', 
-            'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'AMARTHA', 'BRANKAS'
+            'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'KOMISI EDC', 'BRANKAS'
         ];
 
-        window.masterSaldoAwal = {
-            'LACI': 1000000, 'SEA ECA': 1000000, 'SEA FINA': 1000000,
-            'DANA NINING': 1000000, 'DANA SRI': 1000000, 'DANA FINA': 1000000, 'DANA AA': 1000000
+        window.DEFAULT_SALDO_AWAL_KONTER = {
+            'LACI': 81686708,
+            'SEA ECA': 3137056,
+            'DANA ECA': 0,
+            'DANA SRI': 0,
+            'DANA FINA': 3583476,
+            'OVO': 1870130,
+            'GOPAY': 1924614,
+            'O KUOTA': 2201768,
+            'PROPANA': 538192,
+            'DIGIPOS': 852827,
+            'RITA': 1052786,
+            'SIDIVA': 789692,
+            'SIMPEL': 609138,
+            'VOUCHER': 0,
+            'SP': 0,
+            'QRIS': 1818660,
+            'BRI': 20299179,
+            'BCA': 1425602,
+            'SEA FINA': 6072463,
+            'DANA AA': 1138938,
+            'PIUTANG': 0,
+            'SPAREPART': 0,
+            'ACC': 0,
+            'NOBU': 0,
+            'KOMISI EDC': 192000,
+            'BRANKAS': 15590750
         };
+
+        window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_KONTER);
         window.saldoList.forEach(s => { if (window.masterSaldoAwal[s] === undefined) window.masterSaldoAwal[s] = 0; });
 
         window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
@@ -2157,12 +2193,26 @@
             if (data) {
                 isFirebaseSyncing = true;
                 if (data.vlookup) window.masterVlookup = data.vlookup;
-                if (data.saldoAwal) {
-                    window.masterSaldoAwal = data.saldoAwal;
-                    window.masterSaldoAwal['SPAREPART'] = 0;
-                    window.masterSaldoAwal['PIUTANG'] = 0;
+
+                if (!data.seedSaldoAwalV1) {
+                    // One-time seed untuk menyesuaikan nama akun (DANA ECA, KOMISI EDC) & nominal saldo awal konter
+                    window.saldoList = [
+                        'LACI', 'SEA ECA', 'DANA ECA', 'DANA SRI', 'DANA FINA', 'OVO', 'GOPAY', 'O KUOTA', 
+                        'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL', 'VOUCHER', 'SP', 'QRIS', 'BRI', 
+                        'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'KOMISI EDC', 'BRANKAS'
+                    ];
+                    window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_KONTER);
+                    window._needPushSeedSaldoAwalV1 = true;
+                } else {
+                    if (data.saldoListCustom) {
+                        window.saldoList = data.saldoListCustom.map(s => s === 'DANA NINING' ? 'DANA ECA' : (s === 'AMARTHA' ? 'KOMISI EDC' : s));
+                    }
+                    if (data.saldoAwal) {
+                        window.masterSaldoAwal = data.saldoAwal;
+                        window.masterSaldoAwal['SPAREPART'] = 0;
+                        window.masterSaldoAwal['PIUTANG'] = 0;
+                    }
                 }
-                if (data.saldoListCustom) window.saldoList = data.saldoListCustom;
                 if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
                 if (data.pengaturan) {
@@ -2244,6 +2294,12 @@
                 if (window.renderLoginUserOptions) window.renderLoginUserOptions();
                 window.renderAll();
                 isFirebaseSyncing = false;
+                if (window._needPushSeedSaldoAwalV1) {
+                    window._needPushSeedSaldoAwalV1 = false;
+                    window.saveToFirebaseNode('saldoListCustom', window.saldoList, true);
+                    window.saveToFirebaseNode('saldoAwal', window.masterSaldoAwal, true);
+                    window.saveToFirebaseNode('seedSaldoAwalV1', true, true);
+                }
             } else {
                 isFirebaseSyncing = false;
                 window.saveAllToFirebase();
@@ -2346,6 +2402,7 @@
                 logAktivitas: window.logAktivitasList,
                 saldoAwal: window.masterSaldoAwal,
                 saldoListCustom: window.saldoList,
+                seedSaldoAwalV1: true,
                 batasMinSaldo: window.masterBatasMinSaldo,
                 pengaturan: window.pengaturanToko,
                 daftarKaryawan: window.daftarKaryawan
@@ -3189,9 +3246,14 @@
             window.operasionalList = []; 
             window.tiketServisList = [];
             
+            const ikutResetSaldoAwal = document.getElementById('chkResetSaldoAwalKeNol') ? document.getElementById('chkResetSaldoAwalKeNol').checked : true;
             if (window.masterSaldoAwal) {
-                window.masterSaldoAwal['SPAREPART'] = 0;
-                window.masterSaldoAwal['PIUTANG'] = 0;
+                if (ikutResetSaldoAwal) {
+                    window.saldoList.forEach(s => { window.masterSaldoAwal[s] = 0; });
+                } else {
+                    window.masterSaldoAwal['SPAREPART'] = 0;
+                    window.masterSaldoAwal['PIUTANG'] = 0;
+                }
             }
 
             localStorage.clear();
@@ -3199,7 +3261,7 @@
             window.saveAllToFirebase(true);
             window.renderAll();
             window.closeModalResetData();
-            window.showToast("✅ Seluruh data testing berhasil di-reset bersih (Saldo Sparepart & Piutang Rp0)!", "warn");
+            window.showToast(ikutResetSaldoAwal ? "✅ Seluruh data & Saldo Awal berhasil di-reset bersih ke Rp 0!" : "✅ Seluruh data transaksi berhasil di-reset bersih (Saldo Awal tetap dipertahankan)!", "warn");
         };
 
         window.openModalKasir = function() { 
@@ -3577,9 +3639,14 @@
                 stokKas.innerHTML = '<option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>';
                 window.saldoList.forEach(s => { if (s !== 'PIUTANG' && s !== 'SPAREPART') stokKas.innerHTML += `<option value="${s}">${s}</option>`; });
             }
+            const pSumberEl = document.getElementById('pSumber');
+            if (pSumberEl) {
+                pSumberEl.innerHTML = '<option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (PINDAH DATA / AUDIT)</option>';
+                window.saldoList.forEach(s => { if (s !== 'PIUTANG' && s !== 'SPAREPART') pSumberEl.innerHTML += `<option value="${s}">${s}</option>`; });
+            }
             if (cfgAkun) window.saldoList.forEach(s => cfgAkun.innerHTML += `<option value="${s}">${s}</option>`);
 
-            ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunKeluar', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'pSumber', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'setorSumber', 'opSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
+            ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunKeluar', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'setorSumber', 'opSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.innerHTML = '<option value="">-- Pilih Akun --</option>';
@@ -3631,6 +3698,32 @@
             window.initDropdowns();
             window.saveAllToFirebase();
             window.renderAll();
+        }
+
+        window.resetSemuaSaldoAwalKeNol = function() {
+            if (!confirm("Yakin ingin mereset SEMUA nominal Saldo Awal menjadi Rp 0?")) return;
+            window.saldoList.forEach(s => { window.masterSaldoAwal[s] = 0; });
+            const target = document.getElementById('cfgAkunTarget')?.value;
+            if (target) {
+                document.getElementById('cfgSaldoAwal').value = 0;
+                document.getElementById('cfgSaldoAwalDisplay').value = '0';
+            }
+            window.catatLogAktivitas('RESET SALDO AWAL', 'Mereset semua nominal Saldo Awal menjadi Rp 0');
+            window.saveAllToFirebase();
+            window.renderAll();
+            window.showToast("✅ Semua Saldo Awal berhasil di-reset ke Rp 0!", "warn");
+        }
+
+        window.muatDefaultSaldoAwalKonter = function() {
+            if (!confirm("Muat kembali nominal Saldo Awal sesuai data tabel konter?")) return;
+            window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_KONTER);
+            window.saldoList.forEach(s => { if (window.masterSaldoAwal[s] === undefined) window.masterSaldoAwal[s] = 0; });
+            const target = document.getElementById('cfgAkunTarget')?.value;
+            if (target) window.muatDataAkunConfig(target);
+            window.catatLogAktivitas('MUAT SALDO AWAL', 'Memuat ulang data Saldo Awal konter');
+            window.saveAllToFirebase();
+            window.renderAll();
+            window.showToast("✅ Data Saldo Awal konter berhasil dimuat!", "success");
         }
 
         window.updateDatalistVlookup = function() {
@@ -3996,11 +4089,16 @@
                 hargaJual: 0, akunMasuk1: 'PIUTANG', jualSplit1: 0, hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, cuan: 0, isSplit: false, isPencatatanUtangAwal: true
             });
 
-            window.catatLogAktivitas('UTANG BARU', `Mencatat utang atas nama ${nama} sebesar ${window.formatRp(nom)} dari ${sumber}`);
+            const isTanpaPotong = sumber === 'TIDAK POTONG SALDO';
+            window.catatLogAktivitas('UTANG BARU', isTanpaPotong
+                ? `Mencatat utang atas nama ${nama} sebesar ${window.formatRp(nom)} (Pindah Data / Tanpa Potong Saldo)`
+                : `Mencatat utang atas nama ${nama} sebesar ${window.formatRp(nom)} dari ${sumber}`);
             window.closeModalInputPiutang();
             window.saveAllToFirebase(false);
             window.renderAll();
-            window.showToast("✅ Utang baru berhasil dicatat & kas saldo dipotong!", "success");
+            window.showToast(isTanpaPotong
+                ? "✅ Data piutang berhasil dicatat (Hanya menambah Saldo Piutang, tanpa potong saldo kas/bank)!"
+                : `✅ Utang baru berhasil dicatat & saldo ${sumber} dipotong!`, "success");
         }
 
         window.hapusPiutang = function(id) {
@@ -4102,7 +4200,7 @@
             let totalSetor = 0;
             window.setoranOwnerList.forEach(s => { if (s.isoDate === shiftDate) totalSetor += Number(s.nominal || 0); });
 
-            const laciAwal = window.masterSaldoAwal['LACI'] || 1000000;
+            const laciAwal = window.masterSaldoAwal['LACI'] !== undefined ? Number(window.masterSaldoAwal['LACI']) : 0;
             let laciMasuk = 0, laciKeluar = 0;
             window.transaksiJurnal.forEach(t => {
                 if (t.isoDate !== shiftDate) return;
@@ -6212,7 +6310,7 @@
             let totalSetor = 0;
             window.setoranOwnerList.forEach(s => { if (s.isoDate === shiftDate) totalSetor += Number(s.nominal || 0); });
 
-            const laciAwal = window.masterSaldoAwal['LACI'] || 1000000;
+            const laciAwal = window.masterSaldoAwal['LACI'] !== undefined ? Number(window.masterSaldoAwal['LACI']) : 0;
             let laciMasuk = 0, laciKeluar = 0;
             window.transaksiJurnal.forEach(t => {
                 if (t.isoDate !== shiftDate) return;
