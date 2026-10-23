@@ -1192,8 +1192,8 @@
                         <input type="hidden" id="stokModal" value="0">
                     </div>
                     <div class="form-group">
-                        <label>Harga Jual / Pcs (Default)</label>
-                        <input type="text" id="stokJualDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'stokJual')">
+                        <label>Harga Jual / Pcs (Opsional)</label>
+                        <input type="text" id="stokJualDisplay" class="form-control" placeholder="0 (Boleh Kosong)" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stokJual')">
                         <input type="hidden" id="stokJual" value="0">
                     </div>
                     <div class="form-group">
@@ -1218,7 +1218,8 @@
                 <span>📦 Stok Opname Realtime</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <button type="button" class="btn" style="width:auto; padding:4px 10px; font-size:10.5px; background:#0F172A;" onclick="bukaModalGlobalFind('STOK')">🔍 Find Cepat (Ctrl+F)</button>
-                    <button type="button" class="btn" style="width:auto; padding:4px 10px; font-size:10.5px; background:#0284C7;" onclick="muatDefaultStokSpKonter()">🔄 Muat Stok Awal SP (11 Item)</button>
+                    <button type="button" class="btn" style="display:none; width:auto; padding:4px 10px; font-size:10.5px; background:#D97706;" onclick="muatDefaultStokAccKonter()">🔄 Muat Stok Awal ACC (102 Item)</button>
+                    <button type="button" class="btn" style="display:none; width:auto; padding:4px 10px; font-size:10.5px; background:#0284C7;" onclick="muatDefaultStokSpKonter()">🔄 Muat Stok Awal SP (11 Item)</button>
                 </div>
             </div>
 
@@ -1278,7 +1279,7 @@
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>🤝 REKAP PIUTANG KONSUMEN</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#0284C7;" onclick="muatDefaultPiutangKonter()">🔄 Muat 69 Data Awal</button>
+                    <button type="button" class="btn" style="display:none; width:auto; padding:5px 10px; font-size:10.5px; background:#0284C7;" onclick="muatDefaultPiutangKonter()">🔄 Muat 69 Data Awal</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
                 </div>
             </div>
@@ -1595,9 +1596,9 @@
                     </div>
                 </div>
                 <button type="button" class="btn" onclick="simpanPengaturanAkun()" style="background:#0284C7; margin-top:4px;">Simpan Perubahan Akun & Limit</button>
-                <div class="row-2" style="margin-top:8px;">
+                <div style="margin-top:8px;">
                     <button type="button" class="btn" onclick="resetSemuaSaldoAwalKeNol()" style="background:#EF4444; font-size:11px; padding:7px 10px;">🔄 Reset Semua Saldo Awal ke Rp 0</button>
-                    <button type="button" class="btn" onclick="muatDefaultSaldoAwalKonter()" style="background:#059669; font-size:11px; padding:7px 10px;">📥 Muat Data Saldo Awal Konter</button>
+                    <button type="button" class="btn" onclick="muatDefaultSaldoAwalKonter()" style="display:none; background:#059669; font-size:11px; padding:7px 10px;">📥 Muat Data Saldo Awal Konter</button>
                 </div>
             </div>
 
@@ -2462,6 +2463,125 @@
             sumberKas: 'TIDAK POTONG SALDO'
         }));
 
+        window.DEFAULT_STOK_ACC_KONTER = [
+            { id: 1762000001, kat: 'ACC', nama: 'KABEL 3IN1 STARTGO N3', awal: 1, terjual: 0, modal: 34000, jual: 0 },
+            { id: 1762000002, kat: 'ACC', nama: 'KABEL M 1HORA CAB242', awal: 85, terjual: 0, modal: 7500, jual: 0 },
+            { id: 1762000003, kat: 'ACC', nama: 'KABEL C 1HORA CAB243', awal: 91, terjual: 0, modal: 7500, jual: 0 },
+            { id: 1762000004, kat: 'ACC', nama: 'KABEL C FOOMEE NY10S', awal: 6, terjual: 0, modal: 11000, jual: 0 },
+            { id: 1762000005, kat: 'ACC', nama: 'KABEL L 1HORA CAB244', awal: 99, terjual: 0, modal: 9000, jual: 0 },
+            { id: 1762000006, kat: 'ACC', nama: 'KABEL C ROBOT RNC100S', awal: 1, terjual: 0, modal: 23700, jual: 0 },
+            { id: 1762000007, kat: 'ACC', nama: 'KABEL C STARTGO NC', awal: 16, terjual: 0, modal: 17000, jual: 0 },
+            { id: 1762000008, kat: 'ACC', nama: 'KABEL C STARTGO PC', awal: 22, terjual: 0, modal: 10000, jual: 0 },
+            { id: 1762000009, kat: 'ACC', nama: 'KABEL C TO C REDSKUL RSDCC100', awal: 2, terjual: 0, modal: 15000, jual: 0 },
+            { id: 1762000010, kat: 'ACC', nama: 'KABEL C TO C ROBOT RBCC100', awal: 9, terjual: 0, modal: 10500, jual: 0 },
+            { id: 1762000011, kat: 'ACC', nama: 'KABEL C TO C ROBOT RSCC30', awal: 7, terjual: 0, modal: 19000, jual: 0 },
+            { id: 1762000012, kat: 'ACC', nama: 'KABEL L FANTECH PLT3AL', awal: 4, terjual: 0, modal: 8950, jual: 0 },
+            { id: 1762000013, kat: 'ACC', nama: 'KABEL L ROBOT RCOL100', awal: 8, terjual: 0, modal: 11950, jual: 0 },
+            { id: 1762000014, kat: 'ACC', nama: 'KABEL L TECNIX CBL-833-L', awal: 2, terjual: 0, modal: 14000, jual: 0 },
+            { id: 1762000015, kat: 'ACC', nama: 'KABEL M FANTECH PL101M', awal: 10, terjual: 0, modal: 7500, jual: 0 },
+            { id: 1762000016, kat: 'ACC', nama: 'KABEL M ROBOT RNM100', awal: 1, terjual: 0, modal: 20000, jual: 0 },
+            { id: 1762000017, kat: 'ACC', nama: 'KABEL M STARTGO NM', awal: 11, terjual: 0, modal: 15000, jual: 0 },
+            { id: 1762000018, kat: 'ACC', nama: 'KABEL M STARTGO PM', awal: 68, terjual: 0, modal: 6000, jual: 0 },
+            { id: 1762000019, kat: 'ACC', nama: 'KABEL C ORAIMO OCD-121C', awal: 4, terjual: 0, modal: 11600, jual: 0 },
+            { id: 1762000020, kat: 'ACC', nama: 'KABEL C TO L ROBOT RGCL100S', awal: 7, terjual: 0, modal: 19750, jual: 0 },
+            { id: 1762000021, kat: 'ACC', nama: 'CHARGER L ITEL ICW-202EL', awal: 1, terjual: 0, modal: 53000, jual: 0 },
+            { id: 1762000022, kat: 'ACC', nama: 'CHARGER M FOOMEE CC18 2.4A', awal: 2, terjual: 0, modal: 30000, jual: 0 },
+            { id: 1762000023, kat: 'ACC', nama: 'CHARGER M OLIKE C104 1.5A', awal: 20, terjual: 0, modal: 23000, jual: 0 },
+            { id: 1762000024, kat: 'ACC', nama: 'CHARGER M ORAIMO OCW-1111E+M53', awal: 6, terjual: 0, modal: 30000, jual: 0 },
+            { id: 1762000025, kat: 'ACC', nama: 'CHARGER M ORAIMO OCW-1121E+M53', awal: 1, terjual: 0, modal: 34000, jual: 0 },
+            { id: 1762000026, kat: 'ACC', nama: 'CHARGER M ORAIMO OCW-5183E+M53', awal: 1, terjual: 0, modal: 46000, jual: 0 },
+            { id: 1762000027, kat: 'ACC', nama: 'CHARGER M ROBOT RT-K7', awal: 1, terjual: 0, modal: 23000, jual: 0 },
+            { id: 1762000028, kat: 'ACC', nama: 'CHARGER M VIVAN POWER OVAL 2S', awal: 10, terjual: 0, modal: 36000, jual: 0 },
+            { id: 1762000029, kat: 'ACC', nama: 'CHARGER C OLIKE C303', awal: 2, terjual: 0, modal: 50000, jual: 0 },
+            { id: 1762000030, kat: 'ACC', nama: 'CHARGER L ORAIMO OCW-5183E+L53', awal: 3, terjual: 0, modal: 48000, jual: 0 },
+            { id: 1762000031, kat: 'ACC', nama: 'CHARGER C REDSKUL RSC03', awal: 1, terjual: 0, modal: 36000, jual: 0 },
+            { id: 1762000032, kat: 'ACC', nama: 'CHARGER C TECNIX CHR-089-C', awal: 2, terjual: 0, modal: 39000, jual: 0 },
+            { id: 1762000033, kat: 'ACC', nama: 'CHARGER C ORAIMO OCW-5183E+C53', awal: 5, terjual: 0, modal: 49000, jual: 0 },
+            { id: 1762000034, kat: 'ACC', nama: 'ADAPTOR DAP D-A1', awal: 15, terjual: 0, modal: 20000, jual: 0 },
+            { id: 1762000035, kat: 'ACC', nama: 'ADAPTOR DAP D-AT3', awal: 1, terjual: 0, modal: 14000, jual: 0 },
+            { id: 1762000036, kat: 'ACC', nama: 'ADAPTOR FANTECH CW2-Q01', awal: 3, terjual: 0, modal: 50000, jual: 0 },
+            { id: 1762000037, kat: 'ACC', nama: 'ADAPTOR FANTECH CW2-Q02', awal: 6, terjual: 0, modal: 50000, jual: 0 },
+            { id: 1762000038, kat: 'ACC', nama: 'ADAPTOR FOOMEE CC25', awal: 3, terjual: 0, modal: 20000, jual: 0 },
+            { id: 1762000039, kat: 'ACC', nama: 'ADAPTOR ROBOT RT-K4S', awal: 6, terjual: 0, modal: 10500, jual: 0 },
+            { id: 1762000040, kat: 'ACC', nama: 'ADAPTOR ROBOT RT-K8 PLUS', awal: 1, terjual: 0, modal: 24000, jual: 0 },
+            { id: 1762000041, kat: 'ACC', nama: 'ADAPTOR ROBOT RT-K8S', awal: 4, terjual: 0, modal: 19300, jual: 0 },
+            { id: 1762000042, kat: 'ACC', nama: 'ADAPTOR DEKSTOP RRLY', awal: 4, terjual: 0, modal: 9500, jual: 0 },
+            { id: 1762000043, kat: 'ACC', nama: 'ADAPTOR STARTGO PU12W', awal: 11, terjual: 0, modal: 40000, jual: 0 },
+            { id: 1762000044, kat: 'ACC', nama: 'ADAPTOR TECNIX CHR-093', awal: 5, terjual: 0, modal: 27000, jual: 0 },
+            { id: 1762000045, kat: 'ACC', nama: 'ADAPTOR VIVAN POWER C20', awal: 6, terjual: 0, modal: 37000, jual: 0 },
+            { id: 1762000046, kat: 'ACC', nama: 'CAR CHARGER RT-C09', awal: 1, terjual: 0, modal: 39000, jual: 0 },
+            { id: 1762000047, kat: 'ACC', nama: 'CAR CHARGER DAP', awal: 4, terjual: 0, modal: 18000, jual: 0 },
+            { id: 1762000048, kat: 'ACC', nama: 'CAR CHARGER ORAIMO OCC-1152D', awal: 1, terjual: 0, modal: 37000, jual: 0 },
+            { id: 1762000049, kat: 'ACC', nama: 'HF DAP DH-F4', awal: 14, terjual: 0, modal: 16000, jual: 0 },
+            { id: 1762000050, kat: 'ACC', nama: 'HF FANTECH ES2', awal: 7, terjual: 0, modal: 10000, jual: 0 },
+            { id: 1762000051, kat: 'ACC', nama: 'HF FANTECH ES3', awal: 3, terjual: 0, modal: 10000, jual: 0 },
+            { id: 1762000052, kat: 'ACC', nama: 'HF FOOMEE QA45', awal: 3, terjual: 0, modal: 37000, jual: 0 },
+            { id: 1762000053, kat: 'ACC', nama: 'HF FOOMEE QA46', awal: 1, terjual: 0, modal: 39000, jual: 0 },
+            { id: 1762000054, kat: 'ACC', nama: 'HF ITEL IEP-K9PRO', awal: 5, terjual: 0, modal: 11000, jual: 0 },
+            { id: 1762000055, kat: 'ACC', nama: 'HF JB-03', awal: 27, terjual: 0, modal: 6500, jual: 0 },
+            { id: 1762000056, kat: 'ACC', nama: 'HF ACOME TYPE-C ACE01 PRO', awal: 4, terjual: 0, modal: 33400, jual: 0 },
+            { id: 1762000057, kat: 'ACC', nama: 'HF TYPE C ORAIMO OEP-320C', awal: 3, terjual: 0, modal: 34500, jual: 0 },
+            { id: 1762000058, kat: 'ACC', nama: 'HF ORAIMO OEP-320', awal: 12, terjual: 0, modal: 22000, jual: 0 },
+            { id: 1762000059, kat: 'ACC', nama: 'HF ROBOT RE20', awal: 8, terjual: 0, modal: 13000, jual: 0 },
+            { id: 1762000060, kat: 'ACC', nama: 'HF ROBOT RE40', awal: 4, terjual: 0, modal: 18600, jual: 0 },
+            { id: 1762000061, kat: 'ACC', nama: 'HF ROBOT RE50', awal: 25, terjual: 0, modal: 13000, jual: 0 },
+            { id: 1762000062, kat: 'ACC', nama: 'SPEAKER ROBOT RS190', awal: 1, terjual: 0, modal: 109000, jual: 0 },
+            { id: 1762000063, kat: 'ACC', nama: 'SPEAKER ROBOT RB120S', awal: 1, terjual: 0, modal: 245000, jual: 0 },
+            { id: 1762000064, kat: 'ACC', nama: 'SPEAKER ROBOT RB525', awal: 2, terjual: 0, modal: 155000, jual: 0 },
+            { id: 1762000065, kat: 'ACC', nama: 'HF QKZ AK6', awal: 4, terjual: 0, modal: 37600, jual: 0 },
+            { id: 1762000066, kat: 'ACC', nama: 'TWS ROBOT FLYBUDS T22 CREAM', awal: 1, terjual: 0, modal: 102963, jual: 0 },
+            { id: 1762000067, kat: 'ACC', nama: 'SPEAKER REDSKUL RSS3', awal: 1, terjual: 0, modal: 47085, jual: 0 },
+            { id: 1762000068, kat: 'ACC', nama: 'MATERAI', awal: 17, terjual: 0, modal: 10000, jual: 0 },
+            { id: 1762000069, kat: 'ACC', nama: 'CARD READER CR-22', awal: 5, terjual: 0, modal: 5000, jual: 0 },
+            { id: 1762000070, kat: 'ACC', nama: 'CARD READER CR-23', awal: 4, terjual: 0, modal: 12000, jual: 0 },
+            { id: 1762000071, kat: 'ACC', nama: 'CARD READER ZBOX', awal: 5, terjual: 0, modal: 5400, jual: 0 },
+            { id: 1762000072, kat: 'ACC', nama: 'CCTV SC0201', awal: 1, terjual: 0, modal: 205000, jual: 0 },
+            { id: 1762000073, kat: 'ACC', nama: 'FD SANDISK 128GB', awal: 1, terjual: 0, modal: 125000, jual: 0 },
+            { id: 1762000074, kat: 'ACC', nama: 'FD SANDISK 64GB', awal: 1, terjual: 0, modal: 70000, jual: 0 },
+            { id: 1762000075, kat: 'ACC', nama: 'FD VGEN 32GB', awal: 1, terjual: 0, modal: 43500, jual: 0 },
+            { id: 1762000076, kat: 'ACC', nama: 'HOLDER ROBOT RT-US12', awal: 1, terjual: 0, modal: 10000, jual: 0 },
+            { id: 1762000077, kat: 'ACC', nama: 'FD ROBOT 32GB', awal: 1, terjual: 0, modal: 70000, jual: 0 },
+            { id: 1762000078, kat: 'ACC', nama: 'MEMORY VIVAN 32GB', awal: 4, terjual: 0, modal: 53600, jual: 0 },
+            { id: 1762000079, kat: 'ACC', nama: 'POWER BANK ORAIMO OPB-1101', awal: 3, terjual: 0, modal: 100000, jual: 0 },
+            { id: 1762000080, kat: 'ACC', nama: 'OTG TECNIX ADT-106', awal: 4, terjual: 0, modal: 3500, jual: 0 },
+            { id: 1762000081, kat: 'ACC', nama: 'OTG TECNIX ADT-113', awal: 2, terjual: 0, modal: 23500, jual: 0 },
+            { id: 1762000082, kat: 'ACC', nama: 'TG', awal: 251, terjual: 0, modal: 3000, jual: 0 },
+            { id: 1762000083, kat: 'ACC', nama: 'HYD SG MATTE', awal: 92, terjual: 0, modal: 3500, jual: 0 },
+            { id: 1762000084, kat: 'ACC', nama: 'HYD NUCLEAR MATTE', awal: 91, terjual: 0, modal: 3390, jual: 0 },
+            { id: 1762000085, kat: 'ACC', nama: 'KABEL AUX STRING F-440', awal: 3, terjual: 0, modal: 7000, jual: 0 },
+            { id: 1762000086, kat: 'ACC', nama: 'HDD CADDY 9.5 MM', awal: 1, terjual: 0, modal: 25000, jual: 0 },
+            { id: 1762000087, kat: 'ACC', nama: 'KEYBOARD ROBOT RK10', awal: 1, terjual: 0, modal: 62000, jual: 0 },
+            { id: 1762000088, kat: 'ACC', nama: 'ENCLOSURE MIKUSO ECS-022', awal: 1, terjual: 0, modal: 43000, jual: 0 },
+            { id: 1762000089, kat: 'ACC', nama: 'MOUSE MIKUSO M130', awal: 1, terjual: 0, modal: 47000, jual: 0 },
+            { id: 1762000090, kat: 'ACC', nama: 'MOUSEPAD REXUS', awal: 3, terjual: 0, modal: 20000, jual: 0 },
+            { id: 1762000091, kat: 'ACC', nama: 'MOUSE MIKUSO MOS-W085', awal: 1, terjual: 0, modal: 37000, jual: 0 },
+            { id: 1762000092, kat: 'ACC', nama: 'MINI WIFI', awal: 1, terjual: 0, modal: 15000, jual: 0 },
+            { id: 1762000093, kat: 'ACC', nama: 'MOUSEPAD DELI', awal: 4, terjual: 0, modal: 4000, jual: 0 },
+            { id: 1762000094, kat: 'ACC', nama: 'SSD ENCLOSURE 2.5 USB3', awal: 5, terjual: 0, modal: 25400, jual: 0 },
+            { id: 1762000095, kat: 'ACC', nama: 'TERMINAL VPS-H006A', awal: 2, terjual: 0, modal: 88000, jual: 0 },
+            { id: 1762000096, kat: 'ACC', nama: 'HYD VIVAN BASIC CLEAR', awal: 71, terjual: 0, modal: 11000, jual: 0 },
+            { id: 1762000097, kat: 'ACC', nama: 'HYD VIVAN BLUE LIGHT', awal: 5, terjual: 0, modal: 14000, jual: 0 },
+            { id: 1762000098, kat: 'ACC', nama: 'HYD VIVAN MASTER CLEAR', awal: 2, terjual: 0, modal: 18000, jual: 0 },
+            { id: 1762000099, kat: 'ACC', nama: 'HYD SG CLEAR', awal: 189, terjual: 0, modal: 3200, jual: 0 },
+            { id: 1762000100, kat: 'ACC', nama: 'FINGER SLEEVE', awal: 91, terjual: 0, modal: 550, jual: 0 },
+            { id: 1762000101, kat: 'ACC', nama: 'HYD SG GLOSSY SPY', awal: 4, terjual: 0, modal: 10000, jual: 0 },
+            { id: 1762000102, kat: 'ACC', nama: 'KABEL JACK OFC AUDIO', awal: 1, terjual: 0, modal: 4790, jual: 0 }
+        ];
+
+        window.DEFAULT_RIWAYAT_STOK_ACC_KONTER = window.DEFAULT_STOK_ACC_KONTER.map(item => ({
+            id: item.id,
+            waktu: '08:00',
+            isoDate: '2026-10-23',
+            tgl: '2026-10-23',
+            kat: 'ACC',
+            nama: item.nama,
+            qty: item.awal,
+            modal: item.modal,
+            jual: item.jual,
+            total: item.awal * item.modal,
+            sumberKas: 'TIDAK POTONG SALDO'
+        }));
+
         window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
         window.masterVlookup = {
             'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
@@ -2469,13 +2589,16 @@
         window.DEFAULT_STOK_SP_KONTER.forEach(sp => {
             window.masterVlookup[sp.nama] = { kat: 'SP', akunMasuk: 'LACI', akunKeluar: 'SP', defJual: sp.jual, defModal: sp.modal };
         });
+        window.DEFAULT_STOK_ACC_KONTER.forEach(acc => {
+            window.masterVlookup[acc.nama] = { kat: 'ACC', akunMasuk: 'LACI', akunKeluar: 'ACC', defJual: acc.jual, defModal: acc.modal };
+        });
 
         window.transaksiJurnal = [];
-        window.stokOpnameItems = JSON.parse(JSON.stringify(window.DEFAULT_STOK_SP_KONTER));
+        window.stokOpnameItems = JSON.parse(JSON.stringify([...window.DEFAULT_STOK_SP_KONTER, ...window.DEFAULT_STOK_ACC_KONTER]));
         window.piutangList = JSON.parse(JSON.stringify(window.DEFAULT_PIUTANG_KONTER));
         window.setoranOwnerList = [];
         window.sparepartList = [];
-        window.riwayatBelanjaStok = JSON.parse(JSON.stringify(window.DEFAULT_RIWAYAT_STOK_SP_KONTER));
+        window.riwayatBelanjaStok = JSON.parse(JSON.stringify([...window.DEFAULT_RIWAYAT_STOK_SP_KONTER, ...window.DEFAULT_RIWAYAT_STOK_ACC_KONTER]));
         window.operasionalList = [];
         window.logAktivitasList = [];
         window.tiketServisList = [];
@@ -2610,7 +2733,32 @@
                             window.riwayatBelanjaStok.push(Object.assign({}, defRb));
                         }
                     });
+                    if (window.masterSaldoAwal) window.masterSaldoAwal['SP'] = 0;
                     window._needPushSeedStokSpV1 = true;
+                }
+
+                if (!data.seedStokAccV1) {
+                    // Seed 102 data stok awal ACC (Aksesoris) ke Stok Opname & Riwayat Belanja Stok (Audit / Tanpa Potong Saldo)
+                    window.DEFAULT_STOK_ACC_KONTER.forEach(defAcc => {
+                        const existingIdx = window.stokOpnameItems.findIndex(s => s.kat === 'ACC' && (s.nama || '').trim().toUpperCase() === defAcc.nama);
+                        if (existingIdx >= 0) {
+                            window.stokOpnameItems[existingIdx] = Object.assign({}, defAcc);
+                        } else {
+                            window.stokOpnameItems.push(Object.assign({}, defAcc));
+                        }
+                        if (!window.masterVlookup) window.masterVlookup = {};
+                        window.masterVlookup[defAcc.nama] = { kat: 'ACC', akunMasuk: 'LACI', akunKeluar: 'ACC', defJual: defAcc.jual, defModal: defAcc.modal };
+                    });
+                    window.DEFAULT_RIWAYAT_STOK_ACC_KONTER.forEach(defRb => {
+                        const existingRbIdx = window.riwayatBelanjaStok.findIndex(r => r.id === defRb.id || (r.kat === 'ACC' && (r.nama || '').trim().toUpperCase() === defRb.nama));
+                        if (existingRbIdx >= 0) {
+                            window.riwayatBelanjaStok[existingRbIdx] = Object.assign({}, defRb);
+                        } else {
+                            window.riwayatBelanjaStok.push(Object.assign({}, defRb));
+                        }
+                    });
+                    if (window.masterSaldoAwal) window.masterSaldoAwal['ACC'] = 0;
+                    window._needPushSeedStokAccV1 = true;
                 }
 
                 if (data.setoran) {
@@ -2649,14 +2797,17 @@
                     window.saveToFirebaseNode('piutang', window.piutangList, true);
                     window.saveToFirebaseNode('seedPiutangV1', true, true);
                 }
-                if (window._needPushSeedStokSpV1) {
+                if (window._needPushSeedStokSpV1 || window._needPushSeedStokAccV1) {
                     window._needPushSeedStokSpV1 = false;
+                    window._needPushSeedStokAccV1 = false;
                     window.saveToFirebaseNode('stok', window.stokOpnameItems, true);
                     window.saveToFirebaseNode('riwayatBelanjaStok', window.riwayatBelanjaStok, true);
+                    window.saveToFirebaseNode('saldoAwal', window.masterSaldoAwal, true);
                     let cleanVlookup = {};
                     for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
                     window.saveToFirebaseNode('vlookup', cleanVlookup, true);
                     window.saveToFirebaseNode('seedStokSpV1', true, true);
+                    window.saveToFirebaseNode('seedStokAccV1', true, true);
                 }
             } else {
                 isFirebaseSyncing = false;
@@ -2763,6 +2914,7 @@
                 seedSaldoAwalV1: true,
                 seedPiutangV1: true,
                 seedStokSpV1: true,
+                seedStokAccV1: true,
                 batasMinSaldo: window.masterBatasMinSaldo,
                 pengaturan: window.pengaturanToko,
                 daftarKaryawan: window.daftarKaryawan
@@ -3930,15 +4082,20 @@
                     document.getElementById('hargaModal').value = mStok;
                     document.getElementById('hargaModalDisplay').value = Number(mStok).toLocaleString('id-ID');
 
-                    if (matchStok.jual) {
+                    if (Number(matchStok.jual || 0) > 0) {
                         const jStok = Number(matchStok.jual || 0) * qtyVal;
                         document.getElementById('hargaJual').value = jStok;
                         document.getElementById('hargaJualDisplay').value = Number(jStok).toLocaleString('id-ID');
+                    } else {
+                        document.getElementById('hargaJual').value = 0;
+                        document.getElementById('hargaJualDisplay').value = '';
                     }
 
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = `⚡ Auto-Fill Stok & Modal (${matchStok.kat})`;
+                    notice.innerText = Number(matchStok.jual || 0) > 0
+                        ? `⚡ Auto-Fill Stok & Modal (${matchStok.kat})`
+                        : `⚡ Auto-Fill HPP (${matchStok.kat}: ${window.formatRp(mStok)}) — Silakan isi Harga Jual`;
                     return;
                 } else { warnStok.style.display = 'none'; }
 
@@ -4491,10 +4648,34 @@
                 if (idx >= 0) window.riwayatBelanjaStok[idx] = Object.assign({}, defRb);
                 else window.riwayatBelanjaStok.push(Object.assign({}, defRb));
             });
+            if (window.masterSaldoAwal) window.masterSaldoAwal['SP'] = 0;
             window.catatLogAktivitas('MUAT STOK SP', 'Memuat ulang 11 data stok awal Kartu Perdana (SP) senilai Rp 1.194.136 (Audit / Tanpa Potong Saldo)');
             window.saveAllToFirebase(false);
             window.renderAll();
             window.showToast("✅ 11 Data Stok Perdana (SP) senilai Rp 1.194.136 berhasil dimuat ke saldo SP!", "success");
+        }
+
+        window.muatDefaultStokAccKonter = function() {
+            if (!confirm("Muat kembali 102 data awal Stok Aksesoris (ACC) sebanyak 1.576 Pcs senilai Rp 15.527.928 (Audit / Tanpa Potong Saldo)?")) return;
+            if (!window.stokOpnameItems) window.stokOpnameItems = [];
+            if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
+            window.DEFAULT_STOK_ACC_KONTER.forEach(defAcc => {
+                const idx = window.stokOpnameItems.findIndex(s => s.kat === 'ACC' && (s.nama || '').trim().toUpperCase() === defAcc.nama);
+                if (idx >= 0) window.stokOpnameItems[idx] = Object.assign({}, defAcc);
+                else window.stokOpnameItems.push(Object.assign({}, defAcc));
+                if (!window.masterVlookup) window.masterVlookup = {};
+                window.masterVlookup[defAcc.nama] = { kat: 'ACC', akunMasuk: 'LACI', akunKeluar: 'ACC', defJual: defAcc.jual, defModal: defAcc.modal };
+            });
+            window.DEFAULT_RIWAYAT_STOK_ACC_KONTER.forEach(defRb => {
+                const idx = window.riwayatBelanjaStok.findIndex(r => r.id === defRb.id || (r.kat === 'ACC' && (r.nama || '').trim().toUpperCase() === defRb.nama));
+                if (idx >= 0) window.riwayatBelanjaStok[idx] = Object.assign({}, defRb);
+                else window.riwayatBelanjaStok.push(Object.assign({}, defRb));
+            });
+            if (window.masterSaldoAwal) window.masterSaldoAwal['ACC'] = 0;
+            window.catatLogAktivitas('MUAT STOK ACC', 'Memuat ulang 102 data stok awal Aksesoris (ACC) senilai Rp 15.527.928 (Audit / Tanpa Potong Saldo)');
+            window.saveAllToFirebase(false);
+            window.renderAll();
+            window.showToast("✅ 102 Data Stok ACC (1.576 Pcs) senilai Rp 15.527.928 berhasil dimuat ke Saldo ACC!", "success");
         }
 
         window.simpanPiutang = function(e) {
@@ -5637,7 +5818,7 @@
                             <td style="color:#EF4444;">${s.terjual || 0}</td>
                             <td><b style="color:${sisa <= 0 ? '#DC2626' : (sisa <= 3 ? '#D97706' : 'inherit')};">${sisa}${sisa <= 0 ? ' (HABIS)' : (sisa <= 3 ? ' ⚠️' : '')}</b></td>
                             <td>${window.formatRp(s.modal)}</td>
-                            <td>${window.formatRp(s.jual || 0)}</td>
+                            <td>${Number(s.jual || 0) > 0 ? window.formatRp(s.jual) : '<span style="color:#94A3B8; font-size:10px; font-style:italic;">Belum diatur</span>'}</td>
                             <td class="text-kredit"><b>${window.formatRp(nilai)}</b></td>
                             <td>
                                 <div style="display:flex; gap:3px; justify-content:center;">
