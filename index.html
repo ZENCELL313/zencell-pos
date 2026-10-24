@@ -587,6 +587,81 @@
         .btn-delete { background-color: #EF4444; color: #FFF; border: none; padding: 4px 7px; border-radius: 6px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
         .btn-nota-service { background-color: #9333EA; color: #FFF; border: none; padding: 4px 7px; border-radius: 6px; font-size: 10.5px; font-weight: bold; cursor: pointer; margin-right: 2px; }
 
+        /* Tampilan Menumpuk Atas-Bawah untuk Split Saldo (2 Akun) di Tabel Jurnal */
+        .split-akun-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            line-height: 1.25;
+            font-size: 10.5px;
+        }
+        .split-akun-sub {
+            border-top: 1px dashed var(--border);
+            padding-top: 2px;
+        }
+        .split-nom-masuk {
+            color: var(--kredit);
+            font-weight: 700;
+        }
+        .split-nom-keluar {
+            color: var(--debit);
+            font-weight: 700;
+        }
+
+        /* Tombol Aksi Icon Ramping (WA, Edit, Printer, Delete) di Rekap Jurnal */
+        .aksi-icon-group {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: nowrap;
+        }
+        .btn-aksi-icon {
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border: none;
+            border-radius: 7px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.14);
+        }
+        .btn-aksi-icon:hover {
+            transform: translateY(-1.5px);
+            filter: brightness(1.08);
+            box-shadow: 0 4px 8px rgba(15, 23, 42, 0.22);
+        }
+        .btn-aksi-icon:active {
+            transform: scale(0.92);
+        }
+        .btn-aksi-icon svg {
+            width: 13.5px;
+            height: 13.5px;
+            stroke-width: 2.2;
+            pointer-events: none;
+        }
+        .btn-aksi-icon.aksi-wa {
+            background: linear-gradient(135deg, #25D366 0%, #16A34A 100%);
+        }
+        .btn-aksi-icon.aksi-edit {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+        .btn-aksi-icon.aksi-print {
+            background: linear-gradient(135deg, #0284C7 0%, #2563EB 100%);
+        }
+        .btn-aksi-icon.aksi-print.is-service {
+            background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%);
+        }
+        .btn-aksi-icon.aksi-delete {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+
         .filter-container { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; background: var(--primary-light); padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
         .date-picker-input { padding: 6px 8px; font-size: 11.5px; border: 1px solid var(--border); border-radius: 6px; outline: none; background: var(--card); color: var(--text); cursor: pointer; font-weight: 600; }
 
@@ -6258,10 +6333,21 @@
 
             document.getElementById('bodyJurnal').innerHTML = filteredTrx.map((item, idx) => {
                 const t = item.data;
-                const txtMasuk = t.isSplit && t.akunMasuk2 ? `${t.akunMasuk1} (${window.formatRp(t.jualSplit1)}) + ${t.akunMasuk2} (${window.formatRp(t.jualSplit2)})` : (t.akunMasuk1 || '-');
-                const txtKeluar = t.isSplit && t.akunKeluar2 ? `${t.akunKeluar1} (${window.formatRp(t.modalSplit1)}) + ${t.akunKeluar2} (${window.formatRp(t.modalSplit2)})` : (t.akunKeluar1 || '-');
-                
-                const tombolNotaService = t.kat === 'SERVICE' ? `<button class="btn-nota-service" onclick="cetakNotaLunasServiceTrx('${t.id}')">📄 Nota Lunas</button>` : '';
+                const txtMasuk = (t.isSplit && t.akunMasuk2)
+                    ? `<div class="split-akun-stack">
+                         <div><b>${t.akunMasuk1}</b> <span class="split-nom-masuk">(${window.formatRp(t.jualSplit1)})</span></div>
+                         <div class="split-akun-sub"><b>+ ${t.akunMasuk2}</b> <span class="split-nom-masuk">(${window.formatRp(t.jualSplit2)})</span></div>
+                       </div>`
+                    : (t.akunMasuk1 || '-');
+                const txtKeluar = (t.isSplit && t.akunKeluar2)
+                    ? `<div class="split-akun-stack">
+                         <div><b>${t.akunKeluar1}</b> <span class="split-nom-keluar">(${window.formatRp(t.modalSplit1)})</span></div>
+                         <div class="split-akun-sub"><b>+ ${t.akunKeluar2}</b> <span class="split-nom-keluar">(${window.formatRp(t.modalSplit2)})</span></div>
+                       </div>`
+                    : (t.akunKeluar1 || '-');
+
+                const isServiceTrx = t.kat === 'SERVICE';
+                const printTitle = isServiceTrx ? 'Cetak Nota Lunas Service' : 'Cetak Struk Transaksi';
 
                 return `
                     <tr id="row-trx-${t.id}">
@@ -6275,12 +6361,35 @@
                         <td class="text-debit">${window.formatRp(t.hargaModal)}</td>
                         <td>${txtKeluar}</td>
                         <td class="text-cuan">${window.formatRp(t.cuan)}</td>
-                        <td>
-                            <div style="display:flex; gap:3px; justify-content:center; flex-wrap:wrap;">
-                                <button class="btn" style="background:#25D366; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="kirimWaStrukKasir('${t.id}')" title="Kirim Struk Digital ke WhatsApp Pelanggan">📲 WA</button>
-                                ${tombolNotaService}
-                                <button class="btn-edit" onclick="editTrx('${t.id}')">Edit</button>
-                                <button class="btn-delete" onclick="hapusJurnalTrx('${t.id}')">Hapus</button>
+                        <td style="text-align:center;">
+                            <div class="aksi-icon-group">
+                                <button type="button" class="btn-aksi-icon aksi-wa" onclick="kirimWaStrukKasir('${t.id}')" title="Kirim Struk ke WhatsApp">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path>
+                                        <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn-aksi-icon aksi-edit" onclick="editTrx('${t.id}')" title="Edit Transaksi">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn-aksi-icon aksi-print ${isServiceTrx ? 'is-service' : ''}" onclick="cetakStrukAtauNotaTrx('${t.id}')" title="${printTitle}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                        <rect x="6" y="14" width="12" height="8"></rect>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn-aksi-icon aksi-delete" onclick="hapusJurnalTrx('${t.id}')" title="Hapus Transaksi">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -7619,6 +7728,9 @@
             const p = window.pengaturanToko || {};
             const namaToko = p.namaToko || 'POS ZENCELL 1';
             const kasirName = sessionStorage.getItem('zencell_user') || 'Kasir';
+            const metodeMasuk = (t.isSplit && t.akunMasuk2)
+                ? `${t.akunMasuk1} (${window.formatRp(t.jualSplit1)}) + ${t.akunMasuk2} (${window.formatRp(t.jualSplit2)})`
+                : (t.akunMasuk1 || 'TUNAI LACI');
 
             const text = `*${namaToko} - STRUK PEMBAYARAN DIGITAL* 🧾\n` +
                 `----------------------------------------\n` +
@@ -7629,7 +7741,7 @@
                 `Item: *${t.ket}*\n` +
                 `Jumlah: ${t.qty || 1} Pcs\n` +
                 `*Total Bayar: ${window.formatRp(t.hargaJual)}*\n` +
-                `Metode Masuk: ${t.akunMasuk1 || 'TUNAI LACI'}\n` +
+                `Metode Masuk: ${metodeMasuk}\n` +
                 `----------------------------------------\n` +
                 `${p.teksStruk || 'Terima kasih telah berbelanja! Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.'}\n\n` +
                 (p.alamatToko ? `📍 ${p.alamatToko}\n` : '') +
@@ -7637,6 +7749,69 @@
 
             window.kirimPesanWa('', text);
             window.catatLogAktivitas('KIRIM WA STRUK', `Mengirim struk transaksi "${t.ket}" via WhatsApp`);
+        };
+
+        window.cetakStrukAtauNotaTrx = function(trxId) {
+            const t = (window.transaksiJurnal || []).find(x => x.id == trxId);
+            if (!t) return;
+            if (t.kat === 'SERVICE') {
+                window.cetakNotaLunasServiceTrx(trxId);
+                return;
+            }
+            const p = window.pengaturanToko || {};
+            const kasirName = sessionStorage.getItem('zencell_user') || 'KASIR';
+            const qtyVal = Number(t.qty || 1);
+            const totalJual = Number(t.hargaJual || 0);
+            const hargaSatuan = qtyVal > 0 ? Math.round(totalJual / qtyVal) : totalJual;
+            const metodeMasukHtml = (t.isSplit && t.akunMasuk2)
+                ? `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                       <span>${t.akunMasuk1}:</span>
+                       <span>${window.formatRp(t.jualSplit1)}</span>
+                   </div>
+                   <div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                       <span>${t.akunMasuk2}:</span>
+                       <span>${window.formatRp(t.jualSplit2)}</span>
+                   </div>`
+                : `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                       <span>PEMBAYARAN (${t.akunMasuk1 || 'LACI'}):</span>
+                       <span>${window.formatRp(totalJual)}</span>
+                   </div>`;
+
+            const printArea = document.getElementById('printAreaNotaLunasService');
+            if (!printArea) return;
+            printArea.style.display = 'block';
+            printArea.innerHTML = `
+                <div style="max-width: 300px; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
+                    ${p.logoUrl ? `<img src="${p.logoUrl}" style="max-height: 40px; margin-bottom: 6px; object-fit: contain;"><br>` : ''}
+                    <b style="font-size: 14px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
+                    <span style="font-size: 10px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
+                    <span style="font-size: 10px;">${p.kontakToko || 'WA: 0812-3456-7890'}</span>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
+                    <div style="display:flex; justify-content:space-between; font-size:10px;">
+                        <span>${t.isoDate || window.getTodayIso()} ${t.waktu || ''}</span>
+                        <span>KASIR: ${kasirName.toUpperCase()}</span>
+                    </div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
+                    <div style="text-align:left; font-size:11px; margin-bottom:6px;">
+                        <div><b>${t.ket}</b> <span style="font-size:9.5px;">[${t.kat}]</span></div>
+                        <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                            <span>${qtyVal} x ${window.formatRp(hargaSatuan)}</span>
+                            <b>${window.formatRp(totalJual)}</b>
+                        </div>
+                    </div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px; margin-bottom:3px;">
+                        <span>TOTAL BAYAR:</span>
+                        <span>${window.formatRp(totalJual)}</span>
+                    </div>
+                    ${metodeMasukHtml}
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
+                    <div style="font-size: 9.5px; white-space: pre-wrap; margin-top: 6px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
+                </div>
+            `;
+            window.catatLogAktivitas('CETAK STRUK', `Mencetak struk transaksi "${t.ket}" (${window.formatRp(totalJual)})`);
+            window.print();
+            setTimeout(() => { printArea.style.display = 'none'; }, 1000);
         };
 
         window.kirimWaPengingatPiutang = function(pId) {
