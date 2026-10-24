@@ -2919,73 +2919,132 @@
         window.redoStack = [];
         window.isUndoRedoAction = false;
         let isFirebaseSyncing = true;
+        window.hasInitialCloudLoaded = false;
         window.isSavingToFirebase = false;
         window.pendingFirebaseWrites = 0;
         window._deferredSnapshot = null;
         window._logDirty = false;
         window._logSaveTimer = null;
+        window._pendingLogsBeforeInit = [];
+        window._lastUniqueTs = 0;
 
-        // Proteksi Anti-Rollback Multi-PC untuk Edit & Hapus Transaksi
-        const TRX_EDIT_PROTECTION_TTL_MS = 15 * 60 * 1000; // 15 menit
+        window.getNextUniqueTs = function() {
+            const now = Date.now();
+            if (now <= window._lastUniqueTs) {
+                window._lastUniqueTs += 1;
+            } else {
+                window._lastUniqueTs = now;
+            }
+            return window._lastUniqueTs;
+        };
+
+        // Proteksi Universal Anti-Rollback & Anti-Overwrite Multi-Perangkat (Berlaku untuk Semua Modul)
+        const ENTITY_PROTECTION_TTL_MS = 15 * 60 * 1000; // 15 menit penuh
+        const PROTECTED_COLLECTIONS = ['transaksi', 'tiketServis', 'sparepart', 'piutang', 'stok', 'riwayatBelanjaStok', 'operasional', 'setoran'];
+
         try {
-            window._localTrxEdits = JSON.parse(localStorage.getItem('zencell_recent_trx_edits') || '{}') || {};
-            window._localDeletedTrxIds = JSON.parse(localStorage.getItem('zencell_recent_trx_deletes') || '{}') || {};
+            window._localEntityEdits = JSON.parse(localStorage.getItem('zencell_entity_edits_v2') || '{}') || {};
+            window._localEntityDeletes = JSON.parse(localStorage.getItem('zencell_entity_deletes_v2') || '{}') || {};
+            // Migrasi kompatibilitas dari cache versi sebelumnya jika ada
+            const oldTrxEdits = JSON.parse(localStorage.getItem('zencell_recent_trx_edits') || '{}') || {};
+            const oldTrxDeletes = JSON.parse(localStorage.getItem('zencell_recent_trx_deletes') || '{}') || {};
+            if (!window._localEntityEdits.transaksi) window._localEntityEdits.transaksi = {};
+            if (!window._localEntityDeletes.transaksi) window._localEntityDeletes.transaksi = {};
+            Object.assign(window._localEntityEdits.transaksi, oldTrxEdits);
+            Object.assign(window._localEntityDeletes.transaksi, oldTrxDeletes);
         } catch (e) {
-            window._localTrxEdits = {};
-            window._localDeletedTrxIds = {};
+            window._localEntityEdits = {};
+            window._localEntityDeletes = {};
         }
+
+        PROTECTED_COLLECTIONS.forEach(col => {
+            if (!window._localEntityEdits[col]) window._localEntityEdits[col] = {};
+            if (!window._localEntityDeletes[col]) window._localEntityDeletes[col] = {};
+        });
+
+        window._localTrxEdits = window._localEntityEdits.transaksi;
+        window._localDeletedTrxIds = window._localEntityDeletes.transaksi;
+
+        function persistEntityProtection() {
+            try {
+                localStorage.setItem('zencell_entity_edits_v2', JSON.stringify(window._localEntityEdits));
+                localStorage.setItem('zencell_entity_deletes_v2', JSON.stringify(window._localEntityDeletes));
+            } catch (e) {}
+        }
+
+        window.clearAllEntityProtection = function() {
+            PROTECTED_COLLECTIONS.forEach(col => {
+                window._localEntityEdits[col] = {};
+                window._localEntityDeletes[col] = {};
+            });
+            window._localTrxEdits = window._localEntityEdits.transaksi;
+            window._localDeletedTrxIds = window._localEntityDeletes.transaksi;
+            try {
+                localStorage.removeItem('zencell_entity_edits_v2');
+                localStorage.removeItem('zencell_entity_deletes_v2');
+                localStorage.removeItem('zencell_recent_trx_edits');
+                localStorage.removeItem('zencell_recent_trx_deletes');
+            } catch (e) {}
+        };
 
         window.pruneLocalTrxProtection = function() {
             const now = Date.now();
             let changed = false;
-            Object.keys(window._localTrxEdits || {}).forEach(id => {
-                const entry = window._localTrxEdits[id];
-                if (!entry || !entry.updatedAt || (now - entry.updatedAt > TRX_EDIT_PROTECTION_TTL_MS)) {
-                    delete window._localTrxEdits[id];
-                    changed = true;
-                }
+            PROTECTED_COLLECTIONS.forEach(col => {
+                const editsMap = window._localEntityEdits[col] || {};
+                Object.keys(editsMap).forEach(id => {
+                    const entry = editsMap[id];
+                    if (!entry || !entry.updatedAt || (now - entry.updatedAt > ENTITY_PROTECTION_TTL_MS)) {
+                        delete editsMap[id];
+                        changed = true;
+                    }
+                });
+                const deletesMap = window._localEntityDeletes[col] || {};
+                Object.keys(deletesMap).forEach(id => {
+                    const ts = deletesMap[id];
+                    if (!ts || (now - ts > ENTITY_PROTECTION_TTL_MS)) {
+                        delete deletesMap[id];
+                        changed = true;
+                    }
+                });
             });
-            Object.keys(window._localDeletedTrxIds || {}).forEach(id => {
-                const ts = window._localDeletedTrxIds[id];
-                if (!ts || (now - ts > TRX_EDIT_PROTECTION_TTL_MS)) {
-                    delete window._localDeletedTrxIds[id];
-                    changed = true;
-                }
-            });
-            if (changed) {
-                try {
-                    localStorage.setItem('zencell_recent_trx_edits', JSON.stringify(window._localTrxEdits));
-                    localStorage.setItem('zencell_recent_trx_deletes', JSON.stringify(window._localDeletedTrxIds));
-                } catch (e) {}
-            }
+            if (changed) persistEntityProtection();
         };
         window.pruneLocalTrxProtection();
 
-        window.markLocalTrxEdited = function(trxObj) {
-            if (!trxObj || !trxObj.id) return;
-            const cleanCopy = cleanForFirebase(trxObj);
-            const ts = Number(cleanCopy.updatedAt) || Date.now();
+        window.markLocalEntityEdited = function(colName, itemObj) {
+            if (!colName || !itemObj || !itemObj.id) return;
+            if (!window._localEntityEdits[colName]) window._localEntityEdits[colName] = {};
+            if (!window._localEntityDeletes[colName]) window._localEntityDeletes[colName] = {};
+            const ts = Number(itemObj.updatedAt) || window.getNextUniqueTs();
+            itemObj.updatedAt = ts;
+            const cleanCopy = cleanForFirebase(itemObj);
             cleanCopy.updatedAt = ts;
-            window._localTrxEdits[String(cleanCopy.id)] = {
+            const idStr = String(cleanCopy.id);
+            window._localEntityEdits[colName][idStr] = {
                 updatedAt: ts,
                 data: cleanCopy
             };
-            delete window._localDeletedTrxIds[String(cleanCopy.id)];
-            try {
-                localStorage.setItem('zencell_recent_trx_edits', JSON.stringify(window._localTrxEdits));
-                localStorage.setItem('zencell_recent_trx_deletes', JSON.stringify(window._localDeletedTrxIds));
-            } catch (e) {}
+            delete window._localEntityDeletes[colName][idStr];
+            persistEntityProtection();
+        };
+
+        window.markLocalEntityDeleted = function(colName, itemId) {
+            if (!colName || !itemId) return;
+            if (!window._localEntityEdits[colName]) window._localEntityEdits[colName] = {};
+            if (!window._localEntityDeletes[colName]) window._localEntityDeletes[colName] = {};
+            const key = String(itemId);
+            window._localEntityDeletes[colName][key] = window.getNextUniqueTs();
+            delete window._localEntityEdits[colName][key];
+            persistEntityProtection();
+        };
+
+        window.markLocalTrxEdited = function(trxObj) {
+            window.markLocalEntityEdited('transaksi', trxObj);
         };
 
         window.markLocalTrxDeleted = function(idTrx) {
-            if (!idTrx) return;
-            const key = String(idTrx);
-            window._localDeletedTrxIds[key] = Date.now();
-            delete window._localTrxEdits[key];
-            try {
-                localStorage.setItem('zencell_recent_trx_edits', JSON.stringify(window._localTrxEdits));
-                localStorage.setItem('zencell_recent_trx_deletes', JSON.stringify(window._localDeletedTrxIds));
-            } catch (e) {}
+            window.markLocalEntityDeleted('transaksi', idTrx);
         };
 
         function cleanForFirebase(val) {
@@ -2997,16 +3056,98 @@
             }
         }
 
+        // Fungsi Smart Merge Universal: Mencegah data baru/editan di perangkat ini terhapus oleh snapshot lama perangkat lain
+        function mergeCloudCollection(colName, rawCloudData, needsResyncMap, lastResetTs = 0) {
+            let cloudList = [];
+            if (rawCloudData) {
+                cloudList = Array.isArray(rawCloudData) ? rawCloudData : Object.values(rawCloudData);
+            }
+            const editsMap = (window._localEntityEdits && window._localEntityEdits[colName]) || {};
+            const deletesMap = (window._localEntityDeletes && window._localEntityDeletes[colName]) || {};
+            const seenIds = new Set();
+            const merged = [];
+
+            // Bersihkan cache lokal jika Owner baru saja melakukan Reset Data Total setelah item dibuat
+            if (lastResetTs > 0) {
+                Object.keys(editsMap).forEach(idStr => {
+                    if (Number(editsMap[idStr]?.updatedAt || 0) < lastResetTs) {
+                        delete editsMap[idStr];
+                    }
+                });
+                Object.keys(deletesMap).forEach(idStr => {
+                    if (Number(deletesMap[idStr] || 0) < lastResetTs) {
+                        delete deletesMap[idStr];
+                    }
+                });
+            }
+
+            cloudList.forEach(item => {
+                if (!item) return;
+                if (colName === 'stok') {
+                    if (!item.nama && !item.namaBarang) return;
+                    if (!item.id) item.id = sanitizeKey((item.kat || 'VOUCHER') + '_' + (item.nama || item.namaBarang));
+                } else if (!item.id) {
+                    return;
+                }
+                const idStr = String(item.id);
+                const cloudUpdated = Number(item.updatedAt || 0);
+                const deletedAt = Number(deletesMap[idStr] || 0);
+
+                // Jika item ini baru saja dihapus di perangkat ini, jangan tampilkan kembali & tandai untuk sinkron ulang
+                if (deletedAt > 0 && deletedAt >= cloudUpdated) {
+                    needsResyncMap[colName] = true;
+                    return;
+                }
+
+                seenIds.add(idStr);
+                const localEdit = editsMap[idStr];
+                if (localEdit && localEdit.data) {
+                    const localUpdated = Number(localEdit.updatedAt || 0);
+                    if (localUpdated > cloudUpdated) {
+                        // Versi lokal di perangkat ini lebih baru daripada versi di snapshot cloud
+                        merged.push(localEdit.data);
+                        needsResyncMap[colName] = true;
+                    } else {
+                        // Versi cloud sama atau lebih baru; jika cloud lebih baru, perbarui cache proteksi lokal
+                        // PENTING: Jangan hapus localEdit saat cloudUpdated === localUpdated agar tetap terlindungi selama 15 menit jika ada perangkat lain yang terlambat mengirim snapshot lama!
+                        if (cloudUpdated > localUpdated) {
+                            editsMap[idStr] = { updatedAt: cloudUpdated, data: cleanForFirebase(item) };
+                        }
+                        merged.push(item);
+                    }
+                } else {
+                    merged.push(item);
+                }
+            });
+
+            // Jika ada data yang baru diinput/diedit di perangkat ini (dalam 15 menit terakhir) namun belum ada di snapshot cloud (atau sempat tertimpa perangkat lain), pertahankan!
+            const nowMs = Date.now();
+            Object.keys(editsMap).forEach(idStr => {
+                if (!seenIds.has(idStr) && !deletesMap[idStr]) {
+                    const entry = editsMap[idStr];
+                    if (entry && entry.data && (nowMs - Number(entry.updatedAt || 0) <= ENTITY_PROTECTION_TTL_MS)) {
+                        merged.unshift(entry.data);
+                        needsResyncMap[colName] = true;
+                    }
+                }
+            });
+
+            return merged;
+        }
+
         const statusEl = document.getElementById('cloudStatus');
 
         function applyCloudSnapshotData(data) {
             if (!data) {
                 isFirebaseSyncing = false;
-                window.saveAllToFirebase();
+                window.hasInitialCloudLoaded = true;
                 return;
             }
             isFirebaseSyncing = true;
             window.pruneLocalTrxProtection();
+
+            const lastResetTs = Number(data.lastResetTimestamp || 0);
+            const needsResyncMap = {};
 
             if (data.vlookup) {
                 let loadedVlookup = {};
@@ -3049,98 +3190,61 @@
                 }
             }
 
-            let needsResyncTransaksi = false;
-            if (data.transaksi) {
-                let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
-                let seenIds = new Set();
-                let mergedTrx = [];
+            // 1. Transaksi Jurnal (Smart Merge + Sort)
+            const mergedTrx = mergeCloudCollection('transaksi', data.transaksi, needsResyncMap, lastResetTs);
+            window.transaksiJurnal = mergedTrx.sort((a, b) => String(b.id).localeCompare(String(a.id)));
 
-                cloudTrx.forEach(t => {
-                    if (!t || !t.id) return;
-                    const idStr = String(t.id);
-                    if (window._localDeletedTrxIds && window._localDeletedTrxIds[idStr]) {
-                        needsResyncTransaksi = true;
-                        return;
-                    }
-                    seenIds.add(idStr);
-                    const localEdit = window._localTrxEdits && window._localTrxEdits[idStr];
-                    const cloudUpdated = Number(t.updatedAt || 0);
-                    if (localEdit && localEdit.data && Number(localEdit.updatedAt || 0) > cloudUpdated) {
-                        mergedTrx.push(localEdit.data);
-                        needsResyncTransaksi = true;
-                    } else {
-                        if (localEdit && cloudUpdated >= Number(localEdit.updatedAt || 0)) {
-                            delete window._localTrxEdits[idStr];
-                        }
-                        mergedTrx.push(t);
-                    }
-                });
+            // 2. Piutang Konsumen (Smart Merge)
+            window.piutangList = mergeCloudCollection('piutang', data.piutang, needsResyncMap, lastResetTs);
 
-                // Pastikan transaksi yang baru saja diinput/diedit di PC ini tidak hilang jika ditimpa snapshot lama PC lain
-                const nowMs = Date.now();
-                Object.keys(window._localTrxEdits || {}).forEach(idStr => {
-                    if (!seenIds.has(idStr) && !(window._localDeletedTrxIds && window._localDeletedTrxIds[idStr])) {
-                        const entry = window._localTrxEdits[idStr];
-                        if (entry && entry.data && (nowMs - Number(entry.updatedAt || 0) < 2 * 60 * 1000)) {
-                            mergedTrx.push(entry.data);
-                            needsResyncTransaksi = true;
-                        }
-                    }
-                });
+            // 3. Stok Opname (Smart Merge + Normalisasi)
+            const mergedStok = mergeCloudCollection('stok', data.stok, needsResyncMap, lastResetTs);
+            window.stokOpnameItems = mergedStok.map(s => ({
+                id: s.id || Date.now(),
+                kat: s.kat || 'VOUCHER',
+                nama: (s.nama || s.namaBarang || '').trim().toUpperCase(),
+                awal: Number(s.awal || 0),
+                terjual: Number(s.terjual || 0),
+                modal: Number(s.modal || 0),
+                jual: Number(s.jual || 0),
+                updatedAt: Number(s.updatedAt || 0)
+            }));
 
-                window.transaksiJurnal = mergedTrx.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-            } else {
-                window.transaksiJurnal = [];
-            }
+            // 4. Sparepart Service (Smart Merge)
+            window.sparepartList = mergeCloudCollection('sparepart', data.sparepart, needsResyncMap, lastResetTs);
 
-            if (data.piutang) {
-                let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
-                window.piutangList = cloudPiutang.filter(p => p && p.id);
-            } else { window.piutangList = []; }
+            // 5. Tiket Servis (Smart Merge)
+            window.tiketServisList = mergeCloudCollection('tiketServis', data.tiketServis, needsResyncMap, lastResetTs);
 
-            if (data.stok) {
-                let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
-                window.stokOpnameItems = cloudStok.filter(s => s && (s.nama || s.namaBarang)).map(s => ({
-                    id: s.id || Date.now(),
-                    kat: s.kat || 'VOUCHER',
-                    nama: (s.nama || s.namaBarang || '').trim().toUpperCase(),
-                    awal: Number(s.awal || 0),
-                    terjual: Number(s.terjual || 0),
-                    modal: Number(s.modal || 0),
-                    jual: Number(s.jual || 0)
-                }));
-            } else { window.stokOpnameItems = []; }
+            // 6. Riwayat Belanja Stok (Smart Merge)
+            window.riwayatBelanjaStok = mergeCloudCollection('riwayatBelanjaStok', data.riwayatBelanjaStok, needsResyncMap, lastResetTs);
 
-            if (data.sparepart) {
-                let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
-                window.sparepartList = cloudSp.filter(sp => sp && sp.id);
-            } else { window.sparepartList = []; }
+            // 7. Setoran Owner (Smart Merge)
+            window.setoranOwnerList = mergeCloudCollection('setoran', data.setoran, needsResyncMap, lastResetTs);
 
-            if (data.tiketServis) {
-                let cloudTiket = Array.isArray(data.tiketServis) ? data.tiketServis : Object.values(data.tiketServis);
-                window.tiketServisList = cloudTiket.filter(t => t && t.id);
-            } else { window.tiketServisList = []; }
+            // 8. Operasional Konter (Smart Merge)
+            window.operasionalList = mergeCloudCollection('operasional', data.operasional, needsResyncMap, lastResetTs);
 
-            if (data.riwayatBelanjaStok) {
-                let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
-                window.riwayatBelanjaStok = cloudRb.filter(r => r && r.id);
-            } else { window.riwayatBelanjaStok = []; }
-
-            if (data.setoran) {
-                let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
-                window.setoranOwnerList = cloudSetor.filter(st => st && st.id);
-            } else { window.setoranOwnerList = []; }
-
-            if (data.operasional) {
-                let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
-                window.operasionalList = cloudOp.filter(op => op && op.id);
-            } else { window.operasionalList = []; }
-
+            // 9. Log Aktivitas (Gabungkan dengan log yang sempat tercatat sebelum koneksi cloud awal selesai)
             if (data.logAktivitas) {
                 let cloudLog = Array.isArray(data.logAktivitas) ? data.logAktivitas : Object.values(data.logAktivitas);
                 window.logAktivitasList = cloudLog.filter(l => l && l.id);
-            } else { window.logAktivitasList = []; }
+            } else {
+                window.logAktivitasList = [];
+            }
+            if (window._pendingLogsBeforeInit && window._pendingLogsBeforeInit.length > 0) {
+                const existingLogIds = new Set(window.logAktivitasList.map(l => String(l.id)));
+                window._pendingLogsBeforeInit.forEach(pl => {
+                    if (pl && pl.id && !existingLogIds.has(String(pl.id))) {
+                        window.logAktivitasList.unshift(pl);
+                    }
+                });
+                if (window.logAktivitasList.length > 200) window.logAktivitasList.length = 200;
+                window._pendingLogsBeforeInit = [];
+                window._logDirty = true;
+            }
 
+            window.hasInitialCloudLoaded = true;
             window.saveLocalBackup();
             if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
 
@@ -3152,9 +3256,28 @@
             window.renderAll();
             isFirebaseSyncing = false;
 
-            // Jika ada PC lain yang sempat menimpa transaksi dengan versi lama sebelum edit kita sampai, otomatis kirim balik versi terbarunya
-            if (needsResyncTransaksi && window.pendingFirebaseWrites === 0) {
-                window.saveToFirebaseNode('transaksi', window.transaksiJurnal, true);
+            // Jika ada data lokal yang baru diinput/diedit/dihapus di perangkat ini yang belum tercatat di snapshot cloud (misal karena race condition antar perangkat atau baru diinput saat login awal), kirim balik hanya node yang terdampak
+            const resyncPayload = {};
+            const colToVarMap = {
+                transaksi: window.transaksiJurnal,
+                piutang: window.piutangList,
+                stok: window.stokOpnameItems,
+                sparepart: window.sparepartList,
+                tiketServis: window.tiketServisList,
+                riwayatBelanjaStok: window.riwayatBelanjaStok,
+                setoran: window.setoranOwnerList,
+                operasional: window.operasionalList
+            };
+            Object.keys(needsResyncMap).forEach(col => {
+                if (needsResyncMap[col] && colToVarMap[col] !== undefined) {
+                    resyncPayload[col] = colToVarMap[col];
+                }
+            });
+            if (Object.keys(resyncPayload).length > 0 && window.pendingFirebaseWrites === 0) {
+                window.saveMultipleFirebaseNodes(resyncPayload, true);
+            } else if (window._logDirty && window.pendingFirebaseWrites === 0) {
+                window._logDirty = false;
+                window.saveToFirebaseNode('logAktivitas', window.logAktivitasList, true);
             }
         }
 
@@ -3173,25 +3296,33 @@
             const now = new Date();
             const waktuStr = `${now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })} | ${window.getTodayIso()}`;
             const akunActive = sessionStorage.getItem('zencell_user') || 'Owner';
-            
-            if (!window.logAktivitasList) window.logAktivitasList = [];
-            window.logAktivitasList.unshift({
-                id: Date.now(),
+            const newLogItem = {
+                id: window.getNextUniqueTs(),
                 waktu: waktuStr,
                 isoDate: window.getTodayIso(),
                 tipe: tipe,
                 akun: akunActive,
                 deskripsi: deskripsi
-            });
+            };
+
+            if (!window.logAktivitasList) window.logAktivitasList = [];
+            window.logAktivitasList.unshift(newLogItem);
             if (window.logAktivitasList.length > 200) window.logAktivitasList.pop();
+
+            // Jika perangkat baru saja dibuka dan belum selesai memuat data awal dari Firebase, tahan pengiriman log agar tidak menimpa 200 log di cloud dengan list kosong
+            if (!window.hasInitialCloudLoaded) {
+                window._pendingLogsBeforeInit.push(newLogItem);
+                return;
+            }
+
             window._logDirty = true;
             if (window._logSaveTimer) clearTimeout(window._logSaveTimer);
             window._logSaveTimer = setTimeout(() => {
-                if (window._logDirty) {
+                if (window._logDirty && window.hasInitialCloudLoaded && !isFirebaseSyncing) {
                     window._logDirty = false;
                     window.saveToFirebaseNode('logAktivitas', window.logAktivitasList, true);
                 }
-            }, 120);
+            }, 150);
         };
 
         window.bukaModalLogAktivitas = function() {
@@ -3250,10 +3381,12 @@
             }
         }
 
-        window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
+        // Fungsi Simpan Spesifik Beberapa Node Sekaligus (Tanpa Menimpa Modul Lain yang Tidak Berubah)
+        window.saveMultipleFirebaseNodes = function(nodesObj, skipSnapshot = false) {
             window.saveLocalBackup();
             if (!skipSnapshot) window.saveStateSnapshot();
-            if (isFirebaseSyncing) return;
+            if (isFirebaseSyncing || !window.hasInitialCloudLoaded) return;
+            if (!nodesObj || typeof nodesObj !== 'object') return;
 
             if (window._logSaveTimer) {
                 clearTimeout(window._logSaveTimer);
@@ -3264,27 +3397,34 @@
             window.isSavingToFirebase = true;
 
             try {
-                const payload = { [nodeName]: cleanForFirebase(dataValue) };
-                if (window._logDirty && nodeName !== 'logAktivitas') {
+                const payload = {};
+                Object.keys(nodesObj).forEach(k => {
+                    payload[k] = cleanForFirebase(nodesObj[k]);
+                });
+                if (window._logDirty && !payload.logAktivitas && window.hasInitialCloudLoaded) {
                     payload.logAktivitas = cleanForFirebase(window.logAktivitasList);
                     window._logDirty = false;
                 }
                 update(ref(db, 'zencellNodes'), payload).then(() => {
                     onFirebaseWriteComplete();
                 }).catch((err) => {
-                    console.error('Firebase saveToFirebaseNode error:', err);
+                    console.error('Firebase saveMultipleFirebaseNodes error:', err);
                     onFirebaseWriteComplete();
                 });
             } catch (err) {
-                console.error('Firebase saveToFirebaseNode sync error:', err);
+                console.error('Firebase saveMultipleFirebaseNodes sync error:', err);
                 onFirebaseWriteComplete();
             }
+        };
+
+        window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
+            window.saveMultipleFirebaseNodes({ [nodeName]: dataValue }, skipSnapshot);
         }
 
-        window.saveAllToFirebase = function(skipSnapshot = false) {
+        window.saveAllToFirebase = function(skipSnapshot = false, isExplicitReset = false) {
             window.saveLocalBackup();
             if (!skipSnapshot) window.saveStateSnapshot();
-            if (isFirebaseSyncing) return;
+            if (isFirebaseSyncing && !isExplicitReset) return;
 
             if (window._logSaveTimer) {
                 clearTimeout(window._logSaveTimer);
@@ -3299,7 +3439,7 @@
             for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
 
             try {
-                const fullPayload = cleanForFirebase({
+                const fullPayloadObj = {
                     vlookup: cleanVlookup,
                     transaksi: window.transaksiJurnal,
                     stok: window.stokOpnameItems,
@@ -3319,7 +3459,11 @@
                     batasMinSaldo: window.masterBatasMinSaldo,
                     pengaturan: window.pengaturanToko,
                     daftarKaryawan: window.daftarKaryawan
-                });
+                };
+                if (isExplicitReset) {
+                    fullPayloadObj.lastResetTimestamp = Date.now();
+                }
+                const fullPayload = cleanForFirebase(fullPayloadObj);
 
                 update(ref(db, 'zencellNodes'), fullPayload).then(() => {
                     onFirebaseWriteComplete();
@@ -3437,9 +3581,11 @@
             }
             const now = new Date();
             const waktuStr = `${now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })} | ${window.getTodayIso()}`;
+            const nowTs = window.getNextUniqueTs();
 
             const tiketObj = {
-                id: Date.now(),
+                id: nowTs,
+                updatedAt: nowTs,
                 noServis, waktu: waktuStr, isoDate: window.getTodayIso(),
                 nama, noHp, tipeHp, serialNum, kelengkapan, keluhan, dpNom, garansi, petugas,
                 estBiaya,
@@ -3452,12 +3598,17 @@
             };
 
             window.tiketServisList.unshift(tiketObj);
+            window.markLocalEntityEdited('tiketServis', tiketObj);
+
+            const nodesToSave = { tiketServis: window.tiketServisList };
 
             // Jika ada belanja sparepart, catat ke sparepartList agar kas keluar & akun SPAREPART bertambah
             if (perluSparepart && modalPart > 0 && sumberKasPart) {
                 if (!window.sparepartList) window.sparepartList = [];
-                window.sparepartList.unshift({
-                    id: Date.now() + 1,
+                const spTs = window.getNextUniqueTs();
+                const newSpObj = {
+                    id: spTs,
+                    updatedAt: spTs,
                     idTiketRef: tiketObj.id,
                     isoDate: window.getTodayIso(),
                     tgl: window.getTodayIso(),
@@ -3467,17 +3618,21 @@
                     sumber: sumberKasPart,
                     estJual: estBiaya,
                     status: 'BELUM LUNAS'
-                });
-                window.saveToFirebaseNode('sparepart', window.sparepartList);
+                };
+                window.sparepartList.unshift(newSpObj);
+                window.markLocalEntityEdited('sparepart', newSpObj);
+                nodesToSave.sparepart = window.sparepartList;
                 window.catatLogAktivitas('BELANJA PART SERVIS', `Mencatat belanja part "${namaPart}" modal ${window.formatRp(modalPart)} dari ${sumberKasPart}`);
+            } else {
+                window.catatLogAktivitas('TIKET SERVIS BARU', `Menerima servis baru ${noServis} - ${nama} (${tipeHp})`);
             }
 
             window.closeModalTiketServis();
-            window.saveToFirebaseNode('tiketServis', window.tiketServisList);
+            window.saveMultipleFirebaseNodes(nodesToSave);
             window.renderAll();
 
             window.cetakNotaTiketServis(tiketObj);
-            alert("✅ Tiket servis berhasil dibuat! Nota siap dicetak.");
+            alert("✅ Tiket servis berhasil dibuat & tersimpan aman! Nota siap dicetak.");
         }
 
         window.bukaModalBeliPartTiket = function(id) {
@@ -3509,16 +3664,21 @@
                 return;
             }
 
+            const nowTs = window.getNextUniqueTs();
             t.perluSparepart = true;
             t.namaPart = namaPart;
             t.modalPart = modalPart;
             t.sumberKasPart = sumberKas;
             t.statusPart = 'SUDAH DIBELI';
             t.status = 'PROSES';
+            t.updatedAt = nowTs;
+            window.markLocalEntityEdited('tiketServis', t);
 
             if (!window.sparepartList) window.sparepartList = [];
-            window.sparepartList.unshift({
-                id: Date.now(),
+            const spTs = window.getNextUniqueTs();
+            const spObj = {
+                id: spTs,
+                updatedAt: spTs,
                 idTiketRef: t.id,
                 isoDate: window.getTodayIso(),
                 tgl: window.getTodayIso(),
@@ -3528,12 +3688,16 @@
                 sumber: sumberKas,
                 estJual: t.estBiaya || 0,
                 status: 'BELUM LUNAS'
-            });
+            };
+            window.sparepartList.unshift(spObj);
+            window.markLocalEntityEdited('sparepart', spObj);
 
             window.catatLogAktivitas('BELANJA PART SERVIS', `Belanja part susulan "${namaPart}" (${window.formatRp(modalPart)}) dari ${sumberKas} untuk unit ${t.tipeHp}`);
             window.closeModalBeliPartCepat();
-            window.saveToFirebaseNode('tiketServis', window.tiketServisList);
-            window.saveToFirebaseNode('sparepart', window.sparepartList);
+            window.saveMultipleFirebaseNodes({
+                tiketServis: window.tiketServisList,
+                sparepart: window.sparepartList
+            });
             window.renderAll();
             alert("✅ Pembelian sparepart berhasil dicatat & saldo kas terpotong!");
         }
@@ -3581,6 +3745,8 @@
             const t = window.tiketServisList.find(item => item.id === id);
             if (t) {
                 t.status = statusBaru;
+                t.updatedAt = window.getNextUniqueTs();
+                window.markLocalEntityEdited('tiketServis', t);
                 window.catatLogAktivitas('STATUS TIKET', `Mengubah status tiket ${t.noServis} (${t.nama}) menjadi ${statusBaru}`);
                 window.saveToFirebaseNode('tiketServis', window.tiketServisList);
                 window.renderAll();
@@ -3960,15 +4126,18 @@
 
         window.hapusTiketServis = function(id) {
             if (confirm("Hapus tiket servis ini?")) {
+                window.markLocalEntityDeleted('tiketServis', id);
                 window.tiketServisList = window.tiketServisList.filter(t => t.id !== id);
+                const nodesToSave = { tiketServis: window.tiketServisList };
                 if (window.sparepartList) {
-                    const beforeLen = window.sparepartList.length;
-                    window.sparepartList = window.sparepartList.filter(sp => !(sp.idTiketRef == id && sp.status !== 'LUNAS'));
-                    if (window.sparepartList.length !== beforeLen) {
-                        window.saveToFirebaseNode('sparepart', window.sparepartList);
+                    const spToDelete = window.sparepartList.filter(sp => sp.idTiketRef == id && sp.status !== 'LUNAS');
+                    if (spToDelete.length > 0) {
+                        spToDelete.forEach(sp => window.markLocalEntityDeleted('sparepart', sp.id));
+                        window.sparepartList = window.sparepartList.filter(sp => !(sp.idTiketRef == id && sp.status !== 'LUNAS'));
+                        nodesToSave.sparepart = window.sparepartList;
                     }
                 }
-                window.saveToFirebaseNode('tiketServis', window.tiketServisList);
+                window.saveMultipleFirebaseNodes(nodesToSave, false);
                 window.renderAll();
             }
         }
@@ -4189,8 +4358,9 @@
             }
 
             localStorage.clear();
+            window.clearAllEntityProtection();
             isFirebaseSyncing = false;
-            window.saveAllToFirebase(true);
+            window.saveAllToFirebase(true, true);
             window.renderAll();
             window.closeModalResetData();
             window.showToast(ikutResetSaldoAwal ? "✅ Seluruh data & Saldo Awal berhasil di-reset bersih ke Rp 0!" : "✅ Seluruh data transaksi berhasil di-reset bersih (Saldo Awal tetap dipertahankan)!", "warn");
@@ -4344,6 +4514,7 @@
             window.saldoList = state.saldoList || [];
             window.masterBatasMinSaldo = state.masterBatasMinSaldo || {};
 
+            window.clearAllEntityProtection();
             window.saveAllToFirebase(true);
             window.initDropdowns();
             window.renderAll();
@@ -4776,7 +4947,11 @@
             const cfgSel = document.getElementById('cfgAkunTarget');
             if (cfgSel) cfgSel.value = baru;
             window.muatDataAkunConfig(baru);
-            window.saveAllToFirebase();
+            window.saveMultipleFirebaseNodes({
+                saldoAwal: window.masterSaldoAwal,
+                saldoListCustom: window.saldoList,
+                batasMinSaldo: window.masterBatasMinSaldo
+            }, false);
             window.renderAll();
             if (window.showToast) window.showToast(`✅ Pengaturan akun ${baru} & limit minimal (${window.formatRp(min)}) berhasil disimpan!`, "success");
         }
@@ -4790,7 +4965,7 @@
                 document.getElementById('cfgSaldoAwalDisplay').value = '0';
             }
             window.catatLogAktivitas('RESET SALDO AWAL', 'Mereset semua nominal Saldo Awal menjadi Rp 0');
-            window.saveAllToFirebase();
+            window.saveToFirebaseNode('saldoAwal', window.masterSaldoAwal);
             window.renderAll();
             window.showToast("✅ Semua Saldo Awal berhasil di-reset ke Rp 0!", "warn");
         }
@@ -4817,15 +4992,24 @@
 
             const tgl = window.getTodayIso();
             const waktu = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            const nowTs = window.getNextUniqueTs();
 
             if (editId) {
                 let op = window.operasionalList.find(o => o.id == editId);
-                if (op) { op.ket = ket; op.nominal = nom; op.sumber = sumber; }
+                if (op) {
+                    op.ket = ket;
+                    op.nominal = nom;
+                    op.sumber = sumber;
+                    op.updatedAt = nowTs;
+                    window.markLocalEntityEdited('operasional', op);
+                }
                 document.getElementById('editOperasionalId').value = '';
                 document.getElementById('formOperasionalTitle').innerText = '💸 Catat Pengeluaran Operasional Konter';
                 window.catatLogAktivitas('EDIT OPERASIONAL', `Mengubah operasional "${ket}" (${window.formatRp(nom)}) dari ${sumber}`);
             } else {
-                window.operasionalList.unshift({ id: Date.now(), isoDate: tgl, tgl, waktu, ket, nominal: nom, sumber });
+                const newOp = { id: nowTs, isoDate: tgl, tgl, waktu, ket, nominal: nom, sumber, updatedAt: nowTs };
+                window.operasionalList.unshift(newOp);
+                window.markLocalEntityEdited('operasional', newOp);
                 window.catatLogAktivitas('TAMBAH OPERASIONAL', `Mencatat operasional "${ket}" sebesar ${window.formatRp(nom)} dari ${sumber}`);
             }
             document.getElementById('formOperasional').reset();
@@ -4850,6 +5034,7 @@
         window.hapusOperasional = function(id) {
             const op = window.operasionalList.find(o => o.id == id);
             if (confirm("Hapus operasional ini?")) {
+                window.markLocalEntityDeleted('operasional', id);
                 if (op) window.catatLogAktivitas('HAPUS OPERASIONAL', `Menghapus operasional "${op.ket}" (${window.formatRp(op.nominal)})`);
                 window.operasionalList = window.operasionalList.filter(o => o.id !== id);
                 window.saveToFirebaseNode('operasional', window.operasionalList);
@@ -4868,6 +5053,8 @@
 
             const tgl = window.getTodayIso();
             const waktu = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            const nowTs = window.getNextUniqueTs();
+            const nodesToSave = { sparepart: window.sparepartList };
 
             if (editId) {
                 let sp = window.sparepartList.find(s => s.id == editId);
@@ -4876,11 +5063,16 @@
                     sp.modal = modal;
                     sp.sumber = sumber;
                     sp.estJual = estJual;
+                    sp.updatedAt = nowTs;
+                    window.markLocalEntityEdited('sparepart', sp);
                     if (sp.idTiketRef) {
                         const tk = (window.tiketServisList || []).find(t => t.id == sp.idTiketRef);
                         if (tk) {
                             tk.modalPart = modal;
                             tk.sumberKasPart = sumber;
+                            tk.updatedAt = nowTs;
+                            window.markLocalEntityEdited('tiketServis', tk);
+                            nodesToSave.tiketServis = window.tiketServisList;
                         }
                     }
                     const linkedTrx = (window.transaksiJurnal || []).find(t => (t.idSparepartRef && t.idSparepartRef == sp.id) || (sp.trxIdRef && t.id == sp.trxIdRef));
@@ -4888,16 +5080,21 @@
                         linkedTrx.hargaModal = modal;
                         linkedTrx.modalSplit1 = modal;
                         linkedTrx.cuan = Number(linkedTrx.hargaJual || 0) - modal;
+                        linkedTrx.updatedAt = nowTs;
+                        window.markLocalEntityEdited('transaksi', linkedTrx);
+                        nodesToSave.transaksi = window.transaksiJurnal;
                     }
                 }
                 document.getElementById('editSparepartId').value = '';
                 window.catatLogAktivitas('EDIT SPAREPART', `Mengubah sparepart service "${namaUnit}" modal ${window.formatRp(modal)}`);
             } else {
-                window.sparepartList.unshift({ id: Date.now(), isoDate: tgl, tgl, waktu, namaUnit, modal, sumber, estJual, status: 'BELUM LUNAS' });
+                const newSp = { id: nowTs, isoDate: tgl, tgl, waktu, namaUnit, modal, sumber, estJual, status: 'BELUM LUNAS', updatedAt: nowTs };
+                window.sparepartList.unshift(newSp);
+                window.markLocalEntityEdited('sparepart', newSp);
                 window.catatLogAktivitas('BELANJA SPAREPART', `Mencatat belanja sparepart "${namaUnit}" seharga ${window.formatRp(modal)} dari ${sumber}`);
             }
             window.closeModalSparepart();
-            window.saveAllToFirebase(false);
+            window.saveMultipleFirebaseNodes(nodesToSave, false);
             window.renderAll();
             alert("✅ Sparepart disimpan!");
         }
@@ -4919,6 +5116,7 @@
         window.hapusSparepart = function(id) {
             const sp = window.sparepartList.find(s => s.id == id);
             if (confirm("Hapus sparepart ini?")) {
+                window.markLocalEntityDeleted('sparepart', id);
                 if (sp) window.catatLogAktivitas('HAPUS SPAREPART', `Menghapus data sparepart "${sp.namaUnit}"`);
                 window.sparepartList = window.sparepartList.filter(s => s.id !== id);
                 window.saveToFirebaseNode('sparepart', window.sparepartList);
@@ -4996,6 +5194,8 @@
             if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
             if (!window.stokOpnameItems) window.stokOpnameItems = [];
 
+            const nowTs = window.getNextUniqueTs();
+
             if (editId) {
                 let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
                 const oldNama = item ? (item.nama || item.namaBarang || '').trim().toUpperCase() : nama;
@@ -5007,6 +5207,8 @@
                     item.awal = qty;
                     item.modal = modal;
                     item.jual = jual;
+                    item.updatedAt = nowTs;
+                    window.markLocalEntityEdited('stok', item);
                 }
 
                 const matchingRiwayat = window.riwayatBelanjaStok.filter(r => r.id == editId || (((r.nama || r.namaBarang || '').trim().toUpperCase() === oldNama) && r.kat === oldKat));
@@ -5019,13 +5221,16 @@
                     primaryR.jual = jual;
                     primaryR.total = totalNilai;
                     primaryR.sumberKas = sumberKas;
+                    primaryR.updatedAt = nowTs;
+                    window.markLocalEntityEdited('riwayatBelanjaStok', primaryR);
                     if (matchingRiwayat.length > 1) {
                         const extraIds = new Set(matchingRiwayat.slice(1).map(r => r.id));
+                        extraIds.forEach(eid => window.markLocalEntityDeleted('riwayatBelanjaStok', eid));
                         window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => !extraIds.has(r.id));
                     }
                 } else {
-                    window.riwayatBelanjaStok.unshift({
-                        id: item ? item.id : Date.now(),
+                    const newR = {
+                        id: item ? item.id : nowTs,
                         waktu: waktuInput,
                         isoDate: tglInput,
                         tgl: tglInput,
@@ -5035,8 +5240,11 @@
                         modal: modal,
                         jual: jual,
                         total: totalNilai,
-                        sumberKas: sumberKas
-                    });
+                        sumberKas: sumberKas,
+                        updatedAt: nowTs
+                    };
+                    window.riwayatBelanjaStok.unshift(newR);
+                    window.markLocalEntityEdited('riwayatBelanjaStok', newR);
                 }
 
                 document.getElementById('editStokId').value = '';
@@ -5044,9 +5252,9 @@
                 if (titleEl) titleEl.innerText = '+ Input Stok Opname';
                 window.catatLogAktivitas('EDIT STOK', `Memperbarui data stok opname [${kat}] ${nama} (Qty: ${qty})`);
             } else {
-                const recordId = Date.now();
+                const recordId = nowTs;
                 
-                window.riwayatBelanjaStok.unshift({
+                const newRiwayat = {
                     id: recordId,
                     waktu: waktuInput,
                     isoDate: tglInput,
@@ -5057,8 +5265,11 @@
                     modal: modal,
                     jual: jual,
                     total: totalNilai,
-                    sumberKas: sumberKas
-                });
+                    sumberKas: sumberKas,
+                    updatedAt: nowTs
+                };
+                window.riwayatBelanjaStok.unshift(newRiwayat);
+                window.markLocalEntityEdited('riwayatBelanjaStok', newRiwayat);
 
                 let item = window.stokOpnameItems.find(i => ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
                 if (item) {
@@ -5066,16 +5277,21 @@
                     item.modal = modal;
                     item.jual = jual;
                     item.nama = nama;
+                    item.updatedAt = nowTs;
+                    window.markLocalEntityEdited('stok', item);
                 } else {
-                    window.stokOpnameItems.push({
+                    const newStok = {
                         id: recordId,
                         kat: kat,
                         nama: nama,
                         awal: qty,
                         terjual: 0,
                         modal: modal,
-                        jual: jual
-                    });
+                        jual: jual,
+                        updatedAt: nowTs
+                    };
+                    window.stokOpnameItems.push(newStok);
+                    window.markLocalEntityEdited('stok', newStok);
                 }
                 window.catatLogAktivitas('INPUT STOK', `Menambah stok opname [${kat}] ${nama} sebanyak ${qty} pcs (Audit/Aset)`);
             }
@@ -5089,8 +5305,10 @@
             }
             if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
 
-            window.saveLocalBackup();
-            window.saveAllToFirebase(false);
+            window.saveMultipleFirebaseNodes({
+                stok: window.stokOpnameItems,
+                riwayatBelanjaStok: window.riwayatBelanjaStok
+            }, false);
             window.renderAll();
 
             alert("✅ Data stok opname & aset berhasil disimpan!");
@@ -5122,18 +5340,29 @@
         window.hapusRiwayatBelanja = function(id) {
             const targetRiwayat = window.riwayatBelanjaStok.find(r => r.id == id);
             if (confirm("Hapus data stok ini?")) {
+                const nowTs = window.getNextUniqueTs();
+                window.markLocalEntityDeleted('riwayatBelanjaStok', id);
                 if (targetRiwayat) {
                     let stokItem = window.stokOpnameItems.find(s => ((s.nama || s.namaBarang) || '').trim().toUpperCase() === targetRiwayat.nama.trim().toUpperCase() && s.kat === targetRiwayat.kat);
                     if (stokItem) {
                         stokItem.awal -= Number(targetRiwayat.qty || 0);
                         if (stokItem.awal < 0) stokItem.awal = 0;
+                        stokItem.updatedAt = nowTs;
+                        if (Number(stokItem.awal) <= 0 && Number(stokItem.terjual || 0) <= 0) {
+                            window.markLocalEntityDeleted('stok', stokItem.id);
+                        } else {
+                            window.markLocalEntityEdited('stok', stokItem);
+                        }
                     }
                     window.catatLogAktivitas('HAPUS STOK', `Menghapus riwayat stok [${targetRiwayat.kat}] ${targetRiwayat.nama}`);
                 }
                 window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => r.id != id);
                 window.stokOpnameItems = window.stokOpnameItems.filter(s => Number(s.awal) > 0 || Number(s.terjual) > 0);
 
-                window.saveAllToFirebase(false);
+                window.saveMultipleFirebaseNodes({
+                    stok: window.stokOpnameItems,
+                    riwayatBelanjaStok: window.riwayatBelanjaStok
+                }, false);
                 window.renderAll();
             }
         }
@@ -5143,14 +5372,24 @@
             if (!target) return;
             const namaItem = (target.nama || target.namaBarang || '').trim().toUpperCase();
             if (confirm(`Hapus stok "${namaItem}" (${target.kat}) dari daftar Stok Opname?`)) {
+                window.markLocalEntityDeleted('stok', id);
                 window.stokOpnameItems = (window.stokOpnameItems || []).filter(s => s.id != id);
+                (window.riwayatBelanjaStok || []).forEach(r => {
+                    const rNama = (r.nama || r.namaBarang || '').trim().toUpperCase();
+                    if (r.id == id || (rNama === namaItem && r.kat === target.kat)) {
+                        window.markLocalEntityDeleted('riwayatBelanjaStok', r.id);
+                    }
+                });
                 window.riwayatBelanjaStok = (window.riwayatBelanjaStok || []).filter(r => {
                     if (r.id == id) return false;
                     const rNama = (r.nama || r.namaBarang || '').trim().toUpperCase();
                     return !(rNama === namaItem && r.kat === target.kat);
                 });
                 window.catatLogAktivitas('HAPUS STOK', `Menghapus item stok opname [${target.kat}] ${namaItem}`);
-                window.saveAllToFirebase(false);
+                window.saveMultipleFirebaseNodes({
+                    stok: window.stokOpnameItems,
+                    riwayatBelanjaStok: window.riwayatBelanjaStok
+                }, false);
                 window.renderAll();
             }
         }
@@ -5181,8 +5420,8 @@
             const waktu = document.getElementById('pWaktu')?.value || nowTime;
             const tglDisplay = window.formatTanggalJamPiutang(isoDate, waktu);
 
-            const idUnik = Date.now();
-            window.piutangList.unshift({
+            const idUnik = window.getNextUniqueTs();
+            const newPiutang = {
                 id: idUnik,
                 isoDate,
                 waktu,
@@ -5195,22 +5434,31 @@
                 sumber,
                 catatan: ket,
                 status: 'BELUM LUNAS',
-                riwayatCicilan: []
-            });
+                riwayatCicilan: [],
+                updatedAt: idUnik
+            };
+            window.piutangList.unshift(newPiutang);
+            window.markLocalEntityEdited('piutang', newPiutang);
             
-            window.transaksiJurnal.unshift({
+            const newInitTrx = {
                 id: 'trx_init_piutang_' + idUnik, idPiutangRef: idUnik,
                 waktu, isoDate,
                 ket: `[UTANG BARU] ${nama} (${ket})`, qty: 1, kat: 'PIUTANG_INIT', isNewCustomer: false,
-                hargaJual: 0, akunMasuk1: 'PIUTANG', jualSplit1: 0, hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, cuan: 0, isSplit: false, isPencatatanUtangAwal: true
-            });
+                hargaJual: 0, akunMasuk1: 'PIUTANG', jualSplit1: 0, hargaModal: nom, akunKeluar1: sumber, modalSplit1: nom, cuan: 0, isSplit: false, isPencatatanUtangAwal: true,
+                updatedAt: idUnik
+            };
+            window.transaksiJurnal.unshift(newInitTrx);
+            window.markLocalEntityEdited('transaksi', newInitTrx);
 
             const isTanpaPotong = sumber === 'TIDAK POTONG SALDO';
             window.catatLogAktivitas('UTANG BARU', isTanpaPotong
                 ? `Mencatat utang atas nama ${nama} sebesar ${window.formatRp(nom)} (Pindah Data / Tanpa Potong Saldo)`
                 : `Mencatat utang atas nama ${nama} sebesar ${window.formatRp(nom)} dari ${sumber}`);
             window.closeModalInputPiutang();
-            window.saveAllToFirebase(false);
+            window.saveMultipleFirebaseNodes({
+                piutang: window.piutangList,
+                transaksi: window.transaksiJurnal
+            }, false);
             window.renderAll();
             window.showToast(isTanpaPotong
                 ? "✅ Data piutang berhasil dicatat (Hanya menambah Saldo Piutang, tanpa potong saldo kas/bank)!"
@@ -5220,10 +5468,17 @@
         window.hapusPiutang = function(id) {
             const p = window.piutangList.find(item => item.id === id);
             if (confirm("Hapus piutang ini?")) {
+                window.markLocalEntityDeleted('piutang', id);
+                (window.transaksiJurnal || []).forEach(t => {
+                    if (t.idPiutangRef === id) window.markLocalEntityDeleted('transaksi', t.id);
+                });
                 if (p) window.catatLogAktivitas('HAPUS UTANG', `Menghapus catatan piutang atas nama ${p.nama}`);
                 window.piutangList = window.piutangList.filter(p => p.id !== id);
                 window.transaksiJurnal = window.transaksiJurnal.filter(t => t.idPiutangRef !== id);
-                window.saveAllToFirebase(false);
+                window.saveMultipleFirebaseNodes({
+                    piutang: window.piutangList,
+                    transaksi: window.transaksiJurnal
+                }, false);
                 window.renderAll();
             }
         }
@@ -5600,7 +5855,10 @@
             const ket = document.getElementById('setorKet').value.trim().toUpperCase() || 'SETORAN';
             if (!sumber || nom <= 0) return alert("Lengkapi data setoran!");
 
-            window.setoranOwnerList.unshift({ id: Date.now(), waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(), tgl: window.getTodayIso(), sumber, nominal: nom, catatan: ket });
+            const nowTs = window.getNextUniqueTs();
+            const newSetoran = { id: nowTs, waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(), tgl: window.getTodayIso(), sumber, nominal: nom, catatan: ket, updatedAt: nowTs };
+            window.setoranOwnerList.unshift(newSetoran);
+            window.markLocalEntityEdited('setoran', newSetoran);
             document.getElementById('setorNomDisplay').value = '';
             document.getElementById('setorNom').value = '0';
             document.getElementById('boxSetorFast').style.display = 'none';
@@ -5613,6 +5871,7 @@
         window.hapusSetoranOwner = function(id) {
             const s = window.setoranOwnerList.find(item => item.id === id);
             if (confirm("Hapus setoran ini?")) {
+                window.markLocalEntityDeleted('setoran', id);
                 if (s) window.catatLogAktivitas('HAPUS SETORAN', `Menghapus setoran profit ${window.formatRp(s.nominal)} dari ${s.sumber}`);
                 window.setoranOwnerList = window.setoranOwnerList.filter(st => st.id !== id);
                 window.saveToFirebaseNode('setoran', window.setoranOwnerList);
@@ -5624,6 +5883,9 @@
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
             if (confirm(`Hapus transaksi "${t.ket}"?`)) {
+                const nowTs = window.getNextUniqueTs();
+                const nodesToSave = { transaksi: null };
+
                 // PEMULIHAN PIUTANG JIKA TRANSAKSI PELUNASAN / CICILAN DIHAPUS
                 if (t.idPiutangRef || t.kat === 'PIUTANG' || (t.ket && t.ket.includes('[PELUNASAN UTANG]'))) {
                     let p = window.piutangList.find(x => x.id === t.idPiutangRef);
@@ -5635,9 +5897,12 @@
                         const bayarVal = Number(t.hargaJual || 0);
                         p.sisa = Number(p.sisa || 0) + bayarVal;
                         p.status = 'BELUM LUNAS';
+                        p.updatedAt = nowTs;
                         if (p.riwayatCicilan && Array.isArray(p.riwayatCicilan)) {
                             p.riwayatCicilan = p.riwayatCicilan.filter(c => c.trxId !== t.id);
                         }
+                        window.markLocalEntityEdited('piutang', p);
+                        nodesToSave.piutang = window.piutangList;
                         window.catatLogAktivitas('PEMULIHAN UTANG', `Pelunasan dihapus, sisa piutang ${p.nama} dikembalikan menjadi ${window.formatRp(p.sisa)}`);
                     }
                 }
@@ -5652,6 +5917,9 @@
                     if (sp) {
                         sp.status = 'BELUM LUNAS';
                         sp.trxIdRef = null;
+                        sp.updatedAt = nowTs;
+                        window.markLocalEntityEdited('sparepart', sp);
+                        nodesToSave.sparepart = window.sparepartList;
                         window.catatLogAktivitas('PEMULIHAN PART', `Penjualan dihapus, sparepart "${sp.namaUnit}" dikembalikan ke status BELUM LUNAS (Aset Aktif)`);
                     }
                 }
@@ -5662,14 +5930,21 @@
                     if (tk) {
                         tk.status = 'SIAP DIAMBIL';
                         tk.isSettledInKasir = false;
+                        tk.updatedAt = nowTs;
+                        window.markLocalEntityEdited('tiketServis', tk);
+                        nodesToSave.tiketServis = window.tiketServisList;
                     }
                 }
 
                 window.markLocalTrxDeleted(idTrx);
                 window.catatLogAktivitas('HAPUS TRX', `Menghapus transaksi "${t.ket}" (${window.formatRp(t.hargaJual)})`);
                 window.transaksiJurnal = window.transaksiJurnal.filter(item => item.id != idTrx);
+                nodesToSave.transaksi = window.transaksiJurnal;
                 window.renderAll();
-                window.saveAllToFirebase(false);
+                if (nodesToSave.piutang) nodesToSave.piutang = window.piutangList;
+                if (nodesToSave.sparepart) nodesToSave.sparepart = window.sparepartList;
+                if (nodesToSave.tiketServis) nodesToSave.tiketServis = window.tiketServisList;
+                window.saveMultipleFirebaseNodes(nodesToSave, false);
                 window.showToast("✅ Transaksi dihapus & saldo/status berhasil dipulihkan!", "success");
             }
         };
@@ -5705,11 +5980,15 @@
             const admin = parseFloat(document.getElementById('tfAdmin_fast').value) || 0;
             if (!sumber || !tujuan || sumber === tujuan || nom <= 0) return alert("Periksa data transfer saldo!");
 
-            window.transaksiJurnal.unshift({
-                id: 'trx_tf_' + Date.now(), waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(),
+            const nowTs = window.getNextUniqueTs();
+            const tfTrx = {
+                id: 'trx_tf_' + nowTs, waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(),
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'GADAI', isNewCustomer: false,
-                hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true
-            });
+                hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true,
+                updatedAt: nowTs
+            };
+            window.transaksiJurnal.unshift(tfTrx);
+            window.markLocalTrxEdited(tfTrx);
             document.getElementById('boxTfFast').style.display = 'none';
             window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
@@ -5870,11 +6149,15 @@
             const admin = parseFloat(document.getElementById('tfAdmin').value) || 0;
             if (!sumber || !tujuan || sumber === tujuan || nom <= 0) return alert("Periksa data transfer saldo!");
 
-            window.transaksiJurnal.unshift({
-                id: 'trx_tf_' + Date.now(), waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(),
+            const nowTs = window.getNextUniqueTs();
+            const tfTrx = {
+                id: 'trx_tf_' + nowTs, waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(),
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'GADAI', isNewCustomer: false,
-                hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true
-            });
+                hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true,
+                updatedAt: nowTs
+            };
+            window.transaksiJurnal.unshift(tfTrx);
+            window.markLocalTrxEdited(tfTrx);
             window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
@@ -5958,7 +6241,7 @@
 
             if (!akunMasuk1) return alert("Pilih Akun Masuk!");
 
-            const nowMs = Date.now();
+            const nowMs = window.getNextUniqueTs();
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
             const trxData = {
@@ -6000,6 +6283,10 @@
                 window.catatLogAktivitas('TAMBAH TRX', `Mencatat transaksi baru [${kat}] "${ket}" (${window.formatRp(hargaJualTotal)})`);
             }
 
+            let touchedTiket = false;
+            let touchedSparepart = false;
+            let touchedPiutang = false;
+
             if (window._pendingTiketIdToLunas) {
                 const tk = window.tiketServisList.find(x => x.id == window._pendingTiketIdToLunas);
                 const spFromTiket = window.sparepartList.find(s => s.idTiketRef == window._pendingTiketIdToLunas);
@@ -6007,12 +6294,18 @@
                     const pakaiModal = Boolean((tk.perluSparepart && Number(tk.modalPart || 0) > 0) || (spFromTiket && Number(spFromTiket.modal || 0) > 0));
                     tk.isSettledInKasir = true;
                     tk.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
+                    tk.updatedAt = nowMs;
+                    window.markLocalEntityEdited('tiketServis', tk);
+                    touchedTiket = true;
                     window.catatLogAktivitas('SERVIS SELESAI', `Tiket ${tk.noServis} (${tk.nama}) otomatis ${tk.status} via kasir`);
                 }
                 if (spFromTiket) {
                     spFromTiket.status = 'LUNAS';
                     spFromTiket.trxIdRef = trxData.id;
+                    spFromTiket.updatedAt = nowMs;
                     trxData.idSparepartRef = spFromTiket.id;
+                    window.markLocalEntityEdited('sparepart', spFromTiket);
+                    touchedSparepart = true;
                 }
                 window._pendingTiketIdToLunas = null;
             }
@@ -6022,6 +6315,9 @@
                 if (sp) {
                     sp.status = 'LUNAS';
                     sp.trxIdRef = trxData.id;
+                    sp.updatedAt = nowMs;
+                    window.markLocalEntityEdited('sparepart', sp);
+                    touchedSparepart = true;
                     window.catatLogAktivitas('LUNAS SPAREPART', `Sparepart "${sp.namaUnit}" otomatis LUNAS via kasir`);
                 }
                 window._pendingSparepartIdToLunas = null;
@@ -6030,11 +6326,17 @@
             if (window._pendingPiutangIdToLunas) {
                 const p = window.piutangList.find(x => x.id == window._pendingPiutangIdToLunas);
                 if (p) {
+                    p.updatedAt = nowMs;
+                    touchedPiutang = true;
                     const targetMasukInfo = isSplit && akunMasuk2 ? `${akunMasuk1} & ${akunMasuk2}` : akunMasuk1;
                     window.catatLogAktivitas('PELUNASAN UTANG', `Menerima pembayaran piutang ${p.nama} sebesar ${window.formatRp(hargaJualTotal)} masuk ke ${targetMasukInfo}`);
                 }
                 window._pendingPiutangIdToLunas = null;
             }
+
+            if (trxData.idTiketRef) touchedTiket = true;
+            if (trxData.idSparepartRef || trxData.akunKeluar1 === 'SPAREPART' || trxData.akunKeluar2 === 'SPAREPART') touchedSparepart = true;
+            if (trxData.idPiutangRef || trxData.kat === 'PIUTANG' || trxData.akunKeluar1 === 'PIUTANG') touchedPiutang = true;
 
             // Simpan ke proteksi lokal anti-rollback sebelum sinkronisasi Firebase
             window.markLocalTrxEdited(trxData);
@@ -6048,7 +6350,40 @@
 
             window.closeModalKasir();
             window.renderAll();
-            window.saveAllToFirebase(false);
+
+            // Hanya simpan node yang benar-benar berubah (bukan saveAllToFirebase yang menimpa modul lain!)
+            const nodesToSync = { transaksi: window.transaksiJurnal };
+            if (touchedTiket) {
+                if (trxData.idTiketRef) {
+                    const tkRef = window.tiketServisList.find(x => x.id == trxData.idTiketRef);
+                    if (tkRef) {
+                        tkRef.updatedAt = nowMs;
+                        window.markLocalEntityEdited('tiketServis', tkRef);
+                    }
+                }
+                nodesToSync.tiketServis = window.tiketServisList;
+            }
+            if (touchedSparepart) {
+                if (trxData.idSparepartRef) {
+                    const spRef = window.sparepartList.find(x => x.id == trxData.idSparepartRef);
+                    if (spRef) {
+                        spRef.updatedAt = nowMs;
+                        window.markLocalEntityEdited('sparepart', spRef);
+                    }
+                }
+                nodesToSync.sparepart = window.sparepartList;
+            }
+            if (touchedPiutang) {
+                if (trxData.idPiutangRef) {
+                    const pRef = window.piutangList.find(x => x.id == trxData.idPiutangRef);
+                    if (pRef) {
+                        pRef.updatedAt = nowMs;
+                        window.markLocalEntityEdited('piutang', pRef);
+                    }
+                }
+                nodesToSync.piutang = window.piutangList;
+            }
+            window.saveMultipleFirebaseNodes(nodesToSync, false);
 
             if (editId) {
                 window.highlightRowAndScroll(`row-trx-${trxData.id}`);
@@ -8076,7 +8411,8 @@
                     if (d.setoranOwnerList) window.setoranOwnerList = d.setoranOwnerList;
                     if (d.logAktivitasList) window.logAktivitasList = d.logAktivitasList;
 
-                    window.saveAllToFirebase();
+                    window.clearAllEntityProtection();
+                    window.saveAllToFirebase(false, true);
                     window.applyPengaturanTokoKeUI();
                     if (window.updateUserAvatarUI) window.updateUserAvatarUI();
                     if (window.renderDaftarKaryawanSettings) window.renderDaftarKaryawanSettings();
