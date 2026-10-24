@@ -83,18 +83,40 @@
             background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 12px 14px; border-radius: 14px; margin-bottom: 8px; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
-        .header-top { display: flex; justify-content: space-between; align-items: center; }
-        .header-title { display: flex; align-items: center; gap: 8px; }
-        .header-logo-svg { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); background: #FFF; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; }
-        .header-title h1 { font-size: 16px; font-weight: 800; color: #FFF; letter-spacing: 0.5px; }
-        .header-actions { display: flex; gap: 6px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .header-title { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+        .header-logo-svg { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); background: #FFF; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .header-title h1 { font-size: 16px; font-weight: 800; color: #FFF; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
         .btn-icon-hdr { 
-            background: rgba(255,255,255,0.2); color: #FFF; border: none; width: 36px; height: 36px; 
-            border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; justify-content: center; 
-            align-items: center; transition: transform 0.2s, background-color 0.2s; position: relative; overflow: visible;
+            background: rgba(255,255,255,0.2); color: #FFF; border: none; width: 34px; height: 34px; 
+            border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; justify-content: center; 
+            align-items: center; transition: transform 0.2s, background-color 0.2s; position: relative; overflow: visible; flex-shrink: 0;
+        }
+        #btnHeaderGlobalFind {
+            width: 34px; height: 34px; padding: 0; border-radius: 50%;
+            background: rgba(15,23,42,0.32); border: 1.5px solid rgba(254,240,138,0.75);
+            gap: 5px; font-size: 13px; font-weight: 800; color: #FEF08A;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+        #btnHeaderGlobalFind .find-btn-label,
+        #btnHeaderGlobalFind .kbd-shortcut {
+            display: none;
         }
         .btn-icon-hdr:active { transform: scale(0.9); }
         .btn-icon-hdr:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @media (max-width: 640px) {
+            header { padding: 10px 10px; }
+            .header-title { gap: 6px; }
+            .header-logo-svg { width: 30px; height: 30px; }
+            .header-logo-svg svg { width: 22px; height: 22px; }
+            .header-title h1 { font-size: 13px; letter-spacing: 0.2px; }
+            .header-actions { gap: 4px; }
+            .btn-icon-hdr, #btnHeaderGlobalFind { width: 30px; height: 30px; font-size: 13px; }
+            .btn-icon-hdr svg { width: 15px; height: 15px; }
+            .header-status-bar { padding: 5px 8px; gap: 4px; }
+        }
 
         .header-status-bar {
             display: flex; justify-content: space-between; align-items: center; gap: 6px; background: rgba(255,255,255,0.15);
@@ -107,7 +129,7 @@
         }
         .status-marquee-track {
             display: inline-block; white-space: nowrap; padding-left: 100%;
-            font-size: 10px; font-weight: 800; color: #FEF08A; letter-spacing: 0.4px;
+            font-size: 11px; font-weight: 800; color: #FEF08A; letter-spacing: 0.4px;
             animation: statusMarqueeScroll 22s linear infinite;
         }
         .status-marquee-box:hover .status-marquee-track {
@@ -727,14 +749,79 @@
         .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 90px; margin: 4px auto; text-align: center; }
         .pin-dot { width: 16px; height: 16px; border: 1px solid #94A3B8; border-radius: 50%; display: inline-block; }
 
+        /* Tata Letak Proporsional Tabel Rekap Piutang Konsumen (PC & HP) */
+        .table-piutang {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        .table-piutang th,
+        .table-piutang td {
+            vertical-align: middle;
+            padding: 8px 10px;
+        }
+        .table-piutang th:nth-child(1), .table-piutang td:nth-child(1) { text-align: left; white-space: nowrap; width: 115px; }
+        .table-piutang th:nth-child(2), .table-piutang td:nth-child(2) { text-align: left; white-space: normal; min-width: 145px; max-width: 210px; }
+        .table-piutang th:nth-child(3), .table-piutang td:nth-child(3) { text-align: left; white-space: normal; min-width: 140px; max-width: 240px; }
+        .table-piutang th:nth-child(4), .table-piutang td:nth-child(4) { text-align: right; white-space: nowrap; width: 120px; }
+        .table-piutang th:nth-child(5), .table-piutang td:nth-child(5) { text-align: left; white-space: normal; min-width: 165px; max-width: 260px; line-height: 1.35; }
+        .table-piutang th:nth-child(6), .table-piutang td:nth-child(6) { text-align: center; white-space: nowrap; width: 95px; }
+        .table-piutang th:nth-child(7), .table-piutang td:nth-child(7) { text-align: center; white-space: nowrap; width: 115px; }
+        .table-piutang th:nth-child(8), .table-piutang td:nth-child(8) { text-align: center; white-space: nowrap; width: 110px; }
+        .table-piutang th:nth-child(9), .table-piutang td:nth-child(9) { text-align: center; white-space: nowrap; width: 1%; }
+        .row-piutang-lunas-today {
+            background-color: rgba(22, 163, 74, 0.07);
+        }
+        body.theme-dark .row-piutang-lunas-today {
+            background-color: rgba(22, 163, 74, 0.15);
+        }
+        .piutang-aksi-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: nowrap;
+        }
+        .btn-piutang-aksi {
+            border: none;
+            border-radius: 6px;
+            padding: 5px 9px;
+            font-size: 10.5px;
+            font-weight: 800;
+            color: #FFF;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        .btn-piutang-aksi:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
+        }
+        .btn-piutang-aksi:active {
+            transform: scale(0.95);
+        }
+
         @media (min-width: 768px) {
             body { max-width: 1250px; padding: 16px; padding-bottom: 90px; }
             header { padding: 14px 18px; }
             .header-title h1 { font-size: 18px; }
             .header-status-bar { font-size: 12.5px; padding: 6px 12px; }
             .status-marquee-box { margin: 0 12px; padding: 4px 14px; }
-            .status-marquee-track { font-size: 11px; }
+            .status-marquee-track { font-size: 12.5px; }
             .btn-icon-hdr { width: 38px; height: 38px; font-size: 16px; }
+            #btnHeaderGlobalFind {
+                width: auto; height: 38px; padding: 0 12px; border-radius: 999px; font-size: 12px;
+            }
+            #btnHeaderGlobalFind .find-btn-label {
+                display: inline-block; font-size: 11px; letter-spacing: 0.3px;
+            }
+            #btnHeaderGlobalFind .kbd-shortcut {
+                display: inline-block;
+            }
             .summary-grid { gap: 10px; margin-bottom: 10px; }
             .summary-card { padding: 11px 10px; border-radius: 12px; }
             .summary-card .lbl { font-size: 10px; margin-bottom: 4px; letter-spacing: 0.3px; }
@@ -1252,10 +1339,10 @@
                     <h1 id="appHeaderShopName">POS ZENCELL 1</h1>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon-hdr" id="btnHeaderGlobalFind" onclick="bukaModalGlobalFind()" title="Cari Data Cepat Ala Excel (Shortcut: Ctrl+F atau Ctrl+K)" style="width:auto; padding:0 11px; border-radius:999px; background:rgba(15,23,42,0.32); border:1.5px solid rgba(254,240,138,0.75); gap:5px; font-size:12px; font-weight:800; color:#FEF08A; box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+                    <button class="btn-icon-hdr" id="btnHeaderGlobalFind" onclick="bukaModalGlobalFind()" title="Cari Data Cepat Ala Excel (Shortcut: Ctrl+F atau Ctrl+K)">
                         <span>🔍</span>
-                        <span style="font-size:11px; letter-spacing:0.3px;">CARI</span>
-                        <span class="kbd-shortcut" style="display:inline-block;">Ctrl+F</span>
+                        <span class="find-btn-label">CARI</span>
+                        <span class="kbd-shortcut">Ctrl+F</span>
                     </button>
                     <button class="btn-icon-hdr" id="btnUndo" onclick="doUndo()" title="Undo (Batal Langkah)" disabled>↩️</button>
                     <button class="btn-icon-hdr" id="btnRedo" onclick="doRedo()" title="Redo (Ulang Langkah)" disabled>↪️</button>
@@ -1704,14 +1791,22 @@
 
     <div id="tab-piutang" class="tab-content" style="margin-top:6px;">
         <div class="card">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span>🤝 REKAP PIUTANG KONSUMEN</span>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span>🤝 REKAP PIUTANG KONSUMEN (BELUM LUNAS & LUNAS HARI INI)</span>
+                    <span id="badgeCountPiutangAktif" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Belum Lunas</span>
+                    <span id="badgeCountPiutangLunasToday" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; display:none;">0 Lunas Hari Ini</span>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <input type="text" id="piutangAktifSearchInput" class="form-control" placeholder="🔍 Cari nama / ket..." oninput="renderAll()" style="width:165px; padding:4px 9px; font-size:11px; height:28px;">
                     <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
                 </div>
             </div>
+            <div style="font-size:10.5px; color:#64748B; margin-bottom:8px; padding:0 2px;">
+                💡 <i>Piutang yang dilunasi <b>hari ini</b> tetap tampil di tabel ini (warna hijau) agar mudah dicek. Setelah <b>berganti hari (besoknya)</b>, data yang sudah lunas otomatis berpindah ke tabel <b>Rekapan Piutang Lunas (Arsip Lewat Hari)</b> di bawah.</i>
+            </div>
             <div class="table-responsive">
-                <table>
+                <table class="table-piutang">
                     <thead>
                         <tr>
                             <th>TGL & WAKTU</th>
@@ -1726,6 +1821,36 @@
                         </tr>
                     </thead>
                     <tbody id="bodyPiutang"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:12px; border-top:3px solid #16A34A;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(22, 163, 74, 0.1); color:#15803D;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span>✅ REKAPAN PIUTANG LUNAS (ARSIP LEWAT HARI)</span>
+                    <span id="badgeCountPiutangArsip" style="background:#FFFFFF; color:#15803D; border:1px solid #86EFAC; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Data Lunas</span>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <input type="text" id="piutangLunasSearchInput" class="form-control" placeholder="🔍 Cari arsip lunas..." oninput="renderAll()" style="width:175px; padding:4px 9px; font-size:11px; height:28px;">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table-piutang">
+                    <thead>
+                        <tr>
+                            <th>TGL & WAKTU UTANG</th>
+                            <th>NAMA PELANGGAN</th>
+                            <th>KETERANGAN</th>
+                            <th>TOTAL LUNAS</th>
+                            <th>HISTORI PELUNASAN</th>
+                            <th>KATEGORI</th>
+                            <th>KELUAR DR</th>
+                            <th>TGL LUNAS</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyPiutangLunasArsip"></tbody>
                 </table>
             </div>
         </div>
@@ -6764,6 +6889,12 @@
                 p.riwayatCicilan = listCicilan;
                 p.sisa = Math.max(0, Number(p.pokokAwal || 0) - totalTerbayar);
                 p.status = (p.sisa <= 0 && Number(p.pokokAwal || 0) > 0) ? 'LUNAS' : 'BELUM LUNAS';
+                if (p.status === 'LUNAS') {
+                    const latestCicilanTgl = listCicilan.reduce((maxTgl, c) => (c.tgl && c.tgl > maxTgl ? c.tgl : maxTgl), '');
+                    p.tglLunas = latestCicilanTgl || p.tglLunas || p.isoDate || '';
+                } else {
+                    p.tglLunas = '';
+                }
             });
 
             window.stokOpnameItems.forEach(s => { s.terjual = 0; });
@@ -7063,36 +7194,134 @@
             let totalPiutang = 0;
             let totalPokokPiutangAll = 0;
             let totalTerbayarPiutangAll = 0;
+            const todayIsoPiutang = window.getTodayIso();
+            const qPiutangAktif = (document.getElementById('piutangAktifSearchInput')?.value || '').trim().toLowerCase();
+            const qPiutangArsip = (document.getElementById('piutangLunasSearchInput')?.value || '').trim().toLowerCase();
+
+            let listPiutangUtama = [];
+            let listPiutangArsipLunas = [];
+            let countBelumLunas = 0;
+            let countLunasHariIni = 0;
+
+            window.piutangList.forEach(p => {
+                const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
+                const activeSisa = isLunas ? 0 : Number(p.sisa || 0);
+                const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
+                totalPiutang += activeSisa;
+                totalPokokPiutangAll += pokokAwalP;
+                totalTerbayarPiutangAll += Math.max(0, pokokAwalP - activeSisa);
+
+                const tglLunasP = p.tglLunas || p.isoDate || '';
+                const isLunasLewatHari = isLunas && (tglLunasP !== todayIsoPiutang);
+
+                if (isLunasLewatHari) {
+                    listPiutangArsipLunas.push(p);
+                } else {
+                    if (isLunas) countLunasHariIni++;
+                    else countBelumLunas++;
+                    listPiutangUtama.push(p);
+                }
+            });
+
+            // Urutkan tabel utama: BELUM LUNAS di atas, LUNAS HARI INI di bawah
+            listPiutangUtama.sort((a, b) => {
+                const lunasA = (a.status === 'LUNAS' || a.sisa <= 0) ? 1 : 0;
+                const lunasB = (b.status === 'LUNAS' || b.sisa <= 0) ? 1 : 0;
+                if (lunasA !== lunasB) return lunasA - lunasB;
+                return (b.id || 0) - (a.id || 0);
+            });
+
+            // Urutkan arsip lunas lewat hari: dari tanggal lunas terbaru
+            listPiutangArsipLunas.sort((a, b) => {
+                const tglA = a.tglLunas || a.isoDate || '';
+                const tglB = b.tglLunas || b.isoDate || '';
+                if (tglA !== tglB) return tglB.localeCompare(tglA);
+                return (b.id || 0) - (a.id || 0);
+            });
+
+            const badgeAktifEl = document.getElementById('badgeCountPiutangAktif');
+            if (badgeAktifEl) badgeAktifEl.innerText = `${countBelumLunas} Belum Lunas (${window.formatRp(totalPiutang)})`;
+            const badgeTodayEl = document.getElementById('badgeCountPiutangLunasToday');
+            if (badgeTodayEl) {
+                badgeTodayEl.style.display = countLunasHariIni > 0 ? 'inline-block' : 'none';
+                badgeTodayEl.innerText = `${countLunasHariIni} Lunas Hari Ini`;
+            }
+            const badgeArsipEl = document.getElementById('badgeCountPiutangArsip');
+            if (badgeArsipEl) badgeArsipEl.innerText = `${listPiutangArsipLunas.length} Data Lunas`;
+
             const bPiutang = document.getElementById('bodyPiutang');
             if (bPiutang) {
-                bPiutang.innerHTML = window.piutangList.map(p => {
-                    const activeSisa = p.status === 'LUNAS' ? 0 : Number(p.sisa || 0);
-                    const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
-                    totalPiutang += activeSisa;
-                    totalPokokPiutangAll += pokokAwalP;
-                    totalTerbayarPiutangAll += Math.max(0, pokokAwalP - activeSisa);
+                const filteredUtama = listPiutangUtama.filter(p => {
+                    if (!qPiutangAktif) return true;
+                    const hay = `${p.nama || ''} ${p.catatan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''}`.toLowerCase();
+                    return hay.includes(qPiutangAktif);
+                });
+                bPiutang.innerHTML = filteredUtama.map(p => {
                     const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
+                    const activeSisa = isLunas ? 0 : Number(p.sisa || 0);
+                    const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
                     const tglJamStr = window.formatTanggalJamPiutang(p.isoDate, p.waktu, p.tglDisplay);
                     return `
-                        <tr id="row-piutang-${p.id}">
-                            <td style="white-space:nowrap;"><b>${tglJamStr}</b><br><small style="color:#64748B;">${p.isoDate || '-'}</small></td>
+                        <tr id="row-piutang-${p.id}" class="${isLunas ? 'row-piutang-lunas-today' : ''}">
+                            <td><b>${tglJamStr}</b><br><small style="color:#64748B;">${p.isoDate || '-'}</small></td>
                             <td><b>${p.nama}</b><br><small style="color:#0284C7; font-weight:600;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small></td>
-                            <td><span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? '#0F172A' : '#94A3B8'};">${p.catatan || '-'}</span></td>
-                            <td class="text-debit"><b>${window.formatRp(activeSisa)}</b></td>
-                            <td style="font-size:10px;">${p.riwayatCicilan?.map(c => `• ${c.tgl}:${window.formatRp(c.bayar)} (${c.keAkun || 'LACI'})`).join('<br>') || 'Belum ada'}</td>
-                            <td>${p.kategori || 'LAIN-LAIN'}</td>
-                            <td><span style="font-size:10px; font-weight:700; color:${p.sumber === 'TIDAK POTONG SALDO' ? '#64748B' : '#0F172A'};">${p.sumber || 'TIDAK POTONG SALDO'}</span></td>
-                            <td><span style="color:${isLunas ? '#16A34A' : '#EF4444'}; font-weight:bold;">${isLunas ? 'LUNAS' : 'BELUM'}</span></td>
+                            <td><span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
+                            <td class="${isLunas ? 'text-kredit' : 'text-debit'}">
+                                <b>${window.formatRp(activeSisa)}</b>
+                                ${pokokAwalP > 0 ? `<br><small style="color:#64748B; font-size:9.5px;">Awal: ${window.formatRp(pokokAwalP)}</small>` : ''}
+                            </td>
+                            <td style="font-size:10.5px;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#94A3B8;">Belum ada cicilan</span>'}</td>
+                            <td><span style="font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--primary-light); color:var(--primary);">${p.kategori || 'LAIN-LAIN'}</span></td>
+                            <td><span style="font-size:10px; font-weight:700; color:${p.sumber === 'TIDAK POTONG SALDO' ? '#64748B' : 'var(--text)'};">${p.sumber || 'TIDAK POTONG SALDO'}</span></td>
                             <td>
-                                <div style="display:flex; gap:3px; justify-content:center;">
-                                    ${!isLunas ? `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="bukaKasirUntukPiutang(${p.id})" title="Buka Kasir & Catat Pelunasan / Cicilan">💰 Lunasi</button>` : ''}
-                                    ${!isLunas ? `<button class="btn" style="background:#25D366; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="kirimWaPengingatPiutang(${p.id})" title="Kirim Pesan Tagihan ke WhatsApp Pelanggan">📲 WA</button>` : ''}
-                                    <button class="btn-delete" style="padding:3px 7px; font-size:10px;" onclick="hapusPiutang(${p.id})">Hapus</button>
+                                ${isLunas
+                                    ? `<span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800;">✅ LUNAS HARI INI</span>`
+                                    : `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800;">⏳ BELUM LUNAS</span>`
+                                }
+                            </td>
+                            <td>
+                                <div class="piutang-aksi-wrap">
+                                    ${!isLunas ? `<button class="btn-piutang-aksi" style="background:linear-gradient(135deg, #16A34A, #059669);" onclick="bukaKasirUntukPiutang(${p.id})" title="Buka Kasir & Catat Pelunasan / Cicilan">💰 Lunasi</button>` : ''}
+                                    ${!isLunas ? `<button class="btn-piutang-aksi" style="background:linear-gradient(135deg, #25D366, #16A34A);" onclick="kirimWaPengingatPiutang(${p.id})" title="Kirim Pesan Tagihan ke WhatsApp Pelanggan">📲 WA</button>` : ''}
+                                    <button class="btn-piutang-aksi" style="background:linear-gradient(135deg, #EF4444, #DC2626);" onclick="hapusPiutang(${p.id})" title="Hapus Data Piutang">🗑️ Hapus</button>
                                 </div>
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8;">Belum ada piutang.</td></tr>`;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada piutang aktif / lunas hari ini.</td></tr>`;
+            }
+
+            const bPiutangArsip = document.getElementById('bodyPiutangLunasArsip');
+            if (bPiutangArsip) {
+                const filteredArsip = listPiutangArsipLunas.filter(p => {
+                    if (!qPiutangArsip) return true;
+                    const hay = `${p.nama || ''} ${p.catatan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''} ${p.tglLunas || ''}`.toLowerCase();
+                    return hay.includes(qPiutangArsip);
+                });
+                bPiutangArsip.innerHTML = filteredArsip.map(p => {
+                    const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
+                    const tglJamStr = window.formatTanggalJamPiutang(p.isoDate, p.waktu, p.tglDisplay);
+                    return `
+                        <tr id="row-piutang-${p.id}">
+                            <td><b>${tglJamStr}</b><br><small style="color:#64748B;">${p.isoDate || '-'}</small></td>
+                            <td><b>${p.nama}</b><br><small style="color:#0284C7; font-weight:600;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small></td>
+                            <td><span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
+                            <td class="text-kredit"><b>${window.formatRp(pokokAwalP)}</b><br><small style="color:#16A34A; font-size:9.5px; font-weight:700;">Sisa: Rp 0</small></td>
+                            <td style="font-size:10.5px;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#16A34A; font-weight:700;">Lunas</span>'}</td>
+                            <td><span style="font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--primary-light); color:var(--primary);">${p.kategori || 'LAIN-LAIN'}</span></td>
+                            <td><span style="font-size:10px; font-weight:700; color:${p.sumber === 'TIDAK POTONG SALDO' ? '#64748B' : 'var(--text)'};">${p.sumber || 'TIDAK POTONG SALDO'}</span></td>
+                            <td>
+                                <span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800;">✅ LUNAS</span>
+                                <br><small style="color:#64748B; font-weight:700; font-size:9.5px;">${p.tglLunas || '-'}</small>
+                            </td>
+                            <td>
+                                <div class="piutang-aksi-wrap">
+                                    <button class="btn-piutang-aksi" style="background:linear-gradient(135deg, #EF4444, #DC2626);" onclick="hapusPiutang(${p.id})" title="Hapus Riwayat Piutang Lunas">🗑️ Hapus</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada arsip piutang lunas lewat hari.</td></tr>`;
             }
             document.getElementById('topTotalPiutangVal').innerText = window.formatRp(totalPiutang);
 
