@@ -246,17 +246,6 @@
         .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c8 {
             background: linear-gradient(135deg, #1E3A8A 0%, #0284C7 100%) !important;
         }
-        /* Mode Klasik Putih (Fallback jika dimatikan) */
-        .top-kpi-wrapper.kpi-mode-classic .kpi-icon-box {
-            display: none;
-        }
-        .top-kpi-wrapper.kpi-mode-classic .kpi-content-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
         /* Responsif untuk layar HP sempit agar nominal Rp puluhan juta tetap utuh */
         @media (max-width: 560px) {
             .top-kpi-wrapper.kpi-mode-modern .summary-card {
@@ -1202,10 +1191,6 @@
                             <path d="M12 7v5l4 2"></path>
                         </svg>
                     </button>
-                    <button class="btn-icon-hdr" id="btnToggleKpiStyle" onclick="toggleKpiCardStyle()" title="Ganti Gaya 8 Kartu Informasi (Modern Berwarna / Klasik Putih)" style="width:auto; padding:0 9px; border-radius:999px; font-size:10.5px; font-weight:800; gap:4px;">
-                        <span>💎</span>
-                        <span id="lblKpiStyleBtn" style="font-size:10px;">Kartu Modern</span>
-                    </button>
                     <button class="btn-icon-hdr" onclick="switchTheme()" title="Ganti Tema">🎨</button>
                     <button class="btn-icon-hdr" id="btnHeaderSetting" onclick="bukaMenuSettingJSON()" title="Pengaturan Toko (Khusus Owner)">⚙️</button>
                     <button class="btn-icon-hdr" onclick="prosesLogout()" title="Logout Akun" style="background:linear-gradient(135deg, #38BDF8, #A855F7); border:1px solid #E9D5FF; box-shadow:0 2px 6px rgba(168,85,247,0.4);" aria-label="Logout Akun">
@@ -1320,7 +1305,7 @@
                 <div class="saldo-banner-info">
                     <span class="saldo-banner-title">TOTAL SALDO KONTER</span>
                     <div class="saldo-banner-val-wrap">
-                        <span class="saldo-banner-sub" id="topTotalSaldoSub">(100% Kas Cair)</span>
+                        <span class="saldo-banner-sub" id="topTotalSaldoSub">Cair: Rp0</span>
                         <span class="saldo-banner-val" id="topTotalSaldoRiil">Rp0</span>
                     </div>
                 </div>
@@ -2100,40 +2085,93 @@
 
         <div id="sub-vlookup" class="sub-tab-content">
             <div class="card">
-                <div class="card-header" id="formVlookupTitle">+ Aturan Auto-Fill VLOOKUP</div>
+                <div class="card-header" id="formVlookupTitle">+ Aturan Auto-Fill VLOOKUP (Standar & Split Saldo)</div>
                 <form id="formVlookup" onsubmit="simpanVlookup(event)">
                     <input type="hidden" id="editVlookupKey" value="">
-                    <div class="form-group">
-                        <label>Kata Kunci</label>
-                        <input type="text" id="v_ket" class="form-control" placeholder="CONTOH: V TRI 5/3" required>
-                    </div>
-                    <div class="row-3">
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Kata Kunci</label>
+                            <input type="text" id="v_ket" class="form-control" placeholder="CONTOH: V TRI 5/3" required>
+                        </div>
                         <div class="form-group">
                             <label>Kategori</label>
                             <select id="v_kat" class="form-control"></select>
                         </div>
+                    </div>
+
+                    <div class="row-2">
                         <div class="form-group">
-                            <label>Akun Masuk</label>
+                            <label id="lblVlookupMasuk1">Akun Masuk (Pemasukan 1)</label>
                             <select id="v_akunMasuk" class="form-control"></select>
                         </div>
                         <div class="form-group">
-                            <label>Akun Keluar</label>
-                            <select id="v_akunKeluar" class="form-control"></select>
-                        </div>
-                    </div>
-                    <div class="row-2">
-                        <div class="form-group">
-                            <label>Default Harga Jual (Rp)</label>
-                            <input type="text" id="v_jualDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_jual')">
+                            <label id="lblVlookupJual1">Default Harga Jual / Masuk 1 (Rp)</label>
+                            <input type="text" id="v_jualDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_jual'); updateVlookupSplitSummary();">
                             <input type="hidden" id="v_jual" value="0">
                         </div>
+                    </div>
+
+                    <div class="row-2">
                         <div class="form-group">
-                            <label>Default Harga Modal (Rp)</label>
-                            <input type="text" id="v_modalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_modal')">
+                            <label id="lblVlookupKeluar1">Akun Keluar (Pengeluaran 1)</label>
+                            <select id="v_akunKeluar" class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                            <label id="lblVlookupModal1">Default Harga Modal / Keluar 1 (Rp)</label>
+                            <input type="text" id="v_modalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_modal'); updateVlookupSplitSummary();">
                             <input type="hidden" id="v_modal" value="0">
                         </div>
                     </div>
-                    <button type="submit" id="btnSubmitVlookup" class="btn">Simpan VLOOKUP</button>
+
+                    <div class="form-group" style="margin-top:2px; margin-bottom:10px; background:var(--primary-light); border:1px dashed var(--primary); padding:8px 12px; border-radius:8px;">
+                        <label style="font-size:11.5px; cursor:pointer; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:7px; margin:0;">
+                            <input type="checkbox" id="v_chkSplit" onchange="toggleVlookupSplitForm(this.checked)" style="width:16px; height:16px;">
+                            🔀 Aktifkan Split Saldo Lanjutan (2 Akun Pemasukan / 2 Akun Pengeluaran)
+                        </label>
+                    </div>
+
+                    <div id="boxVlookupSplitAdvanced" style="display:none; margin-bottom:12px;">
+                        <div class="split-box" style="margin-bottom:8px;">
+                            <b style="font-size:11px; color:var(--primary); display:block; margin-bottom:6px;">💰 Tambahan Pemasukan Ke-2 (Opsional - Kosongkan jika hanya 1 Pemasukan)</b>
+                            <div class="row-2">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Akun Masuk 2</label>
+                                    <select id="v_akunMasuk2" class="form-control"></select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Nominal Masuk 2 (Rp)</label>
+                                    <input type="text" id="v_jual2Display" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_jual2'); updateVlookupSplitSummary();">
+                                    <input type="hidden" id="v_jual2" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="split-box" style="background:#FEF2F2; border-color:#FECACA; margin-bottom:8px;">
+                            <b style="font-size:11px; color:#EF4444; display:block; margin-bottom:6px;">💸 Tambahan Pengeluaran / Modal Ke-2 (Opsional - Kosongkan jika hanya 1 Pengeluaran)</b>
+                            <div class="row-2">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Akun Keluar 2</label>
+                                    <select id="v_akunKeluar2" class="form-control"></select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Nominal Modal 2 (Rp)</label>
+                                    <input type="text" id="v_modal2Display" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_modal2'); updateVlookupSplitSummary();">
+                                    <input type="hidden" id="v_modal2" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="vlookupSplitSummaryBar" style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:7px 10px; font-size:11px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                            <span>Total Pemasukan (Jual): <b id="lblVlookupTotalJual" style="color:#16A34A;">Rp0</b></span>
+                            <span>Total Pengeluaran (Modal): <b id="lblVlookupTotalModal" style="color:#EF4444;">Rp0</b></span>
+                            <span>Estimasi Cuan: <b id="lblVlookupTotalCuan" style="color:#D97706;">Rp0</b></span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px;">
+                        <button type="submit" id="btnSubmitVlookup" class="btn">Simpan VLOOKUP</button>
+                        <button type="button" id="btnCancelEditVlookup" class="btn" style="background:#64748B; width:auto; padding:0 16px; display:none;" onclick="batalEditVlookup()">Batal</button>
+                    </div>
                 </form>
             </div>
 
@@ -2780,15 +2818,28 @@
             const data = snapshot.val();
             if (data) {
                 isFirebaseSyncing = true;
-                if (data.vlookup) window.masterVlookup = data.vlookup;
+                if (data.vlookup) {
+                    let loadedVlookup = {};
+                    Object.keys(data.vlookup).forEach(k => {
+                        const r = data.vlookup[k];
+                        if (r) {
+                            const realKey = (r.origKey || k).toUpperCase().trim();
+                            loadedVlookup[realKey] = r;
+                        }
+                    });
+                    window.masterVlookup = loadedVlookup;
+                }
 
                 if (data.saldoListCustom) {
                     window.saldoList = data.saldoListCustom.map(s => s === 'DANA NINING' ? 'DANA ECA' : (s === 'AMARTHA' ? 'KOMISI EDC' : s));
                 }
                 if (data.saldoAwal) {
-                    window.masterSaldoAwal = data.saldoAwal;
-                    window.masterSaldoAwal['SPAREPART'] = 0;
-                    window.masterSaldoAwal['PIUTANG'] = 0;
+                    window.masterSaldoAwal = Object.assign({}, data.saldoAwal, {
+                        VOUCHER: 0,
+                        SP: 0,
+                        ACC: 0,
+                        PIUTANG: 0
+                    });
                 }
                 if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
@@ -4129,7 +4180,10 @@
                     return nm && (nm === val || val.includes(nm));
                 }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
                 const matchStok = matchStokCandidates[0];
-                if (matchStok) {
+                const vRuleMatch = window.masterVlookup[val] || window.masterVlookup[sanitizeKey(val)];
+                const vRuleHasSplit = Boolean(vRuleMatch && vRuleMatch.isSplit && ((vRuleMatch.akunMasuk2 && Number(vRuleMatch.jualSplit2 || 0) > 0) || (vRuleMatch.akunKeluar2 && Number(vRuleMatch.modalSplit2 || 0) > 0)));
+
+                if (matchStok && !vRuleHasSplit) {
                     const sisa = Number(matchStok.awal || 0) - Number(matchStok.terjual || 0);
                     const namaStok = matchStok.nama || matchStok.namaBarang || '';
                     if (sisa <= 0) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Stok [${namaStok}] Habis!`; }
@@ -4159,27 +4213,83 @@
                         ? `⚡ Auto-Fill Stok & Modal (${matchStok.kat})`
                         : `⚡ Auto-Fill HPP (${matchStok.kat}: ${window.formatRp(mStok)}) — Silakan isi Harga Jual`;
                     return;
-                } else { warnStok.style.display = 'none'; }
+                } else if (!matchStok) { warnStok.style.display = 'none'; }
 
-                if (window.masterVlookup[val]) {
-                    const rule = window.masterVlookup[val];
+                if (vRuleMatch) {
+                    const rule = vRuleMatch;
                     if (rule.kat) document.getElementById('kategori').value = rule.kat;
-                    if (rule.akunMasuk) document.getElementById('akunMasuk1').value = rule.akunMasuk;
-                    if (rule.akunKeluar) document.getElementById('akunKeluar1').value = rule.akunKeluar;
-                    if (rule.defJual !== undefined) {
-                        const j = rule.defJual * qtyVal;
-                        document.getElementById('hargaJual').value = j;
-                        document.getElementById('hargaJualDisplay').value = Number(j).toLocaleString('id-ID');
+
+                    const hasSplitRule = vRuleHasSplit;
+                    if (hasSplitRule) {
+                        const chkSplitEl = document.getElementById('chkSplit');
+                        if (chkSplitEl) chkSplitEl.checked = true;
+                        window.toggleSplitMode(true);
+
+                        const j1 = Number(rule.jualSplit1 !== undefined ? rule.jualSplit1 : (rule.defJual || 0)) * qtyVal;
+                        const j2 = Number(rule.jualSplit2 || 0) * qtyVal;
+                        const m1 = Number(rule.modalSplit1 !== undefined ? rule.modalSplit1 : (rule.defModal || 0)) * qtyVal;
+                        const m2 = Number(rule.modalSplit2 || 0) * qtyVal;
+                        const totalJ = j1 + j2;
+                        const totalM = m1 + m2;
+
+                        if (rule.akunMasuk) {
+                            document.getElementById('akunMasuk1').value = rule.akunMasuk;
+                            document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
+                        }
+                        document.getElementById('akunMasuk2').value = rule.akunMasuk2 || '';
+                        document.getElementById('jualSplit1').value = j1;
+                        document.getElementById('jualSplit1Display').value = j1 ? Number(j1).toLocaleString('id-ID') : '0';
+                        document.getElementById('jualSplit2').value = j2;
+                        document.getElementById('jualSplit2Display').value = j2 ? Number(j2).toLocaleString('id-ID') : '0';
+
+                        if (rule.akunKeluar) {
+                            document.getElementById('akunKeluar1').value = rule.akunKeluar;
+                            document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
+                        }
+                        document.getElementById('akunKeluar2').value = rule.akunKeluar2 || '';
+                        document.getElementById('modalSplit1').value = m1;
+                        document.getElementById('modalSplit1Display').value = m1 ? Number(m1).toLocaleString('id-ID') : '0';
+                        document.getElementById('modalSplit2').value = m2;
+                        document.getElementById('modalSplit2Display').value = m2 ? Number(m2).toLocaleString('id-ID') : '0';
+
+                        document.getElementById('hargaJual').value = totalJ;
+                        document.getElementById('hargaJualDisplay').value = Number(totalJ).toLocaleString('id-ID');
+                        document.getElementById('hargaModal').value = totalM;
+                        document.getElementById('hargaModalDisplay').value = Number(totalM).toLocaleString('id-ID');
+
+                        window.hitungCuan();
+                        notice.style.display = 'block';
+                        notice.innerText = `⚡ VLOOKUP Split Saldo Ditemukan!`;
+                        return;
+                    } else {
+                        const chkSplitEl = document.getElementById('chkSplit');
+                        if (chkSplitEl && chkSplitEl.checked) {
+                            chkSplitEl.checked = false;
+                            window.toggleSplitMode(false);
+                        }
+                        if (rule.akunMasuk) {
+                            document.getElementById('akunMasuk1').value = rule.akunMasuk;
+                            document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
+                        }
+                        if (rule.akunKeluar) {
+                            document.getElementById('akunKeluar1').value = rule.akunKeluar;
+                            document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
+                        }
+                        if (rule.defJual !== undefined) {
+                            const j = rule.defJual * qtyVal;
+                            document.getElementById('hargaJual').value = j;
+                            document.getElementById('hargaJualDisplay').value = Number(j).toLocaleString('id-ID');
+                        }
+                        if (rule.defModal !== undefined) {
+                            const m = rule.defModal * qtyVal;
+                            document.getElementById('hargaModal').value = m;
+                            document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                        }
+                        window.hitungCuan();
+                        notice.style.display = 'block';
+                        notice.innerText = `⚡ VLOOKUP Ditemukan!`;
+                        return;
                     }
-                    if (rule.defModal !== undefined) {
-                        const m = rule.defModal * qtyVal;
-                        document.getElementById('hargaModal').value = m;
-                        document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
-                    }
-                    window.hitungCuan();
-                    notice.style.display = 'block';
-                    notice.innerText = `⚡ VLOOKUP Ditemukan!`;
-                    return;
                 }
                 notice.style.display = 'none';
             });
@@ -4244,7 +4354,7 @@
             }
             if (cfgAkun) window.saldoList.forEach(s => cfgAkun.innerHTML += `<option value="${s}">${s}</option>`);
 
-            ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunKeluar', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'setorSumber', 'opSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
+            ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunMasuk2', 'v_akunKeluar', 'v_akunKeluar2', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'setorSumber', 'opSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.innerHTML = '<option value="">-- Pilih Akun --</option>';
@@ -4268,9 +4378,15 @@
         window.muatDataAkunConfig = function(namaAkun) {
             if (!namaAkun) return;
             document.getElementById('cfgNamaBaru').value = namaAkun;
-            const awal = window.masterSaldoAwal[namaAkun] || 0;
+            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(namaAkun);
+            const awal = isAutoDataAkun ? 0 : (window.masterSaldoAwal[namaAkun] || 0);
             document.getElementById('cfgSaldoAwal').value = awal;
-            document.getElementById('cfgSaldoAwalDisplay').value = Number(awal).toLocaleString('id-ID');
+            const elAwalDisp = document.getElementById('cfgSaldoAwalDisplay');
+            if (elAwalDisp) {
+                elAwalDisp.value = isAutoDataAkun ? '0 (Otomatis dari Data)' : Number(awal).toLocaleString('id-ID');
+                elAwalDisp.readOnly = isAutoDataAkun;
+                elAwalDisp.style.backgroundColor = isAutoDataAkun ? '#F1F5F9' : '';
+            }
             const min = window.masterBatasMinSaldo[namaAkun] || 0;
             document.getElementById('cfgBatasMin').value = min;
             document.getElementById('cfgBatasMinDisplay').value = Number(min).toLocaleString('id-ID');
@@ -4279,7 +4395,8 @@
         window.simpanPengaturanAkun = function() {
             const lama = document.getElementById('cfgAkunTarget').value;
             const baru = (document.getElementById('cfgNamaBaru').value.trim() || lama).toUpperCase();
-            const awal = parseFloat(document.getElementById('cfgSaldoAwal').value) || 0;
+            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(baru);
+            const awal = isAutoDataAkun ? 0 : (parseFloat(document.getElementById('cfgSaldoAwal').value) || 0);
             const min = parseFloat(document.getElementById('cfgBatasMin').value) || 0;
             if (!lama || !baru) {
                 if (window.showToast) window.showToast("⚠️ Pilih akun saldo terlebih dahulu!", "error");
@@ -5237,24 +5354,96 @@
             alert("✅ Pindah saldo berhasil!");
         }
 
+        window.toggleVlookupSplitForm = function(isSplit) {
+            const box = document.getElementById('boxVlookupSplitAdvanced');
+            if (box) box.style.display = isSplit ? 'block' : 'none';
+            if (!isSplit) {
+                if (document.getElementById('v_akunMasuk2')) document.getElementById('v_akunMasuk2').value = '';
+                if (document.getElementById('v_jual2')) document.getElementById('v_jual2').value = '0';
+                if (document.getElementById('v_jual2Display')) document.getElementById('v_jual2Display').value = '';
+                if (document.getElementById('v_akunKeluar2')) document.getElementById('v_akunKeluar2').value = '';
+                if (document.getElementById('v_modal2')) document.getElementById('v_modal2').value = '0';
+                if (document.getElementById('v_modal2Display')) document.getElementById('v_modal2Display').value = '';
+            }
+            window.updateVlookupSplitSummary();
+        };
+
+        window.updateVlookupSplitSummary = function() {
+            const j1 = parseFloat(document.getElementById('v_jual')?.value) || 0;
+            const j2 = parseFloat(document.getElementById('v_jual2')?.value) || 0;
+            const m1 = parseFloat(document.getElementById('v_modal')?.value) || 0;
+            const m2 = parseFloat(document.getElementById('v_modal2')?.value) || 0;
+            const isSplit = document.getElementById('v_chkSplit')?.checked;
+            const totJ = isSplit ? (j1 + j2) : j1;
+            const totM = isSplit ? (m1 + m2) : m1;
+            const elJ = document.getElementById('lblVlookupTotalJual');
+            const elM = document.getElementById('lblVlookupTotalModal');
+            const elC = document.getElementById('lblVlookupTotalCuan');
+            if (elJ) elJ.innerText = window.formatRp(totJ);
+            if (elM) elM.innerText = window.formatRp(totM);
+            if (elC) elC.innerText = window.formatRp(totJ - totM);
+        };
+
+        window.batalEditVlookup = function() {
+            document.getElementById('editVlookupKey').value = '';
+            document.getElementById('formVlookup').reset();
+            document.getElementById('v_jual').value = '0';
+            document.getElementById('v_modal').value = '0';
+            if (document.getElementById('v_jual2')) document.getElementById('v_jual2').value = '0';
+            if (document.getElementById('v_modal2')) document.getElementById('v_modal2').value = '0';
+            if (document.getElementById('v_chkSplit')) document.getElementById('v_chkSplit').checked = false;
+            window.toggleVlookupSplitForm(false);
+            const titleEl = document.getElementById('formVlookupTitle');
+            if (titleEl) titleEl.innerText = '+ Aturan Auto-Fill VLOOKUP (Standar & Split Saldo)';
+            const btnCancel = document.getElementById('btnCancelEditVlookup');
+            if (btnCancel) btnCancel.style.display = 'none';
+        };
+
         window.simpanVlookup = function(e) {
             e.preventDefault();
             const editKey = document.getElementById('editVlookupKey').value;
             const ket = document.getElementById('v_ket').value.toUpperCase().trim();
+            if (!ket) return;
             if (editKey && editKey !== ket) delete window.masterVlookup[editKey];
+
+            const isSplitChecked = document.getElementById('v_chkSplit')?.checked;
+            const akunMasuk1 = document.getElementById('v_akunMasuk').value;
+            const akunKeluar1 = document.getElementById('v_akunKeluar').value;
+            const j1 = parseFloat(document.getElementById('v_jual').value) || 0;
+            const m1 = parseFloat(document.getElementById('v_modal').value) || 0;
+
+            const akunMasuk2 = isSplitChecked ? (document.getElementById('v_akunMasuk2')?.value || '') : '';
+            const j2 = isSplitChecked ? (parseFloat(document.getElementById('v_jual2')?.value) || 0) : 0;
+            const akunKeluar2 = isSplitChecked ? (document.getElementById('v_akunKeluar2')?.value || '') : '';
+            const m2 = isSplitChecked ? (parseFloat(document.getElementById('v_modal2')?.value) || 0) : 0;
+
+            const hasValidSplit = Boolean(isSplitChecked && ((akunMasuk2 && j2 > 0) || (akunKeluar2 && m2 > 0)));
+
             window.masterVlookup[ket] = {
+                origKey: ket,
                 kat: document.getElementById('v_kat').value,
-                akunMasuk: document.getElementById('v_akunMasuk').value,
-                akunKeluar: document.getElementById('v_akunKeluar').value,
-                defJual: parseFloat(document.getElementById('v_jual').value) || 0,
-                defModal: parseFloat(document.getElementById('v_modal').value) || 0
+                akunMasuk: akunMasuk1,
+                akunKeluar: akunKeluar1,
+                defJual: hasValidSplit ? (j1 + j2) : j1,
+                defModal: hasValidSplit ? (m1 + m2) : m1,
+                isSplit: hasValidSplit,
+                jualSplit1: j1,
+                akunMasuk2: hasValidSplit ? akunMasuk2 : '',
+                jualSplit2: hasValidSplit ? j2 : 0,
+                modalSplit1: m1,
+                akunKeluar2: hasValidSplit ? akunKeluar2 : '',
+                modalSplit2: hasValidSplit ? m2 : 0
             };
-            document.getElementById('editVlookupKey').value = '';
-            document.getElementById('formVlookup').reset();
-            window.catatLogAktivitas('MASTER VLOOKUP', `Menyimpan aturan master vlookup "${ket}"`);
-            window.saveToFirebaseNode('vlookup', window.masterVlookup);
+
+            window.batalEditVlookup();
+            window.catatLogAktivitas('MASTER VLOOKUP', `Menyimpan aturan master vlookup "${ket}"${hasValidSplit ? ' (Split Saldo)' : ''}`);
+            let cleanVlookup = {};
+            for (let k in window.masterVlookup) {
+                cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k }, window.masterVlookup[k]);
+            }
+            window.saveToFirebaseNode('vlookup', cleanVlookup);
             window.renderAll();
-            alert("✅ VLOOKUP disimpan!");
+            window.showToast(`✅ VLOOKUP "${ket}" berhasil disimpan!`, "success");
         }
 
         window.editVlookup = function(key) {
@@ -5262,15 +5451,52 @@
             if (!rule) return;
             document.getElementById('editVlookupKey').value = key;
             document.getElementById('v_ket').value = key;
-            document.getElementById('v_kat').value = rule.kat;
+            document.getElementById('v_kat').value = rule.kat || 'VOUCHER';
             document.getElementById('v_akunMasuk').value = rule.akunMasuk || '';
             document.getElementById('v_akunKeluar').value = rule.akunKeluar || '';
-            document.getElementById('v_jual').value = rule.defJual || 0;
-            document.getElementById('v_jualDisplay').value = Number(rule.defJual || 0).toLocaleString('id-ID');
-            document.getElementById('v_modal').value = rule.defModal || 0;
-            document.getElementById('v_modalDisplay').value = Number(rule.defModal || 0).toLocaleString('id-ID');
+
+            const isSplit = Boolean(rule.isSplit);
+            const j1 = isSplit && rule.jualSplit1 !== undefined ? rule.jualSplit1 : (rule.defJual || 0);
+            const m1 = isSplit && rule.modalSplit1 !== undefined ? rule.modalSplit1 : (rule.defModal || 0);
+
+            document.getElementById('v_jual').value = j1;
+            document.getElementById('v_jualDisplay').value = Number(j1).toLocaleString('id-ID');
+            document.getElementById('v_modal').value = m1;
+            document.getElementById('v_modalDisplay').value = Number(m1).toLocaleString('id-ID');
+
+            const chkEl = document.getElementById('v_chkSplit');
+            if (chkEl) chkEl.checked = isSplit;
+            window.toggleVlookupSplitForm(isSplit);
+
+            if (isSplit) {
+                if (document.getElementById('v_akunMasuk2')) document.getElementById('v_akunMasuk2').value = rule.akunMasuk2 || '';
+                if (document.getElementById('v_jual2')) document.getElementById('v_jual2').value = rule.jualSplit2 || 0;
+                if (document.getElementById('v_jual2Display')) document.getElementById('v_jual2Display').value = Number(rule.jualSplit2 || 0).toLocaleString('id-ID');
+                if (document.getElementById('v_akunKeluar2')) document.getElementById('v_akunKeluar2').value = rule.akunKeluar2 || '';
+                if (document.getElementById('v_modal2')) document.getElementById('v_modal2').value = rule.modalSplit2 || 0;
+                if (document.getElementById('v_modal2Display')) document.getElementById('v_modal2Display').value = Number(rule.modalSplit2 || 0).toLocaleString('id-ID');
+                window.updateVlookupSplitSummary();
+            }
+
+            const titleEl = document.getElementById('formVlookupTitle');
+            if (titleEl) titleEl.innerText = `✏️ Edit Aturan VLOOKUP: ${key}`;
+            const btnCancel = document.getElementById('btnCancelEditVlookup');
+            if (btnCancel) btnCancel.style.display = 'inline-block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        window.hapusVlookup = function(key) {
+            if (!window.masterVlookup[key]) return;
+            if (confirm(`Hapus kata kunci VLOOKUP "${key}"?`)) {
+                delete window.masterVlookup[key];
+                window.catatLogAktivitas('HAPUS VLOOKUP', `Menghapus kata kunci VLOOKUP "${key}"`);
+                let cleanVlookup = {};
+                for (let k in window.masterVlookup) { cleanVlookup[sanitizeKey(k)] = window.masterVlookup[k]; }
+                window.saveToFirebaseNode('vlookup', cleanVlookup);
+                window.renderAll();
+                window.showToast(`🗑️ VLOOKUP "${key}" dihapus.`, "warn");
+            }
+        };
 
         window.prosesTransferSaldo = function(e) {
             e.preventDefault();
@@ -5749,14 +5975,19 @@
             }
 
             let nVoucher = 0, nSp = 0, nAcc = 0, nTotalStok = 0;
+            let awalVoucher = 0, awalSp = 0, awalAcc = 0;
+            let terjualVoucher = 0, terjualSp = 0, terjualAcc = 0;
             let countVoucher = 0, countSp = 0, countAcc = 0, countAllStok = 0;
             (window.stokOpnameItems || []).forEach(s => {
+                const modalPcs = Number(s.modal || 0);
+                const nilaiAwal = Number(s.awal || 0) * modalPcs;
+                const nilaiTerjual = Number(s.terjual || 0) * modalPcs;
                 const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
-                const nilai = sisa * Number(s.modal || 0);
+                const nilai = sisa * modalPcs;
                 countAllStok++;
-                if (s.kat === 'VOUCHER') { nVoucher += nilai; countVoucher++; }
-                else if (s.kat === 'SP') { nSp += nilai; countSp++; }
-                else if (s.kat === 'ACC') { nAcc += nilai; countAcc++; }
+                if (s.kat === 'VOUCHER') { nVoucher += nilai; awalVoucher += nilaiAwal; terjualVoucher += nilaiTerjual; countVoucher++; }
+                else if (s.kat === 'SP') { nSp += nilai; awalSp += nilaiAwal; terjualSp += nilaiTerjual; countSp++; }
+                else if (s.kat === 'ACC') { nAcc += nilai; awalAcc += nilaiAwal; terjualAcc += nilaiTerjual; countAcc++; }
                 nTotalStok += nilai;
             });
 
@@ -5880,11 +6111,16 @@
             document.getElementById('topStokOpnameVal').innerText = window.formatRp(nTotalStok);
 
             let totalPiutang = 0;
+            let totalPokokPiutangAll = 0;
+            let totalTerbayarPiutangAll = 0;
             const bPiutang = document.getElementById('bodyPiutang');
             if (bPiutang) {
                 bPiutang.innerHTML = window.piutangList.map(p => {
-                    const activeSisa = p.status === 'LUNAS' ? 0 : p.sisa;
+                    const activeSisa = p.status === 'LUNAS' ? 0 : Number(p.sisa || 0);
+                    const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
                     totalPiutang += activeSisa;
+                    totalPokokPiutangAll += pokokAwalP;
+                    totalTerbayarPiutangAll += Math.max(0, pokokAwalP - activeSisa);
                     const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
                     const tglJamStr = window.formatTanggalJamPiutang(p.isoDate, p.waktu, p.tglDisplay);
                     return `
@@ -5952,6 +6188,7 @@
             });
 
             window.piutangList?.forEach(p => {
+                if (p.isSeedAwal) return;
                 const hasInitJurnal = window.transaksiJurnal.some(t => t.isPencatatanUtangAwal && (t.id == p.id || t.idPiutangRef == p.id));
                 if (!hasInitJurnal) {
                     const itemDate = p.isoDate || '';
@@ -5964,6 +6201,7 @@
             });
 
             window.riwayatBelanjaStok?.forEach(r => {
+                if (r.isSeedAwal) return;
                 const itemDate = r.isoDate || r.tgl || '';
                 if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
                 if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
@@ -5971,7 +6209,7 @@
                 if (r.kat && masukAkun[r.kat] !== undefined) {
                     masukAkun[r.kat] += Number(r.total || 0);
                 }
-                if (r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO') {
+                if (r.sumberKas && !String(r.sumberKas).includes('TIDAK POTONG SALDO')) {
                     if (keluarAkun[r.sumberKas] !== undefined) keluarAkun[r.sumberKas] += Number(r.total || 0);
                 }
             });
@@ -6005,24 +6243,41 @@
                 if (keluarAkun[s.sumber] !== undefined) keluarAkun[s.sumber] += Number(s.nominal || 0);
             });
 
+            // Untuk akun berbasis data (VOUCHER, SP, ACC, PIUTANG), pada mode ALL otomatis mengikuti data Stok Opname & Piutang
+            if (saldoMode === 'ALL') {
+                masukAkun['VOUCHER'] = awalVoucher;
+                keluarAkun['VOUCHER'] = Math.max(terjualVoucher, keluarAkun['VOUCHER'] || 0);
+
+                masukAkun['SP'] = awalSp;
+                keluarAkun['SP'] = Math.max(terjualSp, keluarAkun['SP'] || 0);
+
+                masukAkun['ACC'] = awalAcc;
+                keluarAkun['ACC'] = Math.max(terjualAcc, keluarAkun['ACC'] || 0);
+
+                masukAkun['PIUTANG'] = totalPokokPiutangAll;
+                keluarAkun['PIUTANG'] = totalTerbayarPiutangAll;
+            }
+
             let totalKasCair = 0;
             let totalStokOpnameAkunVal = 0;
             const akunStokFisik = ['VOUCHER', 'SP', 'ACC'];
-            let totalPiutangVal = Math.max(0, (window.masterSaldoAwal['PIUTANG'] || 0) + (masukAkun['PIUTANG'] || 0) - (keluarAkun['PIUTANG'] || 0));
-            if (saldoMode === 'ALL') totalPiutangVal = totalPiutang || 0;
+            let totalPiutangVal = saldoMode === 'ALL'
+                ? (totalPiutang || 0)
+                : Math.max(0, (masukAkun['PIUTANG'] || 0) - (keluarAkun['PIUTANG'] || 0));
             let totalSparepartVal = Math.max(0, (window.masterSaldoAwal['SPAREPART'] || 0) + (masukAkun['SPAREPART'] || 0) - (keluarAkun['SPAREPART'] || 0));
             let totalSaldoKeseluruhan = 0;
 
             document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
-                const awal = window.masterSaldoAwal[s] || 0;
+                const isAutoData = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(s);
+                const awal = isAutoData ? 0 : (window.masterSaldoAwal[s] || 0);
                 let akhir = awal + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                 if (s === 'PIUTANG') {
                     akhir = totalPiutangVal;
                 } else if (s === 'SPAREPART') {
                     akhir = totalSparepartVal;
                 } else if (akunStokFisik.includes(s)) {
-                    if (saldoMode === 'ALL' && (window.stokOpnameItems || []).some(item => item.kat === s)) {
-                        akhir = s === 'VOUCHER' ? nVoucher : (s === 'SP' ? nSp : nAcc);
+                    if (saldoMode === 'ALL') {
+                        akhir = Math.max(0, (masukAkun[s] || 0) - (keluarAkun[s] || 0));
                     }
                     totalStokOpnameAkunVal += akhir;
                 } else {
@@ -6032,11 +6287,11 @@
                 const minLimit = Number((window.masterBatasMinSaldo && window.masterBatasMinSaldo[s]) || 0);
                 const isBelowLimit = (minLimit > 0 && akhir < minLimit) || akhir < 0;
                 const labelBadge = s === 'PIUTANG'
-                    ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Utang)</span>'
+                    ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 5px; border-radius:4px; font-weight:700;">Data Piutang</span>'
                     : (s === 'SPAREPART'
                         ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Part)</span>'
                         : (akunStokFisik.includes(s)
-                            ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Stok)</span>'
+                            ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 5px; border-radius:4px; font-weight:700;">Data Stok</span>'
                             : ''));
                 return `<tr><td><b>${s}</b>${labelBadge}</td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><span class="${isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam'}" title="${minLimit > 0 ? 'Batas Minimal: ' + window.formatRp(minLimit) : ''}">${window.formatRp(akhir)}</span></td></tr>`;
             }).join('');
@@ -6086,11 +6341,13 @@
             const sidebarContent = document.getElementById('sidebarSaldoListContent');
             if (sidebarContent) {
                 const listItemsHtml = window.saldoList.map(s => {
-                    let akhir = (window.masterSaldoAwal[s] || 0) + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
+                    const isAutoData = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(s);
+                    const awal = isAutoData ? 0 : (window.masterSaldoAwal[s] || 0);
+                    let akhir = awal + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                     if (s === 'PIUTANG') akhir = totalPiutangVal;
                     else if (s === 'SPAREPART') akhir = totalSparepartVal;
-                    else if (akunStokFisik.includes(s) && saldoMode === 'ALL' && (window.stokOpnameItems || []).some(item => item.kat === s)) {
-                        akhir = s === 'VOUCHER' ? nVoucher : (s === 'SP' ? nSp : nAcc);
+                    else if (akunStokFisik.includes(s) && saldoMode === 'ALL') {
+                        akhir = Math.max(0, (masukAkun[s] || 0) - (keluarAkun[s] || 0));
                     }
                     const minLimit = Number((window.masterBatasMinSaldo && window.masterBatasMinSaldo[s]) || 0);
                     const isBelowLimit = (minLimit > 0 && akhir < minLimit) || akhir < 0;
@@ -6140,14 +6397,40 @@
 
             const topSaldoSub = document.getElementById('topTotalSaldoSub');
             if (topSaldoSub) {
-                if (totalSemuaStokBelumCair !== 0 || totalPiutangVal > 0) {
-                    let subParts = [`Cair: ${window.formatRp(totalKasCair)}`];
-                    if (totalSemuaStokBelumCair !== 0) subParts.push(`Stok: ${window.formatRp(totalSemuaStokBelumCair)}`);
-                    if (totalPiutangVal > 0) subParts.push(`Utang: ${window.formatRp(totalPiutangVal)}`);
-                    topSaldoSub.innerText = subParts.join(' • ');
-                } else {
-                    topSaldoSub.innerText = '(100% Kas Cair)';
-                }
+                topSaldoSub.innerText = `Cair: ${window.formatRp(totalKasCair)}`;
+            }
+
+            // Render Tabel Master VLOOKUP di Tab Laporan -> VLOOKUP
+            const bVlookup = document.getElementById('bodyMasterVlookup');
+            if (bVlookup) {
+                const vKeys = Object.keys(window.masterVlookup || {});
+                bVlookup.innerHTML = vKeys.map(k => {
+                    const r = window.masterVlookup[k] || {};
+                    const isSp = Boolean(r.isSplit);
+                    const safeKey = String(k).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    const txtMasuk = isSp && r.akunMasuk2 && Number(r.jualSplit2 || 0) > 0
+                        ? `<span style="font-size:10px; background:#DCFCE7; color:#15803D; padding:1px 5px; border-radius:4px; font-weight:700;">🔀 SPLIT</span><br><b>${r.akunMasuk || '-'}</b> (${window.formatRp(r.jualSplit1 || 0)})<br>+ <b>${r.akunMasuk2}</b> (${window.formatRp(r.jualSplit2 || 0)})`
+                        : (r.akunMasuk || '-');
+                    const txtKeluar = isSp && r.akunKeluar2 && Number(r.modalSplit2 || 0) > 0
+                        ? `<span style="font-size:10px; background:#FEE2E2; color:#B91C1C; padding:1px 5px; border-radius:4px; font-weight:700;">🔀 SPLIT</span><br><b>${r.akunKeluar || '-'}</b> (${window.formatRp(r.modalSplit1 || 0)})<br>+ <b>${r.akunKeluar2}</b> (${window.formatRp(r.modalSplit2 || 0)})`
+                        : (r.akunKeluar || '-');
+                    return `
+                        <tr>
+                            <td><b>${k}</b></td>
+                            <td><span style="color:var(--primary); font-weight:bold;">${r.kat || '-'}</span></td>
+                            <td>${txtMasuk}</td>
+                            <td>${txtKeluar}</td>
+                            <td class="text-kredit"><b>${window.formatRp(r.defJual || 0)}</b></td>
+                            <td class="text-debit"><b>${window.formatRp(r.defModal || 0)}</b></td>
+                            <td>
+                                <div style="display:flex; gap:3px; justify-content:center;">
+                                    <button type="button" class="btn-edit" onclick="editVlookup('${safeKey}')">Edit</button>
+                                    <button type="button" class="btn-delete" onclick="hapusVlookup('${safeKey}')">Hapus</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada kata kunci VLOOKUP.</td></tr>`;
             }
 
             window.renderRekapKategoriTab();
@@ -7674,44 +7957,6 @@
                 }
             }
         });
-
-        // Toggle Gaya 8 Kartu Informasi (Modern Berwarna Biru-Hijau vs Klasik Putih)
-        window.applyKpiCardStyle = function(mode) {
-            const sec = document.getElementById('topKpiSection');
-            const lbl = document.getElementById('lblKpiStyleBtn');
-            if (!sec) return;
-            if (mode === 'classic') {
-                sec.classList.remove('kpi-mode-modern');
-                sec.classList.add('kpi-mode-classic');
-                if (lbl) lbl.innerText = 'Kartu Klasik';
-            } else {
-                sec.classList.remove('kpi-mode-classic');
-                sec.classList.add('kpi-mode-modern');
-                if (lbl) lbl.innerText = 'Kartu Modern';
-            }
-        };
-
-        window.toggleKpiCardStyle = function() {
-            const sec = document.getElementById('topKpiSection');
-            if (!sec) return;
-            const isModern = sec.classList.contains('kpi-mode-modern');
-            const nextMode = isModern ? 'classic' : 'modern';
-            localStorage.setItem('zencell_kpi_card_style', nextMode);
-            window.applyKpiCardStyle(nextMode);
-            if (window.showToast) {
-                window.showToast(
-                    nextMode === 'modern'
-                        ? '💎 Tampilan 8 Kartu Modern (Biru-Hijau) diaktifkan!'
-                        : '⬜ Tampilan 8 Kartu Klasik (Putih) diaktifkan!',
-                    'success'
-                );
-            }
-        };
-
-        (function initKpiCardStyle() {
-            const saved = localStorage.getItem('zencell_kpi_card_style') || 'modern';
-            window.applyKpiCardStyle(saved);
-        })();
     </script>
 </body>
 </html>
