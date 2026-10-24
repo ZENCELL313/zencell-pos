@@ -1903,11 +1903,11 @@
                     <div class="filter-container">
                         <span style="font-size:11px; font-weight:700; color:#991B1B;">🔍 FILTER SETORAN:</span>
                         <select id="setorFilterMode" class="date-picker-input" onchange="toggleFilterSetorDate(this.value)">
-                            <option value="ALL">📅 Semua Tanggal</option>
-                            <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
+                            <option value="ALL" selected>📅 Semua Tanggal</option>
+                            <option value="DAILY">📆 Per Hari (Tanggal)</option>
                             <option value="MONTHLY">🗓️ Per Bulan</option>
                         </select>
-                        <input type="date" id="setorDatePicker" class="date-picker-input" onchange="renderAll()">
+                        <input type="date" id="setorDatePicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
                         <input type="month" id="setorMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
                     </div>
                     <div class="table-responsive">
@@ -1972,8 +1972,10 @@
 
         <div id="sub-rekap-saldo" class="sub-tab-content">
             <div class="card">
-                <div class="card-header">🔀 Transfer Antar Akun</div>
+                <div class="card-header" id="formTransferSaldoTitle">🔀 Transfer Antar Akun (Khusus Kas / Bank / E-Wallet Cair)</div>
+                <p style="font-size:10.5px; color:#64748B; margin-bottom:10px; line-height:1.4;">*Akun berbasis data (<b>VOUCHER, SP, ACC, SPAREPART, PIUTANG</b>) dikunci otomatis dan tidak dapat dipindah-saldokan secara manual agar selalu sinkron 100% dengan Stok Opname, Service, & Piutang.</p>
                 <form id="formTransferSaldo" onsubmit="prosesTransferSaldo(event)">
+                    <input type="hidden" id="editTfId" value="">
                     <div class="row-3">
                         <div class="form-group">
                             <label>Asal</label>
@@ -1994,7 +1996,10 @@
                         <input type="text" id="tfAdminDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'tfAdmin')">
                         <input type="hidden" id="tfAdmin" value="0">
                     </div>
-                    <button type="submit" class="btn">Transfer Saldo</button>
+                    <div style="display:flex; gap:8px;">
+                        <button type="submit" id="btnSubmitTf" class="btn">Transfer Saldo</button>
+                        <button type="button" id="btnCancelEditTf" class="btn" style="display:none; background:#64748B; width:auto; padding:0 16px;" onclick="batalEditPindahSaldo()">Batal Edit</button>
+                    </div>
                 </form>
             </div>
 
@@ -2084,15 +2089,18 @@
                     <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Sembunyikan / Munculkan ▼</span>
                 </div>
                 <div id="bodyPindahSaldoCard" class="p-3">
-                    <div class="filter-container">
-                        <span style="font-size:11px; font-weight:700; color:var(--primary);">🔍 FILTER PINDAH SALDO:</span>
-                        <select id="tfFilterMode" class="date-picker-input" onchange="toggleFilterTfDate(this.value)">
-                            <option value="ALL">📅 Semua Tanggal</option>
-                            <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
-                            <option value="MONTHLY">🗓️ Per Bulan</option>
-                        </select>
-                        <input type="date" id="tfDatePicker" class="date-picker-input" onchange="renderAll()">
-                        <input type="month" id="tfMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                    <div class="filter-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span style="font-size:11px; font-weight:700; color:var(--primary);">🔍 FILTER PINDAH SALDO:</span>
+                            <select id="tfFilterMode" class="date-picker-input" onchange="toggleFilterTfDate(this.value)">
+                                <option value="ALL" selected>📅 Semua Tanggal</option>
+                                <option value="DAILY">📆 Per Hari (Tanggal)</option>
+                                <option value="MONTHLY">🗓️ Per Bulan</option>
+                            </select>
+                            <input type="date" id="tfDatePicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                            <input type="month" id="tfMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                        </div>
+                        <span id="txtHistoriPindahSaldoSummary" style="font-size:11px; font-weight:800; color:#047857; background:#ECFDF5; border:1px solid #A7F3D0; padding:3px 9px; border-radius:6px;">0 Transaksi • Total: Rp0</span>
                     </div>
                     <div class="table-responsive">
                         <table>
@@ -2103,10 +2111,12 @@
                                     <th>DARI (ASAL)</th>
                                     <th>KE (TUJUAN)</th>
                                     <th>NOMINAL</th>
+                                    <th>BIAYA ADMIN</th>
                                     <th>AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="bodyHistoriPindahSaldo"></tbody>
+                            <tfoot id="footHistoriPindahSaldo"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -3169,6 +3179,7 @@
                     VOUCHER: 0,
                     SP: 0,
                     ACC: 0,
+                    SPAREPART: 0,
                     PIUTANG: 0
                 });
             }
@@ -3190,8 +3201,25 @@
                 }
             }
 
-            // 1. Transaksi Jurnal (Smart Merge + Sort)
-            const mergedTrx = mergeCloudCollection('transaksi', data.transaksi, needsResyncMap, lastResetTs);
+            // Bersihkan cache lokal dari histori Pindah Saldo yang tidak sah (menyentuh VOUCHER / SP / ACC / SPAREPART / PIUTANG)
+            const nonTfSet = new Set(['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG']);
+            if (window._localEntityEdits && window._localEntityEdits.transaksi) {
+                Object.keys(window._localEntityEdits.transaksi).forEach(tid => {
+                    const td = window._localEntityEdits.transaksi[tid]?.data;
+                    if (td && (td.isPindahSaldo || (td.ket && String(td.ket).includes('[PINDAH SALDO]'))) && (nonTfSet.has(td.akunMasuk1) || nonTfSet.has(td.akunKeluar1))) {
+                        delete window._localEntityEdits.transaksi[tid];
+                    }
+                });
+            }
+
+            // 1. Transaksi Jurnal (Smart Merge + Filter Pindah Saldo Tidak Sah + Sort)
+            const mergedTrx = mergeCloudCollection('transaksi', data.transaksi, needsResyncMap, lastResetTs).filter(t => {
+                if (t && (t.isPindahSaldo || (t.ket && String(t.ket).includes('[PINDAH SALDO]'))) && (nonTfSet.has(t.akunMasuk1) || nonTfSet.has(t.akunKeluar1))) {
+                    needsResyncMap.transaksi = true;
+                    return false;
+                }
+                return true;
+            });
             window.transaksiJurnal = mergedTrx.sort((a, b) => String(b.id).localeCompare(String(a.id)));
 
             // 2. Piutang Konsumen (Smart Merge)
@@ -4870,22 +4898,38 @@
                 fKat.innerHTML += `<option value="${k}">${k}</option>`;
             });
 
+            window.AKUN_DATA_OTOMATIS = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+
             if (stokKas) {
                 stokKas.innerHTML = '<option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>';
-                window.saldoList.forEach(s => { if (s !== 'PIUTANG' && s !== 'SPAREPART') stokKas.innerHTML += `<option value="${s}">${s}</option>`; });
+                window.saldoList.forEach(s => { if (!window.AKUN_DATA_OTOMATIS.includes(s)) stokKas.innerHTML += `<option value="${s}">${s}</option>`; });
             }
             const pSumberEl = document.getElementById('pSumber');
             if (pSumberEl) {
                 pSumberEl.innerHTML = '<option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (PINDAH DATA / AUDIT)</option>';
-                window.saldoList.forEach(s => { if (s !== 'PIUTANG' && s !== 'SPAREPART') pSumberEl.innerHTML += `<option value="${s}">${s}</option>`; });
+                window.saldoList.forEach(s => { if (!window.AKUN_DATA_OTOMATIS.includes(s)) pSumberEl.innerHTML += `<option value="${s}">${s}</option>`; });
             }
             if (cfgAkun) window.saldoList.forEach(s => cfgAkun.innerHTML += `<option value="${s}">${s}</option>`);
 
-            ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunMasuk2', 'v_akunKeluar', 'v_akunKeluar2', 'v_akunMasuk_fast', 'v_akunKeluar_fast', 'spSumber', 'tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'setorSumber', 'opSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
+            // Dropdown Kasir & VLOOKUP tetap memuat semua akun (karena penjualan stok memotong akun keluar VOUCHER/SP/ACC/SPAREPART/PIUTANG)
+            ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2', 'akunKeluar1', 'splitAkunKeluar1', 'akunKeluar2', 'v_akunMasuk', 'v_akunMasuk2', 'v_akunKeluar', 'v_akunKeluar2', 'v_akunMasuk_fast', 'v_akunKeluar_fast'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.innerHTML = '<option value="">-- Pilih Akun --</option>';
                     window.saldoList.forEach(s => el.innerHTML += `<option value="${s}">${s}</option>`);
+                }
+            });
+
+            // Dropdown Pindah Saldo & Sumber Kas Pengeluaran HANYA menampilkan akun Kas / Bank / E-Wallet Cair (Bukan Stok Opname / Service / Piutang)
+            ['tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'spSumber', 'setorSumber', 'opSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = '<option value="">-- Pilih Akun Kas/Bank --</option>';
+                    window.saldoList.forEach(s => {
+                        if (!window.AKUN_DATA_OTOMATIS.includes(s)) {
+                            el.innerHTML += `<option value="${s}">${s}</option>`;
+                        }
+                    });
                 }
             });
 
@@ -4905,7 +4949,7 @@
         window.muatDataAkunConfig = function(namaAkun) {
             if (!namaAkun) return;
             document.getElementById('cfgNamaBaru').value = namaAkun;
-            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(namaAkun);
+            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'].includes(namaAkun);
             const awal = isAutoDataAkun ? 0 : (window.masterSaldoAwal[namaAkun] || 0);
             document.getElementById('cfgSaldoAwal').value = awal;
             const elAwalDisp = document.getElementById('cfgSaldoAwalDisplay');
@@ -4922,7 +4966,7 @@
         window.simpanPengaturanAkun = function() {
             const lama = document.getElementById('cfgAkunTarget').value;
             const baru = (document.getElementById('cfgNamaBaru').value.trim() || lama).toUpperCase();
-            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(baru);
+            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'].includes(baru);
             const awal = isAutoDataAkun ? 0 : (parseFloat(document.getElementById('cfgSaldoAwal').value) || 0);
             const min = parseFloat(document.getElementById('cfgBatasMin').value) || 0;
             if (!lama || !baru) {
@@ -5978,7 +6022,15 @@
             const tujuan = document.getElementById('tfTujuan_fast').value;
             const nom = parseFloat(document.getElementById('tfNom_fast').value) || 0;
             const admin = parseFloat(document.getElementById('tfAdmin_fast').value) || 0;
-            if (!sumber || !tujuan || sumber === tujuan || nom <= 0) return alert("Periksa data transfer saldo!");
+            const nonTfAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            if (!sumber || !tujuan || sumber === tujuan || nom <= 0) {
+                if (window.showToast) window.showToast("⚠️ Periksa akun asal, tujuan, dan nominal pindah saldo!", "error");
+                return;
+            }
+            if (nonTfAkun.includes(sumber) || nonTfAkun.includes(tujuan)) {
+                if (window.showToast) window.showToast("⛔ Akun Stok Opname / Service / Piutang tidak bisa dipindah-saldokan!", "error");
+                return;
+            }
 
             const nowTs = window.getNextUniqueTs();
             const tfTrx = {
@@ -5989,11 +6041,15 @@
             };
             window.transaksiJurnal.unshift(tfTrx);
             window.markLocalTrxEdited(tfTrx);
+            document.getElementById('tfNomDisplay_fast').value = '';
+            document.getElementById('tfNom_fast').value = '0';
+            document.getElementById('tfAdminDisplay_fast').value = '';
+            document.getElementById('tfAdmin_fast').value = '0';
             document.getElementById('boxTfFast').style.display = 'none';
             window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
-            alert("✅ Pindah saldo berhasil!");
+            if (window.showToast) window.showToast(`✅ Pindah saldo ${sumber} ➔ ${tujuan} (${window.formatRp(nom)}) berhasil!`, "success");
         }
 
         window.toggleVlookupSplitForm = function(isSplit) {
@@ -6141,27 +6197,104 @@
             }
         };
 
+        window.batalEditPindahSaldo = function() {
+            const editEl = document.getElementById('editTfId');
+            if (editEl) editEl.value = '';
+            const formEl = document.getElementById('formTransferSaldo');
+            if (formEl) formEl.reset();
+            if (document.getElementById('tfNom')) document.getElementById('tfNom').value = '0';
+            if (document.getElementById('tfNomDisplay')) document.getElementById('tfNomDisplay').value = '';
+            if (document.getElementById('tfAdmin')) document.getElementById('tfAdmin').value = '0';
+            if (document.getElementById('tfAdminDisplay')) document.getElementById('tfAdminDisplay').value = '';
+            const titleEl = document.getElementById('formTransferSaldoTitle');
+            if (titleEl) titleEl.innerText = '🔀 Transfer Antar Akun (Khusus Kas / Bank / E-Wallet Cair)';
+            const btnSubmit = document.getElementById('btnSubmitTf');
+            if (btnSubmit) btnSubmit.innerText = 'Transfer Saldo';
+            const btnCancel = document.getElementById('btnCancelEditTf');
+            if (btnCancel) btnCancel.style.display = 'none';
+        };
+
+        window.editPindahSaldo = function(idTf) {
+            const t = (window.transaksiJurnal || []).find(item => item.id == idTf);
+            if (!t) return;
+            const editEl = document.getElementById('editTfId');
+            if (editEl) editEl.value = t.id;
+            const elSumber = document.getElementById('tfSumber');
+            const elTujuan = document.getElementById('tfTujuan');
+            if (elSumber) elSumber.value = t.akunKeluar1 || '';
+            if (elTujuan) elTujuan.value = t.akunMasuk1 || '';
+            const nom = Number(t.hargaJual || 0);
+            const admin = Math.max(0, Number(t.hargaModal || 0) - nom);
+            if (document.getElementById('tfNom')) document.getElementById('tfNom').value = nom;
+            if (document.getElementById('tfNomDisplay')) document.getElementById('tfNomDisplay').value = nom ? nom.toLocaleString('id-ID') : '0';
+            if (document.getElementById('tfAdmin')) document.getElementById('tfAdmin').value = admin;
+            if (document.getElementById('tfAdminDisplay')) document.getElementById('tfAdminDisplay').value = admin ? admin.toLocaleString('id-ID') : '0';
+
+            const titleEl = document.getElementById('formTransferSaldoTitle');
+            if (titleEl) titleEl.innerText = `✏️ Edit Pindah Saldo (${t.akunKeluar1} ➔ ${t.akunMasuk1})`;
+            const btnSubmit = document.getElementById('btnSubmitTf');
+            if (btnSubmit) btnSubmit.innerText = '💾 Simpan Perubahan Transfer';
+            const btnCancel = document.getElementById('btnCancelEditTf');
+            if (btnCancel) btnCancel.style.display = 'inline-block';
+            const cardEl = document.getElementById('formTransferSaldo');
+            if (cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
+        window.hapusPindahSaldo = function(idTf) {
+            const t = (window.transaksiJurnal || []).find(item => item.id == idTf);
+            if (!t) return;
+            if (confirm(`Hapus histori pindah saldo "${t.akunKeluar1} ➔ ${t.akunMasuk1}" sebesar ${window.formatRp(t.hargaJual)}?`)) {
+                window.markLocalTrxDeleted(idTf);
+                window.catatLogAktivitas('HAPUS PINDAH SALDO', `Menghapus pindah saldo ${t.akunKeluar1} ➔ ${t.akunMasuk1} (${window.formatRp(t.hargaJual)})`);
+                window.transaksiJurnal = (window.transaksiJurnal || []).filter(item => item.id != idTf);
+                window.batalEditPindahSaldo();
+                window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+                window.renderAll();
+                if (window.showToast) window.showToast("✅ Histori pindah saldo berhasil dihapus & saldo dipulihkan!", "success");
+            }
+        };
+
         window.prosesTransferSaldo = function(e) {
             e.preventDefault();
+            const editId = document.getElementById('editTfId')?.value || '';
             const sumber = document.getElementById('tfSumber').value;
             const tujuan = document.getElementById('tfTujuan').value;
             const nom = parseFloat(document.getElementById('tfNom').value) || 0;
             const admin = parseFloat(document.getElementById('tfAdmin').value) || 0;
-            if (!sumber || !tujuan || sumber === tujuan || nom <= 0) return alert("Periksa data transfer saldo!");
+            const nonTfAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            if (!sumber || !tujuan || sumber === tujuan || nom <= 0) {
+                if (window.showToast) window.showToast("⚠️ Periksa akun asal, tujuan, dan nominal transfer saldo!", "error");
+                return;
+            }
+            if (nonTfAkun.includes(sumber) || nonTfAkun.includes(tujuan)) {
+                if (window.showToast) window.showToast("⛔ Akun Stok Opname / Service / Piutang tidak bisa dipindah-saldokan!", "error");
+                return;
+            }
 
             const nowTs = window.getNextUniqueTs();
+            const existingTf = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
             const tfTrx = {
-                id: 'trx_tf_' + nowTs, waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(),
+                id: editId ? editId : 'trx_tf_' + nowTs,
+                waktu: existingTf ? (existingTf.waktu || new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })) : new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
+                isoDate: existingTf ? (existingTf.isoDate || window.getTodayIso()) : window.getTodayIso(),
                 ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'GADAI', isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true,
                 updatedAt: nowTs
             };
-            window.transaksiJurnal.unshift(tfTrx);
+            if (editId) {
+                const idx = window.transaksiJurnal.findIndex(x => x.id == editId);
+                if (idx !== -1) window.transaksiJurnal[idx] = tfTrx;
+                else window.transaksiJurnal.unshift(tfTrx);
+                window.catatLogAktivitas('EDIT PINDAH SALDO', `Mengubah pindah saldo ${sumber} ➔ ${tujuan} (${window.formatRp(nom)})`);
+            } else {
+                window.transaksiJurnal.unshift(tfTrx);
+                window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
+            }
             window.markLocalTrxEdited(tfTrx);
-            window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
+            window.batalEditPindahSaldo();
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
-            alert("✅ Transfer saldo berhasil!");
+            if (window.showToast) window.showToast(`✅ Pindah saldo ${sumber} ➔ ${tujuan} (${window.formatRp(nom)}) berhasil disimpan!`, "success");
         }
 
         document.getElementById('formTrx').addEventListener('submit', function(e) {
@@ -6967,10 +7100,16 @@
             const saldoDate = document.getElementById('saldoDatePicker')?.value || '';
             const saldoMonth = document.getElementById('saldoMonthPicker')?.value || '';
 
+            const akunDataOtomatis = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
             let masukAkun = {}, keluarAkun = {};
             window.saldoList.forEach(s => { masukAkun[s] = 0; keluarAkun[s] = 0; });
 
             window.transaksiJurnal.forEach(t => {
+                // Abaikan jika ada sisa histori pindah saldo tidak sah ke/dari akun data otomatis
+                if ((t.isPindahSaldo || (t.ket && String(t.ket).includes('[PINDAH SALDO]'))) && (akunDataOtomatis.includes(t.akunMasuk1) || akunDataOtomatis.includes(t.akunKeluar1))) {
+                    return;
+                }
+
                 const itemDate = t.isoDate || '';
                 if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
                 if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
@@ -7032,17 +7171,22 @@
             });
 
             let totalSparepartStok = 0;
+            let totalModalSparepartAll = 0;
             window.sparepartList?.forEach(sp => {
+                const modVal = Number(sp.modal || 0);
+                totalModalSparepartAll += modVal;
+                if (sp.status !== 'LUNAS') {
+                    totalSparepartStok += modVal;
+                }
+
                 const itemDate = sp.isoDate || sp.tgl || '';
                 if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
                 if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
 
-                if (keluarAkun[sp.sumber] !== undefined) keluarAkun[sp.sumber] += Number(sp.modal || 0);
-                if (masukAkun['SPAREPART'] !== undefined) masukAkun['SPAREPART'] += Number(sp.modal || 0);
-                if (sp.status !== 'LUNAS') {
-                    totalSparepartStok += Number(sp.modal || 0);
-                }
+                if (keluarAkun[sp.sumber] !== undefined) keluarAkun[sp.sumber] += modVal;
+                if (masukAkun['SPAREPART'] !== undefined) masukAkun['SPAREPART'] += modVal;
             });
+            const totalLunasSparepartAll = Math.max(0, totalModalSparepartAll - totalSparepartStok);
 
             window.operasionalList?.forEach(op => {
                 const itemDate = op.isoDate || op.tgl || '';
@@ -7060,16 +7204,19 @@
                 if (keluarAkun[s.sumber] !== undefined) keluarAkun[s.sumber] += Number(s.nominal || 0);
             });
 
-            // Untuk akun berbasis data (VOUCHER, SP, ACC, PIUTANG), pada mode ALL otomatis mengikuti data Stok Opname & Piutang
+            // Akun berbasis data (VOUCHER, SP, ACC, SPAREPART, PIUTANG) pada mode ALL selalu sinkron 100% dengan nilai Stok Opname, Service, & Piutang
             if (saldoMode === 'ALL') {
                 masukAkun['VOUCHER'] = awalVoucher;
-                keluarAkun['VOUCHER'] = Math.max(terjualVoucher, keluarAkun['VOUCHER'] || 0);
+                keluarAkun['VOUCHER'] = terjualVoucher;
 
                 masukAkun['SP'] = awalSp;
-                keluarAkun['SP'] = Math.max(terjualSp, keluarAkun['SP'] || 0);
+                keluarAkun['SP'] = terjualSp;
 
                 masukAkun['ACC'] = awalAcc;
-                keluarAkun['ACC'] = Math.max(terjualAcc, keluarAkun['ACC'] || 0);
+                keluarAkun['ACC'] = terjualAcc;
+
+                masukAkun['SPAREPART'] = totalModalSparepartAll;
+                keluarAkun['SPAREPART'] = totalLunasSparepartAll;
 
                 masukAkun['PIUTANG'] = totalPokokPiutangAll;
                 keluarAkun['PIUTANG'] = totalTerbayarPiutangAll;
@@ -7078,14 +7225,17 @@
             let totalKasCair = 0;
             let totalStokOpnameAkunVal = 0;
             const akunStokFisik = ['VOUCHER', 'SP', 'ACC'];
+            const mapNilaiStokOpname = { VOUCHER: nVoucher, SP: nSp, ACC: nAcc };
             let totalPiutangVal = saldoMode === 'ALL'
                 ? (totalPiutang || 0)
                 : Math.max(0, (masukAkun['PIUTANG'] || 0) - (keluarAkun['PIUTANG'] || 0));
-            let totalSparepartVal = Math.max(0, (window.masterSaldoAwal['SPAREPART'] || 0) + (masukAkun['SPAREPART'] || 0) - (keluarAkun['SPAREPART'] || 0));
+            let totalSparepartVal = saldoMode === 'ALL'
+                ? (totalSparepartStok || 0)
+                : Math.max(0, (masukAkun['SPAREPART'] || 0) - (keluarAkun['SPAREPART'] || 0));
             let totalSaldoKeseluruhan = 0;
 
             document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
-                const isAutoData = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(s);
+                const isAutoData = akunDataOtomatis.includes(s);
                 const awal = isAutoData ? 0 : (window.masterSaldoAwal[s] || 0);
                 let akhir = awal + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                 if (s === 'PIUTANG') {
@@ -7094,7 +7244,7 @@
                     akhir = totalSparepartVal;
                 } else if (akunStokFisik.includes(s)) {
                     if (saldoMode === 'ALL') {
-                        akhir = Math.max(0, (masukAkun[s] || 0) - (keluarAkun[s] || 0));
+                        akhir = mapNilaiStokOpname[s] !== undefined ? mapNilaiStokOpname[s] : Math.max(0, (masukAkun[s] || 0) - (keluarAkun[s] || 0));
                     }
                     totalStokOpnameAkunVal += akhir;
                 } else {
@@ -7158,13 +7308,13 @@
             const sidebarContent = document.getElementById('sidebarSaldoListContent');
             if (sidebarContent) {
                 const listItemsHtml = window.saldoList.map(s => {
-                    const isAutoData = ['VOUCHER', 'SP', 'ACC', 'PIUTANG'].includes(s);
+                    const isAutoData = akunDataOtomatis.includes(s);
                     const awal = isAutoData ? 0 : (window.masterSaldoAwal[s] || 0);
                     let akhir = awal + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                     if (s === 'PIUTANG') akhir = totalPiutangVal;
                     else if (s === 'SPAREPART') akhir = totalSparepartVal;
                     else if (akunStokFisik.includes(s) && saldoMode === 'ALL') {
-                        akhir = Math.max(0, (masukAkun[s] || 0) - (keluarAkun[s] || 0));
+                        akhir = mapNilaiStokOpname[s] !== undefined ? mapNilaiStokOpname[s] : Math.max(0, (masukAkun[s] || 0) - (keluarAkun[s] || 0));
                     }
                     const minLimit = Number((window.masterBatasMinSaldo && window.masterBatasMinSaldo[s]) || 0);
                     const isBelowLimit = (minLimit > 0 && akhir < minLimit) || akhir < 0;
@@ -7215,6 +7365,97 @@
             const topSaldoSub = document.getElementById('topTotalSaldoSub');
             if (topSaldoSub) {
                 topSaldoSub.innerText = `Cair: ${window.formatRp(totalKasCair)}`;
+            }
+
+            // Render Tabel Histori Pindah Saldo (Transfer Balancing) di Tab Laporan -> Saldo
+            const bHistoriTf = document.getElementById('bodyHistoriPindahSaldo');
+            if (bHistoriTf) {
+                const tfMode = document.getElementById('tfFilterMode')?.value || 'ALL';
+                const tfDate = document.getElementById('tfDatePicker')?.value || '';
+                const tfMonth = document.getElementById('tfMonthPicker')?.value || '';
+
+                const listPindahSaldo = (window.transaksiJurnal || []).filter(t => {
+                    if (!t) return false;
+                    const isTf = Boolean(t.isPindahSaldo || (t.ket && String(t.ket).includes('[PINDAH SALDO]')));
+                    if (!isTf) return false;
+                    if (akunDataOtomatis.includes(t.akunMasuk1) || akunDataOtomatis.includes(t.akunKeluar1)) return false;
+                    const itemDate = t.isoDate || '';
+                    if (tfMode === 'DAILY' && itemDate !== tfDate) return false;
+                    if (tfMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(tfMonth))) return false;
+                    return true;
+                });
+
+                let totalNominalTf = 0;
+                let totalAdminTf = 0;
+
+                bHistoriTf.innerHTML = listPindahSaldo.map(t => {
+                    const nom = Number(t.hargaJual || 0);
+                    const admin = Math.max(0, Number(t.hargaModal || 0) - nom);
+                    totalNominalTf += nom;
+                    totalAdminTf += admin;
+                    return `
+                        <tr id="row-tf-${t.id}">
+                            <td><b>${t.waktu || '-'}</b></td>
+                            <td>${t.isoDate || '-'}</td>
+                            <td><span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:2px 8px; border-radius:6px; font-weight:800; font-size:10.5px;">${t.akunKeluar1 || '-'}</span></td>
+                            <td><span style="background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; padding:2px 8px; border-radius:6px; font-weight:800; font-size:10.5px;">${t.akunMasuk1 || '-'}</span></td>
+                            <td class="text-kredit"><b>${window.formatRp(nom)}</b></td>
+                            <td style="color:${admin > 0 ? '#EF4444' : '#94A3B8'}; font-weight:${admin > 0 ? '700' : '400'};">${admin > 0 ? window.formatRp(admin) : 'Rp0'}</td>
+                            <td>
+                                <div style="display:flex; gap:4px; justify-content:center;">
+                                    <button type="button" class="btn-edit" onclick="editPindahSaldo('${t.id}')">Edit</button>
+                                    <button type="button" class="btn-delete" onclick="hapusPindahSaldo('${t.id}')">Hapus</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada histori pindah saldo pada periode ini.</td></tr>`;
+
+                const txtTfSum = document.getElementById('txtHistoriPindahSaldoSummary');
+                if (txtTfSum) {
+                    txtTfSum.innerText = `${listPindahSaldo.length} Transaksi • Total: ${window.formatRp(totalNominalTf)}`;
+                }
+
+                const footTf = document.getElementById('footHistoriPindahSaldo');
+                if (footTf) {
+                    footTf.innerHTML = listPindahSaldo.length > 0 ? `
+                        <tr style="background:#F8FAFC; font-weight:800; border-top:2px solid #CBD5E1;">
+                            <td colspan="4" style="text-align:right;">TOTAL PINDAH SALDO (${listPindahSaldo.length}x):</td>
+                            <td class="text-kredit"><b>${window.formatRp(totalNominalTf)}</b></td>
+                            <td class="text-debit"><b>${window.formatRp(totalAdminTf)}</b></td>
+                            <td></td>
+                        </tr>
+                    ` : '';
+                }
+            }
+
+            // Render Tabel Histori Setoran Profit Owner di Tab Laporan -> Stok & Setoran
+            const bHistoriSetor = document.getElementById('bodyHistoriSetoran');
+            if (bHistoriSetor) {
+                const stMode = document.getElementById('setorFilterMode')?.value || 'ALL';
+                const stDate = document.getElementById('setorDatePicker')?.value || '';
+                const stMonth = document.getElementById('setorMonthPicker')?.value || '';
+
+                const listSetoran = (window.setoranOwnerList || []).filter(s => {
+                    if (!s) return false;
+                    const itemDate = s.isoDate || s.tgl || '';
+                    if (stMode === 'DAILY' && itemDate !== stDate) return false;
+                    if (stMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(stMonth))) return false;
+                    return true;
+                });
+
+                bHistoriSetor.innerHTML = listSetoran.map(s => `
+                    <tr id="row-setor-${s.id}">
+                        <td><b>${s.waktu || '-'}</b></td>
+                        <td>${s.isoDate || s.tgl || '-'}</td>
+                        <td><span style="background:#FEE2E2; color:#991B1B; padding:2px 7px; border-radius:5px; font-weight:800; font-size:10.5px;">${s.sumber || '-'}</span></td>
+                        <td class="text-debit"><b>${window.formatRp(s.nominal || 0)}</b></td>
+                        <td><b>${s.catatan || '-'}</b></td>
+                        <td style="text-align:center;">
+                            <button type="button" class="btn-delete" onclick="hapusSetoranOwner(${s.id})">Hapus</button>
+                        </td>
+                    </tr>
+                `).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8; padding:12px;">Belum ada histori setoran profit pada periode ini.</td></tr>`;
             }
 
             // Render Tabel Master VLOOKUP di Tab Laporan -> VLOOKUP (Hanya Menampilkan Inputan Manual)
@@ -7368,6 +7609,41 @@
                 <tr><td><b>KONTER</b></td><td style="text-align:right;">${window.formatRp(profitKonter)}</td><td style="text-align:center;">${tot > 0 ? ((profitKonter/tot)*100).toFixed(1) : 0}%</td></tr>
                 <tr><td><b>SERVICE</b></td><td style="text-align:right;">${window.formatRp(profitService)}</td><td style="text-align:center;">${tot > 0 ? ((profitService/tot)*100).toFixed(1) : 0}%</td></tr>
             `;
+
+            const bBulananHari = document.getElementById('bodyRekapBulananPerHari');
+            const fBulananHari = document.getElementById('footRekapBulananPerHari');
+            if (bBulananHari) {
+                let totOmsetBln = 0, totProfitBln = 0, totCustBln = 0, totTrxBln = 0;
+                const dayKeys = Object.keys(dailyMap).sort();
+                bBulananHari.innerHTML = dayKeys.map(tgl => {
+                    const row = dailyMap[tgl];
+                    totOmsetBln += row.omset;
+                    totProfitBln += row.profit;
+                    totCustBln += row.cust;
+                    totTrxBln += row.trx;
+                    const isEmpty = row.trx === 0 && row.profit === 0;
+                    return `
+                        <tr style="${isEmpty ? 'opacity:0.55;' : ''}">
+                            <td style="text-align:left;"><b>${tgl}</b></td>
+                            <td style="text-align:right;" class="text-kredit">${window.formatRp(row.omset)}</td>
+                            <td style="text-align:right;" class="text-cuan"><b>${window.formatRp(row.profit)}</b></td>
+                            <td style="text-align:center;">${row.cust} ORG</td>
+                            <td style="text-align:center;">${row.trx} TRX</td>
+                        </tr>
+                    `;
+                }).join('');
+                if (fBulananHari) {
+                    fBulananHari.innerHTML = `
+                        <tr style="background:#ECFDF5; font-weight:800; border-top:2px solid #059669;">
+                            <td style="text-align:left;">TOTAL BULAN (${targetMonth})</td>
+                            <td style="text-align:right;" class="text-kredit"><b>${window.formatRp(totOmsetBln)}</b></td>
+                            <td style="text-align:right;" class="text-cuan"><b>${window.formatRp(totProfitBln)}</b></td>
+                            <td style="text-align:center;"><b>${totCustBln} ORG</b></td>
+                            <td style="text-align:center;"><b>${totTrxBln} TRX</b></td>
+                        </tr>
+                    `;
+                }
+            }
         }
 
         // --- SISTEM TOAST & VISUAL FEEDBACK CEPAT ---
