@@ -2176,7 +2176,13 @@
             </div>
 
             <div class="card">
-                <div class="card-header">📖 Database Master VLOOKUP</div>
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <span>📖 Database Master VLOOKUP (Khusus Input Manual)</span>
+                    <span id="badgeCountMasterVlookup" style="font-size:10px; background:var(--primary); color:#FFF; padding:2px 8px; border-radius:999px; font-weight:800;">0 Kata Kunci</span>
+                </div>
+                <div style="font-size:10.5px; color:#047857; background:#ECFDF5; border:1px dashed #6EE7B7; padding:6px 10px; border-radius:8px; margin-bottom:8px; font-weight:600;">
+                    💡 <b>Info Rapi:</b> Data dari <b>Stok Opname, Service & Piutang</b> disembunyikan dari daftar tabel ini agar tidak penuh, namun <b>tetap aktif 100% untuk Auto-Fill</b> otomatis saat input di Kasir.
+                </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -2659,7 +2665,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
         function cekStatusKoneksiOnline() {
             const isOnline = navigator.onLine;
@@ -2774,8 +2780,37 @@
         };
 
         window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
-        window.masterVlookup = {
-            'V TRI 5/3': { kat: 'VOUCHER', akunMasuk: '', akunKeluar: 'VOUCHER', defJual: 15000, defModal: 13000 }
+        window.masterVlookup = {};
+
+        window.isManualVlookupEntry = function(key, rule) {
+            if (!key || !rule) return false;
+            if (rule.isManual === true || rule.isSplit === true) return true;
+            const kNorm = String(rule.origKey || key).toUpperCase().trim();
+            const kSan = sanitizeKey(kNorm);
+
+            const isFromStok = (window.stokOpnameItems || []).some(s => {
+                const nm = String(s.nama || s.namaBarang || '').toUpperCase().trim();
+                return nm && (nm === kNorm || sanitizeKey(nm) === kSan);
+            });
+            if (isFromStok) return false;
+
+            const isFromPiutang = (window.piutangList || []).some(p => {
+                const nm = String(p.nama || '').toUpperCase().trim();
+                return nm && (nm === kNorm || sanitizeKey(nm) === kSan);
+            });
+            if (isFromPiutang) return false;
+
+            const isFromService = (window.tiketServisList || []).some(t => {
+                const nm = String(t.nama || '').toUpperCase().trim();
+                const no = String(t.noServis || '').toUpperCase().trim();
+                return (nm && nm === kNorm) || (no && no === kNorm);
+            }) || (window.sparepartList || []).some(sp => {
+                const nm = String(sp.namaUnit || '').toUpperCase().trim();
+                return nm && nm === kNorm;
+            });
+            if (isFromService) return false;
+
+            return true;
         };
 
         window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
@@ -2810,122 +2845,251 @@
         window.isUndoRedoAction = false;
         let isFirebaseSyncing = true;
         window.isSavingToFirebase = false;
+        window.pendingFirebaseWrites = 0;
+        window._deferredSnapshot = null;
+        window._logDirty = false;
+        window._logSaveTimer = null;
+
+        // Proteksi Anti-Rollback Multi-PC untuk Edit & Hapus Transaksi
+        const TRX_EDIT_PROTECTION_TTL_MS = 15 * 60 * 1000; // 15 menit
+        try {
+            window._localTrxEdits = JSON.parse(localStorage.getItem('zencell_recent_trx_edits') || '{}') || {};
+            window._localDeletedTrxIds = JSON.parse(localStorage.getItem('zencell_recent_trx_deletes') || '{}') || {};
+        } catch (e) {
+            window._localTrxEdits = {};
+            window._localDeletedTrxIds = {};
+        }
+
+        window.pruneLocalTrxProtection = function() {
+            const now = Date.now();
+            let changed = false;
+            Object.keys(window._localTrxEdits || {}).forEach(id => {
+                const entry = window._localTrxEdits[id];
+                if (!entry || !entry.updatedAt || (now - entry.updatedAt > TRX_EDIT_PROTECTION_TTL_MS)) {
+                    delete window._localTrxEdits[id];
+                    changed = true;
+                }
+            });
+            Object.keys(window._localDeletedTrxIds || {}).forEach(id => {
+                const ts = window._localDeletedTrxIds[id];
+                if (!ts || (now - ts > TRX_EDIT_PROTECTION_TTL_MS)) {
+                    delete window._localDeletedTrxIds[id];
+                    changed = true;
+                }
+            });
+            if (changed) {
+                try {
+                    localStorage.setItem('zencell_recent_trx_edits', JSON.stringify(window._localTrxEdits));
+                    localStorage.setItem('zencell_recent_trx_deletes', JSON.stringify(window._localDeletedTrxIds));
+                } catch (e) {}
+            }
+        };
+        window.pruneLocalTrxProtection();
+
+        window.markLocalTrxEdited = function(trxObj) {
+            if (!trxObj || !trxObj.id) return;
+            const cleanCopy = cleanForFirebase(trxObj);
+            const ts = Number(cleanCopy.updatedAt) || Date.now();
+            cleanCopy.updatedAt = ts;
+            window._localTrxEdits[String(cleanCopy.id)] = {
+                updatedAt: ts,
+                data: cleanCopy
+            };
+            delete window._localDeletedTrxIds[String(cleanCopy.id)];
+            try {
+                localStorage.setItem('zencell_recent_trx_edits', JSON.stringify(window._localTrxEdits));
+                localStorage.setItem('zencell_recent_trx_deletes', JSON.stringify(window._localDeletedTrxIds));
+            } catch (e) {}
+        };
+
+        window.markLocalTrxDeleted = function(idTrx) {
+            if (!idTrx) return;
+            const key = String(idTrx);
+            window._localDeletedTrxIds[key] = Date.now();
+            delete window._localTrxEdits[key];
+            try {
+                localStorage.setItem('zencell_recent_trx_edits', JSON.stringify(window._localTrxEdits));
+                localStorage.setItem('zencell_recent_trx_deletes', JSON.stringify(window._localDeletedTrxIds));
+            } catch (e) {}
+        };
+
+        function cleanForFirebase(val) {
+            if (val === undefined) return null;
+            try {
+                return JSON.parse(JSON.stringify(val));
+            } catch (e) {
+                return val;
+            }
+        }
 
         const statusEl = document.getElementById('cloudStatus');
 
-        onValue(ref(db, 'zencellNodes'), (snapshot) => {
-            if (window.isSavingToFirebase) return;
-            const data = snapshot.val();
-            if (data) {
-                isFirebaseSyncing = true;
-                if (data.vlookup) {
-                    let loadedVlookup = {};
-                    Object.keys(data.vlookup).forEach(k => {
-                        const r = data.vlookup[k];
-                        if (r) {
-                            const realKey = (r.origKey || k).toUpperCase().trim();
-                            loadedVlookup[realKey] = r;
-                        }
-                    });
-                    window.masterVlookup = loadedVlookup;
-                }
-
-                if (data.saldoListCustom) {
-                    window.saldoList = data.saldoListCustom.map(s => s === 'DANA NINING' ? 'DANA ECA' : (s === 'AMARTHA' ? 'KOMISI EDC' : s));
-                }
-                if (data.saldoAwal) {
-                    window.masterSaldoAwal = Object.assign({}, data.saldoAwal, {
-                        VOUCHER: 0,
-                        SP: 0,
-                        ACC: 0,
-                        PIUTANG: 0
-                    });
-                }
-                if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
-
-                if (data.pengaturan) {
-                    window.pengaturanToko = Object.assign({}, window.pengaturanToko, data.pengaturan);
-                    localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
-                    if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
-                }
-
-                if (data.daftarKaryawan) {
-                    let cloudKar = Array.isArray(data.daftarKaryawan) ? data.daftarKaryawan : Object.values(data.daftarKaryawan);
-                    if (cloudKar.length > 0) {
-                        window.daftarKaryawan = cloudKar;
-                        localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
-                        if (window.renderLoginUserOptions) window.renderLoginUserOptions();
-                        if (window.renderDaftarKaryawanSettings) window.renderDaftarKaryawanSettings();
-                    }
-                }
-
-                if (data.transaksi) {
-                    let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
-                    window.transaksiJurnal = cloudTrx.filter(t => t && t.id).sort((a,b) => String(b.id).localeCompare(String(a.id)));
-                } else { window.transaksiJurnal = []; }
-
-                if (data.piutang) {
-                    let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
-                    window.piutangList = cloudPiutang.filter(p => p && p.id);
-                } else { window.piutangList = []; }
-
-                if (data.stok) {
-                    let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
-                    window.stokOpnameItems = cloudStok.filter(s => s && (s.nama || s.namaBarang)).map(s => ({
-                        id: s.id || Date.now(),
-                        kat: s.kat || 'VOUCHER',
-                        nama: (s.nama || s.namaBarang || '').trim().toUpperCase(),
-                        awal: Number(s.awal || 0),
-                        terjual: Number(s.terjual || 0),
-                        modal: Number(s.modal || 0),
-                        jual: Number(s.jual || 0)
-                    }));
-                } else { window.stokOpnameItems = []; }
-
-                if (data.sparepart) {
-                    let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
-                    window.sparepartList = cloudSp.filter(sp => sp && sp.id);
-                } else { window.sparepartList = []; }
-
-                if (data.tiketServis) {
-                    let cloudTiket = Array.isArray(data.tiketServis) ? data.tiketServis : Object.values(data.tiketServis);
-                    window.tiketServisList = cloudTiket.filter(t => t && t.id);
-                } else { window.tiketServisList = []; }
-
-                if (data.riwayatBelanjaStok) {
-                    let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
-                    window.riwayatBelanjaStok = cloudRb.filter(r => r && r.id);
-                } else { window.riwayatBelanjaStok = []; }
-
-                if (data.setoran) {
-                    let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
-                    window.setoranOwnerList = cloudSetor.filter(st => st && st.id);
-                } else { window.setoranOwnerList = []; }
-
-                if (data.operasional) {
-                    let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
-                    window.operasionalList = cloudOp.filter(op => op && op.id);
-                } else { window.operasionalList = []; }
-
-                if (data.logAktivitas) {
-                    let cloudLog = Array.isArray(data.logAktivitas) ? data.logAktivitas : Object.values(data.logAktivitas);
-                    window.logAktivitasList = cloudLog.filter(l => l && l.id);
-                } else { window.logAktivitasList = []; }
-
-                window.saveLocalBackup();
-                if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
-
-                window.initDropdowns();
-                window.initVlookupAutoFill();
-                if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
-                if (window.updateUserAvatarUI) window.updateUserAvatarUI();
-                if (window.renderLoginUserOptions) window.renderLoginUserOptions();
-                window.renderAll();
-                isFirebaseSyncing = false;
-            } else {
+        function applyCloudSnapshotData(data) {
+            if (!data) {
                 isFirebaseSyncing = false;
                 window.saveAllToFirebase();
+                return;
             }
+            isFirebaseSyncing = true;
+            window.pruneLocalTrxProtection();
+
+            if (data.vlookup) {
+                let loadedVlookup = {};
+                Object.keys(data.vlookup).forEach(k => {
+                    const r = data.vlookup[k];
+                    if (r) {
+                        const realKey = (r.origKey || k).toUpperCase().trim();
+                        loadedVlookup[realKey] = r;
+                    }
+                });
+                window.masterVlookup = loadedVlookup;
+            }
+
+            if (data.saldoListCustom) {
+                window.saldoList = data.saldoListCustom.map(s => s === 'DANA NINING' ? 'DANA ECA' : (s === 'AMARTHA' ? 'KOMISI EDC' : s));
+            }
+            if (data.saldoAwal) {
+                window.masterSaldoAwal = Object.assign({}, data.saldoAwal, {
+                    VOUCHER: 0,
+                    SP: 0,
+                    ACC: 0,
+                    PIUTANG: 0
+                });
+            }
+            if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
+
+            if (data.pengaturan) {
+                window.pengaturanToko = Object.assign({}, window.pengaturanToko, data.pengaturan);
+                localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+                if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
+            }
+
+            if (data.daftarKaryawan) {
+                let cloudKar = Array.isArray(data.daftarKaryawan) ? data.daftarKaryawan : Object.values(data.daftarKaryawan);
+                if (cloudKar.length > 0) {
+                    window.daftarKaryawan = cloudKar;
+                    localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
+                    if (window.renderLoginUserOptions) window.renderLoginUserOptions();
+                    if (window.renderDaftarKaryawanSettings) window.renderDaftarKaryawanSettings();
+                }
+            }
+
+            let needsResyncTransaksi = false;
+            if (data.transaksi) {
+                let cloudTrx = Array.isArray(data.transaksi) ? data.transaksi : Object.values(data.transaksi);
+                let seenIds = new Set();
+                let mergedTrx = [];
+
+                cloudTrx.forEach(t => {
+                    if (!t || !t.id) return;
+                    const idStr = String(t.id);
+                    if (window._localDeletedTrxIds && window._localDeletedTrxIds[idStr]) {
+                        needsResyncTransaksi = true;
+                        return;
+                    }
+                    seenIds.add(idStr);
+                    const localEdit = window._localTrxEdits && window._localTrxEdits[idStr];
+                    const cloudUpdated = Number(t.updatedAt || 0);
+                    if (localEdit && localEdit.data && Number(localEdit.updatedAt || 0) > cloudUpdated) {
+                        mergedTrx.push(localEdit.data);
+                        needsResyncTransaksi = true;
+                    } else {
+                        if (localEdit && cloudUpdated >= Number(localEdit.updatedAt || 0)) {
+                            delete window._localTrxEdits[idStr];
+                        }
+                        mergedTrx.push(t);
+                    }
+                });
+
+                // Pastikan transaksi yang baru saja diinput/diedit di PC ini tidak hilang jika ditimpa snapshot lama PC lain
+                const nowMs = Date.now();
+                Object.keys(window._localTrxEdits || {}).forEach(idStr => {
+                    if (!seenIds.has(idStr) && !(window._localDeletedTrxIds && window._localDeletedTrxIds[idStr])) {
+                        const entry = window._localTrxEdits[idStr];
+                        if (entry && entry.data && (nowMs - Number(entry.updatedAt || 0) < 2 * 60 * 1000)) {
+                            mergedTrx.push(entry.data);
+                            needsResyncTransaksi = true;
+                        }
+                    }
+                });
+
+                window.transaksiJurnal = mergedTrx.sort((a, b) => String(b.id).localeCompare(String(a.id)));
+            } else {
+                window.transaksiJurnal = [];
+            }
+
+            if (data.piutang) {
+                let cloudPiutang = Array.isArray(data.piutang) ? data.piutang : Object.values(data.piutang);
+                window.piutangList = cloudPiutang.filter(p => p && p.id);
+            } else { window.piutangList = []; }
+
+            if (data.stok) {
+                let cloudStok = Array.isArray(data.stok) ? data.stok : Object.values(data.stok);
+                window.stokOpnameItems = cloudStok.filter(s => s && (s.nama || s.namaBarang)).map(s => ({
+                    id: s.id || Date.now(),
+                    kat: s.kat || 'VOUCHER',
+                    nama: (s.nama || s.namaBarang || '').trim().toUpperCase(),
+                    awal: Number(s.awal || 0),
+                    terjual: Number(s.terjual || 0),
+                    modal: Number(s.modal || 0),
+                    jual: Number(s.jual || 0)
+                }));
+            } else { window.stokOpnameItems = []; }
+
+            if (data.sparepart) {
+                let cloudSp = Array.isArray(data.sparepart) ? data.sparepart : Object.values(data.sparepart);
+                window.sparepartList = cloudSp.filter(sp => sp && sp.id);
+            } else { window.sparepartList = []; }
+
+            if (data.tiketServis) {
+                let cloudTiket = Array.isArray(data.tiketServis) ? data.tiketServis : Object.values(data.tiketServis);
+                window.tiketServisList = cloudTiket.filter(t => t && t.id);
+            } else { window.tiketServisList = []; }
+
+            if (data.riwayatBelanjaStok) {
+                let cloudRb = Array.isArray(data.riwayatBelanjaStok) ? data.riwayatBelanjaStok : Object.values(data.riwayatBelanjaStok);
+                window.riwayatBelanjaStok = cloudRb.filter(r => r && r.id);
+            } else { window.riwayatBelanjaStok = []; }
+
+            if (data.setoran) {
+                let cloudSetor = Array.isArray(data.setoran) ? data.setoran : Object.values(data.setoran);
+                window.setoranOwnerList = cloudSetor.filter(st => st && st.id);
+            } else { window.setoranOwnerList = []; }
+
+            if (data.operasional) {
+                let cloudOp = Array.isArray(data.operasional) ? data.operasional : Object.values(data.operasional);
+                window.operasionalList = cloudOp.filter(op => op && op.id);
+            } else { window.operasionalList = []; }
+
+            if (data.logAktivitas) {
+                let cloudLog = Array.isArray(data.logAktivitas) ? data.logAktivitas : Object.values(data.logAktivitas);
+                window.logAktivitasList = cloudLog.filter(l => l && l.id);
+            } else { window.logAktivitasList = []; }
+
+            window.saveLocalBackup();
+            if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
+
+            window.initDropdowns();
+            window.initVlookupAutoFill();
+            if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
+            if (window.updateUserAvatarUI) window.updateUserAvatarUI();
+            if (window.renderLoginUserOptions) window.renderLoginUserOptions();
+            window.renderAll();
+            isFirebaseSyncing = false;
+
+            // Jika ada PC lain yang sempat menimpa transaksi dengan versi lama sebelum edit kita sampai, otomatis kirim balik versi terbarunya
+            if (needsResyncTransaksi && window.pendingFirebaseWrites === 0) {
+                window.saveToFirebaseNode('transaksi', window.transaksiJurnal, true);
+            }
+        }
+
+        onValue(ref(db, 'zencellNodes'), (snapshot) => {
+            if (window.pendingFirebaseWrites > 0 || window.isSavingToFirebase) {
+                window._deferredSnapshot = snapshot;
+                return;
+            }
+            window._deferredSnapshot = null;
+            applyCloudSnapshotData(snapshot.val());
         }, (error) => {
             if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:7px; height:7px; background-color:#EF4444; border-radius:50%; margin-right:5px; box-shadow:0 0 6px #EF4444;"></span>OFFLINE';
         });
@@ -2945,7 +3109,14 @@
                 deskripsi: deskripsi
             });
             if (window.logAktivitasList.length > 200) window.logAktivitasList.pop();
-            window.saveToFirebaseNode('logAktivitas', window.logAktivitasList, true);
+            window._logDirty = true;
+            if (window._logSaveTimer) clearTimeout(window._logSaveTimer);
+            window._logSaveTimer = setTimeout(() => {
+                if (window._logDirty) {
+                    window._logDirty = false;
+                    window.saveToFirebaseNode('logAktivitas', window.logAktivitasList, true);
+                }
+            }, 120);
         };
 
         window.bukaModalLogAktivitas = function() {
@@ -2992,51 +3163,99 @@
             localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
         }
 
+        function onFirebaseWriteComplete() {
+            window.pendingFirebaseWrites = Math.max(0, (window.pendingFirebaseWrites || 1) - 1);
+            if (window.pendingFirebaseWrites === 0) {
+                window.isSavingToFirebase = false;
+                if (window._deferredSnapshot) {
+                    const snap = window._deferredSnapshot;
+                    window._deferredSnapshot = null;
+                    applyCloudSnapshotData(snap.val());
+                }
+            }
+        }
+
         window.saveToFirebaseNode = function(nodeName, dataValue, skipSnapshot = false) {
             window.saveLocalBackup();
-            if (isFirebaseSyncing) return;
-            window.isSavingToFirebase = true;
-            set(ref(db, `zencellNodes/${nodeName}`), dataValue).then(() => {
-                window.isSavingToFirebase = false;
-            }).catch(() => {
-                window.isSavingToFirebase = false;
-            });
             if (!skipSnapshot) window.saveStateSnapshot();
+            if (isFirebaseSyncing) return;
+
+            if (window._logSaveTimer) {
+                clearTimeout(window._logSaveTimer);
+                window._logSaveTimer = null;
+            }
+
+            window.pendingFirebaseWrites = (window.pendingFirebaseWrites || 0) + 1;
+            window.isSavingToFirebase = true;
+
+            try {
+                const payload = { [nodeName]: cleanForFirebase(dataValue) };
+                if (window._logDirty && nodeName !== 'logAktivitas') {
+                    payload.logAktivitas = cleanForFirebase(window.logAktivitasList);
+                    window._logDirty = false;
+                }
+                update(ref(db, 'zencellNodes'), payload).then(() => {
+                    onFirebaseWriteComplete();
+                }).catch((err) => {
+                    console.error('Firebase saveToFirebaseNode error:', err);
+                    onFirebaseWriteComplete();
+                });
+            } catch (err) {
+                console.error('Firebase saveToFirebaseNode sync error:', err);
+                onFirebaseWriteComplete();
+            }
         }
 
         window.saveAllToFirebase = function(skipSnapshot = false) {
             window.saveLocalBackup();
+            if (!skipSnapshot) window.saveStateSnapshot();
             if (isFirebaseSyncing) return;
+
+            if (window._logSaveTimer) {
+                clearTimeout(window._logSaveTimer);
+                window._logSaveTimer = null;
+            }
+            window._logDirty = false;
+
+            window.pendingFirebaseWrites = (window.pendingFirebaseWrites || 0) + 1;
             window.isSavingToFirebase = true;
+
             let cleanVlookup = {};
             for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
 
-            set(ref(db, 'zencellNodes'), {
-                vlookup: cleanVlookup,
-                transaksi: window.transaksiJurnal,
-                stok: window.stokOpnameItems,
-                piutang: window.piutangList,
-                setoran: window.setoranOwnerList,
-                sparepart: window.sparepartList,
-                tiketServis: window.tiketServisList,
-                riwayatBelanjaStok: window.riwayatBelanjaStok,
-                operasional: window.operasionalList,
-                logAktivitas: window.logAktivitasList,
-                saldoAwal: window.masterSaldoAwal,
-                saldoListCustom: window.saldoList,
-                seedSaldoAwalV1: true,
-                seedPiutangV1: true,
-                seedStokSpV1: true,
-                seedStokAccV1: true,
-                batasMinSaldo: window.masterBatasMinSaldo,
-                pengaturan: window.pengaturanToko,
-                daftarKaryawan: window.daftarKaryawan
-            }).then(() => {
-                window.isSavingToFirebase = false;
-            }).catch(() => {
-                window.isSavingToFirebase = false;
-            });
-            if (!skipSnapshot) window.saveStateSnapshot();
+            try {
+                const fullPayload = cleanForFirebase({
+                    vlookup: cleanVlookup,
+                    transaksi: window.transaksiJurnal,
+                    stok: window.stokOpnameItems,
+                    piutang: window.piutangList,
+                    setoran: window.setoranOwnerList,
+                    sparepart: window.sparepartList,
+                    tiketServis: window.tiketServisList,
+                    riwayatBelanjaStok: window.riwayatBelanjaStok,
+                    operasional: window.operasionalList,
+                    logAktivitas: window.logAktivitasList,
+                    saldoAwal: window.masterSaldoAwal,
+                    saldoListCustom: window.saldoList,
+                    seedSaldoAwalV1: true,
+                    seedPiutangV1: true,
+                    seedStokSpV1: true,
+                    seedStokAccV1: true,
+                    batasMinSaldo: window.masterBatasMinSaldo,
+                    pengaturan: window.pengaturanToko,
+                    daftarKaryawan: window.daftarKaryawan
+                });
+
+                update(ref(db, 'zencellNodes'), fullPayload).then(() => {
+                    onFirebaseWriteComplete();
+                }).catch((err) => {
+                    console.error('Firebase saveAllToFirebase error:', err);
+                    onFirebaseWriteComplete();
+                });
+            } catch (err) {
+                console.error('Firebase saveAllToFirebase sync error:', err);
+                onFirebaseWriteComplete();
+            }
         }
 
         window.formatRp = (num) => 'Rp' + Number(num || 0).toLocaleString('id-ID');
@@ -3918,6 +4137,10 @@
         window.cancelEditTrx = function() {
             document.getElementById('formTrx').reset();
             document.getElementById('editTrxId').value = '';
+            const titleEl = document.getElementById('formTrxTitle');
+            if (titleEl) titleEl.innerText = '+ Input Transaksi Kasir';
+            const btnSubmitEl = document.getElementById('btnSubmitTrx');
+            if (btnSubmitEl) btnSubmitEl.innerText = 'Simpan Transaksi';
             document.getElementById('trxDateInput').value = window.getTodayIso();
             document.getElementById('hargaJual').value = '0';
             document.getElementById('hargaModal').value = '0';
@@ -4262,28 +4485,27 @@
                         notice.innerText = `⚡ VLOOKUP Split Saldo Ditemukan!`;
                         return;
                     } else {
+                        const isEditingTrx = Boolean(document.getElementById('editTrxId')?.value);
                         const chkSplitEl = document.getElementById('chkSplit');
-                        if (chkSplitEl && chkSplitEl.checked) {
-                            chkSplitEl.checked = false;
-                            window.toggleSplitMode(false);
-                        }
-                        if (rule.akunMasuk) {
-                            document.getElementById('akunMasuk1').value = rule.akunMasuk;
-                            document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
-                        }
-                        if (rule.akunKeluar) {
-                            document.getElementById('akunKeluar1').value = rule.akunKeluar;
-                            document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
-                        }
-                        if (rule.defJual !== undefined) {
-                            const j = rule.defJual * qtyVal;
-                            document.getElementById('hargaJual').value = j;
-                            document.getElementById('hargaJualDisplay').value = Number(j).toLocaleString('id-ID');
-                        }
-                        if (rule.defModal !== undefined) {
-                            const m = rule.defModal * qtyVal;
-                            document.getElementById('hargaModal').value = m;
-                            document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                        if (!isEditingTrx && !(chkSplitEl && chkSplitEl.checked)) {
+                            if (rule.akunMasuk) {
+                                document.getElementById('akunMasuk1').value = rule.akunMasuk;
+                                document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
+                            }
+                            if (rule.akunKeluar) {
+                                document.getElementById('akunKeluar1').value = rule.akunKeluar;
+                                document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
+                            }
+                            if (rule.defJual !== undefined) {
+                                const j = rule.defJual * qtyVal;
+                                document.getElementById('hargaJual').value = j;
+                                document.getElementById('hargaJualDisplay').value = Number(j).toLocaleString('id-ID');
+                            }
+                            if (rule.defModal !== undefined) {
+                                const m = rule.defModal * qtyVal;
+                                document.getElementById('hargaModal').value = m;
+                                document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                            }
                         }
                         window.hitungCuan();
                         notice.style.display = 'block';
@@ -4296,6 +4518,64 @@
         }
 
         window.toggleSplitMode = function(isSplit) {
+            const singleMasuk = document.getElementById('akunMasuk1');
+            const singleKeluar = document.getElementById('akunKeluar1');
+            const singleJual = document.getElementById('hargaJual');
+            const singleJualDisp = document.getElementById('hargaJualDisplay');
+            const singleModal = document.getElementById('hargaModal');
+            const singleModalDisp = document.getElementById('hargaModalDisplay');
+
+            const spMasuk1 = document.getElementById('splitAkunMasuk1');
+            const spKeluar1 = document.getElementById('splitAkunKeluar1');
+            const spJual1 = document.getElementById('jualSplit1');
+            const spJual1Disp = document.getElementById('jualSplit1Display');
+            const spJual2 = document.getElementById('jualSplit2');
+            const spModal1 = document.getElementById('modalSplit1');
+            const spModal1Disp = document.getElementById('modalSplit1Display');
+            const spModal2 = document.getElementById('modalSplit2');
+
+            if (isSplit) {
+                if (spMasuk1 && !spMasuk1.value && singleMasuk && singleMasuk.value) {
+                    spMasuk1.value = singleMasuk.value;
+                }
+                const currSpJual = (parseFloat(spJual1?.value) || 0) + (parseFloat(spJual2?.value) || 0);
+                const currSingleJual = parseFloat(singleJual?.value) || 0;
+                if (currSpJual === 0 && currSingleJual > 0 && spJual1 && spJual1Disp) {
+                    spJual1.value = currSingleJual;
+                    spJual1Disp.value = Number(currSingleJual).toLocaleString('id-ID');
+                }
+
+                if (spKeluar1 && !spKeluar1.value && singleKeluar && singleKeluar.value) {
+                    spKeluar1.value = singleKeluar.value;
+                }
+                const currSpModal = (parseFloat(spModal1?.value) || 0) + (parseFloat(spModal2?.value) || 0);
+                const currSingleModal = parseFloat(singleModal?.value) || 0;
+                if (currSpModal === 0 && currSingleModal > 0 && spModal1 && spModal1Disp) {
+                    spModal1.value = currSingleModal;
+                    spModal1Disp.value = Number(currSingleModal).toLocaleString('id-ID');
+                }
+            } else {
+                if (singleMasuk && !singleMasuk.value && spMasuk1 && spMasuk1.value) {
+                    singleMasuk.value = spMasuk1.value;
+                } else if (singleMasuk && spMasuk1 && spMasuk1.value) {
+                    singleMasuk.value = spMasuk1.value;
+                }
+                const currSpJual = (parseFloat(spJual1?.value) || 0) + (parseFloat(spJual2?.value) || 0);
+                if (currSpJual > 0 && singleJual && singleJualDisp) {
+                    singleJual.value = currSpJual;
+                    singleJualDisp.value = Number(currSpJual).toLocaleString('id-ID');
+                }
+
+                if (singleKeluar && spKeluar1 && spKeluar1.value) {
+                    singleKeluar.value = spKeluar1.value;
+                }
+                const currSpModal = (parseFloat(spModal1?.value) || 0) + (parseFloat(spModal2?.value) || 0);
+                if (currSpModal > 0 && singleModal && singleModalDisp) {
+                    singleModal.value = currSpModal;
+                    singleModalDisp.value = Number(currSpModal).toLocaleString('id-ID');
+                }
+            }
+
             document.getElementById('boxSingleModeInputs').style.display = isSplit ? 'none' : 'block';
             document.getElementById('boxSplitMasuk').style.display = isSplit ? 'block' : 'none';
             document.getElementById('boxSplitKeluar').style.display = isSplit ? 'block' : 'none';
@@ -4309,8 +4589,9 @@
         }
 
         window.hitungSubtotalModal = function() {
+            const isEditingTrx = Boolean(document.getElementById('editTrxId')?.value);
             const inputKet = document.getElementById('keterangan');
-            if (inputKet.value.trim()) inputKet.dispatchEvent(new Event('input'));
+            if (!isEditingTrx && inputKet.value.trim()) inputKet.dispatchEvent(new Event('input'));
             else window.hitungCuan();
         }
 
@@ -5309,10 +5590,11 @@
                     }
                 }
 
+                window.markLocalTrxDeleted(idTrx);
                 window.catatLogAktivitas('HAPUS TRX', `Menghapus transaksi "${t.ket}" (${window.formatRp(t.hargaJual)})`);
                 window.transaksiJurnal = window.transaksiJurnal.filter(item => item.id != idTrx);
-                window.saveAllToFirebase(false);
                 window.renderAll();
+                window.saveAllToFirebase(false);
                 window.showToast("✅ Transaksi dihapus & saldo/status berhasil dipulihkan!", "success");
             }
         };
@@ -5321,6 +5603,8 @@
             e.preventDefault();
             const ket = document.getElementById('v_ket_fast').value.toUpperCase().trim();
             window.masterVlookup[ket] = {
+                origKey: ket,
+                isManual: true,
                 kat: document.getElementById('v_kat_fast').value,
                 akunMasuk: document.getElementById('v_akunMasuk_fast').value,
                 akunKeluar: document.getElementById('v_akunKeluar_fast').value || 'LACI',
@@ -5329,7 +5613,11 @@
             };
             document.getElementById('boxVlookupFast').style.display = 'none';
             window.catatLogAktivitas('TAMBAH VLOOKUP', `Menambah master auto-fill cepat "${ket}"`);
-            window.saveToFirebaseNode('vlookup', window.masterVlookup);
+            let cleanVlookup = {};
+            for (let k in window.masterVlookup) {
+                cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k }, window.masterVlookup[k]);
+            }
+            window.saveToFirebaseNode('vlookup', cleanVlookup);
             window.renderAll();
             alert("✅ VLOOKUP cepat disimpan!");
         }
@@ -5421,6 +5709,7 @@
 
             window.masterVlookup[ket] = {
                 origKey: ket,
+                isManual: true,
                 kat: document.getElementById('v_kat').value,
                 akunMasuk: akunMasuk1,
                 akunKeluar: akunKeluar1,
@@ -5525,7 +5814,7 @@
             const qty = parseFloat(document.getElementById('trxQty').value) || 1;
             const kat = document.getElementById('kategori').value;
             const isNewCustomer = document.getElementById('chkIsNewCustomer').checked;
-            const isSplit = document.getElementById('chkSplit').checked;
+            let isSplit = document.getElementById('chkSplit').checked;
 
             let akunMasuk1 = '', akunMasuk2 = '', jualSplit1 = 0, jualSplit2 = 0, hargaJualTotal = 0;
             let akunKeluar1 = '', akunKeluar2 = '', modalSplit1 = 0, modalSplit2 = 0, hargaModalTotal = 0;
@@ -5535,41 +5824,96 @@
                 jualSplit1 = parseFloat(document.getElementById('jualSplit1').value) || 0;
                 akunMasuk2 = document.getElementById('akunMasuk2').value;
                 jualSplit2 = parseFloat(document.getElementById('jualSplit2').value) || 0;
+
+                if (jualSplit2 > 0 && !akunMasuk2) {
+                    return alert("Harap pilih Akun Masuk 2 untuk nominal pembayaran kedua!");
+                }
+                if (!akunMasuk2 || jualSplit2 <= 0) {
+                    akunMasuk2 = '';
+                    jualSplit2 = 0;
+                }
+                if (!akunMasuk1 && akunMasuk2) {
+                    akunMasuk1 = akunMasuk2;
+                    jualSplit1 = jualSplit2;
+                    akunMasuk2 = '';
+                    jualSplit2 = 0;
+                }
                 hargaJualTotal = jualSplit1 + jualSplit2;
 
                 akunKeluar1 = document.getElementById('splitAkunKeluar1').value;
                 modalSplit1 = parseFloat(document.getElementById('modalSplit1').value) || 0;
                 akunKeluar2 = document.getElementById('akunKeluar2').value;
                 modalSplit2 = parseFloat(document.getElementById('modalSplit2').value) || 0;
+
+                if (modalSplit2 > 0 && !akunKeluar2) {
+                    return alert("Harap pilih Akun Keluar 2 untuk nominal modal kedua!");
+                }
+                if (!akunKeluar2 || modalSplit2 <= 0) {
+                    akunKeluar2 = '';
+                    modalSplit2 = 0;
+                }
+                if (!akunKeluar1 && akunKeluar2) {
+                    akunKeluar1 = akunKeluar2;
+                    modalSplit1 = modalSplit2;
+                    akunKeluar2 = '';
+                    modalSplit2 = 0;
+                }
                 hargaModalTotal = modalSplit1 + modalSplit2;
+
+                if ((kat === 'PIUTANG' || akunKeluar1 === 'PIUTANG') && hargaModalTotal === 0 && hargaJualTotal > 0) {
+                    modalSplit1 = hargaJualTotal;
+                    hargaModalTotal = hargaJualTotal;
+                }
             } else {
                 akunMasuk1 = document.getElementById('akunMasuk1').value;
                 hargaJualTotal = parseFloat(document.getElementById('hargaJual').value) || 0;
                 jualSplit1 = hargaJualTotal;
+                akunMasuk2 = '';
+                jualSplit2 = 0;
 
                 akunKeluar1 = document.getElementById('akunKeluar1').value;
                 hargaModalTotal = parseFloat(document.getElementById('hargaModal').value) || 0;
-                if ((kat === 'PIUTANG' || akunKeluar1 === 'PIUTANG') && hargaJualTotal > 0 && hargaJualTotal < hargaModalTotal) {
+                if ((kat === 'PIUTANG' || akunKeluar1 === 'PIUTANG') && hargaJualTotal > 0 && (hargaModalTotal === 0 || hargaJualTotal < hargaModalTotal)) {
                     hargaModalTotal = hargaJualTotal;
                 }
                 modalSplit1 = hargaModalTotal;
+                akunKeluar2 = '';
+                modalSplit2 = 0;
             }
 
             if (!akunMasuk1) return alert("Pilih Akun Masuk!");
 
+            const nowMs = Date.now();
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
             const trxData = {
-                id: editId ? editId : 'trx_' + Date.now(),
-                waktu: existingTrx ? existingTrx.waktu : timeStr,
-                isoDate: selectedDate, ket, qty, kat, isNewCustomer,
-                hargaJual: hargaJualTotal, akunMasuk1, jualSplit1, akunMasuk2, jualSplit2,
-                hargaModal: hargaModalTotal, akunKeluar1, modalSplit1, akunKeluar2, modalSplit2,
-                cuan: hargaJualTotal - hargaModalTotal, isSplit,
-                idTiketRef: window._pendingTiketIdToLunas || (existingTrx ? existingTrx.idTiketRef : null),
-                idSparepartRef: window._pendingSparepartIdToLunas || (existingTrx ? existingTrx.idSparepartRef : null),
-                idPiutangRef: window._pendingPiutangIdToLunas || (existingTrx ? existingTrx.idPiutangRef : null)
+                id: editId ? editId : 'trx_' + nowMs,
+                waktu: existingTrx ? (existingTrx.waktu || timeStr) : timeStr,
+                isoDate: selectedDate,
+                ket,
+                qty,
+                kat,
+                isNewCustomer,
+                hargaJual: hargaJualTotal,
+                akunMasuk1: akunMasuk1 || '',
+                jualSplit1: Number(jualSplit1 || 0),
+                akunMasuk2: akunMasuk2 || '',
+                jualSplit2: Number(jualSplit2 || 0),
+                hargaModal: hargaModalTotal,
+                akunKeluar1: akunKeluar1 || '',
+                modalSplit1: Number(modalSplit1 || 0),
+                akunKeluar2: akunKeluar2 || '',
+                modalSplit2: Number(modalSplit2 || 0),
+                cuan: hargaJualTotal - hargaModalTotal,
+                isSplit: Boolean(isSplit),
+                updatedAt: nowMs,
+                idTiketRef: (window._pendingTiketIdToLunas || (existingTrx ? existingTrx.idTiketRef : null)) || null,
+                idSparepartRef: (window._pendingSparepartIdToLunas || (existingTrx ? existingTrx.idSparepartRef : null)) || null,
+                idPiutangRef: (window._pendingPiutangIdToLunas || (existingTrx ? existingTrx.idPiutangRef : null)) || null
             };
+
+            if (existingTrx && existingTrx.isPencatatanUtangAwal) trxData.isPencatatanUtangAwal = true;
+            if (existingTrx && existingTrx.isPindahSaldo) trxData.isPindahSaldo = true;
 
             if (editId) {
                 const idx = window.transaksiJurnal.findIndex(item => item.id == editId);
@@ -5596,7 +5940,6 @@
                     trxData.idSparepartRef = spFromTiket.id;
                 }
                 window._pendingTiketIdToLunas = null;
-                window.saveToFirebaseNode('tiketServis', window.tiketServisList);
             }
 
             if (window._pendingSparepartIdToLunas) {
@@ -5607,58 +5950,88 @@
                     window.catatLogAktivitas('LUNAS SPAREPART', `Sparepart "${sp.namaUnit}" otomatis LUNAS via kasir`);
                 }
                 window._pendingSparepartIdToLunas = null;
-                window.saveToFirebaseNode('sparepart', window.sparepartList);
             }
 
             if (window._pendingPiutangIdToLunas) {
                 const p = window.piutangList.find(x => x.id == window._pendingPiutangIdToLunas);
                 if (p) {
-                    window.catatLogAktivitas('PELUNASAN UTANG', `Menerima pembayaran piutang ${p.nama} sebesar ${window.formatRp(hargaJualTotal)} masuk ke ${akunMasuk1}`);
+                    const targetMasukInfo = isSplit && akunMasuk2 ? `${akunMasuk1} & ${akunMasuk2}` : akunMasuk1;
+                    window.catatLogAktivitas('PELUNASAN UTANG', `Menerima pembayaran piutang ${p.nama} sebesar ${window.formatRp(hargaJualTotal)} masuk ke ${targetMasukInfo}`);
                 }
                 window._pendingPiutangIdToLunas = null;
-                window.saveToFirebaseNode('piutang', window.piutangList);
+            }
+
+            // Simpan ke proteksi lokal anti-rollback sebelum sinkronisasi Firebase
+            window.markLocalTrxEdited(trxData);
+
+            // Jika sedang di filter harian dan tanggal transaksi yang diedit berbeda, sesuaikan filter agar langsung terlihat
+            const fModeEl = document.getElementById('jurnalFilterMode');
+            const fDateEl = document.getElementById('jurnalDatePicker');
+            if (editId && fModeEl && fModeEl.value === 'DAILY' && fDateEl && fDateEl.value !== selectedDate) {
+                fDateEl.value = selectedDate;
             }
 
             window.closeModalKasir();
-            window.saveAllToFirebase(false);
             window.renderAll();
+            window.saveAllToFirebase(false);
+
+            if (editId) {
+                window.highlightRowAndScroll(`row-trx-${trxData.id}`);
+                window.showToast(`✅ Perubahan transaksi "${ket}" berhasil disimpan & disinkronkan!`, "success");
+            } else {
+                window.showToast(`✅ Transaksi "${ket}" berhasil disimpan!`, "success");
+            }
         });
 
         window.editTrx = function(idTrx) {
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
+            window.cancelEditTrx();
+
             document.getElementById('editTrxId').value = t.id;
+            const titleEl = document.getElementById('formTrxTitle');
+            if (titleEl) titleEl.innerText = '✏️ Edit Transaksi Kasir';
+            const btnSubmitEl = document.getElementById('btnSubmitTrx');
+            if (btnSubmitEl) btnSubmitEl.innerText = '💾 Simpan Perubahan';
+
             document.getElementById('trxDateInput').value = t.isoDate || window.getTodayIso();
-            document.getElementById('keterangan').value = t.ket;
+            document.getElementById('keterangan').value = t.ket || '';
             document.getElementById('trxQty').value = t.qty || 1;
-            document.getElementById('kategori').value = t.kat;
+            document.getElementById('kategori').value = t.kat || 'VOUCHER';
             document.getElementById('chkIsNewCustomer').checked = (t.isNewCustomer !== false);
 
-            const isSplit = !!t.isSplit;
+            const isSplit = Boolean(t.isSplit);
+            const jTotal = Number(t.hargaJual || 0);
+            const mTotal = Number(t.hargaModal || 0);
+            const j1 = isSplit ? Number(t.jualSplit1 !== undefined ? t.jualSplit1 : jTotal) : jTotal;
+            const j2 = isSplit ? Number(t.jualSplit2 || 0) : 0;
+            const m1 = isSplit ? Number(t.modalSplit1 !== undefined ? t.modalSplit1 : mTotal) : mTotal;
+            const m2 = isSplit ? Number(t.modalSplit2 || 0) : 0;
+
+            // Isi baik form single maupun form split agar saat kasir centang/ubah ke 2 akun, data akun 1 & modal tidak hilang
+            document.getElementById('akunMasuk1').value = t.akunMasuk1 || '';
+            document.getElementById('hargaJual').value = jTotal;
+            document.getElementById('hargaJualDisplay').value = jTotal ? jTotal.toLocaleString('id-ID') : '0';
+            document.getElementById('akunKeluar1').value = t.akunKeluar1 || '';
+            document.getElementById('hargaModal').value = mTotal;
+            document.getElementById('hargaModalDisplay').value = mTotal ? mTotal.toLocaleString('id-ID') : '0';
+
+            document.getElementById('splitAkunMasuk1').value = t.akunMasuk1 || '';
+            document.getElementById('jualSplit1').value = j1;
+            document.getElementById('jualSplit1Display').value = j1 ? j1.toLocaleString('id-ID') : '0';
+            document.getElementById('akunMasuk2').value = t.akunMasuk2 || '';
+            document.getElementById('jualSplit2').value = j2;
+            document.getElementById('jualSplit2Display').value = j2 ? j2.toLocaleString('id-ID') : '0';
+
+            document.getElementById('splitAkunKeluar1').value = t.akunKeluar1 || '';
+            document.getElementById('modalSplit1').value = m1;
+            document.getElementById('modalSplit1Display').value = m1 ? m1.toLocaleString('id-ID') : '0';
+            document.getElementById('akunKeluar2').value = t.akunKeluar2 || '';
+            document.getElementById('modalSplit2').value = m2;
+            document.getElementById('modalSplit2Display').value = m2 ? m2.toLocaleString('id-ID') : '0';
+
             document.getElementById('chkSplit').checked = isSplit;
             window.toggleSplitMode(isSplit);
-
-            if (isSplit) {
-                document.getElementById('splitAkunMasuk1').value = t.akunMasuk1 || '';
-                document.getElementById('jualSplit1').value = t.jualSplit1 || 0;
-                document.getElementById('jualSplit1Display').value = Number(t.jualSplit1 || 0).toLocaleString('id-ID');
-                document.getElementById('akunMasuk2').value = t.akunMasuk2 || '';
-                document.getElementById('jualSplit2').value = t.jualSplit2 || 0;
-                document.getElementById('jualSplit2Display').value = Number(t.jualSplit2 || 0).toLocaleString('id-ID');
-                document.getElementById('splitAkunKeluar1').value = t.akunKeluar1 || '';
-                document.getElementById('modalSplit1').value = t.modalSplit1 || 0;
-                document.getElementById('modalSplit1Display').value = Number(t.modalSplit1 || 0).toLocaleString('id-ID');
-                document.getElementById('akunKeluar2').value = t.akunKeluar2 || '';
-                document.getElementById('modalSplit2').value = t.modalSplit2 || 0;
-                document.getElementById('modalSplit2Display').value = Number(t.modalSplit2 || 0).toLocaleString('id-ID');
-            } else {
-                document.getElementById('akunMasuk1').value = t.akunMasuk1 || '';
-                document.getElementById('hargaJual').value = t.hargaJual || 0;
-                document.getElementById('hargaJualDisplay').value = Number(t.hargaJual || 0).toLocaleString('id-ID');
-                document.getElementById('akunKeluar1').value = t.akunKeluar1 || '';
-                document.getElementById('hargaModal').value = t.hargaModal || 0;
-                document.getElementById('hargaModalDisplay').value = Number(t.hargaModal || 0).toLocaleString('id-ID');
-            }
             window.hitungCuan();
             window.openModalKasir();
         }
@@ -6400,10 +6773,12 @@
                 topSaldoSub.innerText = `Cair: ${window.formatRp(totalKasCair)}`;
             }
 
-            // Render Tabel Master VLOOKUP di Tab Laporan -> VLOOKUP
+            // Render Tabel Master VLOOKUP di Tab Laporan -> VLOOKUP (Hanya Menampilkan Inputan Manual)
             const bVlookup = document.getElementById('bodyMasterVlookup');
             if (bVlookup) {
-                const vKeys = Object.keys(window.masterVlookup || {});
+                const vKeys = Object.keys(window.masterVlookup || {}).filter(k => window.isManualVlookupEntry(k, window.masterVlookup[k]));
+                const badgeCnt = document.getElementById('badgeCountMasterVlookup');
+                if (badgeCnt) badgeCnt.innerText = `${vKeys.length} Kata Kunci Manual`;
                 bVlookup.innerHTML = vKeys.map(k => {
                     const r = window.masterVlookup[k] || {};
                     const isSp = Boolean(r.isSplit);
@@ -6430,7 +6805,7 @@
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada kata kunci VLOOKUP.</td></tr>`;
+                }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada kata kunci VLOOKUP manual.</td></tr>`;
             }
 
             window.renderRekapKategoriTab();
@@ -7765,8 +8140,8 @@
                 return ket.includes(q) || smb.includes(q) || (qNum && nom.includes(qNum));
             });
 
-            // 6. Cari di Master VLOOKUP
-            const vlookupKeys = Object.keys(window.masterVlookup || {});
+            // 6. Cari di Master VLOOKUP (Khusus Manual)
+            const vlookupKeys = Object.keys(window.masterVlookup || {}).filter(k => window.isManualVlookupEntry(k, window.masterVlookup[k]));
             const resVlookup = vlookupKeys.filter(k => {
                 const rule = window.masterVlookup[k] || {};
                 if (!q) return true;
