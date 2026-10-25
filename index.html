@@ -840,27 +840,342 @@
         .logo-preview-box { width: 110px; height: 110px; border: 2px dashed #CBD5E1; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #F8FAFC; overflow: hidden; margin: 0 auto 12px auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.04); }
         .logo-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        @media print {
-            body * { visibility: hidden; }
-            #printAreaReport, #printAreaReport *, #printAreaServiceNota, #printAreaServiceNota *, #printAreaNotaLunasService, #printAreaNotaLunasService * { visibility: visible; }
-            #printAreaReport { position: absolute; left: 0; top: 0; width: 100%; font-family: sans-serif; color: #000; background: #FFF; padding: 20px; }
-            #printAreaServiceNota, #printAreaNotaLunasService { position: absolute; left: 0; top: 0; width: 100%; background: #FFF; color: #000; font-family: sans-serif; padding: 10px; font-size: 11px; }
-            @page { margin: 1cm; size: A4; }
+        @page {
+            size: A5 landscape;
+            margin: 0mm;
         }
 
-        .nota-container { display: flex; width: 100%; border: 1.5px solid #047857; border-radius: 8px; overflow: hidden; background: #fff; }
-        .nota-kolom { width: 50%; padding: 14px; position: relative; }
-        .nota-kolom.kiri { border-right: 1.5px dashed #047857; background: #FAFAFA; }
-        .nota-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #047857; padding-bottom: 8px; margin-bottom: 10px; }
-        .nota-title h2 { font-size: 16px; font-weight: 900; color: #047857; margin: 0; }
-        .nota-title p { font-size: 9px; color: #555; margin: 2px 0 0 0; }
-        .no-servis-box { border: 1.5px solid #047857; border-radius: 6px; padding: 4px 8px; text-align: center; background: #F0FDF4; }
-        .no-servis-box span { font-size: 9px; display: block; color: #047857; font-weight: bold; }
-        .no-servis-box b { font-size: 12px; color: #047857; }
-        .nota-section { border: 1px solid #CBD5E1; border-radius: 6px; padding: 8px; margin-bottom: 8px; background: #FFF; }
-        .nota-section-title { font-size: 10px; font-weight: bold; color: #047857; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
-        .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 90px; margin: 4px auto; text-align: center; }
-        .pin-dot { width: 16px; height: 16px; border: 1px solid #94A3B8; border-radius: 50%; display: inline-block; }
+        @media print {
+            html, body {
+                width: 100% !important;
+                max-width: none !important;
+                min-height: 0 !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #FFFFFF !important;
+                color: #000000 !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body > *:not(#printAreaReport):not(#printAreaServiceNota):not(#printAreaNotaLunasService) {
+                display: none !important;
+            }
+            #printAreaReport {
+                position: relative !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                font-family: sans-serif !important;
+                color: #000 !important;
+                background: #FFF !important;
+                padding: 10mm !important;
+                box-sizing: border-box !important;
+            }
+            #printAreaServiceNota,
+            #printAreaNotaLunasService.nota-a5-mode {
+                position: relative !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 210mm !important;
+                height: 148mm !important;
+                max-height: 100vh !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                background: #FFFFFF !important;
+                color: #000000 !important;
+                font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                font-size: 10.5px !important;
+                box-sizing: border-box !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                overflow: hidden !important;
+            }
+            #printAreaNotaLunasService.struk-thermal-mode {
+                position: relative !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                padding: 4mm !important;
+                background: #FFFFFF !important;
+                color: #000000 !important;
+                box-sizing: border-box !important;
+            }
+        }
+
+        /* TATA LETAK NOTA SERVICE A5 (210mm x 148mm) DIBAGI 2 PRESISI & SENTRAL (2 x A6 PORTRAIT) */
+        .nota-a5-sheet {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            width: 100%;
+            height: 148mm;
+            max-height: 100vh;
+            margin: 0 auto;
+            box-sizing: border-box;
+            background: #FFFFFF;
+            align-items: stretch;
+        }
+        .nota-half {
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            padding: 4.5mm 5mm;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        .nota-half.kiri {
+            border-right: 1.5px dashed #64748B;
+        }
+        .nota-cut-badge {
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            background: #FFFFFF;
+            color: #475569;
+            font-size: 10px;
+            line-height: 1;
+            padding: 2px 0;
+            z-index: 5;
+            user-select: none;
+        }
+        .nota-card {
+            width: 100%;
+            height: 100%;
+            border: 1.5px solid #047857;
+            border-radius: 8px;
+            padding: 8px 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #FFFFFF;
+            overflow: hidden;
+        }
+        .nota-card.arsip {
+            border-color: #334155;
+            background: #FCFCFD;
+        }
+        .nota-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 2px solid #047857;
+            padding-bottom: 6px;
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+        .nota-card.arsip .nota-header {
+            border-bottom-color: #334155;
+        }
+        .nota-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+            flex: 1;
+        }
+        .nota-logo-img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            border-radius: 6px;
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            padding: 1.5px;
+            flex-shrink: 0;
+        }
+        .nota-title {
+            min-width: 0;
+            flex: 1;
+        }
+        .nota-title-top {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .nota-title h2 {
+            font-size: 13.5px;
+            font-weight: 900;
+            color: #047857;
+            margin: 0;
+            line-height: 1.15;
+            letter-spacing: 0.2px;
+        }
+        .nota-card.arsip .nota-title h2 {
+            color: #1E293B;
+        }
+        .nota-lembar-badge {
+            font-size: 7.5px;
+            font-weight: 800;
+            padding: 1.5px 5px;
+            border-radius: 4px;
+            background: #DCFCE7;
+            color: #047857;
+            border: 1px solid #86EFAC;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .nota-card.arsip .nota-lembar-badge {
+            background: #E2E8F0;
+            color: #1E293B;
+            border-color: #CBD5E1;
+        }
+        .nota-title p {
+            font-size: 8.5px;
+            color: #475569;
+            margin: 2px 0 0 0;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .no-servis-box {
+            border: 1.5px solid #047857;
+            border-radius: 6px;
+            padding: 3px 7px;
+            text-align: center;
+            background: #F0FDF4;
+            flex-shrink: 0;
+        }
+        .nota-card.arsip .no-servis-box {
+            border-color: #334155;
+            background: #F1F5F9;
+        }
+        .no-servis-box span {
+            font-size: 7.5px;
+            display: block;
+            color: #047857;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+        .nota-card.arsip .no-servis-box span {
+            color: #334155;
+        }
+        .no-servis-box b {
+            font-size: 10.5px;
+            font-weight: 900;
+            color: #047857;
+            white-space: nowrap;
+        }
+        .nota-card.arsip .no-servis-box b {
+            color: #0F172A;
+        }
+        .nota-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 4px;
+            margin: 2px 0;
+            min-height: 0;
+        }
+        .nota-section {
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            padding: 5px 8px;
+            background: #FFFFFF;
+            box-sizing: border-box;
+        }
+        .nota-section-title {
+            font-size: 8.5px;
+            font-weight: 800;
+            color: #047857;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.25px;
+        }
+        .nota-card.arsip .nota-section-title {
+            color: #334155;
+        }
+        .nota-section-content {
+            font-size: 10px;
+            line-height: 1.3;
+            color: #0F172A;
+            word-break: break-word;
+        }
+        .nota-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px;
+            align-items: center;
+        }
+        .pin-box-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px dashed #CBD5E1;
+            padding-left: 8px;
+        }
+        .pin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            width: 44px;
+            margin: 1px auto;
+            text-align: center;
+        }
+        .pin-dot {
+            width: 10px;
+            height: 10px;
+            border: 1.2px solid #64748B;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 auto;
+        }
+        .nota-footer {
+            border-top: 1.5px dashed #CBD5E1;
+            padding-top: 5px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .nota-sign-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 9px;
+            line-height: 1.3;
+            color: #1E293B;
+        }
+        .nota-sign-box {
+            text-align: center;
+            min-width: 105px;
+        }
+        .nota-sign-space {
+            height: 24px;
+        }
+        .nota-bottom-banner {
+            text-align: center;
+            font-size: 8px;
+            font-weight: 800;
+            margin-top: 4px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            background: #F0FDF4;
+            color: #047857;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .nota-card.arsip .nota-bottom-banner {
+            background: #F1F5F9;
+            color: #334155;
+        }
 
         /* Tata Letak Proporsional Tabel Rekap Piutang Konsumen (PC & HP) */
         .table-piutang {
@@ -4019,110 +4334,222 @@
             }
         }
 
+        window.setPrintPageMode = function(mode) {
+            let styleEl = document.getElementById('dynamicPrintPageStyle');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamicPrintPageStyle';
+                document.head.appendChild(styleEl);
+            }
+            if (mode === 'NOTA_A5') {
+                styleEl.innerHTML = '@page { size: A5 landscape; margin: 0mm; }';
+            } else if (mode === 'REPORT_A4') {
+                styleEl.innerHTML = '@page { size: A4 portrait; margin: 10mm; }';
+            } else {
+                styleEl.innerHTML = '@page { margin: 4mm; }';
+            }
+        };
+
         window.cetakNotaTiketServis = function(t) {
             const p = window.pengaturanToko || {};
             const storeName = p.namaToko || 'ZENCELL 1';
             const storeAddr = p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar';
-            const storeLogo = p.logoUrl ? `<img src="${p.logoUrl}" style="max-height:28px; margin-bottom:3px; object-fit:contain;"><br>` : '';
+            const storeKontak = p.kontakToko ? ` • ${p.kontakToko}` : '';
+            const storeLogo = p.logoUrl ? `<img src="${p.logoUrl}" class="nota-logo-img" alt="Logo">` : '';
+            const garansiText = (t.garansi && String(t.garansi).trim()) ? String(t.garansi).trim() : 'Garansi servis 7 Hari.';
+            const estBiayaVal = Number(t.estBiaya || 0);
+            const dpNomVal = Number(t.dpNom || 0);
+
+            window.setPrintPageMode('NOTA_A5');
+            const pReport = document.getElementById('printAreaReport');
+            const pLunas = document.getElementById('printAreaNotaLunasService');
+            if (pReport) pReport.style.display = 'none';
+            if (pLunas) pLunas.style.display = 'none';
 
             const printArea = document.getElementById('printAreaServiceNota');
             printArea.style.display = 'block';
             printArea.innerHTML = `
-                <div class="nota-container">
-                    <div class="nota-kolom kiri">
-                        <div class="nota-header">
-                            <div class="nota-title">
-                                ${storeLogo}
-                                <h2>${storeName}</h2>
-                                <p>${storeAddr}</p>
+                <div class="nota-a5-sheet">
+                    <!-- BELAHAN KIRI (50% A5 = A6 PORTRAIT PRESISI): LEMBAR KONSUMEN -->
+                    <div class="nota-half kiri">
+                        <span class="nota-cut-badge">✂</span>
+                        <div class="nota-card">
+                            <div class="nota-header">
+                                <div class="nota-brand-wrap">
+                                    ${storeLogo}
+                                    <div class="nota-title">
+                                        <div class="nota-title-top">
+                                            <h2>${storeName}</h2>
+                                            <span class="nota-lembar-badge">LEMBAR KONSUMEN</span>
+                                        </div>
+                                        <p>${storeAddr}${storeKontak}</p>
+                                    </div>
+                                </div>
+                                <div class="no-servis-box">
+                                    <span>NO. SERVIS</span>
+                                    <b>${t.noServis}</b>
+                                </div>
                             </div>
-                            <div class="no-servis-box">
-                                <span>NO. SERVIS</span>
-                                <b>${t.noServis}</b>
+
+                            <div class="nota-body">
+                                <div class="nota-section">
+                                    <div class="nota-section-title">
+                                        <span>👤 INFO PELANGGAN</span>
+                                        <span style="font-size:8px; color:#64748B; font-weight:700;">TANDA TERIMA SERVIS</span>
+                                    </div>
+                                    <div class="nota-section-content">
+                                        <b>${t.nama || '-'}</b><br>
+                                        <span>No. HP / WA: <b>${t.noHp || '-'}</b></span>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📱 DETAIL PERANGKAT</span></div>
+                                    <div class="nota-section-content">
+                                        <b>${t.tipeHp || '-'}</b><br>
+                                        <span>SN / IMEI: ${t.serialNum || '-'}</span><br>
+                                        <span>Kelengkapan: <b>${t.kelengkapan || 'UNIT SAJA'}</b></span>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>💬 KELUHAN / DIAGNOSA AWAL</span></div>
+                                    <div class="nota-section-content" style="font-style:italic;">
+                                        "${t.keluhan || '-'}"
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📄 STATUS & ESTIMASI BIAYA</span></div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
+                                        <span style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:2.5px 7px; border-radius:4px; font-weight:800; font-size:9px;">${t.status || 'MENUNGGU KONFIRMASI'}</span>
+                                        <div style="text-align:right; line-height:1.25;">
+                                            <span style="font-size:8.5px; color:#475569; display:block;">DP Masuk: <b>${window.formatRp(dpNomVal)}</b></span>
+                                            <span style="font-size:10.5px; font-weight:900; color:#047857;">ESTIMASI: ${estBiayaVal > 0 ? window.formatRp(estBiayaVal) : 'MENUNGGU CEK'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📋 SYARAT & KETENTUAN SERVIS</span></div>
+                                    <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
+                                        1. ${garansiText}<br>
+                                        2. Pengambilan unit wajib membawa nota tanda terima ini.<br>
+                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="nota-footer">
+                                <div class="nota-sign-row">
+                                    <div>
+                                        Diterima: <b>${t.waktu || t.isoDate || '-'}</b><br>
+                                        Karyawan: <b>${t.petugas || 'ADMIN'}</b>
+                                    </div>
+                                    <div class="nota-sign-box">
+                                        TANDA TANGAN
+                                        <div class="nota-sign-space"></div>
+                                        <b>( ....................... )</b>
+                                    </div>
+                                </div>
+                                <div class="nota-bottom-banner">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
                             </div>
                         </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">👤 INFO PELANGGAN</div>
-                            <div style="font-size: 11px;"><b>${t.nama}</b><br>${t.noHp}</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📱 DETAIL PERANGKAT</div>
-                            <div style="font-size: 11px;"><b>${t.tipeHp}</b><br>SN: ${t.serialNum}<br>Kelengkapan: ${t.kelengkapan}</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">💬 KELUHAN / DIAGNOSA AWAL</div>
-                            <div style="font-size: 11px; font-style: italic;">"${t.keluhan}"</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📄 STATUS BIAYA</div>
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span style="background:#E0F2FE; color:#0369A1; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:10px;">${t.status}</span>
-                                <span style="font-size:11px; font-weight:bold;">(DP: ${window.formatRp(t.dpNom)})</span>
-                            </div>
-                        </div>
-
-                        ${t.garansi ? `
-                        <div class="nota-section">
-                            <div class="nota-section-title">📋 SYARAT & KETENTUAN</div>
-                            <div style="font-size: 10px; line-height: 1.3;">1. ${t.garansi}<br>2. Barang tidak diambil >30 hari bukan tanggung jawab kami.</div>
-                        </div>
-                        ` : ''}
-
-                        <div style="margin-top: 15px; font-size: 10px; display:flex; justify-content:space-between; align-items:flex-end;">
-                            <div>Diterima: ${t.waktu}<br>Karyawan: <b>${t.petugas}</b></div>
-                            <div style="text-align:center;">TANDA TANGAN<br><br><br><b>( ................... )</b></div>
-                        </div>
-                        <div style="text-align:center; font-size: 9px; margin-top: 10px; color:#047857; font-weight:bold;">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
                     </div>
 
-                    <div class="nota-kolom">
-                        <div class="nota-header">
-                            <div class="nota-title">
-                                <h2 style="color:#334155;">ARSIP KONTER</h2>
-                                <p>${storeName}</p>
+                    <!-- BELAHAN KANAN (50% A5 = A6 PORTRAIT PRESISI): ARSIP KONTER -->
+                    <div class="nota-half kanan">
+                        <div class="nota-card arsip">
+                            <div class="nota-header">
+                                <div class="nota-brand-wrap">
+                                    ${storeLogo}
+                                    <div class="nota-title">
+                                        <div class="nota-title-top">
+                                            <h2>ARSIP KONTER</h2>
+                                            <span class="nota-lembar-badge">${storeName}</span>
+                                        </div>
+                                        <p>${storeAddr}${storeKontak}</p>
+                                    </div>
+                                </div>
+                                <div class="no-servis-box">
+                                    <span>NO. SERVIS</span>
+                                    <b>${t.noServis}</b>
+                                </div>
                             </div>
-                            <div class="no-servis-box" style="border-color:#334155; background:#F1F5F9;">
-                                <span style="color:#334155;">NO. SERVIS</span>
-                                <b style="color:#334155;">${t.noServis}</b>
+
+                            <div class="nota-body">
+                                <div class="nota-section">
+                                    <div class="nota-section-title">
+                                        <span>👤 INFO PELANGGAN</span>
+                                        <span style="font-size:8px; color:#475569; font-weight:700;">LEMBAR TEKNISI / KONTER</span>
+                                    </div>
+                                    <div class="nota-section-content">
+                                        <b>${t.nama || '-'}</b><br>
+                                        <span>No. HP / WA: <b>${t.noHp || '-'}</b></span>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📱 PERANGKAT & POLA KUNCI / PIN</span></div>
+                                    <div class="nota-grid-2col">
+                                        <div class="nota-section-content">
+                                            <b>${t.tipeHp || '-'}</b><br>
+                                            <span>SN: ${t.serialNum || '-'} • ${t.kelengkapan || 'UNIT SAJA'}</span><br>
+                                            <span style="font-size:8.5px; color:#334155;">PIN / Sandi: ..........................</span>
+                                        </div>
+                                        <div class="pin-box-wrap">
+                                            <div class="pin-grid">
+                                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📝 KELUHAN & CATATAN TEKNISI</span></div>
+                                    <div class="nota-section-content">
+                                        <div>Keluhan: <i>"${t.keluhan || '-'}"</i></div>
+                                        <div style="margin-top:2px; font-size:8.5px; color:#475569;">Tindakan: ............................................................</div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📄 STATUS & ESTIMASI BIAYA</span></div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
+                                        <span style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:2.5px 7px; border-radius:4px; font-weight:800; font-size:9px;">${t.status || 'MENUNGGU KONFIRMASI'}</span>
+                                        <div style="text-align:right; line-height:1.25;">
+                                            <span style="font-size:8.5px; color:#475569; display:block;">DP Masuk: <b>${window.formatRp(dpNomVal)}</b></span>
+                                            <span style="font-size:10.5px; font-weight:900; color:#0F172A;">ESTIMASI: ${estBiayaVal > 0 ? window.formatRp(estBiayaVal) : 'MENUNGGU CEK'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📋 CHECKLIST & KETENTUAN</span></div>
+                                    <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
+                                        1. ${garansiText}<br>
+                                        2. Pastikan pola/PIN &amp; kondisi fisik unit telah dicek.<br>
+                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="nota-section">
-                            <div class="nota-section-title">👤 PELANGGAN</div>
-                            <div style="font-size: 11px;"><b>${t.nama}</b> (${t.noHp})</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📱 PERANGKAT & POLA KUNCI / PIN</div>
-                            <div style="font-size: 11px; margin-bottom: 4px;"><b>${t.tipeHp}</b> (SN: ${t.serialNum})</div>
-                            <div class="pin-grid">
-                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
-                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
-                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                            <div class="nota-footer">
+                                <div class="nota-sign-row">
+                                    <div>
+                                        Masuk: <b>${t.waktu || t.isoDate || '-'}</b><br>
+                                        Karyawan: <b>${t.petugas || 'ADMIN'}</b>
+                                    </div>
+                                    <div class="nota-sign-box">
+                                        TIM KONTER
+                                        <div class="nota-sign-space"></div>
+                                        <b>( ....................... )</b>
+                                    </div>
+                                </div>
+                                <div class="nota-bottom-banner">ARSIP INTERNAL KONTER — TEMPEL / SIMPAN BERSAMA UNIT</div>
                             </div>
-                            <div style="font-size: 10px; text-align:center; margin-top:2px;">PIN / PASSWORD: ............................</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📝 CATATAN TEKNISI / TINDAKAN</div>
-                            <div style="font-size: 11px; min-height: 25px;">-</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📄 STATUS BIAYA</div>
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span style="background:#E0F2FE; color:#0369A1; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:10px;">${t.status}</span>
-                                <span style="font-size:11px; font-weight:bold;">(DP: ${window.formatRp(t.dpNom)})</span>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 25px; font-size: 10px; display:flex; justify-content:space-between; align-items:flex-end;">
-                            <div>Masuk: ${t.waktu}<br>Karyawan: <b>${t.petugas}</b></div>
-                            <div style="text-align:center;">TIM KONTER<br><br><br><b>( ................... )</b></div>
                         </div>
                     </div>
                 </div>
@@ -4130,6 +4557,215 @@
             window.print();
             setTimeout(() => { printArea.style.display = 'none'; }, 1000);
         }
+
+        window.buildNotaLunasServiceA5Html = function(opts) {
+            const p = window.pengaturanToko || {};
+            const storeName = p.namaToko || 'ZENCELL 1';
+            const storeAddr = p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar';
+            const storeKontak = p.kontakToko ? ` • ${p.kontakToko}` : '';
+            const storeLogo = p.logoUrl ? `<img src="${p.logoUrl}" class="nota-logo-img" alt="Logo">` : '';
+
+            const noServis = opts.noServis || 'SRV-001';
+            const namaPelanggan = opts.namaPelanggan || '-';
+            const noHpPelanggan = opts.noHpPelanggan || '-';
+            const tipeHp = opts.tipeHp || 'UNIT SERVICE';
+            const snHp = opts.snHp || '-';
+            const kelengkapanHp = opts.kelengkapanHp || 'UNIT SAJA';
+            const keluhanText = opts.keluhanText || '-';
+            const dpNomVal = Number(opts.dpNomVal || 0);
+            const totalBiayaVal = Number(opts.totalBiayaVal || 0);
+            const petugasName = opts.petugasName || 'ADMIN';
+            const waktuCetak = opts.waktuCetak || window.getTodayIso();
+            const garansiText = opts.garansiText || 'Garansi servis 7 Hari.';
+
+            return `
+                <div class="nota-a5-sheet">
+                    <!-- BELAHAN KIRI (50% A5 = A6 PORTRAIT PRESISI): LEMBAR KONSUMEN LUNAS -->
+                    <div class="nota-half kiri">
+                        <span class="nota-cut-badge">✂</span>
+                        <div class="nota-card">
+                            <div class="nota-header">
+                                <div class="nota-brand-wrap">
+                                    ${storeLogo}
+                                    <div class="nota-title">
+                                        <div class="nota-title-top">
+                                            <h2>${storeName}</h2>
+                                            <span class="nota-lembar-badge">NOTA LUNAS</span>
+                                        </div>
+                                        <p>${storeAddr}${storeKontak}</p>
+                                    </div>
+                                </div>
+                                <div class="no-servis-box">
+                                    <span>NO. SERVIS</span>
+                                    <b>${noServis}</b>
+                                </div>
+                            </div>
+
+                            <div class="nota-body">
+                                <div class="nota-section">
+                                    <div class="nota-section-title">
+                                        <span>👤 INFO PELANGGAN</span>
+                                        <span style="font-size:8px; color:#047857; font-weight:800;">BUKTI LUNAS &amp; GARANSI</span>
+                                    </div>
+                                    <div class="nota-section-content">
+                                        <b>${namaPelanggan}</b><br>
+                                        <span>No. HP / WA: <b>${noHpPelanggan}</b></span>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📱 DETAIL PERANGKAT</span></div>
+                                    <div class="nota-section-content">
+                                        <b>${tipeHp}</b><br>
+                                        <span>SN / IMEI: ${snHp}</span><br>
+                                        <span>Kelengkapan: <b>${kelengkapanHp}</b></span>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>💬 KELUHAN &amp; PENANGANAN</span></div>
+                                    <div class="nota-section-content">
+                                        <div style="font-style:italic;">"${keluhanText}"</div>
+                                        <div style="font-size:8.5px; color:#047857; font-weight:700; margin-top:1px;">✔ Penanganan Teknisi Selesai &amp; Diuji Normal</div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📄 RINCIAN BIAYA LUNAS</span></div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
+                                        <span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2.5px 8px; border-radius:4px; font-weight:900; font-size:9.5px;">✅ LUNAS</span>
+                                        <div style="text-align:right; line-height:1.25;">
+                                            <span style="font-size:8.5px; color:#64748B; display:block;">DP Sebelumnya: -${window.formatRp(dpNomVal)}</span>
+                                            <span style="font-size:11px; font-weight:900; color:#047857;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📋 SYARAT &amp; KETENTUAN GARANSI</span></div>
+                                    <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
+                                        1. ${garansiText}<br>
+                                        2. Garansi berlaku untuk kerusakan yang sama &amp; segel utuh.<br>
+                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="nota-footer">
+                                <div class="nota-sign-row">
+                                    <div>
+                                        Tanggal: <b>${waktuCetak}</b><br>
+                                        Karyawan: <b>${petugasName}</b>
+                                    </div>
+                                    <div class="nota-sign-box">
+                                        TANDA TANGAN
+                                        <div class="nota-sign-space"></div>
+                                        <b>( ....................... )</b>
+                                    </div>
+                                </div>
+                                <div class="nota-bottom-banner">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BELAHAN KANAN (50% A5 = A6 PORTRAIT PRESISI): ARSIP KONTER LUNAS -->
+                    <div class="nota-half kanan">
+                        <div class="nota-card arsip">
+                            <div class="nota-header">
+                                <div class="nota-brand-wrap">
+                                    ${storeLogo}
+                                    <div class="nota-title">
+                                        <div class="nota-title-top">
+                                            <h2>ARSIP KONTER</h2>
+                                            <span class="nota-lembar-badge">${storeName}</span>
+                                        </div>
+                                        <p>${storeAddr}${storeKontak}</p>
+                                    </div>
+                                </div>
+                                <div class="no-servis-box">
+                                    <span>NO. SERVIS</span>
+                                    <b>${noServis}</b>
+                                </div>
+                            </div>
+
+                            <div class="nota-body">
+                                <div class="nota-section">
+                                    <div class="nota-section-title">
+                                        <span>👤 INFO PELANGGAN</span>
+                                        <span style="font-size:8px; color:#475569; font-weight:700;">ARSIP PELUNASAN SERVIS</span>
+                                    </div>
+                                    <div class="nota-section-content">
+                                        <b>${namaPelanggan}</b><br>
+                                        <span>No. HP / WA: <b>${noHpPelanggan}</b></span>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📱 PERANGKAT &amp; POLA KUNCI / PIN</span></div>
+                                    <div class="nota-grid-2col">
+                                        <div class="nota-section-content">
+                                            <b>${tipeHp}</b><br>
+                                            <span>SN: ${snHp} • ${kelengkapanHp}</span><br>
+                                            <span style="font-size:8.5px; color:#334155;">PIN / Sandi: ..........................</span>
+                                        </div>
+                                        <div class="pin-box-wrap">
+                                            <div class="pin-grid">
+                                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📝 CATATAN TEKNISI / TINDAKAN</span></div>
+                                    <div class="nota-section-content">
+                                        <div>Keluhan: <i>"${keluhanText}"</i></div>
+                                        <div style="font-size:8.5px; color:#15803D; font-weight:700; margin-top:1px;">✔ Perbaikan Selesai, Diuji Normal &amp; Diserahkan</div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📄 RINCIAN BIAYA LUNAS</span></div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
+                                        <span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2.5px 8px; border-radius:4px; font-weight:900; font-size:9.5px;">✅ LUNAS</span>
+                                        <div style="text-align:right; line-height:1.25;">
+                                            <span style="font-size:8.5px; color:#64748B; display:block;">DP Sebelumnya: -${window.formatRp(dpNomVal)}</span>
+                                            <span style="font-size:11px; font-weight:900; color:#0F172A;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nota-section">
+                                    <div class="nota-section-title"><span>📋 SYARAT &amp; KETENTUAN GARANSI</span></div>
+                                    <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
+                                        1. ${garansiText}<br>
+                                        2. Garansi berlaku untuk kerusakan yang sama &amp; segel utuh.<br>
+                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="nota-footer">
+                                <div class="nota-sign-row">
+                                    <div>
+                                        Tanggal: <b>${waktuCetak}</b><br>
+                                        Karyawan: <b>${petugasName}</b>
+                                    </div>
+                                    <div class="nota-sign-box">
+                                        TIM KONTER
+                                        <div class="nota-sign-space"></div>
+                                        <b>( ....................... )</b>
+                                    </div>
+                                </div>
+                                <div class="nota-bottom-banner">ARSIP LUNAS KONTER — SIMPAN SEBAGAI BUKTI</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
 
         window.cetakNotaLunasServiceTrx = function(idTrx) {
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
@@ -4148,120 +4784,32 @@
             const keluhanText = tiketMatch ? tiketMatch.keluhan : t.ket;
             const dpNomVal = tiketMatch ? tiketMatch.dpNom : 0;
             const totalBiayaVal = Number(t.hargaJual || 0);
-            const petugasName = sessionStorage.getItem('zencell_user') || 'ADMIN';
+            const petugasName = (tiketMatch && tiketMatch.petugas) || sessionStorage.getItem('zencell_user') || 'ADMIN';
+            const garansiText = (tiketMatch && tiketMatch.garansi) ? tiketMatch.garansi : 'Garansi servis 7 Hari.';
 
-            const p = window.pengaturanToko || {};
-            const storeName = p.namaToko || 'ZENCELL 1';
-            const storeAddr = p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar';
-            const storeLogo = p.logoUrl ? `<img src="${p.logoUrl}" style="max-height:28px; margin-bottom:3px; object-fit:contain;"><br>` : '';
+            window.setPrintPageMode('NOTA_A5');
+            const pReport = document.getElementById('printAreaReport');
+            const pService = document.getElementById('printAreaServiceNota');
+            if (pReport) pReport.style.display = 'none';
+            if (pService) pService.style.display = 'none';
 
             const printArea = document.getElementById('printAreaNotaLunasService');
+            printArea.className = 'nota-a5-mode';
             printArea.style.display = 'block';
-            printArea.innerHTML = `
-                <div class="nota-container">
-                    <div class="nota-kolom kiri">
-                        <div class="nota-header">
-                            <div class="nota-title">
-                                ${storeLogo}
-                                <h2>${storeName}</h2>
-                                <p>${storeAddr}</p>
-                            </div>
-                            <div class="no-servis-box">
-                                <span>NO. SERVIS</span>
-                                <b>${noServis}</b>
-                            </div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">👤 INFO PELANGGAN</div>
-                            <div style="font-size: 11px;"><b>${namaPelanggan}</b><br>${noHpPelanggan}</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📱 DETAIL PERANGKAT</div>
-                            <div style="font-size: 11px;"><b>${tipeHp}</b><br>SN: ${snHp}<br>Kelengkapan: ${kelengkapanHp}</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">💬 KELUHAN / DIAGNOSA AWAL</div>
-                            <div style="font-size: 11px; font-style: italic;">"${keluhanText}"</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📄 RINCIAN BIAYA LUNAS</div>
-                            <div style="font-size: 11px; margin-bottom: 4px;">Jasa Perbaikan / Software<br><b>Penanganan Teknisi Selesai</b></div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; border-top:1px dashed #CBD5E1; padding-top:4px;">
-                                <span style="background:#DCFCE7; color:#16A34A; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:10px;">LUNAS</span>
-                                <div style="text-align:right;">
-                                    <span style="font-size:10px; color:#64748B; display:block;">DP: -${window.formatRp(dpNomVal)}</span>
-                                    <span style="font-size:12px; font-weight:bold; color:#047857;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📋 SYARAT & KETENTUAN SERVIS</div>
-                            <div style="font-size: 10px; line-height: 1.3;">1. Garansi servis 7 Hari.<br>2. Barang tidak diambil >30 hari bukan tanggung jawab kami.</div>
-                        </div>
-
-                        <div style="margin-top: 15px; font-size: 10px; display:flex; justify-content:space-between; align-items:flex-end;">
-                            <div>Diterima: ${t.isoDate} ${t.waktu}<br>Karyawan: <b>${petugasName}</b></div>
-                            <div style="text-align:center;">TANDA TANGAN<br><br><br><b>( ................... )</b></div>
-                        </div>
-                        <div style="text-align:center; font-size: 9px; margin-top: 10px; color:#047857; font-weight:bold;">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
-                    </div>
-
-                    <div class="nota-kolom">
-                        <div class="nota-header">
-                            <div class="nota-title">
-                                <h2 style="color:#334155;">ARSIP KONTER</h2>
-                                <p>${storeName}</p>
-                            </div>
-                            <div class="no-servis-box" style="border-color:#334155; background:#F1F5F9;">
-                                <span style="color:#334155;">NO. SERVIS</span>
-                                <b style="color:#334155;">${noServis}</b>
-                            </div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">👤 PELANGGAN</div>
-                            <div style="font-size: 11px;"><b>${namaPelanggan}</b> (${noHpPelanggan})</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📱 PERANGKAT & POLA KUNCI / PIN</div>
-                            <div style="font-size: 11px; margin-bottom: 4px;"><b>${tipeHp}</b> (SN: ${snHp})</div>
-                            <div class="pin-grid">
-                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
-                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
-                                <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
-                            </div>
-                            <div style="font-size: 10px; text-align:center; margin-top:2px;">PIN / PASSWORD: ............................</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📝 CATATAN TEKNISI / TINDAKAN</div>
-                            <div style="font-size: 11px; min-height: 25px;">Perbaikan Selesai & Diuji Normal.</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📄 RINCIAN BIAYA LUNAS</div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                                <span style="background:#DCFCE7; color:#16A34A; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:10px;">LUNAS</span>
-                                <div style="text-align:right;">
-                                    <span style="font-size:10px; color:#64748B; display:block;">DP: -${window.formatRp(dpNomVal)}</span>
-                                    <span style="font-size:12px; font-weight:bold; color:#047857;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 25px; font-size: 10px; display:flex; justify-content:space-between; align-items:flex-end;">
-                            <div>Masuk: ${t.isoDate} ${t.waktu}<br>Karyawan: <b>${petugasName}</b></div>
-                            <div style="text-align:center;">TIM KONTER<br><br><br><b>( ................... )</b></div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            printArea.innerHTML = window.buildNotaLunasServiceA5Html({
+                noServis,
+                namaPelanggan,
+                noHpPelanggan,
+                tipeHp,
+                snHp,
+                kelengkapanHp,
+                keluhanText,
+                dpNomVal,
+                totalBiayaVal,
+                petugasName,
+                waktuCetak: `${t.isoDate || window.getTodayIso()} ${t.waktu || ''}`.trim(),
+                garansiText
+            });
             window.catatLogAktivitas('CETAK NOTA LUNAS', `Mencetak nota lunas service untuk ${namaPelanggan} (${window.formatRp(totalBiayaVal)})`);
             window.print();
             setTimeout(() => { printArea.style.display = 'none'; }, 1000);
@@ -4269,122 +4817,42 @@
 
         window.cetakNotaLunasServiceTrxTiket = function(t) {
             const noServis = t.noServis || ('SRV-' + Math.floor(100000 + Math.random() * 900000));
-            const namaPelanggan = t.nama;
+            const namaPelanggan = t.nama || '-';
             const noHpPelanggan = t.noHp || '-';
             const tipeHp = t.tipeHp || 'UNIT SERVICE';
             const snHp = t.serialNum || '-';
             const kelengkapanHp = t.kelengkapan || 'UNIT SAJA';
             const keluhanText = t.keluhan || '-';
             const dpNomVal = Number(t.dpNom || 0);
-            const totalBiayaVal = Number(t.estBiaya || 0);
-            const petugasName = t.petugas || (sessionStorage.getItem('zencell_user') || 'ADMIN');
 
-            const p = window.pengaturanToko || {};
-            const storeName = p.namaToko || 'ZENCELL 1';
-            const storeAddr = p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar';
-            const storeLogo = p.logoUrl ? `<img src="${p.logoUrl}" style="max-height:28px; margin-bottom:3px; object-fit:contain;"><br>` : '';
+            const linkedTrx = (window.transaksiJurnal || []).find(trx => !trx.isPencatatanUtangAwal && !trx.isPindahSaldo && ((trx.idTiketRef && trx.idTiketRef == t.id) || (t.noServis && String(trx.ket || '').toUpperCase().includes(t.noServis.toUpperCase()))));
+            const totalBiayaVal = linkedTrx ? Number(linkedTrx.hargaJual || t.estBiaya || 0) : Number(t.estBiaya || 0);
+            const petugasName = t.petugas || (sessionStorage.getItem('zencell_user') || 'ADMIN');
+            const garansiText = (t.garansi && String(t.garansi).trim()) ? String(t.garansi).trim() : 'Garansi servis 7 Hari.';
+
+            window.setPrintPageMode('NOTA_A5');
+            const pReport = document.getElementById('printAreaReport');
+            const pService = document.getElementById('printAreaServiceNota');
+            if (pReport) pReport.style.display = 'none';
+            if (pService) pService.style.display = 'none';
 
             const printArea = document.getElementById('printAreaNotaLunasService');
+            printArea.className = 'nota-a5-mode';
             printArea.style.display = 'block';
-            printArea.innerHTML = `
-                <div class="nota-container">
-                    <div class="nota-kolom kiri">
-                        <div class="nota-header">
-                            <div class="nota-title">
-                                ${storeLogo}
-                                <h2>${storeName}</h2>
-                                <p>${storeAddr}</p>
-                            </div>
-                            <div class="no-servis-box">
-                                <span>NO. SERVIS</span>
-                                <b>${noServis}</b>
-                            </div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">👤 INFO PELANGGAN</div>
-                            <div style="font-size: 11px;"><b>${namaPelanggan}</b><br>${noHpPelanggan}</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📱 DETAIL PERANGKAT</div>
-                            <div style="font-size: 11px;"><b>${tipeHp}</b><br>SN: ${snHp}<br>Kelengkapan: ${kelengkapanHp}</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">💬 KELUHAN / PENANGANAN</div>
-                            <div style="font-size: 11px; font-style: italic;">"${keluhanText}"</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📄 RINCIAN BIAYA LUNAS</div>
-                            <div style="font-size: 11px; margin-bottom: 4px;">Jasa Servis & Sparepart<br><b>Penanganan Teknisi Selesai</b></div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; border-top:1px dashed #CBD5E1; padding-top:4px;">
-                                <span style="background:#DCFCE7; color:#16A34A; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:10px;">LUNAS</span>
-                                <div style="text-align:right;">
-                                    ${dpNomVal > 0 ? `<span style="font-size:10px; color:#64748B; display:block;">DP: -${window.formatRp(dpNomVal)}</span>` : ''}
-                                    <span style="font-size:12px; font-weight:bold; color:#047857;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📋 SYARAT & KETENTUAN SERVIS</div>
-                            <div style="font-size: 10px; line-height: 1.3;">1. Garansi servis 7 Hari.<br>2. Barang tidak diambil >30 hari bukan tanggung jawab kami.</div>
-                        </div>
-
-                        <div style="margin-top: 15px; font-size: 10px; display:flex; justify-content:space-between; align-items:flex-end;">
-                            <div>Tanggal: ${t.isoDate || window.getTodayIso()}<br>Karyawan: <b>${petugasName}</b></div>
-                            <div style="text-align:center;">TANDA TANGAN<br><br><br><b>( ................... )</b></div>
-                        </div>
-                        <div style="text-align:center; font-size: 9px; margin-top: 10px; color:#047857; font-weight:bold;">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
-                    </div>
-
-                    <div class="nota-kolom">
-                        <div class="nota-header">
-                            <div class="nota-title">
-                                <h2 style="color:#334155;">ARSIP KONTER</h2>
-                                <p>${storeName}</p>
-                            </div>
-                            <div class="no-servis-box" style="border-color:#334155; background:#F1F5F9;">
-                                <span style="color:#334155;">NO. SERVIS</span>
-                                <b style="color:#334155;">${noServis}</b>
-                            </div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">👤 PELANGGAN</div>
-                            <div style="font-size: 11px;"><b>${namaPelanggan}</b> (${noHpPelanggan})</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📱 DETAIL PERANGKAT</div>
-                            <div style="font-size: 11px; margin-bottom: 4px;"><b>${tipeHp}</b> (SN: ${snHp})</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📝 CATATAN TEKNISI / TINDAKAN</div>
-                            <div style="font-size: 11px; min-height: 25px;">Perbaikan Selesai & Diuji Normal.</div>
-                        </div>
-
-                        <div class="nota-section">
-                            <div class="nota-section-title">📄 RINCIAN BIAYA LUNAS</div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                                <span style="background:#DCFCE7; color:#16A34A; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:10px;">LUNAS</span>
-                                <div style="text-align:right;">
-                                    ${dpNomVal > 0 ? `<span style="font-size:10px; color:#64748B; display:block;">DP: -${window.formatRp(dpNomVal)}</span>` : ''}
-                                    <span style="font-size:12px; font-weight:bold; color:#047857;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 25px; font-size: 10px; display:flex; justify-content:space-between; align-items:flex-end;">
-                            <div>Tanggal: ${t.isoDate || window.getTodayIso()}<br>Karyawan: <b>${petugasName}</b></div>
-                            <div style="text-align:center;">TIM KONTER<br><br><br><b>( ................... )</b></div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            printArea.innerHTML = window.buildNotaLunasServiceA5Html({
+                noServis,
+                namaPelanggan,
+                noHpPelanggan,
+                tipeHp,
+                snHp,
+                kelengkapanHp,
+                keluhanText,
+                dpNomVal,
+                totalBiayaVal,
+                petugasName,
+                waktuCetak: linkedTrx ? `${linkedTrx.isoDate || window.getTodayIso()} ${linkedTrx.waktu || ''}`.trim() : (t.waktu || t.isoDate || window.getTodayIso()),
+                garansiText
+            });
             window.catatLogAktivitas('CETAK NOTA LUNAS', `Mencetak nota lunas servis ${noServis} untuk ${namaPelanggan}`);
             window.print();
             setTimeout(() => { printArea.style.display = 'none'; }, 1000);
@@ -5882,6 +6350,11 @@
             const selisihKas = fisikLaci > 0 ? (fisikLaci - laciSistem) : 0;
 
             const printReport = document.getElementById('printAreaReport');
+            const printService = document.getElementById('printAreaServiceNota');
+            const printLunas = document.getElementById('printAreaNotaLunasService');
+            if (printService) printService.style.display = 'none';
+            if (printLunas) printLunas.style.display = 'none';
+            if (window.setPrintPageMode) window.setPrintPageMode('REPORT_A4');
             printReport.style.display = 'block';
             const p = window.pengaturanToko || {};
             const storeName = p.namaToko || 'POS ZENCELL 1';
@@ -6069,6 +6542,11 @@
             });
 
             const printReport = document.getElementById('printAreaReport');
+            const printService = document.getElementById('printAreaServiceNota');
+            const printLunas = document.getElementById('printAreaNotaLunasService');
+            if (printService) printService.style.display = 'none';
+            if (printLunas) printLunas.style.display = 'none';
+            if (window.setPrintPageMode) window.setPrintPageMode('REPORT_A4');
             printReport.style.display = 'block';
             printReport.innerHTML = `
                 <div style="font-family: sans-serif; color: #000; max-width: 700px; margin: 0 auto; padding: 15px;">
@@ -8731,7 +9209,13 @@
                    </div>`;
 
             const printArea = document.getElementById('printAreaNotaLunasService');
+            const printService = document.getElementById('printAreaServiceNota');
+            const printReport = document.getElementById('printAreaReport');
             if (!printArea) return;
+            if (printService) printService.style.display = 'none';
+            if (printReport) printReport.style.display = 'none';
+            if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
+            printArea.className = 'struk-thermal-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = `
                 <div style="max-width: 300px; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
@@ -8764,7 +9248,10 @@
             `;
             window.catatLogAktivitas('CETAK STRUK', `Mencetak struk transaksi "${t.ket}" (${window.formatRp(totalJual)})`);
             window.print();
-            setTimeout(() => { printArea.style.display = 'none'; }, 1000);
+            setTimeout(() => {
+                printArea.style.display = 'none';
+                printArea.className = '';
+            }, 1000);
         };
 
         window.kirimWaPengingatPiutang = function(pId) {
