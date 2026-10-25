@@ -2337,7 +2337,7 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
                     </div>
                     <div class="kpi-content-box">
-                        <div class="lbl" style="color:#B45309;"><span class="kpi-inline-emoji">🔥 </span>CUAN HARIAN</div>
+                        <div class="lbl" id="topKpiCuanTitle" style="color:#B45309;"><span class="kpi-inline-emoji">🔥 </span>CUAN HARIAN</div>
                         <div class="val" id="cuanTotalVal">Rp0</div>
                     </div>
                 </div>
@@ -3639,35 +3639,40 @@
                 <input type="hidden" id="editTiketServisId" value="">
                 <div class="row-2">
                     <div class="form-group">
-                        <label>No. Tiket (Otomatis Harian: Option 2)</label>
-                        <input type="text" id="tNoServis" class="form-control" style="background:#f8fafc; font-weight:700; color:var(--primary); letter-spacing:0.5px;" placeholder="SRV-261022-001" title="Format: SRV-YYMMDD-XXX (Otomatis harian, bisa diubah jika perlu)" required>
+                        <label style="color:var(--primary); font-weight:bold;">📅 Tanggal Diterima *</label>
+                        <input type="date" id="tglMasukServis" class="form-control" required style="font-weight:bold; border-color:var(--primary); background-color:var(--primary-light);" onchange="onTiketServisDateChange(this.value)">
                     </div>
+                    <div class="form-group">
+                        <label>No. Tiket (Otomatis Sesuai Tanggal)</label>
+                        <input type="text" id="tNoServis" class="form-control" style="background:#f8fafc; font-weight:700; color:var(--primary); letter-spacing:0.5px;" placeholder="SRV-261025-001" title="Format: SRV-YYMMDD-XXX (Otomatis sesuai tanggal, bisa diedit)" required>
+                    </div>
+                </div>
+
+                <div class="row-2">
                     <div class="form-group">
                         <label>Nama Pelanggan *</label>
                         <input type="text" id="tNamaPelanggan" class="form-control" placeholder="NAMA..." required>
                     </div>
-                </div>
-
-                <div class="row-2">
                     <div class="form-group">
                         <label>No. HP / WhatsApp *</label>
                         <input type="text" id="tNoHp" class="form-control" placeholder="08XXX..." required inputmode="numeric">
                     </div>
-                    <div class="form-group">
-                        <label>Tipe Perangkat *</label>
-                        <input type="text" id="tTipeHp" class="form-control" placeholder="Cth: Samsung A51 / Oppo A3s" required>
-                    </div>
                 </div>
 
                 <div class="row-2">
                     <div class="form-group">
+                        <label>Tipe Perangkat *</label>
+                        <input type="text" id="tTipeHp" class="form-control" placeholder="Cth: Samsung A51 / Oppo A3s" required>
+                    </div>
+                    <div class="form-group">
                         <label>Serial Number / IMEI (Opsional)</label>
                         <input type="text" id="tSerialNum" class="form-control" placeholder="SN / IMEI...">
                     </div>
-                    <div class="form-group">
-                        <label>Kelengkapan Unit Saat Diterima</label>
-                        <input type="text" id="tKelengkapan" class="form-control" value="UNIT SAJA" placeholder="Cth: Charger + Softcase...">
-                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Kelengkapan Unit Saat Diterima</label>
+                    <input type="text" id="tKelengkapan" class="form-control" value="UNIT SAJA" placeholder="Cth: Charger + Softcase...">
                 </div>
 
                 <div class="form-group">
@@ -5112,11 +5117,22 @@
             document.getElementById('fabMainBtn').classList.remove('active');
         }
 
-        window.generateNextNoTiketServis = function() {
-            const d = new Date();
-            const yy = String(d.getFullYear()).slice(-2);
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
+        window.generateNextNoTiketServis = function(targetDateIso) {
+            let yy, mm, dd;
+            if (targetDateIso && typeof targetDateIso === 'string' && targetDateIso.includes('-')) {
+                const parts = targetDateIso.split('-');
+                if (parts.length === 3 && parts[0].length === 4) {
+                    yy = String(parts[0]).slice(-2);
+                    mm = String(parts[1]).padStart(2, '0');
+                    dd = String(parts[2]).padStart(2, '0');
+                }
+            }
+            if (!yy || !mm || !dd) {
+                const d = new Date();
+                yy = String(d.getFullYear()).slice(-2);
+                mm = String(d.getMonth() + 1).padStart(2, '0');
+                dd = String(d.getDate()).padStart(2, '0');
+            }
             const prefix = `SRV-${yy}${mm}${dd}-`;
 
             const list = window.tiketServisList || [];
@@ -5136,6 +5152,17 @@
 
             const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
             return `${prefix}${nextSeqStr}`;
+        };
+
+        window.onTiketServisDateChange = function(selectedDate) {
+            const editId = document.getElementById('editTiketServisId')?.value;
+            // Jika bukan mode edit tiket lama, otomatis sesuaikan No. Tiket dengan tanggal baru
+            if (!editId) {
+                const elNo = document.getElementById('tNoServis');
+                if (elNo) {
+                    elNo.value = window.generateNextNoTiketServis(selectedDate);
+                }
+            }
         };
 
         window.setTiketServisFinancialLock = function(isLocked) {
@@ -5163,8 +5190,12 @@
 
             window.setTiketServisFinancialLock(false);
 
+            const todayIso = window.getTodayIso();
+            const elDate = document.getElementById('tglMasukServis');
+            if (elDate) elDate.value = todayIso;
+
             const elNo = document.getElementById('tNoServis');
-            if (elNo) elNo.value = window.generateNextNoTiketServis();
+            if (elNo) elNo.value = window.generateNextNoTiketServis(todayIso);
 
             document.getElementById('tNamaPelanggan').value = '';
             document.getElementById('tNoHp').value = '';
@@ -5206,6 +5237,11 @@
                 : `✏️ Edit Tiket Servis (${t.noServis || ''})`;
             const btnSubEl = document.getElementById('btnSubmitTiketServis');
             if (btnSubEl) btnSubEl.innerText = '💾 Simpan Perubahan Tiket';
+
+            const elDate = document.getElementById('tglMasukServis');
+            if (elDate) {
+                elDate.value = t.isoDate || (t.waktu && t.waktu.includes('|') ? t.waktu.split('|')[1].trim() : window.getTodayIso());
+            }
 
             document.getElementById('tNoServis').value = t.noServis || '';
             document.getElementById('tNamaPelanggan').value = t.nama || '';
@@ -5252,8 +5288,9 @@
         window.simpanTiketServis = function(e) {
             e.preventDefault();
             const editId = document.getElementById('editTiketServisId')?.value || '';
+            const selectedDate = document.getElementById('tglMasukServis')?.value || window.getTodayIso();
             const elNoInput = document.getElementById('tNoServis');
-            const noServis = elNoInput && elNoInput.value.trim() ? elNoInput.value.trim().toUpperCase() : window.generateNextNoTiketServis();
+            const noServis = elNoInput && elNoInput.value.trim() ? elNoInput.value.trim().toUpperCase() : window.generateNextNoTiketServis(selectedDate);
             const nama = document.getElementById('tNamaPelanggan').value.trim().toUpperCase();
             const noHp = document.getElementById('tNoHp').value.trim();
             const tipeHp = document.getElementById('tTipeHp').value.trim().toUpperCase();
@@ -5284,6 +5321,10 @@
                 }
 
                 t.noServis = noServis;
+                t.isoDate = selectedDate;
+                const oldJam = (t.waktu && t.waktu.includes('|')) ? t.waktu.split('|')[0].trim() : (t.waktu || now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }));
+                t.waktu = `${oldJam} | ${selectedDate}`;
+
                 t.nama = nama;
                 t.noHp = noHp;
                 t.tipeHp = tipeHp;
@@ -5315,6 +5356,8 @@
                             spLinked.modal = modalPart;
                             spLinked.sumber = sumberKasPart;
                             spLinked.estJual = estBiaya;
+                            spLinked.isoDate = selectedDate;
+                            spLinked.tgl = selectedDate;
                             spLinked.updatedAt = nowTs;
                             window.markLocalEntityEdited('sparepart', spLinked);
                         } else {
@@ -5323,8 +5366,8 @@
                                 id: spTs,
                                 updatedAt: spTs,
                                 idTiketRef: t.id,
-                                isoDate: t.isoDate || window.getTodayIso(),
-                                tgl: t.isoDate || window.getTodayIso(),
+                                isoDate: selectedDate,
+                                tgl: selectedDate,
                                 waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
                                 namaUnit: unitFormatted,
                                 modal: modalPart,
@@ -5368,11 +5411,11 @@
                 return;
             }
 
-            const waktuStr = `${now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })} | ${window.getTodayIso()}`;
+            const waktuStr = `${now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })} | ${selectedDate}`;
             const tiketObj = {
                 id: nowTs,
                 updatedAt: nowTs,
-                noServis, waktu: waktuStr, isoDate: window.getTodayIso(),
+                noServis, waktu: waktuStr, isoDate: selectedDate,
                 nama, noHp, tipeHp, serialNum, kelengkapan, keluhan, dpNom, garansi, petugas,
                 estBiaya,
                 perluSparepart,
@@ -5396,8 +5439,8 @@
                     id: spTs,
                     updatedAt: spTs,
                     idTiketRef: tiketObj.id,
-                    isoDate: window.getTodayIso(),
-                    tgl: window.getTodayIso(),
+                    isoDate: selectedDate,
+                    tgl: selectedDate,
                     waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
                     namaUnit: `${tipeHp} (${namaPart})`,
                     modal: modalPart,
@@ -7144,7 +7187,7 @@
             
             const today = window.getTodayIso();
             const currMonth = window.getCurrentMonthIso();
-            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'tiketDatePicker', 'tiketArsipDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker', 'logFilterDate', 'shiftReportDate'].forEach(id => {
+            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'tiketDatePicker', 'tiketArsipDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker', 'logFilterDate', 'shiftReportDate', 'tglMasukServis'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = today;
             });
             ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'tiketMonthPicker', 'tiketArsipMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker', 'saldoMonthPicker'].forEach(id => {
@@ -10684,18 +10727,92 @@
         }
 
         window.renderRekapKategoriTab = function() {
-            const mode = document.getElementById('rekapModeSelect').value;
-            const targetDate = document.getElementById('rekapDatePicker').value;
-            const targetMonth = document.getElementById('rekapMonthPicker').value;
+            // Ambil filter tanggal aktif dari Jurnal Transaksi Harian (dashboard utama)
+            const jMode = document.getElementById('jurnalFilterMode')?.value || 'DAILY';
+            const jDate = document.getElementById('jurnalDatePicker')?.value || window.getTodayIso();
+            const jMonth = document.getElementById('jurnalMonthPicker')?.value || window.getCurrentMonthIso();
+
+            // 1. HITUNG METRIK UNTUK KARTU INFORMASI ATAS (TOP KPI) SESUAI TANGGAL JURNAL YANG DIPILIH
+            let topCuanTotal = 0, topCuanAtm = 0, topCuanKonter = 0, topCuanService = 0, topTotalTrx = 0, topCustCount = 0;
+
+            window.transaksiJurnal.forEach(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+
+                let matchTop = true;
+                if (jMode === 'DAILY' && t.isoDate !== jDate) matchTop = false;
+                if (jMode === 'MONTHLY' && (!t.isoDate || !t.isoDate.startsWith(jMonth))) matchTop = false;
+                // Jika jMode === 'ALL', semua tanggal dihitung
+
+                if (matchTop) {
+                    if (t.kat === 'PIUTANG') {
+                        const cuanPiutang = Number(t.cuan || 0);
+                        if (cuanPiutang > 0) {
+                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            topCuanTotal += cuanPiutang;
+                            if (window.katAtm.includes(katAsli)) topCuanAtm += cuanPiutang;
+                            else if (window.katKonter.includes(katAsli)) topCuanKonter += cuanPiutang;
+                            else if (window.katService.includes(katAsli)) topCuanService += cuanPiutang;
+                        }
+                        return;
+                    }
+
+                    const cuanVal = Number(t.cuan || 0);
+                    topCuanTotal += cuanVal;
+                    if (window.katAtm.includes(t.kat)) topCuanAtm += cuanVal;
+                    if (window.katKonter.includes(t.kat)) topCuanKonter += cuanVal;
+                    if (window.katService.includes(t.kat)) topCuanService += cuanVal;
+
+                    topTotalTrx += 1;
+                    if (t.isNewCustomer !== false) topCustCount += 1;
+                }
+            });
+
+            // Update nilai pada 6 kartu metrik transaksi di baris atas
+            const elCuanTotal = document.getElementById('cuanTotalVal');
+            if (elCuanTotal) elCuanTotal.innerText = window.formatRp(topCuanTotal);
+            const elCuanAtm = document.getElementById('cuanAtmVal');
+            if (elCuanAtm) elCuanAtm.innerText = window.formatRp(topCuanAtm);
+            const elCuanKonter = document.getElementById('cuanKonterVal');
+            if (elCuanKonter) elCuanKonter.innerText = window.formatRp(topCuanKonter);
+            const elCuanService = document.getElementById('cuanServiceVal');
+            if (elCuanService) elCuanService.innerText = window.formatRp(topCuanService);
+            const elTotalTrx = document.getElementById('topTotalTrxVal');
+            if (elTotalTrx) elTotalTrx.innerText = `${topTotalTrx} TRX`;
+            const elCustCount = document.getElementById('topTotalPelangganVal');
+            if (elCustCount) elCustCount.innerText = `${topCustCount} ORG`;
+
+            // Update Label Judul Kartu Cuan Harian agar jelas tanggal apa yang sedang dilihat
+            const elCuanLbl = document.getElementById('topKpiCuanTitle');
+            if (elCuanLbl) {
+                if (jMode === 'DAILY') {
+                    if (jDate === window.getTodayIso()) {
+                        elCuanLbl.innerHTML = '<span class="kpi-inline-emoji">🔥 </span>CUAN HARIAN';
+                    } else {
+                        const pTgl = jDate.split('-');
+                        const ddmmyy = pTgl.length === 3 ? `${pTgl[2]}/${pTgl[1]}` : jDate;
+                        elCuanLbl.innerHTML = `<span class="kpi-inline-emoji">🔥 </span>CUAN (${ddmmyy})`;
+                    }
+                } else if (jMode === 'MONTHLY') {
+                    elCuanLbl.innerHTML = '<span class="kpi-inline-emoji">🔥 </span>CUAN BULANAN';
+                } else {
+                    elCuanLbl.innerHTML = '<span class="kpi-inline-emoji">🔥 </span>TOTAL CUAN';
+                }
+            }
+
+            // 2. HITUNG METRIK UNTUK TAB LAPORAN (rekapMap)
+            const rMode = document.getElementById('rekapModeSelect')?.value || 'DAILY';
+            const rDate = document.getElementById('rekapDatePicker')?.value || window.getTodayIso();
+            const rMonth = document.getElementById('rekapMonthPicker')?.value || window.getCurrentMonthIso();
 
             let rekapMap = {};
             window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'GADAI').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
 
-            let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0, totalTrx = 0, custCount = 0;
+            let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0;
 
             window.transaksiJurnal.forEach(t => {
                 if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
-                if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
+                if ((rMode === 'DAILY' && t.isoDate === rDate) || (rMode === 'MONTHLY' && t.isoDate?.startsWith(rMonth))) {
                     if (t.kat === 'PIUTANG') {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
@@ -10721,33 +10838,31 @@
                     if (window.katService.includes(t.kat)) rCuanService += Number(t.cuan || 0);
 
                     rekapMap[t.kat].count += 1;
-                    totalTrx += 1;
-                    if (t.isNewCustomer !== false) custCount += 1;
                 }
             });
 
-            document.getElementById('cuanTotalVal').innerText = window.formatRp(rCuanTotal);
-            document.getElementById('cuanAtmVal').innerText = window.formatRp(rCuanAtm);
-            document.getElementById('cuanKonterVal').innerText = window.formatRp(rCuanKonter);
-            document.getElementById('cuanServiceVal').innerText = window.formatRp(rCuanService);
-            document.getElementById('topTotalTrxVal').innerText = `${totalTrx} TRX`;
-            document.getElementById('topTotalPelangganVal').innerText = `${custCount} ORG`;
+            const elValRekapTotal = document.getElementById('valRekapCuanTotal');
+            if (elValRekapTotal) elValRekapTotal.innerText = window.formatRp(rCuanTotal);
+            const elValRekapAtm = document.getElementById('valRekapCuanAtm');
+            if (elValRekapAtm) elValRekapAtm.innerText = window.formatRp(rCuanAtm);
+            const elValRekapKonter = document.getElementById('valRekapCuanKonter');
+            if (elValRekapKonter) elValRekapKonter.innerText = window.formatRp(rCuanKonter);
+            const elValRekapService = document.getElementById('valRekapCuanService');
+            if (elValRekapService) elValRekapService.innerText = window.formatRp(rCuanService);
 
-            document.getElementById('valRekapCuanTotal').innerText = window.formatRp(rCuanTotal);
-            document.getElementById('valRekapCuanAtm').innerText = window.formatRp(rCuanAtm);
-            document.getElementById('valRekapCuanKonter').innerText = window.formatRp(rCuanKonter);
-            document.getElementById('valRekapCuanService').innerText = window.formatRp(rCuanService);
-
-            document.getElementById('bodyRekapKategori').innerHTML = Object.keys(rekapMap).map(k => `
-                <tr>
-                    <td><b>${k}</b></td>
-                    <td style="text-align:center;">${rekapMap[k].count} TRX</td>
-                    <td class="text-kredit">${window.formatRp(rekapMap[k].omset)}</td>
-                    <td class="text-debit">${window.formatRp(rekapMap[k].modal)}</td>
-                    <td class="text-cuan"><b>${window.formatRp(rekapMap[k].cuan)}</b></td>
-                </tr>
-            `).join('');
-        }
+            const elBodyRekap = document.getElementById('bodyRekapKategori');
+            if (elBodyRekap) {
+                elBodyRekap.innerHTML = Object.keys(rekapMap).map(k => `
+                    <tr>
+                        <td><b>${k}</b></td>
+                        <td style="text-align:center;">${rekapMap[k].count} TRX</td>
+                        <td class="text-kredit">${window.formatRp(rekapMap[k].omset)}</td>
+                        <td class="text-debit">${window.formatRp(rekapMap[k].modal)}</td>
+                        <td class="text-cuan"><b>${window.formatRp(rekapMap[k].cuan)}</b></td>
+                    </tr>
+                `).join('');
+            }
+        };
 
         window.renderRekapHarianSektorTab = function() {
             const targetMonth = document.getElementById('rekapSektorMonthPicker')?.value || window.getCurrentMonthIso();
