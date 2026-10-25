@@ -793,8 +793,71 @@
         .btn-aksi-icon.aksi-print.is-service {
             background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%);
         }
+        .btn-aksi-icon.aksi-pay {
+            background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
+        }
+        .btn-aksi-icon.aksi-ready {
+            background: linear-gradient(135deg, #0D9488 0%, #0284C7 100%);
+        }
         .btn-aksi-icon.aksi-delete {
             background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+
+        /* Tata Letak Presisi & Proporsional Tabel Rekapan Service HP (PC & HP) */
+        .table-service {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        .table-service th,
+        .table-service td {
+            vertical-align: middle;
+            padding: 8px 8px;
+        }
+        .table-service th:nth-child(1), .table-service td:nth-child(1) { text-align: left; white-space: nowrap; width: 9%; min-width: 96px; }
+        .table-service th:nth-child(2), .table-service td:nth-child(2) { text-align: center; white-space: nowrap; width: 8.5%; min-width: 86px; }
+        .table-service th:nth-child(3), .table-service td:nth-child(3) { text-align: left; white-space: normal; word-break: break-word; width: 16%; min-width: 140px; max-width: 195px; line-height: 1.3; }
+        .table-service th:nth-child(4), .table-service td:nth-child(4) { text-align: left; white-space: normal; word-break: break-word; width: 17.5%; min-width: 145px; max-width: 215px; line-height: 1.35; }
+        .table-service th:nth-child(5), .table-service td:nth-child(5) { text-align: left; white-space: normal; word-break: break-word; width: 15.5%; min-width: 138px; max-width: 190px; line-height: 1.3; }
+        .table-service th:nth-child(6), .table-service td:nth-child(6) { text-align: right; white-space: nowrap; width: 7.5%; min-width: 76px; }
+        .table-service th:nth-child(7), .table-service td:nth-child(7) { text-align: right; white-space: nowrap; width: 9%; min-width: 90px; }
+        .table-service th:nth-child(8), .table-service td:nth-child(8) { text-align: center; white-space: nowrap; width: 10%; min-width: 112px; }
+        .table-service th:nth-child(9), .table-service td:nth-child(9) { text-align: center; white-space: nowrap; width: 1%; }
+
+        .service-status-select {
+            padding: 4px 6px;
+            font-size: 10px;
+            font-weight: 800;
+            border-radius: 6px;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            width: 100%;
+            max-width: 124px;
+            outline: none;
+            text-overflow: ellipsis;
+        }
+        .service-status-select:focus {
+            border-color: var(--primary);
+        }
+        .btn-mini-part {
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            padding: 2.5px 7px;
+            font-size: 9.5px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 1px 3px rgba(2, 132, 199, 0.25);
+        }
+        .btn-mini-part:hover {
+            filter: brightness(1.08);
         }
 
         .filter-container { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; background: var(--primary-light); padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
@@ -2041,42 +2104,50 @@
 
     <div id="tab-service" class="tab-content" style="margin-top:6px;">
         <div class="card">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <span>🛠️ MANAJEMEN TIKET & REKAPAN SERVICE HP</span>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span>🛠️ MANAJEMEN TIKET & REKAPAN SERVICE HP</span>
+                    <span id="badgeServiceCountInfo" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Tiket</span>
+                </div>
                 <button class="btn" style="width:auto; padding:6px 14px; font-size:11.5px; background:#0284C7;" onclick="openModalTiketServis()">+ Buat Tiket Servis Baru</button>
             </div>
 
-            <div class="filter-container">
-                <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER TIKET:</span>
-                <select id="tiketFilterMode" class="date-picker-input" onchange="toggleFilterTiketDate(this.value)">
-                    <option value="ALL" selected>📅 Semua Tanggal</option>
-                    <option value="DAILY">📆 Per Hari (Tanggal)</option>
-                    <option value="MONTHLY">🗓️ Per Bulan</option>
-                </select>
-                <input type="date" id="tiketDatePicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
-                <input type="month" id="tiketMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+            <div class="filter-container" style="justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER TIKET:</span>
+                    <select id="tiketFilterMode" class="date-picker-input" onchange="toggleFilterTiketDate(this.value)">
+                        <option value="ALL" selected>📅 Semua Tanggal</option>
+                        <option value="DAILY">📆 Per Hari (Tanggal)</option>
+                        <option value="MONTHLY">🗓️ Per Bulan</option>
+                    </select>
+                    <input type="date" id="tiketDatePicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                    <input type="month" id="tiketMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
 
-                <select id="tiketFilterStatus" class="date-picker-input" onchange="renderAll()">
-                    <option value="">-- Semua Status Servis --</option>
-                    <option value="MENUNGGU KONFIRMASI">MENUNGGU KONFIRMASI</option>
-                    <option value="PROSES">PROSES (DIKERJAKAN)</option>
-                    <option value="SIAP DIAMBIL">SIAP DIAMBIL (BERES TEKNISI)</option>
-                    <option value="SELESAI_SISTEM">✅ SELESAI / LUNAS (SUDAH DIBAYAR)</option>
-                    <option value="CANCEL">CANCEL</option>
-                </select>
+                    <select id="tiketFilterStatus" class="date-picker-input" onchange="renderAll()">
+                        <option value="">-- Semua Status Servis --</option>
+                        <option value="MENUNGGU KONFIRMASI">MENUNGGU KONFIRMASI</option>
+                        <option value="PROSES">PROSES (DIKERJAKAN)</option>
+                        <option value="SIAP DIAMBIL">SIAP DIAMBIL (BERES TEKNISI)</option>
+                        <option value="SELESAI_SISTEM">✅ SELESAI / LUNAS (SUDAH DIBAYAR)</option>
+                        <option value="CANCEL">CANCEL</option>
+                    </select>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <input type="text" id="tiketSearchInput" class="date-picker-input" placeholder="🔍 Cari pelanggan / HP / no tiket..." oninput="renderAll()" style="min-width:190px; cursor:text;">
+                </div>
             </div>
 
             <div class="table-responsive">
-                <table>
+                <table class="table-service">
                     <thead>
                         <tr>
                             <th>NO. TIKET</th>
                             <th>WAKTU & TGL</th>
                             <th>PELANGGAN & HP</th>
-                            <th>KELUHAN</th>
+                            <th>KELUHAN & UNIT</th>
                             <th>SPAREPART & MODAL</th>
                             <th>DP (INFO)</th>
-                            <th>ESTIMASI / BIAYA</th>
+                            <th>BIAYA SERVIS</th>
                             <th>STATUS</th>
                             <th>AKSI</th>
                         </tr>
@@ -2906,10 +2977,11 @@
     <div id="modalTiketServisOverlay" class="modal-overlay">
         <div class="modal-content" style="max-width: 600px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="font-size:16px; color:var(--primary);">🎫 Penerimaan Tiket Servis Baru</h3>
+                <h3 id="modalTiketServisTitle" style="font-size:16px; color:var(--primary);">🎫 Penerimaan Tiket Servis Baru</h3>
                 <button onclick="closeModalTiketServis()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer;">✕</button>
             </div>
             <form onsubmit="simpanTiketServis(event)">
+                <input type="hidden" id="editTiketServisId" value="">
                 <div class="row-2">
                     <div class="form-group">
                         <label>No. Tiket (Otomatis Harian: Option 2)</label>
@@ -3001,7 +3073,7 @@
                 </div>
 
                 <div class="row-2" style="margin-top:14px;">
-                    <button type="submit" class="btn">Buat Tiket & Cetak Nota</button>
+                    <button type="submit" id="btnSubmitTiketServis" class="btn">Buat Tiket & Cetak Nota</button>
                     <button type="button" class="btn" style="background:#64748B;" onclick="closeModalTiketServis()">Batal</button>
                 </div>
             </form>
@@ -4195,6 +4267,13 @@
         };
 
         window.openModalTiketServis = function() {
+            const editIdEl = document.getElementById('editTiketServisId');
+            if (editIdEl) editIdEl.value = '';
+            const titleEl = document.getElementById('modalTiketServisTitle');
+            if (titleEl) titleEl.innerText = '🎫 Penerimaan Tiket Servis Baru';
+            const btnSubEl = document.getElementById('btnSubmitTiketServis');
+            if (btnSubEl) btnSubEl.innerText = 'Buat Tiket & Cetak Nota';
+
             const elNo = document.getElementById('tNoServis');
             if (elNo) elNo.value = window.generateNextNoTiketServis();
 
@@ -4213,12 +4292,72 @@
             document.getElementById('tNamaPart').value = '';
             document.getElementById('tModalPart').value = '0';
             document.getElementById('tModalPartDisplay').value = '';
+            document.getElementById('tGaransi').value = 'Garansi servis 7 Hari.';
+            document.getElementById('tPetugas').value = sessionStorage.getItem('zencell_user')?.toUpperCase() || 'ADMIN';
             document.getElementById('modalTiketServisOverlay').classList.add('show');
         }
-        window.closeModalTiketServis = function() { document.getElementById('modalTiketServisOverlay').classList.remove('show'); }
+        window.closeModalTiketServis = function() {
+            const editIdEl = document.getElementById('editTiketServisId');
+            if (editIdEl) editIdEl.value = '';
+            document.getElementById('modalTiketServisOverlay').classList.remove('show');
+        }
+
+        window.editTiketServis = function(id) {
+            const t = (window.tiketServisList || []).find(item => item.id == id);
+            if (!t) return;
+            const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
+
+            const editIdEl = document.getElementById('editTiketServisId');
+            if (editIdEl) editIdEl.value = t.id;
+            const titleEl = document.getElementById('modalTiketServisTitle');
+            if (titleEl) titleEl.innerText = `✏️ Edit Tiket Servis (${t.noServis || ''})`;
+            const btnSubEl = document.getElementById('btnSubmitTiketServis');
+            if (btnSubEl) btnSubEl.innerText = '💾 Simpan Perubahan Tiket';
+
+            document.getElementById('tNoServis').value = t.noServis || '';
+            document.getElementById('tNamaPelanggan').value = t.nama || '';
+            document.getElementById('tNoHp').value = t.noHp || '';
+            document.getElementById('tTipeHp').value = t.tipeHp || '';
+            document.getElementById('tSerialNum').value = (t.serialNum && t.serialNum !== '-') ? t.serialNum : '';
+            document.getElementById('tKelengkapan').value = t.kelengkapan || 'UNIT SAJA';
+            document.getElementById('tKeluhan').value = t.keluhan || '';
+
+            const estVal = Number(t.estBiaya || 0);
+            document.getElementById('tEstBiaya').value = estVal;
+            document.getElementById('tEstBiayaDisplay').value = estVal > 0 ? estVal.toLocaleString('id-ID') : '';
+
+            const dpVal = Number(t.dpNom || 0);
+            document.getElementById('tDpNom').value = dpVal;
+            document.getElementById('tDpNomDisplay').value = dpVal > 0 ? dpVal.toLocaleString('id-ID') : '';
+
+            document.getElementById('tGaransi').value = t.garansi || 'Garansi servis 7 Hari.';
+            document.getElementById('tPetugas').value = t.petugas || 'ADMIN';
+
+            const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
+            document.getElementById('chkPerluSparepart').checked = pakaiModal;
+            document.getElementById('boxInputPartServis').style.display = pakaiModal ? 'block' : 'none';
+
+            if (pakaiModal) {
+                const rawPartName = t.namaPart || (spLinked ? spLinked.namaUnit : '');
+                const modalVal = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
+                const sumberVal = t.sumberKasPart || (spLinked ? spLinked.sumber : 'LACI');
+                document.getElementById('tNamaPart').value = rawPartName;
+                document.getElementById('tModalPart').value = modalVal;
+                document.getElementById('tModalPartDisplay').value = modalVal > 0 ? modalVal.toLocaleString('id-ID') : '';
+                const elSumber = document.getElementById('tSumberKasPart');
+                if (elSumber) elSumber.value = sumberVal;
+            } else {
+                document.getElementById('tNamaPart').value = '';
+                document.getElementById('tModalPart').value = '0';
+                document.getElementById('tModalPartDisplay').value = '';
+            }
+
+            document.getElementById('modalTiketServisOverlay').classList.add('show');
+        };
 
         window.simpanTiketServis = function(e) {
             e.preventDefault();
+            const editId = document.getElementById('editTiketServisId')?.value || '';
             const elNoInput = document.getElementById('tNoServis');
             const noServis = elNoInput && elNoInput.value.trim() ? elNoInput.value.trim().toUpperCase() : window.generateNextNoTiketServis();
             const nama = document.getElementById('tNamaPelanggan').value.trim().toUpperCase();
@@ -4242,9 +4381,99 @@
                 return;
             }
             const now = new Date();
-            const waktuStr = `${now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })} | ${window.getTodayIso()}`;
             const nowTs = window.getNextUniqueTs();
 
+            if (editId) {
+                const t = (window.tiketServisList || []).find(item => item.id == editId);
+                if (!t) return;
+                t.noServis = noServis;
+                t.nama = nama;
+                t.noHp = noHp;
+                t.tipeHp = tipeHp;
+                t.serialNum = serialNum;
+                t.kelengkapan = kelengkapan;
+                t.keluhan = keluhan;
+                t.estBiaya = estBiaya;
+                t.dpNom = dpNom;
+                t.garansi = garansi;
+                t.petugas = petugas;
+                t.perluSparepart = perluSparepart;
+                t.namaPart = perluSparepart ? namaPart : '';
+                t.modalPart = perluSparepart ? modalPart : 0;
+                t.sumberKasPart = perluSparepart ? sumberKasPart : '';
+                t.statusPart = perluSparepart ? (t.isSettledInKasir ? 'SELESAI & LUNAS' : 'SUDAH DIBELI') : 'TANPA PART';
+                t.updatedAt = nowTs;
+                window.markLocalEntityEdited('tiketServis', t);
+
+                const nodesToSave = { tiketServis: window.tiketServisList };
+                if (!window.sparepartList) window.sparepartList = [];
+                let spLinked = window.sparepartList.find(s => s.idTiketRef == t.id);
+
+                if (perluSparepart && modalPart > 0 && sumberKasPart) {
+                    const unitFormatted = namaPart.includes(tipeHp) ? namaPart : `${tipeHp} (${namaPart})`;
+                    if (spLinked) {
+                        spLinked.namaUnit = unitFormatted;
+                        spLinked.modal = modalPart;
+                        spLinked.sumber = sumberKasPart;
+                        spLinked.estJual = estBiaya;
+                        spLinked.updatedAt = nowTs;
+                        window.markLocalEntityEdited('sparepart', spLinked);
+                    } else {
+                        const spTs = window.getNextUniqueTs();
+                        spLinked = {
+                            id: spTs,
+                            updatedAt: spTs,
+                            idTiketRef: t.id,
+                            isoDate: t.isoDate || window.getTodayIso(),
+                            tgl: t.isoDate || window.getTodayIso(),
+                            waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
+                            namaUnit: unitFormatted,
+                            modal: modalPart,
+                            sumber: sumberKasPart,
+                            estJual: estBiaya,
+                            status: t.isSettledInKasir ? 'LUNAS' : 'BELUM LUNAS'
+                        };
+                        window.sparepartList.unshift(spLinked);
+                        window.markLocalEntityEdited('sparepart', spLinked);
+                    }
+                    nodesToSave.sparepart = window.sparepartList;
+                } else if (spLinked) {
+                    window.markLocalEntityDeleted('sparepart', spLinked.id);
+                    window.sparepartList = window.sparepartList.filter(s => s.id !== spLinked.id);
+                    nodesToSave.sparepart = window.sparepartList;
+                    spLinked = null;
+                }
+
+                // Sinkronkan juga ke transaksi kasir jika tiket ini sudah pernah dilunasi di Kasir
+                const linkedTrx = (window.transaksiJurnal || []).find(trx => !trx.isPencatatanUtangAwal && !trx.isPindahSaldo && ((trx.idTiketRef && trx.idTiketRef == t.id) || (spLinked && trx.idSparepartRef && trx.idSparepartRef == spLinked.id)));
+                if (linkedTrx) {
+                    linkedTrx.ket = `${nama} [${tipeHp}] ${noServis}`;
+                    if (!linkedTrx.isSplit) {
+                        if (estBiaya > 0) {
+                            linkedTrx.hargaJual = estBiaya;
+                            linkedTrx.jualSplit1 = estBiaya;
+                        }
+                        const newModalTrx = (perluSparepart && modalPart > 0) ? modalPart : 0;
+                        linkedTrx.hargaModal = newModalTrx;
+                        linkedTrx.modalSplit1 = newModalTrx;
+                        linkedTrx.akunKeluar1 = newModalTrx > 0 ? 'SPAREPART' : 'LACI';
+                        linkedTrx.cuan = Number(linkedTrx.hargaJual || 0) - newModalTrx;
+                    }
+                    linkedTrx.updatedAt = nowTs;
+                    window.markLocalTrxEdited(linkedTrx);
+                    nodesToSave.transaksi = window.transaksiJurnal;
+                }
+
+                window.catatLogAktivitas('EDIT TIKET SERVIS', `Mengubah data tiket servis ${noServis} - ${nama} (${tipeHp})`);
+                window.closeModalTiketServis();
+                window.saveMultipleFirebaseNodes(nodesToSave, false);
+                window.renderAll();
+                window.highlightRowAndScroll(`row-tiket-${t.id}`);
+                window.showToast(`✅ Perubahan tiket servis ${noServis} berhasil disimpan!`, "success");
+                return;
+            }
+
+            const waktuStr = `${now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })} | ${window.getTodayIso()}`;
             const tiketObj = {
                 id: nowTs,
                 updatedAt: nowTs,
@@ -4294,7 +4523,7 @@
             window.renderAll();
 
             window.cetakNotaTiketServis(tiketObj);
-            alert("✅ Tiket servis berhasil dibuat & tersimpan aman! Nota siap dicetak.");
+            window.showToast(`✅ Tiket servis ${noServis} berhasil dibuat!`, "success");
         }
 
         window.bukaModalBeliPartTiket = function(id) {
@@ -7778,10 +8007,11 @@
 
             const bTiket = document.getElementById('bodyTiketServis');
             if (bTiket) {
-                const tMode = document.getElementById('tiketFilterMode')?.value || 'DAILY';
+                const tMode = document.getElementById('tiketFilterMode')?.value || 'ALL';
                 const tDate = document.getElementById('tiketDatePicker')?.value || '';
                 const tMonth = document.getElementById('tiketMonthPicker')?.value || '';
                 const tStatus = document.getElementById('tiketFilterStatus')?.value || '';
+                const tSearch = (document.getElementById('tiketSearchInput')?.value || '').trim().toUpperCase();
 
                 let filteredTiket = window.tiketServisList.filter(t => {
                     const itemDate = t.isoDate || '';
@@ -7794,8 +8024,19 @@
                             return false;
                         }
                     }
+                    if (tSearch) {
+                        const hay = `${t.noServis || ''} ${t.nama || ''} ${t.noHp || ''} ${t.tipeHp || ''} ${t.keluhan || ''} ${t.namaPart || ''}`.toUpperCase();
+                        if (!hay.includes(tSearch)) return false;
+                    }
                     return true;
                 });
+
+                const badgeSrvInfo = document.getElementById('badgeServiceCountInfo');
+                if (badgeSrvInfo) {
+                    const cntAktif = filteredTiket.filter(x => !x.isSettledInKasir && x.status !== 'CANCEL').length;
+                    const cntSelesai = filteredTiket.filter(x => x.isSettledInKasir).length;
+                    badgeSrvInfo.innerText = `${filteredTiket.length} Tiket (${cntAktif} Proses • ${cntSelesai} Selesai)`;
+                }
 
                 bTiket.innerHTML = filteredTiket.map(t => {
                     const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
@@ -7804,78 +8045,143 @@
                     const namaPartTxt = t.namaPart || (spLinked ? spLinked.namaUnit : 'Sparepart Service');
                     const sumberKasTxt = t.sumberKasPart || (spLinked ? spLinked.sumber : 'LACI');
 
+                    const rawWaktu = String(t.waktu || '');
+                    const jamOnly = rawWaktu.includes('|') ? rawWaktu.split('|')[0].trim() : (rawWaktu || '-');
+                    const tglOnly = t.isoDate || (rawWaktu.includes('|') ? rawWaktu.split('|')[1].trim() : '-');
+
                     const infoPart = pakaiModal
-                        ? `<div><b>${namaPartTxt}</b></div>
-                           <div style="font-size:10px; color:#EF4444; font-weight:bold;">Modal: ${window.formatRp(modalNom)} <small>(${sumberKasTxt})</small></div>
+                        ? `<div style="font-weight:800; font-size:11px; color:var(--text); line-height:1.25;">${namaPartTxt}</div>
+                           <div style="font-size:10px; color:#EF4444; font-weight:700; margin-top:2px;">Modal: ${window.formatRp(modalNom)} <span style="color:#64748B;">(${sumberKasTxt})</span></div>
                            ${t.isSettledInKasir
-                               ? `<span style="background:#DCFCE7; color:#15803D; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-top:2px;">✅ MODAL KEMBALI (LUNAS)</span>`
-                               : `<span style="background:#FEF3C7; color:#B45309; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-top:2px;">⏳ TERTAHAN DI SALDO PART</span>`}`
-                        : `<span style="color:#059669; font-size:10px; font-weight:bold;">🛠️ NON-MODAL (JASA MURNI)</span>
-                           ${(!t.isSettledInKasir && t.status !== 'CANCEL') ? `<br><button class="btn" style="width:auto; padding:2px 6px; font-size:9.5px; background:#0284C7; margin-top:2px;" onclick="bukaModalBeliPartTiket(${t.id})">+ Beli Part</button>` : ''}`;
+                               ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">✅ MODAL LUNAS</span>`
+                               : `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">⏳ SALDO PART</span>`}`
+                        : `<div style="color:#059669; font-size:10px; font-weight:800;">🛠️ JASA NON-MODAL</div>
+                           ${(!t.isSettledInKasir && t.status !== 'CANCEL') ? `<button type="button" class="btn-mini-part" onclick="bukaModalBeliPartTiket(${t.id})" title="Beli Sparepart Susulan (Ditalangi Toko)">+ Beli Part</button>` : ''}`;
 
                     // Kolom Status: Terkunci oleh sistem jika sudah dibayar di Kasir, atau Dropdown Teknisi jika belum dibayar
                     let kolomStatusHtml = '';
                     if (t.isSettledInKasir) {
                         if (pakaiModal) {
                             kolomStatusHtml = `
-                                <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800; text-align:center; line-height:1.25;" title="Status otomatis oleh sistem karena sudah dilunasi di Kasir & modal sparepart telah kembali">
+                                <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.2;" title="Status otomatis oleh sistem karena sudah dilunasi di Kasir & modal sparepart telah kembali">
                                     ✅ SELESAI & LUNAS<br>
-                                    <span style="font-size:8.5px; font-weight:600; color:#166534;">(Ada Modal Sparepart)</span>
+                                    <span style="font-size:8px; font-weight:700; color:#166534;">(Part & Jasa)</span>
                                 </div>`;
                         } else {
                             kolomStatusHtml = `
-                                <div style="background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800; text-align:center; line-height:1.25;" title="Status otomatis oleh sistem karena service non-modal sudah selesai & dibayar di Kasir">
+                                <div style="background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.2;" title="Status otomatis oleh sistem karena service non-modal sudah selesai & dibayar di Kasir">
                                     ✅ SELESAI<br>
-                                    <span style="font-size:8.5px; font-weight:600; color:#075985;">(Jasa Non-Modal)</span>
+                                    <span style="font-size:8px; font-weight:700; color:#075985;">(Jasa Murni)</span>
                                 </div>`;
                         }
                     } else {
-                        const selColor = t.status === 'SIAP DIAMBIL' ? '#0284C7' : (t.status === 'CANCEL' ? '#EF4444' : 'inherit');
+                        const selColor = t.status === 'SIAP DIAMBIL' ? '#0284C7' : (t.status === 'CANCEL' ? '#EF4444' : (t.status === 'PROSES' ? '#D97706' : 'inherit'));
                         kolomStatusHtml = `
-                            <select class="form-control" style="padding:4px; font-size:10.5px; font-weight:bold; width:auto; color:${selColor};" onchange="ubahStatusTiket(${t.id}, this.value)">
-                                <option value="MENUNGGU KONFIRMASI" ${t.status === 'MENUNGGU KONFIRMASI' ? 'selected' : ''}>MENUNGGU KONFIRMASI</option>
-                                <option value="PROSES" ${t.status === 'PROSES' ? 'selected' : ''}>PROSES (DIKERJAKAN)</option>
-                                <option value="SIAP DIAMBIL" ${t.status === 'SIAP DIAMBIL' ? 'selected' : ''}>SIAP DIAMBIL (BERES)</option>
-                                <option value="CANCEL" ${t.status === 'CANCEL' ? 'selected' : ''}>CANCEL</option>
+                            <select class="service-status-select" style="color:${selColor};" onchange="ubahStatusTiket(${t.id}, this.value)" title="Ubah Status Pengerjaan Teknisi">
+                                <option value="MENUNGGU KONFIRMASI" ${t.status === 'MENUNGGU KONFIRMASI' ? 'selected' : ''}>⏳ KONFIRMASI</option>
+                                <option value="PROSES" ${t.status === 'PROSES' ? 'selected' : ''}>🔧 PROSES</option>
+                                <option value="SIAP DIAMBIL" ${t.status === 'SIAP DIAMBIL' ? 'selected' : ''}>✅ SIAP DIAMBIL</option>
+                                <option value="CANCEL" ${t.status === 'CANCEL' ? 'selected' : ''}>❌ CANCEL</option>
                             </select>`;
                     }
 
-                    // Kolom Aksi: Diselaraskan dengan tipe service (Pakai Modal vs Non-Modal) & status pembayaran
-                    let btnAksiKasir = '';
-                    if (t.isSettledInKasir) {
-                        btnAksiKasir = `<button class="btn-nota-service" onclick='cetakNotaLunasServiceTrxTiket(${JSON.stringify(t)})' title="Cetak Nota Garansi / Bukti Selesai">${pakaiModal ? '📄 Nota Lunas' : '📄 Nota Selesai'}</button>`;
-                    } else if (t.status !== 'CANCEL') {
-                        if (pakaiModal) {
-                            btnAksiKasir = `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10.5px; font-weight:bold; margin-right:2px;" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="Buka Kasir: Lunasi Service & Cairkan Modal Sparepart">💰 Lunasi</button>`;
-                        } else {
-                            btnAksiKasir = `<button class="btn" style="background:#0284C7; width:auto; padding:3px 7px; font-size:10.5px; font-weight:bold; margin-right:2px;" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="Buka Kasir: Catat Pembayaran Jasa & Selesaikan">💰 Bayar</button>`;
-                        }
-                    }
+                    const estBiayaNom = Number(t.estBiaya || 0);
+                    const dpNomVal = Number(t.dpNom || 0);
+                    const estCuanSrv = Math.max(0, estBiayaNom - modalNom);
+
+                    // Tombol Aksi Full Icon (Tanpa Teks) dengan Tooltip Jelas
+                    const btnPayIcon = (!t.isSettledInKasir && t.status !== 'CANCEL')
+                        ? `<button type="button" class="btn-aksi-icon aksi-pay" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="${pakaiModal ? 'Lunasi Service & Cairkan Modal Sparepart di Kasir' : 'Bayar Jasa Service & Selesaikan di Kasir'}" aria-label="Bayar / Lunasi di Kasir">
+                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                   <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                                   <line x1="2" y1="10" x2="22" y2="10"></line>
+                                   <path d="M16 15h2"></path>
+                               </svg>
+                           </button>`
+                        : '';
+
+                    const btnWaReadyIcon = (!t.isSettledInKasir && t.status === 'SIAP DIAMBIL')
+                        ? `<button type="button" class="btn-aksi-icon aksi-ready" onclick='kirimWaServisSelesai(${JSON.stringify(t)})' title="Kirim Notifikasi WA: HP Selesai & Siap Diambil" aria-label="Notifikasi WA Servis Selesai">
+                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                   <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                               </svg>
+                           </button>`
+                        : '';
+
+                    const btnPrintLunasIcon = t.isSettledInKasir
+                        ? `<button type="button" class="btn-aksi-icon aksi-print is-service" onclick='cetakNotaLunasServiceTrxTiket(${JSON.stringify(t)})' title="Cetak Nota Lunas & Garansi Service (A5)" aria-label="Cetak Nota Lunas Service">
+                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                   <path d="M9 11l3 3L22 4"></path>
+                                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                               </svg>
+                           </button>`
+                        : '';
 
                     return `
                         <tr id="row-tiket-${t.id}">
-                            <td><b>${t.noServis}</b></td>
-                            <td><b>${t.waktu}</b><br><small style="color:#64748B;">${t.isoDate}</small></td>
-                            <td><b>${t.nama}</b><br><small>${t.noHp} • <span style="color:var(--primary); font-weight:bold;">${t.tipeHp}</span></small></td>
-                            <td style="text-align:left; min-width:160px; max-width:260px; white-space:normal; word-break:break-word; line-height:1.4; padding:7px 8px;">
-                                <div style="white-space:pre-wrap; word-break:break-word; font-size:11px;">${t.keluhan}</div>
+                            <td>
+                                <b style="color:var(--primary); font-size:11px;">${t.noServis}</b>
+                                <div style="font-size:9.5px; color:#64748B; margin-top:1px;">👷 ${t.petugas || 'ADMIN'}</div>
                             </td>
-                            <td style="text-align:left;">${infoPart}</td>
-                            <td style="color:#0284C7; font-weight:bold;">${window.formatRp(t.dpNom)}<br><small style="font-size:9px; color:#64748B;">(Hanya Info)</small></td>
-                            <td style="color:var(--primary); font-weight:bold;">${window.formatRp(t.estBiaya || 0)}</td>
+                            <td>
+                                <div style="font-weight:800; font-size:10.5px; color:var(--text);">${tglOnly}</div>
+                                <small style="color:#64748B; font-size:9.5px; font-weight:600;">🕒 ${jamOnly}</small>
+                            </td>
+                            <td>
+                                <div style="font-weight:800; color:var(--text); font-size:11.5px;">${t.nama}</div>
+                                <div style="font-size:10.5px; color:var(--primary); font-weight:800; margin-top:1px;">📱 ${t.tipeHp}</div>
+                                <div style="font-size:9.5px; color:#64748B;">📞 ${t.noHp || '-'}</div>
+                            </td>
+                            <td>
+                                <div style="white-space:pre-wrap; word-break:break-word; font-size:11px; font-weight:600; color:var(--text);">${t.keluhan || '-'}</div>
+                                <div style="font-size:9.5px; color:#64748B; margin-top:2px;">📦 ${t.kelengkapan || 'UNIT SAJA'}${t.serialNum && t.serialNum !== '-' ? ' • SN: ' + t.serialNum : ''}</div>
+                            </td>
+                            <td>${infoPart}</td>
+                            <td>
+                                ${dpNomVal > 0
+                                    ? `<span style="color:#0284C7; font-weight:800;">${window.formatRp(dpNomVal)}</span><br><small style="font-size:8.5px; color:#64748B;">Info Nota</small>`
+                                    : `<span style="color:#94A3B8; font-weight:600;">Rp0</span>`}
+                            </td>
+                            <td>
+                                <div style="color:var(--primary); font-weight:800; font-size:11.5px;">${window.formatRp(estBiayaNom)}</div>
+                                ${pakaiModal && estBiayaNom > 0 ? `<small style="font-size:9px; color:#D97706; font-weight:700;">Cuan: ${window.formatRp(estCuanSrv)}</small>` : ''}
+                            </td>
                             <td>${kolomStatusHtml}</td>
                             <td>
-                                <div style="display:flex; flex-wrap:wrap; gap:3px; justify-content:center;">
-                                    <button class="btn-edit" style="background:#0284C7; padding:3px 7px; font-size:10px;" onclick='cetakNotaTiketServis(${JSON.stringify(t)})' title="Cetak Nota Tanda Terima">Nota</button>
-                                    <button class="btn" style="background:#25D366; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick='kirimWaTiketServis(${JSON.stringify(t)})' title="Kirim Tanda Terima ke WhatsApp Pelanggan">📲 WA</button>
-                                    ${(!t.isSettledInKasir && t.status === 'SIAP DIAMBIL') ? `<button class="btn" style="background:#059669; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick='kirimWaServisSelesai(${JSON.stringify(t)})' title="Kirim Notifikasi HP Selesai & Siap Diambil">🔔 Siap</button>` : ''}
-                                    ${btnAksiKasir}
-                                    <button class="btn-delete" style="padding:3px 7px; font-size:10px;" onclick="hapusTiketServis(${t.id})">Hapus</button>
+                                <div class="aksi-icon-group">
+                                    ${btnPayIcon}
+                                    <button type="button" class="btn-aksi-icon aksi-wa" onclick='kirimWaTiketServis(${JSON.stringify(t)})' title="Kirim Tanda Terima Servis ke WhatsApp Pelanggan" aria-label="Kirim WA Tanda Terima">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                                        </svg>
+                                    </button>
+                                    ${btnWaReadyIcon}
+                                    ${btnPrintLunasIcon}
+                                    <button type="button" class="btn-aksi-icon aksi-print" onclick='cetakNotaTiketServis(${JSON.stringify(t)})' title="Cetak Nota Tanda Terima Servis (A5)" aria-label="Cetak Nota Tanda Terima">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                            <rect x="6" y="14" width="12" height="8"></rect>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="btn-aksi-icon aksi-edit" onclick="editTiketServis(${t.id})" title="Edit Data Tiket Servis & Sparepart" aria-label="Edit Tiket Servis">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 20h9"></path>
+                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="btn-aksi-icon aksi-delete" onclick="hapusTiketServis(${t.id})" title="Hapus Tiket Servis" aria-label="Hapus Tiket Servis">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8;">Belum ada tiket servis.</td></tr>`;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada tiket servis yang sesuai filter.</td></tr>`;
             }
 
             const fMode = document.getElementById('jurnalFilterMode').value;
@@ -10382,6 +10688,7 @@
                                 </div>
                             </div>
                             <div style="display:flex; gap:4px; flex-shrink:0;">
+                                <button type="button" class="btn-edit" style="padding:5px 8px; font-size:10px;" onclick="closeModalGlobalFind(); editTiketServis(${t.id});">Edit</button>
                                 <button type="button" class="btn" style="width:auto; padding:5px 9px; font-size:10px; background:#0284C7;" onclick="lompatKeHasilFind('SERVIS', ${t.id})">👁️ Lihat</button>
                             </div>
                         </div>
