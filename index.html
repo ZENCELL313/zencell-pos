@@ -54,10 +54,9 @@
         body { 
             background-color: var(--bg); 
             color: var(--text); 
-            padding: 10px; 
+            padding: 0 10px 78px 10px; 
             max-width: 650px; 
             margin: 0 auto; 
-            padding-bottom: 78px; 
             transition: background-color 0.3s ease, color 0.3s ease; 
         }
 
@@ -202,11 +201,11 @@
         }
 
         .sticky-top-container {
-            position: sticky; top: 0; z-index: 9000; background-color: var(--bg); padding-top: 2px; padding-bottom: 6px;
+            position: sticky; top: 0; z-index: 9000; background-color: var(--bg); padding-top: 0; padding-bottom: 6px;
         }
 
         header { 
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 12px 14px; border-radius: 14px; margin-bottom: 8px; 
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 12px 14px; border-radius: 0 0 14px 14px; margin-top: 0; margin-bottom: 8px; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
         .header-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
@@ -1608,7 +1607,7 @@
         }
 
         @media (min-width: 768px) {
-            body { max-width: 1250px; padding: 16px; padding-bottom: 90px; }
+            body { max-width: 1250px; padding: 0 16px 90px 16px; }
             header { padding: 14px 18px; }
             .header-title h1 { font-size: 18px; }
             .header-status-bar { font-size: 12.5px; padding: 6px 12px; }
