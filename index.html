@@ -65,15 +65,141 @@
 
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            background: radial-gradient(circle at 20% 20%, #064E3B 0%, #0F172A 55%, #020617 100%);
             display: flex; justify-content: center; align-items: center; z-index: 99999;
+            overflow: hidden; padding: 16px;
+        }
+        #loginLiveCanvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+        .login-aurora-blob {
+            position: absolute; border-radius: 50%; filter: blur(65px); opacity: 0.45;
+            z-index: 0; pointer-events: none; animation: auroraFloat 14s infinite alternate ease-in-out;
+        }
+        .login-aurora-blob.blob-1 {
+            width: 380px; height: 380px; background: #10B981; top: -10%; left: -10%;
+        }
+        .login-aurora-blob.blob-2 {
+            width: 340px; height: 340px; background: #0284C7; bottom: -12%; right: -8%;
+            animation-delay: -5s; animation-duration: 18s;
+        }
+        .login-aurora-blob.blob-3 {
+            width: 260px; height: 260px; background: #F59E0B; top: 40%; left: 60%;
+            opacity: 0.22; animation-delay: -9s; animation-duration: 20s;
+        }
+        .login-cyber-grid {
+            position: absolute; bottom: -30%; left: -50%; width: 200%; height: 65%;
+            background-image: 
+                linear-gradient(to right, rgba(16, 185, 129, 0.14) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(16, 185, 129, 0.14) 1px, transparent 1px);
+            background-size: 44px 44px;
+            transform: perspective(450px) rotateX(68deg);
+            animation: cyberGridMove 6s linear infinite;
+            z-index: 0; pointer-events: none;
+            mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 10%, transparent 90%);
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 10%, transparent 90%);
+        }
+        @keyframes auroraFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(35px, -25px) scale(1.12); }
+            100% { transform: translate(-25px, 30px) scale(0.94); }
+        }
+        @keyframes cyberGridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 44px; }
+        }
+        @keyframes logoPulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45), 0 8px 20px rgba(0, 0, 0, 0.35); transform: translateY(0); }
+            50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0), 0 12px 24px rgba(16, 185, 129, 0.35); transform: translateY(-3px); }
         }
         .login-card {
-            background: var(--card); color: var(--text); width: 90%; max-width: 380px; padding: 26px; border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2); text-align: center; border: 1px solid var(--border);
+            position: relative; z-index: 2;
+            background: rgba(15, 23, 42, 0.76);
+            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+            color: #F8FAFC; width: 100%; max-width: 400px; padding: 24px 22px 20px; border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65), 0 0 25px rgba(16, 185, 129, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+            text-align: center; border: 1px solid rgba(255, 255, 255, 0.14);
         }
-        .login-card h2 { color: var(--primary); font-size: 22px; margin-bottom: 6px; font-weight: 800; }
-        .login-card p { font-size: 13px; opacity: 0.8; margin-bottom: 18px; }
+        .login-logo-ring {
+            width: 64px; height: 64px; margin: 0 auto 10px; border-radius: 50%;
+            background: linear-gradient(135deg, #10B981, #0284C7);
+            padding: 3px; display: flex; justify-content: center; align-items: center;
+            animation: logoPulseGlow 3.5s infinite ease-in-out;
+        }
+        .login-logo-inner {
+            width: 100%; height: 100%; border-radius: 50%; background: #0F172A;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+        .login-card h2 {
+            background: linear-gradient(90deg, #34D399, #38BDF8, #FBBF24);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-size: 22px; margin-bottom: 3px; font-weight: 900; letter-spacing: 0.6px;
+        }
+        .login-card p.login-sub { font-size: 11.5px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+        .login-live-clock-bar {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 4px 12px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+            color: #E2E8F0; margin-bottom: 12px; letter-spacing: 0.3px;
+        }
+        .login-live-dot {
+            width: 7px; height: 7px; border-radius: 50%; background: #10B981;
+            box-shadow: 0 0 8px #10B981; animation: blinkDot 1.4s infinite;
+        }
+        @keyframes blinkDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .login-user-pills {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px;
+        }
+        .login-user-pill {
+            background: rgba(30, 41, 59, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; padding: 7px 4px; cursor: pointer; color: #CBD5E1;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            font-size: 10px; font-weight: 800; transition: all 0.2s ease;
+        }
+        .login-user-pill:hover {
+            border-color: rgba(52, 211, 153, 0.5); background: rgba(30, 41, 59, 0.95); transform: translateY(-1px);
+        }
+        .login-user-pill.active {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(2, 132, 199, 0.28));
+            border-color: #34D399; color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+        .login-user-pill .u-icon { font-size: 16px; line-height: 1; }
+        .login-card .form-group label { color: #CBD5E1; font-size: 11px; font-weight: 700; margin-bottom: 4px; display: block; }
+        .login-card .form-control {
+            background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255, 255, 255, 0.16);
+            color: #FFFFFF; border-radius: 11px; padding: 10px 12px; font-size: 13px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .login-card .form-control:focus {
+            border-color: #34D399; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22); outline: none;
+        }
+        .login-card .btn-login-submit {
+            background: linear-gradient(135deg, #10B981, #059669, #0284C7);
+            background-size: 200% 200%;
+            color: #FFFFFF; font-weight: 900; font-size: 13.5px; letter-spacing: 0.6px;
+            padding: 12px; border-radius: 12px; border: none; width: 100%; cursor: pointer;
+            box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.5);
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+        .login-card .btn-login-submit:hover {
+            transform: translateY(-1px); box-shadow: 0 12px 24px -4px rgba(16, 185, 129, 0.65);
+        }
+        .login-card .btn-login-submit:active { transform: scale(0.98); }
+        .login-bg-switcher {
+            margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; align-items: center; justify-content: space-between; gap: 4px; flex-wrap: wrap;
+        }
+        .login-bg-btn {
+            flex: 1; min-width: 68px; background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: #94A3B8;
+            border-radius: 8px; padding: 4px 6px; font-size: 9.5px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .login-bg-btn.active {
+            background: rgba(16, 185, 129, 0.22); border-color: #34D399; color: #ECFDF5;
+        }
 
         .sticky-top-container {
             position: sticky; top: 0; z-index: 9000; background-color: var(--bg); padding-top: 2px; padding-bottom: 6px;
@@ -294,25 +420,43 @@
         }
 
         .saldo-banner-bar {
-            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
             background: linear-gradient(135deg, var(--primary-light), var(--card)); color: var(--text);
-            padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; cursor: pointer;
-            border: 1.5px solid var(--border); border-left: 4px solid var(--primary);
+            padding: 8px 12px; border-radius: 10px; margin-bottom: 6px;
+            border: 1.5px solid var(--border); border-left: 4px solid var(--primary); border-right: 4px solid #0284C7;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
             transition: transform 0.15s, box-shadow 0.15s;
         }
-        .saldo-banner-bar:active { transform: scale(0.99); }
         .saldo-banner-btn {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #FFFFFF;
             padding: 6px 11px; border-radius: 8px; font-size: 10.5px; font-weight: 800;
             letter-spacing: 0.3px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); flex-shrink: 0; cursor: pointer;
+            border: none; transition: transform 0.15s, filter 0.15s;
         }
+        .saldo-banner-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+        .saldo-banner-btn:active { transform: scale(0.97); }
+        .saldo-banner-btn.radar-btn {
+            background: linear-gradient(135deg, #0284C7, #1D4ED8);
+            position: relative;
+        }
+        .radar-notif-badge {
+            background: #EF4444; color: #FFFFFF; font-size: 9px; font-weight: 900;
+            padding: 1px 5px; border-radius: 999px; border: 1.5px solid #FFFFFF;
+            line-height: 1.1; box-shadow: 0 1px 4px rgba(239, 68, 68, 0.5);
+        }
+        .saldo-banner-center {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            flex: 1; cursor: pointer; padding: 2px 6px; border-radius: 8px;
+            transition: background-color 0.15s;
+        }
+        .saldo-banner-center:hover { background: rgba(15, 23, 42, 0.04); }
+        body.theme-dark .saldo-banner-center:hover { background: rgba(255, 255, 255, 0.04); }
         .saldo-banner-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right; }
-        .saldo-banner-info { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+        .saldo-banner-info { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .saldo-banner-title { font-size: 9px; font-weight: 800; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase; }
         body.theme-dark .saldo-banner-title { color: #94A3B8; }
-        .saldo-banner-val-wrap { display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; flex-wrap: wrap; }
+        .saldo-banner-val-wrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; }
         .saldo-banner-val { font-size: 14px; font-weight: 900; color: #000000; letter-spacing: 0.2px; }
         body.theme-dark .saldo-banner-val { color: #F8FAFC; }
         .saldo-banner-sub { font-size: 9.5px; color: #64748B; font-weight: 700; }
@@ -329,6 +473,97 @@
             display: flex; flex-direction: column; border-right: 1px solid var(--border);
         }
         .left-sidebar.show { left: 0; }
+
+        .right-sidebar {
+            position: fixed; top: 0; right: -370px; width: 350px; max-width: 92vw; height: 100%; background: var(--card);
+            box-shadow: -5px 0 28px rgba(0,0,0,0.28); z-index: 99995; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; border-left: 1px solid var(--border);
+        }
+        .right-sidebar.show { right: 0; }
+        .right-sidebar .sidebar-header {
+            background: linear-gradient(135deg, #0F172A 0%, #0284C7 100%);
+        }
+
+        .insight-box {
+            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .insight-box-title {
+            font-size: 10.5px; font-weight: 800; color: var(--primary); text-transform: uppercase;
+            letter-spacing: 0.4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .chart-7d-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end;
+            height: 205px; padding: 20px 6px 8px 6px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 10px;
+            background-image: linear-gradient(to bottom, rgba(148,163,184,0.12) 1px, transparent 1px);
+            background-size: 100% 36px;
+        }
+        .chart-7d-col {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%;
+            gap: 4px; position: relative; min-width: 0;
+        }
+        .chart-7d-bars-pair {
+            display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 138px;
+        }
+        .chart-bar-cuan {
+            width: 100%; max-width: 24px; border-radius: 6px 6px 2px 2px;
+            background: linear-gradient(180deg, #34D399 0%, #059669 100%);
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+            transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); min-height: 5px;
+        }
+        .chart-bar-cuan.is-today {
+            background: linear-gradient(180deg, #10B981 0%, #047857 100%);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+            border: 1px solid #6EE7B7;
+        }
+        .chart-7d-lbl { font-size: 9px; font-weight: 800; color: #64748B; text-align: center; line-height: 1.15; }
+        .chart-7d-val { font-size: 9px; font-weight: 900; color: #059669; white-space: nowrap; letter-spacing: -0.2px; }
+        .chart-7d-trx { font-size: 7.5px; font-weight: 700; color: #94A3B8; white-space: nowrap; margin-top: -2px; }
+        body.theme-dark .chart-7d-lbl { color: #94A3B8; }
+        body.theme-dark .chart-7d-val { color: #34D399; }
+        .chart-7d-detail-row {
+            display: flex; justify-content: space-between; align-items: center; gap: 6px;
+            padding: 4.5px 7px; border-radius: 6px; font-size: 9.5px; border-bottom: 1px dashed var(--border);
+        }
+        .chart-7d-detail-row:last-child { border-bottom: none; }
+
+        /* Format Seragam Kolom Waktu (Atas: HARI, JAM agak besar • Bawah: YY-DD-MM agak kecil) */
+        .waktu-seragam-wrap {
+            display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.25; white-space: nowrap;
+        }
+        .waktu-seragam-top {
+            font-size: 11px; font-weight: 800; color: var(--text); letter-spacing: 0.1px;
+        }
+        .waktu-seragam-bottom {
+            font-size: 9.5px; font-weight: 700; color: #64748B; margin-top: 1.5px; font-variant-numeric: tabular-nums; letter-spacing: 0.3px;
+        }
+        body.theme-dark .waktu-seragam-bottom { color: #94A3B8; }
+
+        .sector-prog-row { margin-bottom: 7px; }
+        .sector-prog-row:last-child { margin-bottom: 0; }
+        .sector-prog-top { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; margin-bottom: 3px; }
+        .sector-prog-track { width: 100%; height: 7px; background: var(--border); border-radius: 999px; overflow: hidden; }
+        .sector-prog-fill { height: 100%; border-radius: 999px; transition: width 0.35s ease; }
+
+        .radar-alert-item {
+            display: flex; justify-content: space-between; align-items: center; gap: 6px;
+            padding: 6px 8px; border-radius: 7px; background: var(--card); border: 1px solid var(--border);
+            margin-bottom: 5px; font-size: 10.5px;
+        }
+        .radar-alert-item:last-child { margin-bottom: 0; }
+
+        .jurnal-header-actions {
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;
+        }
+        .btn-jurnal-hdr {
+            width: auto; padding: 5px 10px; font-size: 10.5px; font-weight: 800; border-radius: 7px;
+            border: none; color: #FFFFFF; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+            white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.15s, filter 0.15s;
+        }
+        .btn-jurnal-hdr:hover { filter: brightness(1.07); transform: translateY(-1px); }
+        .btn-jurnal-hdr:active { transform: scale(0.97); }
+
         .sidebar-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white;
             padding: 14px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13.5px;
@@ -1417,28 +1652,75 @@
         <div class="sidebar-content" id="sidebarSaldoListContent"></div>
     </div>
 
+    <div id="rightSidebarOverlay" class="sidebar-overlay" onclick="toggleRightInsightSidebar()"></div>
+    <div id="rightInsightSidebar" class="right-sidebar">
+        <div class="sidebar-header">
+            <span>📊 RADAR & GRAFIK KONTER</span>
+            <button onclick="toggleRightInsightSidebar()" style="background:none; border:none; color:white; font-size:18px; font-weight:bold; cursor:pointer;">✕</button>
+        </div>
+        <div class="sidebar-content" id="rightInsightSidebarContent"></div>
+    </div>
+
     <input type="file" id="fileRestoreJson" accept=".json" style="display:none;" onchange="restoreJSON(event)">
 
     <div id="loginOverlay">
+        <div class="login-aurora-blob blob-1"></div>
+        <div class="login-aurora-blob blob-2"></div>
+        <div class="login-aurora-blob blob-3"></div>
+        <div class="login-cyber-grid" id="loginCyberGridEl"></div>
+        <canvas id="loginLiveCanvas"></canvas>
+
         <div class="login-card">
-            <h2>POS ZENCELL 1</h2>
-            <p>Silakan Login Untuk Mengakses Pembukuan</p>
+            <div class="login-logo-ring">
+                <div class="login-logo-inner" id="loginLogoBox">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L3 6V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V6L12 2Z" fill="url(#login_grad)" stroke="#34D399" stroke-width="1.5"/>
+                        <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="login_grad" x1="3" y1="2" x2="21" y2="23" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#10B981"/>
+                                <stop offset="1" stop-color="#0284C7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <h2 id="loginShopNameTitle">POS ZENCELL 1</h2>
+            <p class="login-sub" id="loginGreetingText">Sistem Kasir, Servis & Pembukuan Realtime</p>
+
+            <div class="login-live-clock-bar">
+                <span class="login-live-dot"></span>
+                <span id="loginLiveClockText">MEMUAT WAKTU...</span>
+            </div>
+
             <form onsubmit="prosesLogin(event)">
-                <div class="form-group" style="text-align:left;">
-                    <label>Pilih Akun / User</label>
-                    <select id="loginUser" class="form-control" required style="font-weight:bold;">
-                        <option value="Owner">👤 OWNER</option>
-                        <option value="Fina">👩‍💼 FINA (KASIR 1)</option>
-                        <option value="Eca">👩‍💼 ECA (KASIR 2)</option>
-                        <option value="Tamu">🔑 TAMU</option>
+                <div class="form-group" style="text-align:left; margin-bottom:10px;">
+                    <label>Pilih Akun Cepat / Kasir Bertugas</label>
+                    <div class="login-user-pills" id="loginQuickUserPills"></div>
+                    <select id="loginUser" class="form-control" required style="font-weight:bold;" onchange="syncLoginUserPillSelection(this.value)">
+                        <option value="OWNER">👑 OWNER (OWNER)</option>
+                        <option value="FINA">👩‍💼 FINA (KASIR)</option>
+                        <option value="ECA">👩‍💼 ECA (KASIR)</option>
+                        <option value="TAMU">🔑 TAMU (KASIR)</option>
                     </select>
                 </div>
-                <div class="form-group" style="text-align:left; margin-bottom:18px;">
-                    <label>Kata Sandi / PIN</label>
-                    <input type="password" id="loginPass" class="form-control" placeholder="MASUKKAN PIN..." required inputmode="numeric">
+                <div class="form-group" style="text-align:left; margin-bottom:16px;">
+                    <label>Kata Sandi / PIN Keamanan</label>
+                    <div style="position:relative;">
+                        <input type="password" id="loginPass" class="form-control" placeholder="MASUKKAN PIN..." required inputmode="numeric" style="padding-right:40px; letter-spacing:2px; font-weight:800;">
+                        <button type="button" onclick="toggleShowLoginPin()" id="btnToggleLoginPin" title="Lihat/Sembunyikan PIN" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94A3B8; cursor:pointer; font-size:15px; padding:4px;">👁️</button>
+                    </div>
                 </div>
-                <button type="submit" class="btn">MASUK APLIKASI</button>
+                <button type="submit" class="btn-login-submit">🚀 MASUK APLIKASI</button>
             </form>
+
+            <div class="login-bg-switcher">
+                <button type="button" class="login-bg-btn active" data-bgmode="KONTER" onclick="setLoginLiveBgMode('KONTER')">🌌 Jaringan POS</button>
+                <button type="button" class="login-bg-btn" data-bgmode="AURORA" onclick="setLoginLiveBgMode('AURORA')">🌊 Gelombang Neon</button>
+                <button type="button" class="login-bg-btn" data-bgmode="MATRIX" onclick="setLoginLiveBgMode('MATRIX')">⚡ Sirkuit Digital</button>
+                <button type="button" class="login-bg-btn" data-bgmode="STARS" onclick="setLoginLiveBgMode('STARS')">🌠 Langit Bintang</button>
+            </div>
         </div>
     </div>
 
@@ -1746,21 +2028,34 @@
                 </div>
 
                 <div class="settings-card-box">
-                    <h4 style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                        <span>🔐</span> KEAMANAN AKUN (GANTI PIN AKUN AKTIF: <span id="setLabelUserAktif" style="color:var(--primary); font-weight:bold;">OWNER</span>)
-                    </h4>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                        <h4 style="font-size:12px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:6px;">
+                            <span>🔐</span> KEAMANAN &amp; UPDATE PIN SEMUA AKUN (LOGIN AKTIF: <span id="setLabelUserAktif" style="color:var(--primary); font-weight:bold;">OWNER</span>)
+                        </h4>
+                        <span id="setInfoPinSaatIni" style="background:#F3E8FF; color:#6D28D9; border:1px solid #DDD6FE; padding:2px 9px; border-radius:999px; font-size:10.5px; font-weight:800;">PIN Saat Ini: 212</span>
+                    </div>
+                    <p style="font-size:11px; color:#64748B; margin-bottom:10px;">Sebagai Owner, Anda dapat langsung memilih akun mana saja (Owner, Kasir, Admin, Teknisi, atau Tamu) untuk mengganti PIN login-nya.</p>
                     <form onsubmit="updatePasswordAktif(event)">
                         <div class="row-2">
                             <div class="form-group">
-                                <label>PIN Saat Ini</label>
-                                <input type="password" id="setPinLama" class="form-control" placeholder="Ketik PIN saat ini..." required inputmode="numeric">
+                                <label>Pilih Akun yang Ingin Diubah PIN-nya *</label>
+                                <select id="setTargetUserPin" class="form-control" style="font-weight:800; color:var(--primary); background:#F8FAFC;" onchange="onChangeTargetUserPin()">
+                                    <option value="OWNER">👑 OWNER (Akses Penuh)</option>
+                                    <option value="FINA">💼 FINA (Kasir)</option>
+                                    <option value="ECA">💼 ECA (Kasir)</option>
+                                    <option value="TAMU">👀 TAMU (Read-Only)</option>
+                                </select>
                             </div>
                             <div class="form-group">
-                                <label>PIN Baru (3 - 6 Digit)</label>
-                                <input type="password" id="setPinBaru" class="form-control" placeholder="Ketik PIN baru..." required inputmode="numeric">
+                                <label>PIN Baru (3 - 6 Digit Angka) *</label>
+                                <input type="text" id="setPinBaru" class="form-control" placeholder="Ketik PIN baru (Cth: 1234)..." required inputmode="numeric" style="font-weight:800; letter-spacing:1px;">
+                                <input type="hidden" id="setPinLama" value="">
                             </div>
                         </div>
-                        <button type="submit" id="btnSimpanPin" class="btn" style="background:#7C3AED; width:auto; padding:8px 18px; font-size:11.5px; margin-left:auto; transition:all 0.25s ease;">UPDATE PASSWORD / PIN</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                            <small style="color:#64748B; font-size:10px;">💡 Tips: Klik tombol <b>🔑 Ubah PIN</b> pada tabel Manajemen Tim di bawah untuk memilih akun secara instan.</small>
+                            <button type="submit" id="btnSimpanPin" class="btn" style="background:#7C3AED; width:auto; padding:8px 18px; font-size:11.5px; margin-left:auto; transition:all 0.25s ease;">💾 SIMPAN PIN AKUN TERPILIH</button>
+                        </div>
                     </form>
                 </div>
 
@@ -2040,12 +2335,13 @@
             </div>
         </div>
 
-        <div class="saldo-banner-bar" onclick="toggleSaldoSidebar()" title="Klik untuk lihat rincian kas cair, sparepart, dan piutang">
-            <div class="saldo-banner-btn">
+        <div class="saldo-banner-bar">
+            <button type="button" class="saldo-banner-btn" onclick="toggleSaldoSidebar()" title="Klik untuk lihat rincian kas cair, sparepart, dan piutang">
                 <span>💰 CEK SALDO</span>
                 <span>➔</span>
-            </div>
-            <div class="saldo-banner-right">
+            </button>
+            <div class="saldo-banner-center" onclick="toggleSaldoSidebar()" title="Klik untuk lihat rincian saldo">
+                <div class="saldo-banner-icon">🏦</div>
                 <div class="saldo-banner-info">
                     <span class="saldo-banner-title">TOTAL SALDO KONTER</span>
                     <div class="saldo-banner-val-wrap">
@@ -2053,8 +2349,11 @@
                         <span class="saldo-banner-val" id="topTotalSaldoRiil">Rp0</span>
                     </div>
                 </div>
-                <div class="saldo-banner-icon">🏦</div>
             </div>
+            <button type="button" class="saldo-banner-btn radar-btn" onclick="toggleRightInsightSidebar()" title="Buka Panel Grafik Omset, Porsi Profit & Radar Peringatan Konter">
+                <span>📊 RADAR & GRAFIK</span>
+                <span id="badgeRadarAlertCount" class="radar-notif-badge" style="display:none;">0</span>
+            </button>
         </div>
     </div>
 
@@ -2076,84 +2375,172 @@
         </div>
     </div>
 
-    <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
-        <div class="row-3" style="margin-bottom:10px;">
-            <div class="card auto-collapse-card" id="cardVlookupFast" style="margin-bottom:0; padding:8px;">
-                <div class="card-header card-header-toggle" onclick="toggleAccordion('boxVlookupFast', 'arrowVlookup')" style="font-size:11px; padding:6px 8px; margin-bottom:0;">
-                    <span>+ DATA OTOMATIS</span>
-                    <span id="arrowVlookup" style="font-size:9px;">▼</span>
+    <!-- MODAL POPUP 1: + DATA OTOMATIS (VLOOKUP CEPAT) -->
+    <div id="modalVlookupFastOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <div>
+                    <h3 style="font-size:15px; color:#0284C7; margin:0; display:flex; align-items:center; gap:6px;">⚡ + Data Otomatis (VLOOKUP Cepat)</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Simpan template kata kunci agar otomatis terisi saat mengetik di Kasir</small>
                 </div>
-                <div id="boxVlookupFast" style="display:none; margin-top:8px;">
-                    <form onsubmit="simpanVlookupCepat(event)">
-                        <input type="text" id="v_ket_fast" class="form-control" placeholder="KUNCI..." required style="margin-bottom:4px;">
-                        <select id="v_kat_fast" class="form-control" style="margin-bottom:4px;"></select>
-                        <select id="v_akunMasuk_fast" class="form-control" style="margin-bottom:4px;"></select>
-                        <select id="v_akunKeluar_fast" class="form-control" style="margin-bottom:4px;"></select>
-                        <input type="text" id="v_jual_fastDisplay" class="form-control" placeholder="H. JUAL RP" inputmode="decimal" pattern="[0-9.]*" style="margin-bottom:4px;" oninput="formatNominal(this, 'v_jual_fast')">
-                        <input type="hidden" id="v_jual_fast" value="0">
-                        <input type="text" id="v_modal_fastDisplay" class="form-control" placeholder="H. MODAL RP" inputmode="decimal" pattern="[0-9.]*" style="margin-bottom:6px;" oninput="formatNominal(this, 'v_modal_fast')">
-                        <input type="hidden" id="v_modal_fast" value="0">
-                        <button type="submit" class="btn">SIMPAN</button>
-                    </form>
-                </div>
+                <button type="button" onclick="closeModalVlookupFast()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
             </div>
 
-            <div class="card auto-collapse-card" id="cardTfFast" style="margin-bottom:0; padding:8px;">
-                <div class="card-header card-header-toggle" onclick="toggleAccordion('boxTfFast', 'arrowTf')" style="font-size:11px; padding:6px 8px; margin-bottom:0;">
-                    <span>🔀 PINDAH SALDO</span>
-                    <span id="arrowTf" style="font-size:9px;">▼</span>
-                </div>
-                <div id="boxTfFast" style="display:none; margin-top:8px;">
-                    <form onsubmit="prosesTransferSaldoCepat(event)">
-                        <label style="font-size:10px;">Asal</label>
-                        <select id="tfSumber_fast" class="form-control" required style="margin-bottom:4px;"></select>
-                        <label style="font-size:10px;">Tujuan</label>
-                        <select id="tfTujuan_fast" class="form-control" required style="margin-bottom:4px;"></select>
-                        <label style="font-size:10px;">Nominal Rp</label>
-                        <input type="text" id="tfNomDisplay_fast" class="form-control" placeholder="RP" inputmode="decimal" pattern="[0-9.]*" required style="margin-bottom:4px;" oninput="formatNominal(this, 'tfNom_fast')">
-                        <input type="hidden" id="tfNom_fast" value="0">
-                        <label style="font-size:10px;">Biaya Admin Rp (Opsional)</label>
-                        <input type="text" id="tfAdminDisplay_fast" class="form-control" placeholder="ADMIN" inputmode="decimal" pattern="[0-9.]*" style="margin-bottom:6px;" oninput="formatNominal(this, 'tfAdmin_fast')">
-                        <input type="hidden" id="tfAdmin_fast" value="0">
-                        <button type="submit" class="btn">PROSES</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="card auto-collapse-card" id="cardSetorFast" style="margin-bottom:0; padding:8px; background:#FEF2F2; border-color:#FECACA;">
-                <div class="card-header card-header-toggle" onclick="toggleAccordion('boxSetorFast', 'arrowSetor')" style="font-size:11px; padding:6px 8px; margin-bottom:0; background:#FEE2E2; color:#991B1B;">
-                    <span>💸 SETORAN PROFIT</span>
-                    <span id="arrowSetor" style="font-size:9px;">▼</span>
-                </div>
-                <div id="boxSetorFast" style="display:none; margin-top:8px;">
-                    <div id="infoJatahSetorFastBox" style="background:#FFFFFF; border:1px dashed #F87171; border-radius:7px; padding:6px 8px; margin-bottom:6px; font-size:10px; line-height:1.35;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="color:#64748B; font-weight:700;">🎯 Target Modal:</span>
-                            <b id="lblFastTargetModal" style="color:#0F172A;">Rp0</b>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-                            <span style="color:#991B1B; font-weight:800;">💡 Siap Setor:</span>
-                            <b id="lblFastJatahSetor" style="color:#16A34A; font-size:11px;">Rp0</b>
-                        </div>
-                        <button type="button" onclick="isiOtomatisJatahSetorProfit()" style="margin-top:5px; width:100%; background:#059669; color:#FFF; border:none; border-radius:5px; padding:4px 6px; font-size:9.5px; font-weight:800; cursor:pointer;">⚡ Isi Nominal Sesuai Jatah Profit</button>
+            <form id="formVlookupFast" onsubmit="simpanVlookupCepat(event)">
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Kata Kunci Transaksi / Barang *</label>
+                        <input type="text" id="v_ket_fast" class="form-control" placeholder="CTH: TOKEN 20K / DANA 50K..." required style="font-weight:700;">
                     </div>
-                    <form onsubmit="prosesSetoranOwner(event)">
-                        <label style="font-size:10px;">Dari Akun</label>
-                        <select id="setorSumber" class="form-control" required style="margin-bottom:4px;"></select>
-                        <label style="font-size:10px;">Setor Rp</label>
-                        <input type="text" id="setorNomDisplay" class="form-control" placeholder="RP" inputmode="decimal" pattern="[0-9.]*" required style="margin-bottom:4px;" oninput="formatNominal(this, 'setorNom')">
-                        <input type="hidden" id="setorNom" value="0">
-                        <input type="text" id="setorKet" class="form-control" placeholder="CATATAN..." style="margin-bottom:6px;">
-                        <button type="submit" class="btn" style="background:#DC2626;">SETOR PROFIT</button>
-                    </form>
+                    <div class="form-group">
+                        <label>Kategori Transaksi *</label>
+                        <select id="v_kat_fast" class="form-control" style="font-weight:700;"></select>
+                    </div>
                 </div>
-            </div>
-        </div>
 
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Akun Masuk Default (Uang Masuk)</label>
+                        <select id="v_akunMasuk_fast" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Akun Keluar Default (Potong Modal)</label>
+                        <select id="v_akunKeluar_fast" class="form-control"></select>
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Harga Jual Default (Rp)</label>
+                        <input type="text" id="v_jual_fastDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_jual_fast'); if(window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();">
+                        <input type="hidden" id="v_jual_fast" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Harga Modal Default (Rp)</label>
+                        <input type="text" id="v_modal_fastDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'v_modal_fast'); if(window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();">
+                        <input type="hidden" id="v_modal_fast" value="0">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label>Estimasi Cuan Otomatis per Transaksi</label>
+                    <input type="text" id="v_cuan_fastPreview" class="form-control" placeholder="Rp0" readonly style="background-color:#F0FDF4; border-color:#86EFAC; font-weight:800; color:#15803D;">
+                </div>
+
+                <div class="row-2" style="margin-top:6px;">
+                    <button type="submit" class="btn" style="background:#0284C7;">💾 Simpan Data Otomatis</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="closeModalVlookupFast()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP 2: 🔀 PINDAH SALDO CEPAT -->
+    <div id="modalTfFastOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <div>
+                    <h3 style="font-size:15px; color:#4F46E5; margin:0; display:flex; align-items:center; gap:6px;">🔀 Pindah Saldo (Mutasi Antar Akun)</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Mutasi / suntik saldo antar akun kas &amp; bank tanpa mempengaruhi Omset</small>
+                </div>
+                <button type="button" onclick="closeModalTfFast()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <form id="formTfFast" onsubmit="prosesTransferSaldoCepat(event)">
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Dari Akun (Sumber Keluar) *</label>
+                        <select id="tfSumber_fast" class="form-control" required style="font-weight:700; border-color:#FCA5A5; background:#FEF2F2;"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ke Akun (Tujuan Masuk) *</label>
+                        <select id="tfTujuan_fast" class="form-control" required style="font-weight:700; border-color:#86EFAC; background:#F0FDF4;"></select>
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Nominal Pindah Saldo (Rp) *</label>
+                        <input type="text" id="tfNomDisplay_fast" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'tfNom_fast'); if(window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();">
+                        <input type="hidden" id="tfNom_fast" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Biaya Admin Bank (Opsional)</label>
+                        <input type="text" id="tfAdminDisplay_fast" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'tfAdmin_fast'); if(window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();">
+                        <input type="hidden" id="tfAdmin_fast" value="0">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label>Total Saldo Terpotong dari Akun Asal (Pokok + Admin)</label>
+                    <input type="text" id="tfTotalPotong_fastPreview" class="form-control" placeholder="Rp0" readonly style="background-color:#EEF2FF; border-color:#C7D2FE; font-weight:800; color:#3730A3;">
+                </div>
+
+                <div class="row-2" style="margin-top:6px;">
+                    <button type="submit" class="btn" style="background:#4F46E5;">🔀 Proses Pindah Saldo</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="closeModalTfFast()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP 3: 💸 SETORAN PROFIT OWNER -->
+    <div id="modalSetorFastOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <div>
+                    <h3 style="font-size:15px; color:#DC2626; margin:0; display:flex; align-items:center; gap:6px;">💸 Setoran Profit ke Owner</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Tarik keuntungan bersih konter agar saldo kembali ke Target Modal Pokok</small>
+                </div>
+                <button type="button" onclick="closeModalSetorFast()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <div id="infoJatahSetorFastBox" style="background:#FEF2F2; border:1.5px dashed #F87171; border-radius:10px; padding:10px 12px; margin-bottom:10px; font-size:11px; line-height:1.45;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:#64748B; font-weight:700;">🎯 Target Modal Berputar:</span>
+                    <b id="lblFastTargetModal" style="color:#0F172A;">Rp0</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                    <span style="color:#991B1B; font-weight:800;">💡 Jatah Profit Siap Setor:</span>
+                    <b id="lblFastJatahSetor" style="color:#16A34A; font-size:13px;">Rp0</b>
+                </div>
+                <button type="button" onclick="isiOtomatisJatahSetorProfit()" style="margin-top:8px; width:100%; background:#059669; color:#FFF; border:none; border-radius:7px; padding:7px 10px; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(5,150,105,0.25);">⚡ Isi Nominal Otomatis Sesuai Jatah Profit</button>
+            </div>
+
+            <form id="formSetorFast" onsubmit="prosesSetoranOwner(event)">
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Ambil dari Akun Kas / Bank *</label>
+                        <select id="setorSumber" class="form-control" required style="font-weight:700;"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nominal Setor Profit (Rp) *</label>
+                        <input type="text" id="setorNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'setorNom')">
+                        <input type="hidden" id="setorNom" value="0">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label>Catatan / Keterangan Setoran</label>
+                    <input type="text" id="setorKet" class="form-control" placeholder="SETORAN PROFIT HARIAN...">
+                </div>
+                <div class="row-2" style="margin-top:6px;">
+                    <button type="submit" class="btn" style="background:#DC2626;">💸 Catat Setoran Profit</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="closeModalSetorFast()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <span>📖 Jurnal Transaksi Harian</span>
-                <button class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
+                <div class="jurnal-header-actions">
+                    <button type="button" class="btn-jurnal-hdr" style="background:#0284C7;" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
+                    <button type="button" class="btn-jurnal-hdr" style="background:#4F46E5;" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
+                    <button type="button" class="btn-jurnal-hdr" style="background:#DC2626;" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
+                    <button type="button" class="btn-jurnal-hdr" style="background:linear-gradient(135deg, #059669, #047857); padding:6px 13px; font-size:11px; box-shadow:0 3px 8px rgba(5,150,105,0.3);" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
+                </div>
             </div>
 
             <div class="filter-container">
@@ -2322,62 +2709,75 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header" id="formStokTitle">+ Input Stok Opname</div>
-            <form id="formStokOpname" onsubmit="simpanStokOpname(event)">
-                <input type="hidden" id="editStokId" value="">
-                <div class="row-3">
-                    <div class="form-group">
-                        <label>Kategori</label>
-                        <select id="stokKat" class="form-control" required>
-                            <option value="VOUCHER">VOUCHER</option>
-                            <option value="SP">SP (PERDANA)</option>
-                            <option value="ACC">ACC (AKSESORIS)</option>
+        <!-- MODAL POPUP: + INPUT / EDIT STOK OPNAME -->
+        <div id="modalStokOpnameOverlay" class="modal-overlay">
+            <div class="modal-content" style="max-width: 520px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                    <div>
+                        <h3 id="formStokTitle" style="font-size:15px; color:#059669; margin:0; display:flex; align-items:center; gap:6px;">📦 + Input Stok Opname Baru</h3>
+                        <small style="font-size:10px; color:#64748B; font-weight:600;">Tambah atau perbarui stok fisik Voucher, SP (Perdana), &amp; ACC</small>
+                    </div>
+                    <button type="button" onclick="closeModalStokOpname()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+                </div>
+                <form id="formStokOpname" onsubmit="simpanStokOpname(event)">
+                    <input type="hidden" id="editStokId" value="">
+                    <div class="row-3">
+                        <div class="form-group">
+                            <label>Kategori *</label>
+                            <select id="stokKat" class="form-control" required style="font-weight:700;">
+                                <option value="VOUCHER">VOUCHER</option>
+                                <option value="SP">SP (PERDANA)</option>
+                                <option value="ACC">ACC (AKSESORIS)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Barang *</label>
+                            <input type="text" id="stokNama" class="form-control" placeholder="NAMA BARANG..." required style="font-weight:700;">
+                        </div>
+                        <div class="form-group">
+                            <label>Qty Awal *</label>
+                            <input type="number" id="stokQty" class="form-control" placeholder="0" inputmode="numeric" pattern="[0-9]*" required oninput="hitungTotalStokOpname()">
+                        </div>
+                    </div>
+
+                    <div class="row-3">
+                        <div class="form-group">
+                            <label>Harga Modal / Pcs *</label>
+                            <input type="text" id="stokModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'stokModal'); hitungTotalStokOpname();">
+                            <input type="hidden" id="stokModal" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Harga Jual / Pcs (Opsional)</label>
+                            <input type="text" id="stokJualDisplay" class="form-control" placeholder="0 (Boleh Kosong)" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stokJual')">
+                            <input type="hidden" id="stokJual" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Total Nilai Awal</label>
+                            <input type="text" id="stokTotalDisplay" class="form-control" placeholder="Rp0" readonly style="background-color:#F0FDF4; border-color:#86EFAC; font-weight:800; color:#047857;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label>Sumber Saldo (Potong Kas)</label>
+                        <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
+                            <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Nama Barang</label>
-                        <input type="text" id="stokNama" class="form-control" placeholder="NAMA..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>Qty Awal</label>
-                        <input type="number" id="stokQty" class="form-control" placeholder="0" inputmode="numeric" pattern="[0-9]*" required oninput="hitungTotalStokOpname()">
-                    </div>
-                </div>
 
-                <div class="row-3">
-                    <div class="form-group">
-                        <label>Harga Modal / Pcs</label>
-                        <input type="text" id="stokModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'stokModal'); hitungTotalStokOpname();">
-                        <input type="hidden" id="stokModal" value="0">
+                    <div class="row-2" style="margin-top:6px;">
+                        <button type="submit" id="btnSubmitStok" class="btn" style="background:#059669;">💾 Simpan Stok Opname</button>
+                        <button type="button" class="btn" style="background:#64748B;" onclick="closeModalStokOpname()">Batal</button>
                     </div>
-                    <div class="form-group">
-                        <label>Harga Jual / Pcs (Opsional)</label>
-                        <input type="text" id="stokJualDisplay" class="form-control" placeholder="0 (Boleh Kosong)" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stokJual')">
-                        <input type="hidden" id="stokJual" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Total Nilai Awal</label>
-                        <input type="text" id="stokTotalDisplay" class="form-control" placeholder="0" readonly>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Sumber Saldo (Potong Kas)</label>
-                    <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
-                        <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
-                    </select>
-                </div>
-
-                <button type="submit" id="btnSubmitStok" class="btn">Simpan Stok Opname & Catat Aset</button>
-            </form>
+                </form>
+            </div>
         </div>
 
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>📦 Stok Opname Realtime</span>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button type="button" class="btn" style="width:auto; padding:4px 10px; font-size:10.5px; background:#0F172A;" onclick="bukaModalGlobalFind('STOK')">🔍 Find Cepat (Ctrl+F)</button>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#0F172A;" onclick="bukaModalGlobalFind('STOK')">🔍 Find Cepat (Ctrl+F)</button>
+                    <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px; background:linear-gradient(135deg, #059669, #047857); box-shadow:0 3px 8px rgba(5,150,105,0.28);" onclick="openModalStokOpname()">+ Input Stok Opname</button>
                 </div>
             </div>
 
@@ -3736,6 +4136,84 @@
             return `${hari}, ${tgl} ${bln}${waktu ? ', ' + waktu : ''}`;
         };
 
+        window.formatKolomWaktuSeragam = function(isoDateRaw, waktuRaw, fallbackText) {
+            const hariNames = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+            let iso = String(isoDateRaw || '').trim();
+            let jamStr = String(waktuRaw || '').trim();
+
+            if (jamStr.includes('|')) {
+                const sp = jamStr.split('|');
+                jamStr = (sp[0] || '').trim();
+                if (!iso && sp[1]) iso = sp[1].trim();
+            }
+
+            if (jamStr) {
+                jamStr = jamStr.replace(/\./g, ':');
+                const hmMatch = jamStr.match(/(\d{1,2}):(\d{2})/);
+                if (hmMatch) {
+                    jamStr = `${String(hmMatch[1]).padStart(2, '0')}:${hmMatch[2]}`;
+                }
+            }
+
+            if (!iso && fallbackText) {
+                const mIso = String(fallbackText).match(/(\d{4})-(\d{2})-(\d{2})/);
+                if (mIso) iso = mIso[0];
+            }
+
+            let hariTxt = '';
+            let yyddmmTxt = '-';
+
+            const parts = iso.split('-');
+            if (parts.length === 3 && parts[0].length === 4) {
+                const yyyy = Number(parts[0]);
+                const mm = String(parts[1]).padStart(2, '0');
+                const dd = String(parts[2]).padStart(2, '0');
+                const yy = String(parts[0]).slice(-2);
+                const dObj = new Date(yyyy, Number(parts[1]) - 1, Number(parts[2]));
+                if (!isNaN(dObj.getTime())) {
+                    hariTxt = hariNames[dObj.getDay()] || '';
+                }
+                // Format bawah sesuai permintaan: YY-DD-MM (cth: 26-25-10)
+                yyddmmTxt = `${yy}-${dd}-${mm}`;
+            } else if (iso) {
+                yyddmmTxt = iso;
+            } else if (fallbackText) {
+                yyddmmTxt = String(fallbackText);
+            }
+
+            let topLine = '';
+            if (hariTxt && jamStr && jamStr !== '-') {
+                topLine = `${hariTxt}, ${jamStr}`;
+            } else if (hariTxt) {
+                topLine = hariTxt;
+            } else if (jamStr && jamStr !== '-') {
+                topLine = jamStr;
+            } else {
+                topLine = '-';
+            }
+
+            return `<div class="waktu-seragam-wrap"><span class="waktu-seragam-top">${topLine}</span><span class="waktu-seragam-bottom">${yyddmmTxt}</span></div>`;
+        };
+
+        window.hitungPreviewPopupsFast = function() {
+            const vJual = parseFloat(document.getElementById('v_jual_fast')?.value) || 0;
+            const vModal = parseFloat(document.getElementById('v_modal_fast')?.value) || 0;
+            const vPrev = document.getElementById('v_cuan_fastPreview');
+            if (vPrev) {
+                const cuanV = vJual - vModal;
+                vPrev.value = (cuanV >= 0 ? '+' : '') + window.formatRp(cuanV);
+                vPrev.style.color = cuanV >= 0 ? '#15803D' : '#DC2626';
+            }
+
+            const tfNom = parseFloat(document.getElementById('tfNom_fast')?.value) || 0;
+            const tfAdm = parseFloat(document.getElementById('tfAdmin_fast')?.value) || 0;
+            const tfPrev = document.getElementById('tfTotalPotong_fastPreview');
+            if (tfPrev) {
+                const totPotong = tfNom + tfAdm;
+                tfPrev.value = `${window.formatRp(totPotong)}${tfAdm > 0 ? ` (Pokok ${window.formatRp(tfNom)} + Admin ${window.formatRp(tfAdm)})` : ''}`;
+            }
+        };
+
         window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
         window.masterVlookup = {};
 
@@ -4421,6 +4899,86 @@
             sidebar.classList.toggle('show');
             overlay.classList.toggle('show');
         }
+
+        window.toggleRightInsightSidebar = function() {
+            const sidebar = document.getElementById('rightInsightSidebar');
+            const overlay = document.getElementById('rightSidebarOverlay');
+            if (!sidebar || !overlay) return;
+            const willShow = !sidebar.classList.contains('show');
+            if (willShow && typeof window.renderRightInsightSidebar === 'function') {
+                window.renderRightInsightSidebar();
+            }
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        };
+
+        window.openModalVlookupFast = function() {
+            const f = document.getElementById('formVlookupFast');
+            if (f) f.reset();
+            if (document.getElementById('v_jual_fast')) document.getElementById('v_jual_fast').value = '0';
+            if (document.getElementById('v_modal_fast')) document.getElementById('v_modal_fast').value = '0';
+            if (window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();
+            const ov = document.getElementById('modalVlookupFastOverlay');
+            if (ov) ov.classList.add('show');
+            setTimeout(() => document.getElementById('v_ket_fast')?.focus(), 80);
+        };
+        window.closeModalVlookupFast = function() {
+            document.getElementById('modalVlookupFastOverlay')?.classList.remove('show');
+        };
+
+        window.openModalTfFast = function(prefillTujuan) {
+            const f = document.getElementById('formTfFast');
+            if (f) f.reset();
+            if (document.getElementById('tfNom_fast')) document.getElementById('tfNom_fast').value = '0';
+            if (document.getElementById('tfAdmin_fast')) document.getElementById('tfAdmin_fast').value = '0';
+            if (prefillTujuan && document.getElementById('tfTujuan_fast')) {
+                document.getElementById('tfTujuan_fast').value = prefillTujuan;
+            }
+            if (window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();
+            const ov = document.getElementById('modalTfFastOverlay');
+            if (ov) ov.classList.add('show');
+        };
+        window.closeModalTfFast = function() {
+            document.getElementById('modalTfFastOverlay')?.classList.remove('show');
+        };
+
+        window.openModalSetorFast = function() {
+            if (typeof window.hitungRingkasanProfitDanHarta === 'function') {
+                const info = window.hitungRingkasanProfitDanHarta();
+                const elTarget = document.getElementById('lblFastTargetModal');
+                if (elTarget) elTarget.innerText = window.formatRp(info.targetModalPokok);
+                const elJatah = document.getElementById('lblFastJatahSetor');
+                if (elJatah) elJatah.innerText = window.formatRp(info.jatahProfitSiapSetor);
+            }
+            const ov = document.getElementById('modalSetorFastOverlay');
+            if (ov) ov.classList.add('show');
+        };
+        window.closeModalSetorFast = function() {
+            document.getElementById('modalSetorFastOverlay')?.classList.remove('show');
+        };
+
+        window.openModalStokOpname = function() {
+            const f = document.getElementById('formStokOpname');
+            if (f) f.reset();
+            if (document.getElementById('editStokId')) document.getElementById('editStokId').value = '';
+            if (document.getElementById('stokModal')) document.getElementById('stokModal').value = '0';
+            if (document.getElementById('stokJual')) document.getElementById('stokJual').value = '0';
+            if (document.getElementById('stokTotalDisplay')) document.getElementById('stokTotalDisplay').value = 'Rp0';
+            const selSumber = document.getElementById('stokSumberKas');
+            if (selSumber) selSumber.selectedIndex = 0;
+            const titleEl = document.getElementById('formStokTitle');
+            if (titleEl) titleEl.innerText = '📦 + Input Stok Opname Baru';
+            const btnEl = document.getElementById('btnSubmitStok');
+            if (btnEl) btnEl.innerText = '💾 Simpan Stok Opname & Catat Aset';
+            const ov = document.getElementById('modalStokOpnameOverlay');
+            if (ov) ov.classList.add('show');
+            setTimeout(() => document.getElementById('stokNama')?.focus(), 80);
+        };
+        window.closeModalStokOpname = function() {
+            if (document.getElementById('editStokId')) document.getElementById('editStokId').value = '';
+            document.getElementById('modalStokOpnameOverlay')?.classList.remove('show');
+        };
+
         window.toggleFabMenu = function() {
             document.getElementById('fabContainer').classList.toggle('show');
             document.getElementById('fabMainBtn').classList.toggle('active');
@@ -5762,8 +6320,316 @@
             const now = new Date();
             const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
             const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
-            document.getElementById('hdrRealtimeClock').innerText = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()} ${now.toLocaleTimeString('id-ID')}`;
+            const shortMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+            const timeStr = now.toLocaleTimeString('id-ID');
+            const hdrClock = document.getElementById('hdrRealtimeClock');
+            if (hdrClock) {
+                hdrClock.innerText = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()} ${timeStr}`;
+            }
+            const loginClock = document.getElementById('loginLiveClockText');
+            if (loginClock) {
+                loginClock.innerText = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${shortMonths[now.getMonth()]} ${now.getFullYear()} • ${timeStr}`;
+            }
+            const loginGreet = document.getElementById('loginGreetingText');
+            if (loginGreet) {
+                const hr = now.getHours();
+                const greet = hr < 11 ? '🌅 Selamat Pagi' : (hr < 15 ? '☀️ Selamat Siang' : (hr < 18 ? '🌤️ Selamat Sore' : '🌙 Selamat Malam'));
+                loginGreet.innerText = `${greet} • Siap Cuan & Tertib Pembukuan!`;
+            }
         }, 1000);
+
+        window.toggleShowLoginPin = function() {
+            const inp = document.getElementById('loginPass');
+            const btn = document.getElementById('btnToggleLoginPin');
+            if (!inp) return;
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                if (btn) btn.innerText = '🙈';
+            } else {
+                inp.type = 'password';
+                if (btn) btn.innerText = '👁️';
+            }
+            inp.focus();
+        };
+
+        window.selectQuickLoginUser = function(username) {
+            const sel = document.getElementById('loginUser');
+            if (sel) {
+                const matchOpt = Array.from(sel.options).find(o => o.value.toUpperCase() === String(username).toUpperCase());
+                if (matchOpt) sel.value = matchOpt.value;
+            }
+            window.syncLoginUserPillSelection(username);
+            const passInput = document.getElementById('loginPass');
+            if (passInput) passInput.focus();
+        };
+
+        window.syncLoginUserPillSelection = function(selectedVal) {
+            const valUp = String(selectedVal || '').toUpperCase();
+            document.querySelectorAll('#loginQuickUserPills .login-user-pill').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-user')?.toUpperCase() === valUp);
+            });
+        };
+
+        // --- ENGINE LIVE ANIMATED BACKGROUND LOGIN (ZERO-CPU SAAT SUDAH LOGIN) ---
+        window._loginBgMode = localStorage.getItem('zencell_login_bg_mode') || 'KONTER';
+        window._loginAnimRaf = null;
+        window._loginBgState = {
+            particles: [],
+            stars: [],
+            meteors: [],
+            streams: [],
+            mouse: { x: -9999, y: -9999 },
+            tick: 0
+        };
+
+        window.initLoginLiveBackground = function() {
+            const canvas = document.getElementById('loginLiveCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+
+            const posIcons = ['📱', '💳', '⚡', '🛠️', '💰', '📶', '🧾', '🔋'];
+            const st = window._loginBgState;
+
+            function buildSceneElements() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+                const count = Math.min(42, Math.max(20, Math.floor((w * h) / 28000)));
+                st.particles = [];
+                for (let i = 0; i < count; i++) {
+                    st.particles.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        vx: (Math.random() - 0.5) * 0.75,
+                        vy: (Math.random() - 0.5) * 0.75,
+                        r: Math.random() * 2.2 + 1.4,
+                        icon: i % 4 === 0 ? posIcons[i % posIcons.length] : null,
+                        color: i % 2 === 0 ? '#34D399' : '#38BDF8',
+                        alpha: Math.random() * 0.5 + 0.35
+                    });
+                }
+
+                st.stars = [];
+                for (let i = 0; i < 85; i++) {
+                    st.stars.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        r: Math.random() * 1.8 + 0.4,
+                        twinkleSpeed: Math.random() * 0.04 + 0.01,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+
+                st.meteors = [];
+                const colCount = Math.floor(w / 36);
+                st.streams = [];
+                for (let i = 0; i < colCount; i++) {
+                    st.streams.push({
+                        x: i * 36 + 18,
+                        y: Math.random() * h,
+                        speed: Math.random() * 2.2 + 1.2,
+                        len: Math.random() * 90 + 50,
+                        color: i % 2 === 0 ? '#10B981' : '#0EA5E9'
+                    });
+                }
+            }
+
+            buildSceneElements();
+            if (!window._loginResizeBound) {
+                window._loginResizeBound = true;
+                window.addEventListener('resize', () => {
+                    const ov = document.getElementById('loginOverlay');
+                    if (ov && ov.style.display !== 'none') buildSceneElements();
+                });
+                window.addEventListener('mousemove', (e) => {
+                    st.mouse.x = e.clientX;
+                    st.mouse.y = e.clientY;
+                });
+                window.addEventListener('touchmove', (e) => {
+                    if (e.touches && e.touches[0]) {
+                        st.mouse.x = e.touches[0].clientX;
+                        st.mouse.y = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+            }
+
+            window.setLoginLiveBgMode(window._loginBgMode, true);
+
+            function renderLoop() {
+                const ov = document.getElementById('loginOverlay');
+                if (!ov || ov.style.display === 'none') {
+                    window._loginAnimRaf = null;
+                    return;
+                }
+                st.tick += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                const mode = window._loginBgMode || 'KONTER';
+
+                if (mode === 'KONTER') {
+                    const pts = st.particles;
+                    for (let i = 0; i < pts.length; i++) {
+                        const p = pts[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < 0 || p.x > w) p.vx *= -1;
+                        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+                        const dxM = p.x - st.mouse.x;
+                        const dyM = p.y - st.mouse.y;
+                        const distM = Math.sqrt(dxM * dxM + dyM * dyM);
+                        if (distM < 130) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(52, 211, 153, ${(1 - distM / 130) * 0.45})`;
+                            ctx.lineWidth = 1.2;
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(st.mouse.x, st.mouse.y);
+                            ctx.stroke();
+                        }
+
+                        for (let j = i + 1; j < pts.length; j++) {
+                            const p2 = pts[j];
+                            const dx = p.x - p2.x;
+                            const dy = p.y - p2.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 125) {
+                                ctx.beginPath();
+                                ctx.strokeStyle = `rgba(56, 189, 248, ${(1 - dist / 125) * 0.25})`;
+                                ctx.lineWidth = 0.9;
+                                ctx.moveTo(p.x, p.y);
+                                ctx.lineTo(p2.x, p2.y);
+                                ctx.stroke();
+                            }
+                        }
+
+                        if (p.icon) {
+                            ctx.font = '13px sans-serif';
+                            ctx.globalAlpha = 0.55;
+                            ctx.fillText(p.icon, p.x - 6, p.y + 4);
+                            ctx.globalAlpha = 1;
+                        } else {
+                            ctx.beginPath();
+                            ctx.fillStyle = p.color;
+                            ctx.globalAlpha = p.alpha;
+                            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.globalAlpha = 1;
+                        }
+                    }
+                } else if (mode === 'AURORA') {
+                    for (let wave = 0; wave < 4; wave++) {
+                        ctx.beginPath();
+                        const baseY = h * (0.35 + wave * 0.14);
+                        ctx.moveTo(0, h);
+                        ctx.lineTo(0, baseY);
+                        for (let x = 0; x <= w; x += 24) {
+                            const y = baseY + Math.sin(x * 0.004 + st.tick + wave * 1.3) * 42 + Math.cos(x * 0.008 - st.tick * 0.7) * 20;
+                            ctx.lineTo(x, y);
+                        }
+                        ctx.lineTo(w, h);
+                        ctx.closePath();
+                        const grad = ctx.createLinearGradient(0, baseY - 60, w, h);
+                        if (wave % 2 === 0) {
+                            grad.addColorStop(0, 'rgba(16, 185, 129, 0.20)');
+                            grad.addColorStop(1, 'rgba(2, 132, 199, 0.03)');
+                        } else {
+                            grad.addColorStop(0, 'rgba(56, 189, 248, 0.18)');
+                            grad.addColorStop(1, 'rgba(139, 92, 246, 0.03)');
+                        }
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                    }
+                    st.particles.slice(0, 18).forEach(p => {
+                        p.y -= Math.abs(p.vy) * 0.9 + 0.25;
+                        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+                        ctx.beginPath();
+                        ctx.fillStyle = 'rgba(167, 243, 208, 0.35)';
+                        ctx.arc(p.x, p.y, p.r * 1.8, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                } else if (mode === 'MATRIX') {
+                    st.streams.forEach(s => {
+                        s.y -= s.speed;
+                        if (s.y + s.len < 0) {
+                            s.y = h + Math.random() * 100;
+                        }
+                        const grad = ctx.createLinearGradient(s.x, s.y, s.x, s.y + s.len);
+                        grad.addColorStop(0, s.color);
+                        grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                        ctx.strokeStyle = grad;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(s.x, s.y);
+                        ctx.lineTo(s.x, s.y + s.len);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.fillStyle = '#ECFDF5';
+                        ctx.arc(s.x, s.y, 2.2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                } else if (mode === 'STARS') {
+                    st.stars.forEach(star => {
+                        star.phase += star.twinkleSpeed;
+                        const alpha = 0.25 + (Math.sin(star.phase) + 1) * 0.35;
+                        ctx.beginPath();
+                        ctx.fillStyle = `rgba(248, 250, 252, ${alpha})`;
+                        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    if (Math.random() < 0.025 && st.meteors.length < 3) {
+                        st.meteors.push({
+                            x: Math.random() * w * 0.8 + w * 0.2,
+                            y: Math.random() * h * 0.35,
+                            vx: -6 - Math.random() * 4,
+                            vy: 3 + Math.random() * 2.5,
+                            len: 75 + Math.random() * 45,
+                            life: 1
+                        });
+                    }
+                    for (let i = st.meteors.length - 1; i >= 0; i--) {
+                        const m = st.meteors[i];
+                        m.x += m.vx;
+                        m.y += m.vy;
+                        m.life -= 0.022;
+                        if (m.life <= 0 || m.x < -100 || m.y > h + 100) {
+                            st.meteors.splice(i, 1);
+                            continue;
+                        }
+                        const grad = ctx.createLinearGradient(m.x, m.y, m.x - m.vx * 10, m.y - m.vy * 10);
+                        grad.addColorStop(0, `rgba(52, 211, 153, ${m.life})`);
+                        grad.addColorStop(1, 'rgba(52, 211, 153, 0)');
+                        ctx.strokeStyle = grad;
+                        ctx.lineWidth = 2.2;
+                        ctx.beginPath();
+                        ctx.moveTo(m.x, m.y);
+                        ctx.lineTo(m.x - m.vx * 10, m.y - m.vy * 10);
+                        ctx.stroke();
+                    }
+                }
+
+                window._loginAnimRaf = requestAnimationFrame(renderLoop);
+            }
+
+            if (!window._loginAnimRaf) {
+                window._loginAnimRaf = requestAnimationFrame(renderLoop);
+            }
+        };
+
+        window.setLoginLiveBgMode = function(mode, skipStart) {
+            window._loginBgMode = mode || 'KONTER';
+            localStorage.setItem('zencell_login_bg_mode', window._loginBgMode);
+            document.querySelectorAll('.login-bg-switcher .login-bg-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-bgmode') === window._loginBgMode);
+            });
+            const gridEl = document.getElementById('loginCyberGridEl');
+            if (gridEl) {
+                gridEl.style.display = (window._loginBgMode === 'KONTER' || window._loginBgMode === 'MATRIX') ? 'block' : 'none';
+            }
+            if (!skipStart && !window._loginAnimRaf) {
+                window.initLoginLiveBackground();
+            }
+        };
 
         window.checkSessionLogin = function() {
             const activeUser = sessionStorage.getItem('zencell_user');
@@ -5772,6 +6638,10 @@
             if (activeUser) {
                 document.getElementById('hdrUserActive').innerText = activeUser.toUpperCase();
                 document.getElementById('loginOverlay').style.display = 'none';
+                if (window._loginAnimRaf) {
+                    cancelAnimationFrame(window._loginAnimRaf);
+                    window._loginAnimRaf = null;
+                }
 
                 const staffList = window.daftarKaryawan || [];
                 const userObj = staffList.find(k => k.username.toUpperCase() === activeUser.toUpperCase());
@@ -5792,6 +6662,8 @@
             } else { 
                 document.getElementById('loginOverlay').style.display = 'flex';
                 if (btnSetting) btnSetting.style.display = 'none';
+                window.renderLoginUserOptions();
+                window.initLoginLiveBackground();
             }
         }
 
@@ -5812,6 +6684,26 @@
             if (currentVal && Array.from(sel.options).some(o => o.value === currentVal)) {
                 sel.value = currentVal;
             }
+
+            const pillsBox = document.getElementById('loginQuickUserPills');
+            if (pillsBox) {
+                const activeSel = sel.value || (staffList[0] ? staffList[0].username : 'OWNER');
+                pillsBox.innerHTML = staffList.map(k => {
+                    const isOwner = k.role === 'OWNER' || k.username.toUpperCase() === 'OWNER';
+                    const fotoSrc = k.foto || (isOwner && window.pengaturanToko && window.pengaturanToko.ownerFoto) || '';
+                    const icon = isOwner ? '👑' : (k.role === 'TEKNISI' ? '🛠️' : (k.username.toUpperCase() === 'TAMU' ? '🔑' : '👩‍💼'));
+                    const visualTop = fotoSrc
+                        ? `<img src="${fotoSrc}" style="width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid #34D399;">`
+                        : `<span class="u-icon">${icon}</span>`;
+                    const isSelected = k.username.toUpperCase() === String(activeSel).toUpperCase();
+                    return `
+                        <button type="button" class="login-user-pill ${isSelected ? 'active' : ''}" data-user="${k.username}" onclick="selectQuickLoginUser('${k.username}')">
+                            ${visualTop}
+                            <span style="overflow:hidden; text-overflow:ellipsis; max-width:100%;">${k.username}</span>
+                        </button>
+                    `;
+                }).join('');
+            }
         };
 
         window.prosesLogin = function(e) {
@@ -5823,11 +6715,11 @@
             const matched = (window.daftarKaryawan || []).find(k => k.username.toUpperCase() === user.toUpperCase());
             if (matched && String(matched.pin) === String(pass)) {
                 valid = true;
-            } else if (user === 'Owner' && pass === '212') {
+            } else if (user.toUpperCase() === 'OWNER' && pass === '212') {
                 valid = true;
-            } else if ((user === 'Fina' || user === 'Eca') && pass === '313') {
+            } else if ((user.toUpperCase() === 'FINA' || user.toUpperCase() === 'ECA') && pass === '313') {
                 valid = true;
-            } else if (user === 'Tamu' && pass === '414') {
+            } else if (user.toUpperCase() === 'TAMU' && pass === '414') {
                 valid = true;
             }
 
@@ -5835,7 +6727,8 @@
                 sessionStorage.setItem('zencell_user', user);
                 document.getElementById('hdrUserActive').innerText = user.toUpperCase();
                 document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('loginPass').value = '';
+                const passEl = document.getElementById('loginPass');
+                if (passEl) { passEl.value = ''; passEl.type = 'password'; }
                 window.checkSessionLogin();
                 window.catatLogAktivitas('LOGIN', `Pengguna ${user} masuk ke aplikasi`);
                 window.showToast(`👋 Selamat datang kembali, ${user.toUpperCase()}!`, "success");
@@ -5849,6 +6742,8 @@
                 window.catatLogAktivitas('LOGOUT', `Pengguna keluar dari aplikasi`);
                 sessionStorage.removeItem('zencell_user');
                 document.getElementById('loginOverlay').style.display = 'flex';
+                window.renderLoginUserOptions();
+                window.initLoginLiveBackground();
             }
         }
 
@@ -6815,7 +7710,7 @@
             const waktuInput = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
             if (!nama || qty <= 0 || modal <= 0) {
-                alert("Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!");
+                window.showToast("⚠️ Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!", "error");
                 return;
             }
 
@@ -6823,6 +7718,7 @@
             if (!window.stokOpnameItems) window.stokOpnameItems = [];
 
             const nowTs = window.getNextUniqueTs();
+            let targetHighlightId = null;
 
             if (editId) {
                 let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
@@ -6836,6 +7732,7 @@
                     item.modal = modal;
                     item.jual = jual;
                     item.updatedAt = nowTs;
+                    targetHighlightId = item.id;
                     window.markLocalEntityEdited('stok', item);
                 }
 
@@ -6877,7 +7774,9 @@
 
                 document.getElementById('editStokId').value = '';
                 const titleEl = document.getElementById('formStokTitle');
-                if (titleEl) titleEl.innerText = '+ Input Stok Opname';
+                if (titleEl) titleEl.innerText = '📦 + Input Stok Opname Baru';
+                const btnEl = document.getElementById('btnSubmitStok');
+                if (btnEl) btnEl.innerText = '💾 Simpan Stok Opname & Catat Aset';
                 window.catatLogAktivitas('EDIT STOK', `Memperbarui data stok opname [${kat}] ${nama} (Qty: ${qty})`);
             } else {
                 const recordId = nowTs;
@@ -6906,6 +7805,7 @@
                     item.jual = jual;
                     item.nama = nama;
                     item.updatedAt = nowTs;
+                    targetHighlightId = item.id;
                     window.markLocalEntityEdited('stok', item);
                 } else {
                     const newStok = {
@@ -6918,6 +7818,7 @@
                         jual: jual,
                         updatedAt: nowTs
                     };
+                    targetHighlightId = recordId;
                     window.stokOpnameItems.push(newStok);
                     window.markLocalEntityEdited('stok', newStok);
                 }
@@ -6933,36 +7834,55 @@
             }
             if (sumberKasSelect) sumberKasSelect.selectedIndex = 0;
 
+            window.closeModalStokOpname();
+
             window.saveMultipleFirebaseNodes({
                 stok: window.stokOpnameItems,
                 riwayatBelanjaStok: window.riwayatBelanjaStok
             }, false);
             window.renderAll();
 
-            alert("✅ Data stok opname & aset berhasil disimpan!");
+            if (targetHighlightId && window.highlightRowAndScroll) {
+                window.highlightRowAndScroll(`row-stok-${targetHighlightId}`);
+            }
+            window.showToast(editId ? `✅ Perubahan stok [${kat}] ${nama} berhasil disimpan!` : `✅ Stok opname [${kat}] ${nama} (${qty} Pcs) berhasil disimpan!`, "success");
         };
 
         window.editStokOpname = function(id) {
             const stok = window.stokOpnameItems.find(s => s.id == id);
             if (!stok) return;
 
+            const namaBarang = (stok.nama || stok.namaBarang || '').trim().toUpperCase();
             document.getElementById('editStokId').value = stok.id;
             document.getElementById('stokKat').value = stok.kat;
-            document.getElementById('stokNama').value = stok.nama || stok.namaBarang || '';
+            document.getElementById('stokNama').value = namaBarang;
             document.getElementById('stokQty').value = stok.awal;
             
             document.getElementById('stokModal').value = stok.modal;
             document.getElementById('stokModalDisplay').value = Number(stok.modal).toLocaleString('id-ID');
             
             document.getElementById('stokJual').value = stok.jual || 0;
-            document.getElementById('stokJualDisplay').value = Number(stok.jual || 0).toLocaleString('id-ID');
+            document.getElementById('stokJualDisplay').value = Number(stok.jual || 0) > 0 ? Number(stok.jual).toLocaleString('id-ID') : '';
+
+            const sumberSelect = document.getElementById('stokSumberKas');
+            if (sumberSelect) {
+                const matchR = (window.riwayatBelanjaStok || []).find(r => r.id == stok.id || (((r.nama || r.namaBarang || '').trim().toUpperCase() === namaBarang) && r.kat === stok.kat));
+                if (matchR && matchR.sumberKas) {
+                    sumberSelect.value = matchR.sumberKas;
+                } else {
+                    sumberSelect.selectedIndex = 0;
+                }
+            }
 
             window.hitungTotalStokOpname();
 
             const titleEl = document.getElementById('formStokTitle');
-            if (titleEl) titleEl.innerText = '✏️ Edit Stok Opname';
+            if (titleEl) titleEl.innerText = `✏️ Edit Data Stok Opname (${namaBarang})`;
+            const btnEl = document.getElementById('btnSubmitStok');
+            if (btnEl) btnEl.innerText = '💾 Simpan Perubahan Stok';
             
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const ov = document.getElementById('modalStokOpnameOverlay');
+            if (ov) ov.classList.add('show');
         };
 
         window.hapusRiwayatBelanja = function(id) {
@@ -7654,7 +8574,10 @@
             const sumber = document.getElementById('setorSumber').value;
             const nom = parseFloat(document.getElementById('setorNom').value) || 0;
             const ket = document.getElementById('setorKet').value.trim().toUpperCase() || 'SETORAN';
-            if (!sumber || nom <= 0) return alert("Lengkapi data setoran!");
+            if (!sumber || nom <= 0) {
+                window.showToast("⚠️ Pilih akun asal dan isi nominal setoran profit!", "error");
+                return;
+            }
 
             const nowTs = window.getNextUniqueTs();
             const newSetoran = { id: nowTs, waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(), tgl: window.getTodayIso(), sumber, nominal: nom, catatan: ket, updatedAt: nowTs };
@@ -7662,11 +8585,12 @@
             window.markLocalEntityEdited('setoran', newSetoran);
             document.getElementById('setorNomDisplay').value = '';
             document.getElementById('setorNom').value = '0';
-            document.getElementById('boxSetorFast').style.display = 'none';
+            document.getElementById('setorKet').value = '';
+            if (window.closeModalSetorFast) window.closeModalSetorFast();
             window.catatLogAktivitas('SETORAN PROFIT', `Mencatat setoran profit ${window.formatRp(nom)} dari akun ${sumber}`);
             window.saveToFirebaseNode('setoran', window.setoranOwnerList);
             window.renderAll();
-            alert("✅ Setoran profit dicatat!");
+            window.showToast(`✅ Setoran profit ${window.formatRp(nom)} dari ${sumber} berhasil dicatat!`, "success");
         }
 
         window.hapusSetoranOwner = function(id) {
@@ -7755,6 +8679,10 @@
         window.simpanVlookupCepat = function(e) {
             e.preventDefault();
             const ket = document.getElementById('v_ket_fast').value.toUpperCase().trim();
+            if (!ket) {
+                window.showToast("⚠️ Kata kunci VLOOKUP tidak boleh kosong!", "error");
+                return;
+            }
             window.masterVlookup[ket] = {
                 origKey: ket,
                 isManual: true,
@@ -7764,7 +8692,7 @@
                 defJual: parseFloat(document.getElementById('v_jual_fast').value) || 0,
                 defModal: parseFloat(document.getElementById('v_modal_fast').value) || 0
             };
-            document.getElementById('boxVlookupFast').style.display = 'none';
+            if (window.closeModalVlookupFast) window.closeModalVlookupFast();
             window.catatLogAktivitas('TAMBAH VLOOKUP', `Menambah master auto-fill cepat "${ket}"`);
             let cleanVlookup = {};
             for (let k in window.masterVlookup) {
@@ -7772,7 +8700,7 @@
             }
             window.saveToFirebaseNode('vlookup', cleanVlookup);
             window.renderAll();
-            alert("✅ VLOOKUP cepat disimpan!");
+            window.showToast(`✅ Data otomatis VLOOKUP "${ket}" berhasil disimpan!`, "success");
         }
 
         window.prosesTransferSaldoCepat = function(e) {
@@ -7804,7 +8732,7 @@
             document.getElementById('tfNom_fast').value = '0';
             document.getElementById('tfAdminDisplay_fast').value = '';
             document.getElementById('tfAdmin_fast').value = '0';
-            document.getElementById('boxTfFast').style.display = 'none';
+            if (window.closeModalTfFast) window.closeModalTfFast();
             window.catatLogAktivitas('PINDAH SALDO', `Transfer saldo dari ${sumber} ke ${tujuan} sebesar ${window.formatRp(nom)}`);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
@@ -8520,10 +9448,7 @@
                             <b style="color:var(--primary); font-size:11px;">${t.noServis}</b>
                             <div style="font-size:9.5px; color:#64748B; margin-top:1px;">👷 ${t.petugas || 'ADMIN'}</div>
                         </td>
-                        <td>
-                            <div style="font-weight:800; font-size:10.5px; color:var(--text);">${tglOnly}</div>
-                            <small style="color:#64748B; font-size:9.5px; font-weight:600;">🕒 ${jamOnly}</small>
-                        </td>
+                        <td>${window.formatKolomWaktuSeragam(tglOnly !== '-' ? tglOnly : t.isoDate, jamOnly, rawWaktu)}</td>
                         <td>
                             <div style="font-weight:800; color:var(--text); font-size:11.5px;">${t.nama}</div>
                             <div style="font-size:10.5px; color:var(--primary); font-weight:800; margin-top:1px;">📱 ${t.tipeHp}</div>
@@ -8792,7 +9717,7 @@
                 return `
                     <tr id="row-trx-${t.id}">
                         <td>${idx + 1}</td>
-                        <td><b>${t.waktu}</b><br><span style="font-size:9px;">${t.isoDate || ''}</span></td>
+                        <td>${window.formatKolomWaktuSeragam(t.isoDate, t.waktu, t.tgl)}</td>
                         <td><b>${t.ket}</b></td>
                         <td>${t.qty}</td>
                         <td><span style="color:var(--primary); font-weight:bold;">${t.kat}</span></td>
@@ -9103,10 +10028,10 @@
                     const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
                     const tagihanJualP = Math.max(pokokAwalP, Number(p.tagihanJual || 0));
                     const activeTagihanJual = isLunas ? 0 : Number(p.sisaTagihanJual !== undefined ? p.sisaTagihanJual : tagihanJualP);
-                    const tglJamStr = window.formatTanggalJamPiutang(p.isoDate, p.waktu, p.tglDisplay);
+                    const waktuPiutangHtml = window.formatKolomWaktuSeragam(p.isoDate, p.waktu, p.tglDisplay);
                     return `
                         <tr id="row-piutang-${p.id}" class="${isLunas ? 'row-piutang-lunas-today' : ''}">
-                            <td><b>${tglJamStr}</b><br><small style="color:#64748B;">${p.isoDate || '-'}</small></td>
+                            <td>${waktuPiutangHtml}</td>
                             <td><b>${p.nama}</b><br><small style="color:#0284C7; font-weight:600;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small></td>
                             <td>
                                 <span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span>
@@ -9171,10 +10096,10 @@
                 bPiutangArsip.innerHTML = filteredArsip.map(p => {
                     const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
                     const tagihanJualP = Math.max(pokokAwalP, Number(p.tagihanJual || 0));
-                    const tglJamStr = window.formatTanggalJamPiutang(p.isoDate, p.waktu, p.tglDisplay);
+                    const waktuPiutangHtml = window.formatKolomWaktuSeragam(p.isoDate, p.waktu, p.tglDisplay);
                     return `
                         <tr id="row-piutang-${p.id}">
-                            <td><b>${tglJamStr}</b><br><small style="color:#64748B;">${p.isoDate || '-'}</small></td>
+                            <td>${waktuPiutangHtml}</td>
                             <td><b>${p.nama}</b><br><small style="color:#0284C7; font-weight:600;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small></td>
                             <td><span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
                             <td class="text-kredit">
@@ -9628,6 +10553,9 @@
 
             window.renderRekapKategoriTab();
             window.renderRekapHarianSektorTab();
+            if (typeof window.renderRightInsightSidebar === 'function') {
+                window.renderRightInsightSidebar();
+            }
             window.updateUndoRedoBtnState();
         }
 
@@ -10175,15 +11103,402 @@
 
         window.tarikProfitKeKasirDariAudit = function() {
             const info = window.hitungRingkasanProfitDanHarta();
-            window.activateMainTabById('tab-kasir');
-            const boxSetor = document.getElementById('boxSetorFast');
-            if (boxSetor) boxSetor.style.display = 'block';
+            window.openModalSetorFast();
             if (info.jatahProfitSiapSetor > 0) {
                 window.isiOtomatisJatahSetorProfit();
             } else {
-                window.showToast("💡 Membuka form Setoran Profit di menu Kasir", "success");
+                window.showToast("💡 Membuka form Setoran Profit", "success");
             }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window._rightSectorMode = 'TODAY';
+        window.switchRightSectorMode = function(mode) {
+            window._rightSectorMode = mode === 'MONTH' ? 'MONTH' : 'TODAY';
+            window.renderRightInsightSidebar();
+        };
+
+        window.formatCompactRp = function(val) {
+            const n = Math.abs(Number(val || 0));
+            const sign = Number(val || 0) < 0 ? '-' : '';
+            if (n >= 1000000) return sign + (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1).replace('.', ',') + 'jt';
+            if (n >= 1000) return sign + Math.round(n / 1000) + 'rb';
+            return sign + String(Math.round(n));
+        };
+
+        window.renderRightInsightSidebar = function() {
+            const container = document.getElementById('rightInsightSidebarContent');
+            const badgeAlertEl = document.getElementById('badgeRadarAlertCount');
+
+            const todayIso = window.getTodayIso();
+            const currMonthIso = window.getCurrentMonthIso();
+
+            // 1. Hitung Ringkasan Hari Ini, Bulan Ini, Sektor, dan Top Item Hari Ini
+            let omsetToday = 0, modalToday = 0, cuanToday = 0, trxToday = 0;
+            let omsetMonth = 0, modalMonth = 0, cuanMonth = 0, trxMonth = 0;
+            let secToday = { ATM: 0, KONTER: 0, SERVICE: 0 };
+            let secMonth = { ATM: 0, KONTER: 0, SERVICE: 0 };
+            const topItemsMap = {};
+
+            // Siapkan 7 hari terakhir
+            const last7Days = [];
+            const dayNamesShort = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            const map7Days = {};
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const lbl = i === 0 ? 'Hari Ini' : `${dayNamesShort[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}`;
+                const obj = { iso, lbl, omset: 0, cuan: 0, trx: 0 };
+                last7Days.push(obj);
+                map7Days[iso] = obj;
+            }
+
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                const dIso = t.isoDate || '';
+                const j = Number(t.hargaJual || 0);
+                const m = Number(t.hargaModal || 0);
+                const c = Number(t.cuan || 0);
+
+                // Resolusi kategori asli untuk pelunasan piutang
+                let katEfektif = t.kat || 'LAINNYA';
+                if (t.kat === 'PIUTANG') {
+                    const pRef = (window.piutangList || []).find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                    katEfektif = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                }
+
+                const isAtm = (window.katAtm || []).includes(katEfektif);
+                const isKonter = (window.katKonter || []).includes(katEfektif);
+                const isService = (window.katService || []).includes(katEfektif);
+
+                if (map7Days[dIso]) {
+                    if (t.kat !== 'PIUTANG') {
+                        map7Days[dIso].omset += j;
+                        map7Days[dIso].trx += 1;
+                    }
+                    map7Days[dIso].cuan += c;
+                }
+
+                if (dIso === todayIso) {
+                    if (t.kat !== 'PIUTANG') {
+                        omsetToday += j;
+                        modalToday += m;
+                        trxToday += 1;
+
+                        const keyItem = (t.ket || katEfektif).trim().toUpperCase();
+                        if (!topItemsMap[keyItem]) {
+                            topItemsMap[keyItem] = { ket: keyItem, kat: katEfektif, qty: 0, omset: 0, cuan: 0 };
+                        }
+                        topItemsMap[keyItem].qty += Number(t.qty || 1);
+                        topItemsMap[keyItem].omset += j;
+                        topItemsMap[keyItem].cuan += c;
+                    }
+                    cuanToday += c;
+                    if (isAtm) secToday.ATM += c;
+                    else if (isKonter) secToday.KONTER += c;
+                    else if (isService) secToday.SERVICE += c;
+                }
+
+                if (dIso.startsWith(currMonthIso)) {
+                    if (t.kat !== 'PIUTANG') {
+                        omsetMonth += j;
+                        modalMonth += m;
+                        trxMonth += 1;
+                    }
+                    cuanMonth += c;
+                    if (isAtm) secMonth.ATM += c;
+                    else if (isKonter) secMonth.KONTER += c;
+                    else if (isService) secMonth.SERVICE += c;
+                }
+            });
+
+            // 2. Radar Peringatan Cepat: Stok Kritis (<= 3 Pcs), Saldo Limit, Servis & Piutang
+            const lowStokList = [];
+            (window.stokOpnameItems || []).forEach(s => {
+                const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
+                if (sisa <= 3) {
+                    lowStokList.push({
+                        id: s.id,
+                        kat: s.kat,
+                        nama: (s.nama || s.namaBarang || '-').toUpperCase(),
+                        sisa
+                    });
+                }
+            });
+            lowStokList.sort((a, b) => a.sisa - b.sisa);
+
+            // Hitung saldo kas cair aktual per akun untuk radar limit
+            const akunOtomatis = window.AKUN_DATA_OTOMATIS || ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            const masukAkunAll = {}, keluarAkunAll = {};
+            (window.saldoList || []).forEach(s => { masukAkunAll[s] = 0; keluarAkunAll[s] = 0; });
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t) return;
+                if (t.isPencatatanUtangAwal) {
+                    if (t.akunKeluar1 && keluarAkunAll[t.akunKeluar1] !== undefined) keluarAkunAll[t.akunKeluar1] += Number(t.modalSplit1 || t.hargaModal || 0);
+                    return;
+                }
+                if (t.isSplit) {
+                    if (t.akunMasuk1 && masukAkunAll[t.akunMasuk1] !== undefined) masukAkunAll[t.akunMasuk1] += Number(t.jualSplit1 || 0);
+                    if (t.akunMasuk2 && masukAkunAll[t.akunMasuk2] !== undefined) masukAkunAll[t.akunMasuk2] += Number(t.jualSplit2 || 0);
+                    if (t.akunKeluar1 && keluarAkunAll[t.akunKeluar1] !== undefined) keluarAkunAll[t.akunKeluar1] += Number(t.modalSplit1 || 0);
+                    if (t.akunKeluar2 && keluarAkunAll[t.akunKeluar2] !== undefined) keluarAkunAll[t.akunKeluar2] += Number(t.modalSplit2 || 0);
+                } else {
+                    if (t.akunMasuk1 && masukAkunAll[t.akunMasuk1] !== undefined) masukAkunAll[t.akunMasuk1] += Number(t.hargaJual || 0);
+                    if (t.akunKeluar1 && keluarAkunAll[t.akunKeluar1] !== undefined) keluarAkunAll[t.akunKeluar1] += Number(t.hargaModal || 0);
+                }
+            });
+            (window.riwayatBelanjaStok || []).forEach(r => {
+                if (r && !r.isSeedAwal && r.sumberKas && !String(r.sumberKas).includes('TIDAK POTONG SALDO') && keluarAkunAll[r.sumberKas] !== undefined) {
+                    keluarAkunAll[r.sumberKas] += Number(r.total || 0);
+                }
+            });
+            (window.sparepartList || []).forEach(sp => {
+                if (sp && sp.sumber && keluarAkunAll[sp.sumber] !== undefined) keluarAkunAll[sp.sumber] += Number(sp.modal || 0);
+            });
+            (window.setoranOwnerList || []).forEach(st => {
+                if (st && st.sumber && keluarAkunAll[st.sumber] !== undefined) keluarAkunAll[st.sumber] += Number(st.nominal || 0);
+            });
+
+            const lowBalanceAccounts = [];
+            (window.saldoList || []).forEach(s => {
+                if (akunOtomatis.includes(s)) return;
+                const awal = Number((window.masterSaldoAwal && window.masterSaldoAwal[s]) || 0);
+                const akhir = awal + (masukAkunAll[s] || 0) - (keluarAkunAll[s] || 0);
+                const minLimit = Number((window.masterBatasMinSaldo && window.masterBatasMinSaldo[s]) || 0);
+                if ((minLimit > 0 && akhir < minLimit) || akhir < 0) {
+                    lowBalanceAccounts.push({ akun: s, akhir, minLimit });
+                }
+            });
+
+            const activeServis = (window.tiketServisList || []).filter(tk => tk && !tk.isSettledInKasir && tk.status !== 'LUNAS' && tk.status !== 'SELESAI & LUNAS' && tk.status !== 'SELESAI' && tk.status !== 'CANCEL');
+            const siapDiambilServis = activeServis.filter(tk => tk.status === 'SIAP DIAMBIL');
+            const activePiutang = (window.piutangList || []).filter(p => p && p.status !== 'LUNAS' && Number(p.sisa || 0) > 0);
+            const totalSisaPiutang = activePiutang.reduce((acc, p) => acc + Number(p.sisa || 0), 0);
+
+            const totalRadarAlerts = lowStokList.length + lowBalanceAccounts.length + siapDiambilServis.length;
+            if (badgeAlertEl) {
+                if (totalRadarAlerts > 0) {
+                    badgeAlertEl.style.display = 'inline-block';
+                    badgeAlertEl.innerText = String(totalRadarAlerts);
+                } else {
+                    badgeAlertEl.style.display = 'none';
+                }
+            }
+
+            if (!container) return;
+
+            // Render Grafik 7 Hari (Fokus 100% CUAN, Lebih Tinggi & Detail)
+            let maxCuan7d = 1;
+            let totalCuan7d = 0;
+            let totalTrx7d = 0;
+            last7Days.forEach(d => {
+                if (d.cuan > maxCuan7d) maxCuan7d = d.cuan;
+                totalCuan7d += Number(d.cuan || 0);
+                totalTrx7d += Number(d.trx || 0);
+            });
+            const avgCuan7d = Math.round(totalCuan7d / 7);
+
+            const chartColsHtml = last7Days.map(d => {
+                const hCuan = d.cuan > 0 ? Math.max(12, Math.round((d.cuan / maxCuan7d) * 128)) : 4;
+                const isToday = d.iso === todayIso;
+                return `
+                    <div class="chart-7d-col" title="${d.lbl} (${d.iso})\nCuan Bersih: ${window.formatRp(d.cuan)}\nTransaksi: ${d.trx} TRX">
+                        <div class="chart-7d-val" style="color:${d.cuan > 0 ? (isToday ? '#047857' : '#059669') : '#94A3B8'};">${d.cuan > 0 ? window.formatCompactRp(d.cuan) : '-'}</div>
+                        <div class="chart-7d-bars-pair">
+                            <div class="chart-bar-cuan" style="height:${hCuan}px; opacity:${d.cuan > 0 ? '1' : '0.22'}; ${isToday ? 'background:linear-gradient(180deg, #10B981 0%, #047857 100%); box-shadow:0 0 0 2px rgba(16,185,129,0.28);' : ''}"></div>
+                        </div>
+                        <div class="chart-7d-lbl" style="${isToday ? 'color:#047857; font-weight:900;' : ''}">${d.lbl}</div>
+                        <div style="font-size:8px; color:#64748B; font-weight:700; margin-top:1px;">${d.trx}x</div>
+                    </div>
+                `;
+            }).join('');
+
+            const chartDetailRowsHtml = last7Days.slice().reverse().map(d => {
+                const isToday = d.iso === todayIso;
+                const pctBar = d.cuan > 0 ? Math.max(4, Math.round((d.cuan / maxCuan7d) * 100)) : 0;
+                return `
+                    <div class="chart-7d-detail-row" style="${isToday ? 'background:rgba(16,185,129,0.08); border-radius:6px; padding:4px 6px;' : 'padding:3px 4px;'}">
+                        <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
+                            <span style="font-weight:${isToday ? '900' : '700'}; color:${isToday ? '#047857' : 'var(--text)'}; min-width:54px;">${d.lbl}</span>
+                            <div style="flex:1; height:6px; background:rgba(148,163,184,0.18); border-radius:999px; overflow:hidden;">
+                                <div style="width:${pctBar}%; height:100%; background:linear-gradient(90deg, #34D399, #059669); border-radius:999px;"></div>
+                            </div>
+                        </div>
+                        <div style="text-align:right; margin-left:8px; white-space:nowrap;">
+                            <b style="color:${d.cuan > 0 ? '#059669' : '#94A3B8'}; font-size:10.5px;">${d.cuan > 0 ? '+' + window.formatRp(d.cuan) : 'Rp0'}</b>
+                            <span style="font-size:8.5px; color:#64748B; margin-left:3px;">(${d.trx} TRX)</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Porsi Sektor
+            const isMonthMode = window._rightSectorMode === 'MONTH';
+            const secData = isMonthMode ? secMonth : secToday;
+            const totSec = Math.max(0, secData.ATM) + Math.max(0, secData.KONTER) + Math.max(0, secData.SERVICE);
+            const pctAtm = totSec > 0 ? Math.round((Math.max(0, secData.ATM) / totSec) * 100) : 0;
+            const pctKonter = totSec > 0 ? Math.round((Math.max(0, secData.KONTER) / totSec) * 100) : 0;
+            const pctService = totSec > 0 ? Math.round((Math.max(0, secData.SERVICE) / totSec) * 100) : 0;
+
+            // Top 5 Terlaris Hari Ini (Fokus Cuan, tanpa Omset)
+            const top5List = Object.values(topItemsMap).sort((a, b) => b.cuan - a.cuan || b.qty - a.qty).slice(0, 5);
+            const top5Html = top5List.length > 0 ? top5List.map((item, idx) => `
+                <div class="radar-alert-item" style="padding:5px 8px;">
+                    <div style="min-width:0; flex:1;">
+                        <div style="font-weight:800; font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${idx + 1}. ${item.ket}</div>
+                        <div style="font-size:9.5px; color:#64748B;">${item.kat} • Terjual <b>${item.qty}x</b></div>
+                    </div>
+                    <div style="font-weight:900; color:#059669; font-size:10.5px; white-space:nowrap;">+${window.formatRp(item.cuan)}</div>
+                </div>
+            `).join('') : `<div style="text-align:center; color:#94A3B8; font-size:10.5px; padding:10px;">Belum ada transaksi penjualan hari ini.</div>`;
+
+            // Info Audit Modal Berputar
+            const auditInfo = window.hitungRingkasanProfitDanHarta ? window.hitungRingkasanProfitDanHarta() : null;
+
+            container.innerHTML = `
+                <!-- 1. RINGKASAN CUAN EKSEKUTIF (TANPA KARTU OMSET) -->
+                <div class="insight-box" style="background:linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color:#F8FAFC; border:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:10px; font-weight:800; color:#34D399; letter-spacing:0.5px;">⚡ CUAN BERSIH HARI INI (${todayIso})</span>
+                        <span style="background:rgba(52,211,153,0.18); color:#34D399; border:1px solid rgba(52,211,153,0.35); padding:2px 8px; border-radius:999px; font-size:9.5px; font-weight:800;">${trxToday} Transaksi</span>
+                    </div>
+                    <div style="background:rgba(16,185,129,0.15); padding:10px 12px; border-radius:9px; border:1px solid rgba(52,211,153,0.32); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:9.5px; color:#A7F3D0; font-weight:800;">🔥 TOTAL CUAN HARI INI</div>
+                            <div style="font-size:18px; font-weight:900; color:#34D399; margin-top:2px; letter-spacing:0.3px;">+${window.formatRp(cuanToday)}</div>
+                        </div>
+                        <div style="text-align:right; border-left:1px solid rgba(255,255,255,0.12); padding-left:10px;">
+                            <div style="font-size:9px; color:#CBD5E1; font-weight:700;">CUAN BULAN INI</div>
+                            <div style="font-size:12.5px; font-weight:900; color:#38BDF8; margin-top:2px;">+${window.formatRp(cuanMonth)}</div>
+                            <div style="font-size:8.5px; color:#94A3B8;">${trxMonth} TRX Bulan Ini</div>
+                        </div>
+                    </div>
+                    ${auditInfo ? `
+                    <div style="background:rgba(255,255,255,0.07); padding:7px 9px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; gap:6px; font-size:10px;">
+                        <div>
+                            <span style="color:#CBD5E1;">💡 Siap Setor (Di Atas Modal):</span><br>
+                            <b style="color:#FDE047; font-size:11.5px;">${window.formatRp(auditInfo.jatahProfitSiapSetor)}</b>
+                        </div>
+                        <button type="button" onclick="toggleRightInsightSidebar(); tarikProfitKeKasirDariAudit();" style="background:#DC2626; color:#FFF; border:none; border-radius:6px; padding:5px 9px; font-size:9.5px; font-weight:800; cursor:pointer; white-space:nowrap;">💸 Setor Profit</button>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- 2. GRAFIK TREN CUAN 7 HARI TERAKHIR (LEBIH BESAR & DETAIL) -->
+                <div class="insight-box">
+                    <div class="insight-box-title">
+                        <span>📈 Tren Cuan 7 Hari Terakhir</span>
+                        <span style="display:inline-flex; align-items:center; gap:4px; font-size:9.5px; font-weight:800; color:#059669; text-transform:none;"><span style="width:8px; height:8px; border-radius:2px; background:#059669; display:inline-block;"></span>Cuan Bersih</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.2); border-radius:8px; padding:6px 9px;">
+                        <div>
+                            <div style="font-size:8.5px; color:#64748B; font-weight:700;">TOTAL CUAN 7 HARI</div>
+                            <div style="font-size:12px; font-weight:900; color:#059669;">+${window.formatRp(totalCuan7d)}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:8.5px; color:#64748B; font-weight:700;">RATA-RATA / HARI (${totalTrx7d} TRX)</div>
+                            <div style="font-size:12px; font-weight:900; color:#0284C7;">+${window.formatRp(avgCuan7d)}</div>
+                        </div>
+                    </div>
+                    <div class="chart-7d-grid">
+                        ${chartColsHtml}
+                    </div>
+                    <div style="margin-top:8px; border-top:1px dashed var(--border); padding-top:6px;">
+                        <div style="font-size:9px; font-weight:800; color:#64748B; margin-bottom:4px; letter-spacing:0.3px;">📋 RINCIAN CUAN HARIAN (7 HARI TERAKHIR):</div>
+                        ${chartDetailRowsHtml}
+                    </div>
+                </div>
+
+                <!-- 3. PORSI PROFIT PER SEKTOR -->
+                <div class="insight-box">
+                    <div class="insight-box-title">
+                        <span>📊 Porsi Profit Sektor</span>
+                        <div style="display:flex; gap:4px;">
+                            <button type="button" onclick="switchRightSectorMode('TODAY')" style="border:none; padding:2px 7px; border-radius:5px; font-size:9px; font-weight:800; cursor:pointer; background:${!isMonthMode ? 'var(--primary)' : '#E2E8F0'}; color:${!isMonthMode ? '#FFF' : '#475569'};">Hari Ini</button>
+                            <button type="button" onclick="switchRightSectorMode('MONTH')" style="border:none; padding:2px 7px; border-radius:5px; font-size:9px; font-weight:800; cursor:pointer; background:${isMonthMode ? 'var(--primary)' : '#E2E8F0'}; color:${isMonthMode ? '#FFF' : '#475569'};">Bulan Ini</button>
+                        </div>
+                    </div>
+                    <div class="sector-prog-row">
+                        <div class="sector-prog-top">
+                            <span>🏧 ATM Link (TF, Tarik, Topup)</span>
+                            <span style="color:#0284C7;">${window.formatRp(secData.ATM)} (${pctAtm}%)</span>
+                        </div>
+                        <div class="sector-prog-track"><div class="sector-prog-fill" style="width:${pctAtm}%; background:linear-gradient(90deg, #38BDF8, #0284C7);"></div></div>
+                    </div>
+                    <div class="sector-prog-row">
+                        <div class="sector-prog-top">
+                            <span>📱 Konter (VCR, SP, ACC, Pulsa)</span>
+                            <span style="color:#059669;">${window.formatRp(secData.KONTER)} (${pctKonter}%)</span>
+                        </div>
+                        <div class="sector-prog-track"><div class="sector-prog-fill" style="width:${pctKonter}%; background:linear-gradient(90deg, #34D399, #059669);"></div></div>
+                    </div>
+                    <div class="sector-prog-row">
+                        <div class="sector-prog-top">
+                            <span>🛠️ Service HP & Sparepart</span>
+                            <span style="color:#9333EA;">${window.formatRp(secData.SERVICE)} (${pctService}%)</span>
+                        </div>
+                        <div class="sector-prog-track"><div class="sector-prog-fill" style="width:${pctService}%; background:linear-gradient(90deg, #A855F7, #7E22CE);"></div></div>
+                    </div>
+                </div>
+
+                <!-- 4. RADAR PERINGATAN KONTER (SMART ALERTS) -->
+                <div class="insight-box" style="border-color:${totalRadarAlerts > 0 ? '#FCA5A5' : 'var(--border)'};">
+                    <div class="insight-box-title" style="color:${totalRadarAlerts > 0 ? '#DC2626' : 'var(--primary)'};">
+                        <span>🚨 Radar Peringatan Konter</span>
+                        <span style="background:${totalRadarAlerts > 0 ? '#FEE2E2' : '#DCFCE7'}; color:${totalRadarAlerts > 0 ? '#991B1B' : '#166534'}; padding:1px 7px; border-radius:999px; font-size:9px;">${totalRadarAlerts > 0 ? `${totalRadarAlerts} Perlu Cek` : 'Aman'}</span>
+                    </div>
+
+                    <!-- Ringkasan Antrean Servis & Piutang -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+                        <div onclick="toggleRightInsightSidebar(); activateMainTabById('tab-service');" style="cursor:pointer; background:var(--card); border:1px solid var(--border); border-left:3px solid #0284C7; padding:6px 8px; border-radius:7px;">
+                            <div style="font-size:9px; color:#64748B; font-weight:700;">🛠️ SERVIS AKTIF</div>
+                            <div style="font-size:11.5px; font-weight:900; color:#0284C7;">${activeServis.length} Unit ${siapDiambilServis.length > 0 ? `<span style="color:#16A34A; font-size:9.5px;">(${siapDiambilServis.length} Siap)</span>` : ''}</div>
+                        </div>
+                        <div onclick="toggleRightInsightSidebar(); activateMainTabById('tab-piutang');" style="cursor:pointer; background:var(--card); border:1px solid var(--border); border-left:3px solid #D97706; padding:6px 8px; border-radius:7px;">
+                            <div style="font-size:9px; color:#64748B; font-weight:700;">🤝 PIUTANG AKTIF</div>
+                            <div style="font-size:11.5px; font-weight:900; color:#D97706;">${activePiutang.length} Org (${window.formatCompactRp(totalSisaPiutang)})</div>
+                        </div>
+                    </div>
+
+                    <!-- Peringatan Saldo di Bawah Limit -->
+                    ${lowBalanceAccounts.length > 0 ? `
+                        <div style="font-size:9.5px; font-weight:800; color:#B91C1C; margin-bottom:4px;">⚠️ Saldo Kas/Bank di Bawah Limit (${lowBalanceAccounts.length}):</div>
+                        ${lowBalanceAccounts.map(acc => `
+                            <div class="radar-alert-item" style="background:#FEF2F2; border-color:#FECACA;">
+                                <div>
+                                    <b style="color:#991B1B;">${acc.akun}</b>: <span style="font-weight:800; color:#DC2626;">${window.formatRp(acc.akhir)}</span>
+                                    ${acc.minLimit > 0 ? `<div style="font-size:9px; color:#7F1D1D;">Limit Min: ${window.formatRp(acc.minLimit)}</div>` : ''}
+                                </div>
+                                <button type="button" onclick="toggleRightInsightSidebar(); openModalTfFast('${acc.akun}');" style="background:#4F46E5; color:#FFF; border:none; border-radius:5px; padding:3px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">🔀 Suntik</button>
+                            </div>
+                        `).join('')}
+                    ` : ''}
+
+                    <!-- Peringatan Stok Menipis / Habis -->
+                    ${lowStokList.length > 0 ? `
+                        <div style="font-size:9.5px; font-weight:800; color:#B45309; margin:6px 0 4px 0;">📦 Stok Fisik Menipis / Habis (${lowStokList.length}):</div>
+                        ${lowStokList.slice(0, 6).map(st => `
+                            <div class="radar-alert-item" style="background:${st.sisa <= 0 ? '#FEF2F2' : '#FFFBEB'}; border-color:${st.sisa <= 0 ? '#FECACA' : '#FDE68A'};">
+                                <div style="min-width:0; flex:1;">
+                                    <span style="font-size:8.5px; font-weight:800; padding:1px 4px; border-radius:4px; background:#E2E8F0; color:#0F172A; margin-right:3px;">${st.kat}</span>
+                                    <b style="color:#0F172A;">${st.nama}</b>
+                                    <div style="font-size:9.5px; font-weight:800; color:${st.sisa <= 0 ? '#DC2626' : '#D97706'};">Sisa: ${st.sisa} Pcs ${st.sisa <= 0 ? '(HABIS)' : '⚠️'}</div>
+                                </div>
+                                <button type="button" onclick="toggleRightInsightSidebar(); activateMainTabById('tab-stok'); editStokOpname(${st.id});" style="background:#059669; color:#FFF; border:none; border-radius:5px; padding:3px 7px; font-size:9.5px; font-weight:800; cursor:pointer; white-space:nowrap;">✏️ Edit Stok</button>
+                            </div>
+                        `).join('')}
+                    ` : `<div style="font-size:10px; color:#16A34A; font-weight:700; text-align:center; padding:4px;">✅ Semua stok barang & limit saldo dalam batas aman!</div>`}
+                </div>
+
+                <!-- 5. TOP 5 PRODUK / TRANSAKSI PENJUALAN HARI INI -->
+                <div class="insight-box">
+                    <div class="insight-box-title">
+                        <span>🏆 Top 5 Cuan Tertinggi Hari Ini</span>
+                        <span style="font-size:9px; color:#64748B; text-transform:none;">Realtime</span>
+                    </div>
+                    ${top5Html}
+                </div>
+            `;
         };
 
         window.switchSettingsTab = function(tabName) {
@@ -10203,6 +11518,10 @@
             const headerTitle = document.getElementById('appHeaderShopName');
             if (headerTitle) {
                 headerTitle.innerText = storeName;
+            }
+            const loginTitle = document.getElementById('loginShopNameTitle');
+            if (loginTitle) {
+                loginTitle.innerText = storeName;
             }
             document.title = `${storeName} - Pembukuan & Kasir Konter`;
 
@@ -10226,6 +11545,14 @@
                     logoBox.innerHTML = `<img src="${p.logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:50%; background:#fff; padding:2px;" alt="Logo Toko">`;
                 } else {
                     logoBox.innerHTML = DEFAULT_HEADER_LOGO_SVG;
+                }
+            }
+            const loginLogoBox = document.getElementById('loginLogoBox');
+            if (loginLogoBox) {
+                if (p.logoUrl) {
+                    loginLogoBox.innerHTML = `<img src="${p.logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:50%; background:#fff; padding:3px;" alt="Logo Toko">`;
+                } else {
+                    loginLogoBox.innerHTML = DEFAULT_HEADER_LOGO_SVG;
                 }
             }
 
@@ -10327,10 +11654,77 @@
             window.showToast(`✅ Pengaturan printer (${ukuran}) berhasil disimpan!`, 'success');
         };
 
+        window.getPinForUsername = function(username) {
+            const uUpper = String(username || '').toUpperCase().trim();
+            const found = (window.daftarKaryawan || []).find(k => String(k.username || '').toUpperCase().trim() === uUpper);
+            if (found && found.pin !== undefined && found.pin !== '') return String(found.pin);
+            if (uUpper === 'OWNER') return '212';
+            if (uUpper === 'FINA' || uUpper === 'ECA') return '313';
+            if (uUpper === 'TAMU') return '414';
+            return '313';
+        };
+
+        window.renderTargetUserPinOptions = function(selectedUsername) {
+            const sel = document.getElementById('setTargetUserPin');
+            if (!sel) return;
+            const currentVal = (selectedUsername || sel.value || sessionStorage.getItem('zencell_user') || 'OWNER').toUpperCase();
+
+            // Pastikan akun bawaan + seluruh daftarKaryawan masuk ke opsi dropdown
+            const baseAccounts = [
+                { username: 'OWNER', role: 'OWNER' },
+                { username: 'FINA', role: 'KASIR' },
+                { username: 'ECA', role: 'KASIR' },
+                { username: 'TAMU', role: 'TAMU' }
+            ];
+            const mapAcc = new Map();
+            baseAccounts.forEach(a => mapAcc.set(a.username, a));
+            (window.daftarKaryawan || []).forEach(k => {
+                if (k && k.username) {
+                    const uUp = k.username.toUpperCase().trim();
+                    mapAcc.set(uUp, { username: uUp, role: k.role || 'KASIR', pin: k.pin });
+                }
+            });
+
+            sel.innerHTML = Array.from(mapAcc.values()).map(acc => {
+                const icon = acc.role === 'OWNER' ? '👑' : (acc.role === 'TEKNISI' ? '🛠️' : (acc.role === 'TAMU' ? '👀' : '💼'));
+                const pinNow = window.getPinForUsername(acc.username);
+                const isSelected = acc.username === currentVal ? 'selected' : '';
+                return `<option value="${acc.username}" ${isSelected}>${icon} ${acc.username} (${acc.role}) — PIN: ${pinNow}</option>`;
+            }).join('');
+
+            window.onChangeTargetUserPin();
+        };
+
+        window.onChangeTargetUserPin = function() {
+            const sel = document.getElementById('setTargetUserPin');
+            const badge = document.getElementById('setInfoPinSaatIni');
+            if (!sel) return;
+            const targetUser = (sel.value || 'OWNER').toUpperCase();
+            const currentPin = window.getPinForUsername(targetUser);
+            if (badge) {
+                badge.innerText = `PIN ${targetUser} Saat Ini: ${currentPin}`;
+            }
+        };
+
+        window.pilihAkunUntukUbahPin = function(username) {
+            const uUp = String(username || 'OWNER').toUpperCase();
+            window.renderTargetUserPinOptions(uUp);
+            const sel = document.getElementById('setTargetUserPin');
+            if (sel) sel.value = uUp;
+            window.onChangeTargetUserPin();
+            const inpBaru = document.getElementById('setPinBaru');
+            if (inpBaru) {
+                inpBaru.value = '';
+                inpBaru.focus();
+                inpBaru.placeholder = `Ketik PIN baru untuk ${uUp}...`;
+            }
+            window.showToast(`🔑 Silakan ketik PIN baru untuk akun ${uUp}`, "success");
+        };
+
         window.updatePasswordAktif = function(e) {
             e.preventDefault();
-            const userAktif = sessionStorage.getItem('zencell_user') || 'Owner';
-            const pinLama = document.getElementById('setPinLama').value.trim();
+            const selTarget = document.getElementById('setTargetUserPin');
+            const targetUser = (selTarget && selTarget.value ? selTarget.value : (sessionStorage.getItem('zencell_user') || 'OWNER')).trim().toUpperCase();
             const pinBaru = document.getElementById('setPinBaru').value.trim();
 
             if (!pinBaru || pinBaru.length < 3) {
@@ -10339,36 +11733,28 @@
                 return;
             }
 
-            let userObj = (window.daftarKaryawan || []).find(k => k.username.toUpperCase() === userAktif.toUpperCase());
-            let currentPinValid = false;
-            if (userObj && String(userObj.pin) === String(pinLama)) currentPinValid = true;
-            else if (userAktif === 'Owner' && pinLama === '212') currentPinValid = true;
-            else if ((userAktif === 'Fina' || userAktif === 'Eca') && pinLama === '313') currentPinValid = true;
-            else if (userAktif === 'Tamu' && pinLama === '414') currentPinValid = true;
-
-            if (!currentPinValid) {
-                window.showSettingBanner("❌ PIN saat ini salah! Periksa kembali PIN lama Anda.", true);
-                window.showToast("❌ PIN saat ini salah!", "error");
-                return;
-            }
+            if (!window.daftarKaryawan) window.daftarKaryawan = [];
+            let userObj = window.daftarKaryawan.find(k => String(k.username || '').toUpperCase() === targetUser);
 
             if (!userObj) {
-                userObj = { id: Date.now(), username: userAktif.toUpperCase(), role: (userAktif === 'Owner' ? 'OWNER' : 'KASIR'), pin: pinBaru, dibuat: window.getTodayIso() };
-                if (!window.daftarKaryawan) window.daftarKaryawan = [];
+                const defaultRole = targetUser === 'OWNER' ? 'OWNER' : (targetUser === 'TAMU' ? 'TAMU' : 'KASIR');
+                userObj = { id: Date.now(), username: targetUser, role: defaultRole, pin: pinBaru, dibuat: window.getTodayIso() };
                 window.daftarKaryawan.push(userObj);
             } else {
                 userObj.pin = pinBaru;
             }
 
+            localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
             window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
-            window.catatLogAktivitas('GANTI PIN', `Memperbarui PIN untuk pengguna ${userAktif}`);
-            document.getElementById('setPinLama').value = '';
+            window.catatLogAktivitas('GANTI PIN', `Owner memperbarui PIN untuk akun ${targetUser}`);
             document.getElementById('setPinBaru').value = '';
             window.renderDaftarKaryawanSettings();
+            window.renderTargetUserPinOptions(targetUser);
+            if (window.renderLoginUserOptions) window.renderLoginUserOptions();
 
-            window.flashButtonSuccess('btnSimpanPin', '✅ PIN TERSIMPAN!', 'UPDATE PASSWORD / PIN');
-            window.showSettingBanner(`✅ PIN baru untuk akun "${userAktif}" berhasil diperbarui!`);
-            window.showToast(`✅ PIN untuk akun ${userAktif} berhasil diperbarui!`, "success");
+            window.flashButtonSuccess('btnSimpanPin', '✅ PIN TERSIMPAN!', '💾 SIMPAN PIN AKUN TERPILIH');
+            window.showSettingBanner(`✅ PIN baru untuk akun <b>"${targetUser}"</b> berhasil diperbarui menjadi <b>${pinBaru}</b>!`);
+            window.showToast(`✅ PIN untuk akun ${targetUser} berhasil diperbarui!`, "success");
         };
 
         window.bukaModalTambahKaryawan = function() {
@@ -10405,6 +11791,7 @@
             const newStaff = { id: Date.now(), username: uName, role, pin, dibuat: window.getTodayIso() };
             window.daftarKaryawan.push(newStaff);
 
+            localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
             window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
             window.renderDaftarKaryawanSettings();
             window.renderLoginUserOptions();
@@ -10425,6 +11812,7 @@
 
             if (confirm(`Yakin ingin menghapus karyawan "${k.username}"?`)) {
                 window.daftarKaryawan = window.daftarKaryawan.filter(item => item.id !== id);
+                localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
                 window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
                 window.renderDaftarKaryawanSettings();
                 window.renderLoginUserOptions();
@@ -10439,6 +11827,10 @@
             const tbody = document.getElementById('bodyDaftarKaryawanSettings');
             if (!tbody) return;
             const staff = window.daftarKaryawan || [];
+            if (window.renderTargetUserPinOptions) {
+                const currentSel = document.getElementById('setTargetUserPin')?.value;
+                window.renderTargetUserPinOptions(currentSel);
+            }
             tbody.innerHTML = staff.map(k => {
                 const roleBadgeColor = k.role === 'OWNER' ? 'background:#FEF3C7; color:#92400E;' : (k.role === 'ADMIN' ? 'background:#E0F2FE; color:#0369A1;' : (k.role === 'TEKNISI' ? 'background:#F3E8FF; color:#7E22CE;' : 'background:#DCFCE7; color:#166534;'));
                 const isOwner = k.username.toUpperCase() === 'OWNER';
@@ -10455,7 +11847,10 @@
                         <td style="text-align:center; font-family:monospace; font-weight:bold;">${k.pin}</td>
                         <td style="text-align:center; color:#64748B;">${k.dibuat || '-'}</td>
                         <td style="text-align:center;">
-                            ${isOwner ? '<span style="color:#94A3B8; font-size:10px;">UTAMA</span>' : `<button type="button" class="btn-delete" onclick="hapusKaryawan(${k.id})" title="Hapus Akun">🗑️</button>`}
+                            <div style="display:inline-flex; gap:4px; align-items:center; justify-content:center;">
+                                <button type="button" class="btn-edit" onclick="pilihAkunUntukUbahPin('${k.username}')" title="Ubah PIN Akun ${k.username}">🔑 Ubah PIN</button>
+                                ${isOwner ? '' : `<button type="button" class="btn-delete" onclick="hapusKaryawan(${k.id})" title="Hapus Akun">🗑️</button>`}
+                            </div>
                         </td>
                     </tr>
                 `;
