@@ -538,7 +538,7 @@
             backdrop-filter: blur(14px) saturate(160%);
             -webkit-backdrop-filter: blur(14px) saturate(160%);
             border: 1px solid rgba(167, 243, 208, 0.85);
-            display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
             padding: 4px 5px; z-index: 9997;
             box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.75);
             border-radius: 13px;
@@ -1498,7 +1498,6 @@
                 <button type="button" class="find-tab-pill" data-tab="PIUTANG" onclick="setGlobalFindTab('PIUTANG')">🤝 Piutang (<span id="cntFindPiutang">0</span>)</button>
                 <button type="button" class="find-tab-pill" data-tab="TRX" onclick="setGlobalFindTab('TRX')">🧾 Transaksi (<span id="cntFindTrx">0</span>)</button>
                 <button type="button" class="find-tab-pill" data-tab="SERVIS" onclick="setGlobalFindTab('SERVIS')">🛠️ Servis & Part (<span id="cntFindServis">0</span>)</button>
-                <button type="button" class="find-tab-pill" data-tab="OP" onclick="setGlobalFindTab('OP')">💸 Operasional (<span id="cntFindOp">0</span>)</button>
                 <button type="button" class="find-tab-pill" data-tab="VLOOKUP" onclick="setGlobalFindTab('VLOOKUP')">⚡ VLOOKUP (<span id="cntFindVlookup">0</span>)</button>
             </div>
 
@@ -1506,7 +1505,7 @@
 
             <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#64748B; flex-wrap:wrap; gap:4px;">
                 <span>💡 <b>Tips Ala Excel:</b> Tekan <b>Ctrl+F</b> atau <b>Ctrl+K</b> kapan saja untuk mencari data, dan <b>ESC</b> untuk menutup.</span>
-                <span id="globalFindSummaryCount" style="font-weight:800; color:var(--primary);">Siap mencari di 6 modul</span>
+                <span id="globalFindSummaryCount" style="font-weight:800; color:var(--primary);">Siap mencari di 5 modul</span>
             </div>
         </div>
     </div>
@@ -1533,6 +1532,9 @@
             <div class="settings-nav-tabs">
                 <button type="button" class="settings-tab-btn active" id="btnSetTab-identitas" onclick="switchSettingsTab('identitas')">
                     <span>🏢</span> Identitas Toko
+                </button>
+                <button type="button" class="settings-tab-btn" id="btnSetTab-modal" onclick="switchSettingsTab('modal')">
+                    <span>🎯</span> Modal Berputar
                 </button>
                 <button type="button" class="settings-tab-btn" id="btnSetTab-printer" onclick="switchSettingsTab('printer')">
                     <span>🖨️</span> Perangkat & Printer
@@ -1587,6 +1589,95 @@
                     </div>
                     <div style="display:flex; gap:8px; margin-top:12px;">
                         <button type="submit" id="btnSimpanIdentitas" class="btn" style="background:#0F172A; font-weight:700; flex:1; transition:all 0.25s ease;">💾 SIMPAN PERUBAHAN</button>
+                        <button type="button" class="btn" style="background:#64748B; width:auto; padding:10px 18px;" onclick="closeModalSetting()">Tutup</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TAB KHUSUS: PENETAPAN MODAL BERPUTAR KONTER -->
+            <div id="setPane-modal" class="settings-sub-pane">
+                <div style="background:linear-gradient(135deg, #ECFDF5 0%, #E0F2FE 100%); border:1.5px solid #10B981; border-radius:12px; padding:12px 14px; margin-bottom:14px;">
+                    <div style="font-size:12.5px; font-weight:800; color:#065F46; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                        <span>🎯</span>
+                        <span>SISTEM KONTROL MODAL BERPUTAR TETAP (FIXED REVOLVING CAPITAL)</span>
+                    </div>
+                    <p style="font-size:11px; color:#0F172A; margin:0; line-height:1.45;">
+                        Tetapkan angka <b>Target Modal Pokok Berputar</b> di ZENCELL 1 (mencakup <b>Kas/Bank Cair + Stok Voucher/SP/ACC + Sparepart Service + Piutang</b>). Setiap ada selisih lebih/kurang di luar penambahan profit harian, sistem otomatis mendeteksi adanya ketidakcocokan.
+                    </p>
+                </div>
+
+                <form onsubmit="simpanTargetModalBerputar(event)">
+                    <div class="settings-card-box">
+                        <h4 style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                            <span>1. PENETAPAN NOMINAL MODAL BERPUTAR (PATOKAN OWNER)</span>
+                            <span style="font-size:10px; background:#FEF3C7; color:#92400E; padding:2px 8px; border-radius:999px; border:1px solid #FDE68A;">Bebas Diubah Kapan Saja</span>
+                        </h4>
+
+                        <div class="form-group" style="margin-bottom:10px;">
+                            <label style="font-size:11.5px; font-weight:800; color:var(--primary);">Target Modal Pokok Berputar (Rp)</label>
+                            <input type="text" id="setTargetModalDisplay" class="form-control" placeholder="Contoh: 250.000.000" inputmode="decimal" pattern="[0-9.]*" required style="font-size:16px; font-weight:900; color:#0F172A; padding:10px 12px; border:2px solid var(--primary); background:#FFFFFF;" oninput="formatNominal(this, 'setTargetModal'); updatePreviewModalBerputarSettings();">
+                            <input type="hidden" id="setTargetModal" value="250000000">
+                        </div>
+
+                        <div style="margin-bottom:12px;">
+                            <span style="font-size:10.5px; font-weight:700; color:#475569; display:block; margin-bottom:6px;">⚡ Tombol Bantu Isi Cepat (1-Klik Tanpa Hitung Manual):</span>
+                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                <button type="button" class="btn" style="width:auto; padding:6px 10px; font-size:10.5px; background:#059669;" onclick="isiTargetModalMurniSaatIni()" title="Mengambil Total Harta Saat Ini dikurangi Sisa Cuan Hari Ini agar status Audit langsung PAS Rp 0">
+                                    ⚡ Gunakan Modal Pokok Saat Ini (Harta − Profit Hari Ini)
+                                </button>
+                                <button type="button" class="btn" style="width:auto; padding:6px 10px; font-size:10.5px; background:#0284C7;" onclick="isiTargetModalTotalHartaSaatIni()" title="Mengambil Total Keseluruhan Saldo + Stok + Piutang Saat Ini">
+                                    💰 Gunakan Total Harta Utuh Saat Ini
+                                </button>
+                                <button type="button" class="btn" style="width:auto; padding:6px 10px; font-size:10.5px; background:#475569;" onclick="isiTargetModalPreset(250000000)">
+                                    🎯 Contoh Rp 250.000.000
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size:11px; font-weight:800;">Mode Perhitungan Penambahan Profit di Atas Modal Pokok</label>
+                            <select id="setModeAuditModal" class="form-control" onchange="updatePreviewModalBerputarSettings()" style="font-weight:700;">
+                                <option value="HARIAN">📅 Profit Harian (Target Modal + Cuan Hari Ini − Setoran Hari Ini)</option>
+                                <option value="AKUMULASI">📈 Akumulasi Sisa Profit (Target Modal + Seluruh Cuan Belum Disetor Sejak Kalibrasi)</option>
+                            </select>
+                            <small style="color:#64748B; font-size:10px; display:block; margin-top:4px;">
+                                💡 Pilih <b>Profit Harian</b> jika jatah cuan ditarik/dihitung harian. Pilih <b>Akumulasi Sisa Profit</b> jika cuan dikumpulkan beberapa hari baru disetor.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Preview Simulasi Realtime di Pengaturan -->
+                    <div class="settings-card-box" id="boxPreviewAuditSettings" style="background:#F8FAFC; border:1.5px solid #CBD5E1; padding:12px 14px;">
+                        <h4 style="font-size:11.5px; font-weight:800; color:#0F172A; margin:0 0 8px 0; display:flex; align-items:center; justify-content:space-between;">
+                            <span>📊 PREVIEW AUDIT MODAL BERPUTAR SAAT INI</span>
+                            <span id="setAuditBadgeStatus" style="font-size:10px; padding:2px 8px; border-radius:999px; font-weight:800;">-</span>
+                        </h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(145px, 1fr)); gap:8px; font-size:11px;">
+                            <div style="background:#FFF; padding:8px; border-radius:8px; border:1px solid #E2E8F0;">
+                                <span style="color:#64748B; font-size:10px; display:block;">🎯 Target Modal Pokok</span>
+                                <b id="setPrevTargetModal" style="font-size:13px; color:#0F172A;">Rp0</b>
+                            </div>
+                            <div style="background:#FFF; padding:8px; border-radius:8px; border:1px solid #E2E8F0;">
+                                <span style="color:#B45309; font-size:10px; display:block;">🔥 Sisa Profit Penambah</span>
+                                <b id="setPrevProfitTambah" style="font-size:13px; color:#D97706;">+Rp0</b>
+                            </div>
+                            <div style="background:#FFF; padding:8px; border-radius:8px; border:1px solid #E2E8F0;">
+                                <span style="color:#0369A1; font-size:10px; display:block;">🧮 Seharusnya (Modal+Profit)</span>
+                                <b id="setPrevSeharusnya" style="font-size:13px; color:#0284C7;">Rp0</b>
+                            </div>
+                            <div style="background:#FFF; padding:8px; border-radius:8px; border:1px solid #E2E8F0;">
+                                <span style="color:#065F46; font-size:10px; display:block;">🏆 Total Harta Aktual</span>
+                                <b id="setPrevHartaAktual" style="font-size:13px; color:#059669;">Rp0</b>
+                            </div>
+                        </div>
+                        <div id="setPrevSelisihBox" style="margin-top:8px; padding:8px 10px; border-radius:8px; font-size:11.5px; font-weight:800; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                            <span id="setPrevSelisihText">Selisih Audit: Rp0</span>
+                            <span id="setPrevJatahSetorText" style="font-size:10.5px;">Jatah Profit Siap Setor: Rp0</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <button type="submit" id="btnSimpanModalBerputar" class="btn" style="background:#059669; font-weight:800; flex:1;">💾 SIMPAN TARGET MODAL BERPUTAR</button>
                         <button type="button" class="btn" style="background:#64748B; width:auto; padding:10px 18px;" onclick="closeModalSetting()">Tutup</button>
                     </div>
                 </form>
@@ -2035,6 +2126,17 @@
                     <span id="arrowSetor" style="font-size:9px;">▼</span>
                 </div>
                 <div id="boxSetorFast" style="display:none; margin-top:8px;">
+                    <div id="infoJatahSetorFastBox" style="background:#FFFFFF; border:1px dashed #F87171; border-radius:7px; padding:6px 8px; margin-bottom:6px; font-size:10px; line-height:1.35;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:#64748B; font-weight:700;">🎯 Target Modal:</span>
+                            <b id="lblFastTargetModal" style="color:#0F172A;">Rp0</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                            <span style="color:#991B1B; font-weight:800;">💡 Siap Setor:</span>
+                            <b id="lblFastJatahSetor" style="color:#16A34A; font-size:11px;">Rp0</b>
+                        </div>
+                        <button type="button" onclick="isiOtomatisJatahSetorProfit()" style="margin-top:5px; width:100%; background:#059669; color:#FFF; border:none; border-radius:5px; padding:4px 6px; font-size:9.5px; font-weight:800; cursor:pointer;">⚡ Isi Nominal Sesuai Jatah Profit</button>
+                    </div>
                     <form onsubmit="prosesSetoranOwner(event)">
                         <label style="font-size:10px;">Dari Akun</label>
                         <select id="setorSumber" class="form-control" required style="margin-bottom:4px;"></select>
@@ -2355,7 +2457,7 @@
         </div>
     </div>
 
-    <div id="tab-operasional" class="tab-content" style="margin-top:6px;">
+    <div id="tab-operasional" class="tab-content" style="margin-top:6px; display:none !important;">
         <div class="card">
             <div class="card-header" id="formOperasionalTitle">💸 Catat Pengeluaran Operasional Konter</div>
             <form id="formOperasional" onsubmit="simpanOperasional(event)">
@@ -2595,6 +2697,52 @@
         </div>
 
         <div id="sub-rekap-saldo" class="sub-tab-content">
+            <!-- KARTU KONTROL & AUDIT MODAL BERPUTAR TETAP -->
+            <div class="card" id="cardAuditModalBerputar" style="border:2px solid #059669; background:linear-gradient(180deg, #F0FDF4 0%, var(--card) 100%);">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #BBF7D0; padding-bottom:8px;">
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span>🎯 KONTROL & AUDIT MODAL BERPUTAR KONTER</span>
+                        <span id="badgeModeAuditModal" style="font-size:9.5px; background:#DCFCE7; color:#166534; border:1px solid #86EFAC; padding:2px 8px; border-radius:999px; font-weight:800;">Mode Profit Harian</span>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#0F172A;" onclick="bukaPengaturan('modal')">⚙️ Atur Target Modal Berputar</button>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; margin-top:10px; margin-bottom:10px;">
+                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1px solid var(--border);">
+                        <span style="font-size:10px; color:#64748B; font-weight:800; display:block;">🎯 TARGET MODAL POKOK</span>
+                        <b id="lblAuditTargetModal" style="font-size:14px; color:var(--text);">Rp0</b>
+                        <small style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Patokan uang berputar konter</small>
+                    </div>
+                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1px solid var(--border);">
+                        <span style="font-size:10px; color:#B45309; font-weight:800; display:block;" id="lblJudulProfitTambah">🔥 SISA PROFIT HARI INI</span>
+                        <b id="lblAuditProfitTambah" style="font-size:14px; color:#D97706;">+Rp0</b>
+                        <small id="lblSubProfitTambah" style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Cuan: Rp0 • Disetor: Rp0</small>
+                    </div>
+                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1px solid var(--border);">
+                        <span style="font-size:10px; color:#0369A1; font-weight:800; display:block;">🧮 SEHARUSNYA TOTAL HARTA</span>
+                        <b id="lblAuditSeharusnyaHarta" style="font-size:14px; color:#0284C7;">Rp0</b>
+                        <small style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Target Modal + Sisa Profit</small>
+                    </div>
+                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1.5px solid #10B981;">
+                        <span style="font-size:10px; color:#065F46; font-weight:800; display:block;">🏆 TOTAL HARTA AKTUAL</span>
+                        <b id="lblAuditHartaAktual" style="font-size:14px; color:#059669;">Rp0</b>
+                        <small style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Cair + Stok + Part + Piutang</small>
+                    </div>
+                </div>
+
+                <div id="boxAuditStatusBanner" style="padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:#DCFCE7; border:1.5px solid #86EFAC; color:#166534;">
+                    <div>
+                        <div id="txtAuditStatusMain" style="font-size:12.5px; font-weight:900;">🟢 PAS / BENAR SESUAI PROFIT (SELISIH Rp 0)</div>
+                        <div id="txtAuditStatusDesc" style="font-size:10.5px; font-weight:600; margin-top:2px;">Total harta konter saat ini cocok 100% dengan Target Modal Pokok ditambah penambahan profit.</div>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <button type="button" class="btn" style="width:auto; padding:6px 11px; font-size:10.5px; background:#DC2626;" onclick="tarikProfitKeKasirDariAudit()" title="Buka form Setoran Profit di Kasir dengan nominal otomatis agar saldo kembali ke Target Modal Pokok">💸 Setor Profit (<span id="lblBtnTarikProfitNom">Rp0</span>)</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header" id="formTransferSaldoTitle">🔀 Transfer Antar Akun (Khusus Kas / Bank / E-Wallet Cair)</div>
                 <p style="font-size:10.5px; color:#64748B; margin-bottom:10px; line-height:1.4;">*Akun berbasis data (<b>VOUCHER, SP, ACC, SPAREPART, PIUTANG</b>) dikunci otomatis dan tidak dapat dipindah-saldokan secara manual agar selalu sinkron 100% dengan Stok Opname, Service, & Piutang.</p>
@@ -2951,16 +3099,6 @@
                 </svg>
             </span>
             <span class="nav-lbl-wrap"><span class="nav-active-dot"></span><span>PIUTANG</span></span>
-        </button>
-        <button class="nav-item nav-operasional" onclick="switchMainTab(event, 'tab-operasional')" title="Menu Pengeluaran Operasional Konter">
-            <span class="icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                    <path d="M6 15h.01M10 15h4"></path>
-                </svg>
-            </span>
-            <span class="nav-lbl-wrap"><span class="nav-active-dot"></span><span>OPERASIONAL</span></span>
         </button>
         <button class="nav-item nav-laporan" onclick="switchMainTab(event, 'tab-laporan')" title="Menu Laporan Keuangan, Saldo & Shift">
             <span class="icon">
@@ -3602,8 +3740,13 @@
             logoUrl: '',
             printerUkuran: '58mm',
             teksStruk: 'Terima kasih telah berbelanja di ZENCELL!\nBarang yang sudah dibeli tidak dapat ditukar/dikembalikan.',
-            teksBerjalan: 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER'
+            teksBerjalan: 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER',
+            targetModalBerputar: 250000000,
+            modeAuditModal: 'HARIAN',
+            offsetCuanKalibrasi: 0
         };
+        if (window.pengaturanToko.targetModalBerputar === undefined) window.pengaturanToko.targetModalBerputar = 250000000;
+        if (!window.pengaturanToko.modeAuditModal) window.pengaturanToko.modeAuditModal = 'HARIAN';
 
         window.daftarKaryawan = JSON.parse(localStorage.getItem('zencell_karyawan') || 'null') || [
             { id: 1, username: 'OWNER', role: 'OWNER', pin: '212', dibuat: '2026-10-14' },
@@ -8823,13 +8966,7 @@
             });
             const totalLunasSparepartAll = Math.max(0, totalModalSparepartAll - totalSparepartStok);
 
-            window.operasionalList?.forEach(op => {
-                const itemDate = op.isoDate || op.tgl || '';
-                if (saldoMode === 'DAILY' && itemDate !== saldoDate) return;
-                if (saldoMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(saldoMonth))) return;
-
-                if (keluarAkun[op.sumber] !== undefined) keluarAkun[op.sumber] += Number(op.nominal || 0);
-            });
+            // Fitur Operasional telah dinonaktifkan karena biaya operasional dibayar langsung oleh Owner di luar Modal Berputar Konter.
 
             window.setoranOwnerList?.forEach(s => {
                 const itemDate = s.isoDate || s.tgl || '';
@@ -8963,6 +9100,34 @@
                     return `<div class="saldo-item-row" title="${minLimit > 0 ? 'Limit Minimal: ' + window.formatRp(minLimit) : ''}"><div><b>${s}</b>${badgeTag}</div><span class="${isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam'}">${window.formatRp(akhir)}</span></div>`;
                 }).join('');
 
+                const auditInfoSidebar = window.hitungDanRenderAuditModalBerputar
+                    ? window.hitungDanRenderAuditModalBerputar(totalSaldoKeseluruhan, totalKasCair, totalSemuaStokBelumCair, totalPiutangVal, saldoMode)
+                    : null;
+
+                const auditBoxSidebarHtml = auditInfoSidebar ? `
+                    <div style="margin-top:8px; padding:9px 10px; border-radius:10px; background:${auditInfoSidebar.bgBanner}; border:1.5px solid ${auditInfoSidebar.borderBanner}; color:${auditInfoSidebar.colorBanner}; font-size:10.5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <b style="font-size:10.5px;">🎯 AUDIT MODAL BERPUTAR</b>
+                            <button type="button" onclick="toggleSaldoSidebar(); bukaPengaturan('modal');" style="background:rgba(15,23,42,0.12); border:none; border-radius:5px; padding:2px 6px; font-size:9.5px; font-weight:800; cursor:pointer; color:inherit;">⚙️ Atur</button>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                            <span>Target Modal Pokok:</span>
+                            <b>${window.formatRp(auditInfoSidebar.targetModalPokok)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                            <span>Penambahan Profit:</span>
+                            <b>+${window.formatRp(auditInfoSidebar.penambahanProfit)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; padding-bottom:4px; border-bottom:1px dashed ${auditInfoSidebar.borderBanner};">
+                            <span>Seharusnya (Modal+Profit):</span>
+                            <b>${window.formatRp(auditInfoSidebar.seharusnyaTotalHarta)}</b>
+                        </div>
+                        <div style="font-weight:900; font-size:11px; text-align:center;">
+                            ${auditInfoSidebar.shortStatusText}
+                        </div>
+                    </div>
+                ` : '';
+
                 const summaryBoxHtml = `
                     <div class="sidebar-summary-box">
                         <div class="sidebar-sum-row sum-kas">
@@ -8988,9 +9153,12 @@
                             <span>TOTAL SALDO:</span>
                             <span>${window.formatRp(totalSaldoKeseluruhan)}</span>
                         </div>
+                        ${auditBoxSidebarHtml}
                     </div>
                 `;
                 sidebarContent.innerHTML = listItemsHtml + summaryBoxHtml;
+            } else if (window.hitungDanRenderAuditModalBerputar) {
+                window.hitungDanRenderAuditModalBerputar(totalSaldoKeseluruhan, totalKasCair, totalSemuaStokBelumCair, totalPiutangVal, saldoMode);
             }
 
             // Sinkronkan Kartu Header "SALDO KONTER" dengan TOTAL SALDO KESELURUHAN
@@ -9398,6 +9566,14 @@
                 txtPlaceholder.style.display = 'block';
             }
 
+            const targetModalVal = Number(p.targetModalBerputar !== undefined ? p.targetModalBerputar : 250000000);
+            const setTargetEl = document.getElementById('setTargetModal');
+            const setTargetDispEl = document.getElementById('setTargetModalDisplay');
+            if (setTargetEl) setTargetEl.value = targetModalVal;
+            if (setTargetDispEl) setTargetDispEl.value = targetModalVal.toLocaleString('id-ID');
+            const setModeAuditEl = document.getElementById('setModeAuditModal');
+            if (setModeAuditEl) setModeAuditEl.value = p.modeAuditModal || 'HARIAN';
+
             const activeUser = sessionStorage.getItem('zencell_user') || 'Owner';
             document.getElementById('setLabelUserAktif').innerText = activeUser.toUpperCase();
 
@@ -9407,8 +9583,277 @@
 
             window.renderDaftarKaryawanSettings();
             if (window.updateUserAvatarUI) window.updateUserAvatarUI();
+            if (window.updatePreviewModalBerputarSettings) window.updatePreviewModalBerputarSettings();
             window.switchSettingsTab(tabName);
             document.getElementById('modalSettingOverlay').classList.add('show');
+        };
+
+        // --- SISTEM KONTROL & AUDIT MODAL BERPUTAR TETAP ---
+        window.hitungRingkasanProfitDanHarta = function() {
+            const todayIso = window.getTodayIso();
+            let cuanHariIni = 0, cuanAllTime = 0;
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                const c = Number(t.cuan || 0);
+                cuanAllTime += c;
+                if (t.isoDate === todayIso) cuanHariIni += c;
+            });
+
+            let setoranHariIni = 0, setoranAllTime = 0;
+            (window.setoranOwnerList || []).forEach(s => {
+                if (!s) return;
+                const nom = Number(s.nominal || 0);
+                setoranAllTime += nom;
+                if ((s.isoDate || s.tgl) === todayIso) setoranHariIni += nom;
+            });
+
+            const totalHartaAktual = Number(window._lastRealtimeTotalHarta || 0);
+            const kasCairAktual = Number(window._lastRealtimeKasCair || 0);
+            const p = window.pengaturanToko || {};
+            const targetModalPokok = Number(p.targetModalBerputar !== undefined ? p.targetModalBerputar : 250000000);
+            const modeAudit = p.modeAuditModal || 'HARIAN';
+            const offsetKalibrasi = Number(p.offsetCuanKalibrasi || 0);
+
+            const sisaProfitHariIni = cuanHariIni - setoranHariIni;
+            const sisaProfitAkumulasi = (cuanAllTime - setoranAllTime) - offsetKalibrasi;
+            const penambahanProfit = modeAudit === 'AKUMULASI' ? sisaProfitAkumulasi : sisaProfitHariIni;
+
+            const seharusnyaTotalHarta = targetModalPokok + penambahanProfit;
+            const selisihAudit = totalHartaAktual - seharusnyaTotalHarta;
+            const jatahProfitSiapSetor = Math.max(0, totalHartaAktual - targetModalPokok);
+
+            return {
+                todayIso,
+                totalHartaAktual,
+                kasCairAktual,
+                targetModalPokok,
+                modeAudit,
+                cuanHariIni,
+                setoranHariIni,
+                sisaProfitHariIni,
+                cuanAllTime,
+                setoranAllTime,
+                sisaProfitAkumulasi,
+                penambahanProfit,
+                seharusnyaTotalHarta,
+                selisihAudit,
+                jatahProfitSiapSetor
+            };
+        };
+
+        window.hitungDanRenderAuditModalBerputar = function(totalSaldoKeseluruhan, totalKasCair, totalStokBelumCair, totalPiutangVal, saldoMode) {
+            if (saldoMode === 'ALL' || window._lastRealtimeTotalHarta === undefined) {
+                window._lastRealtimeTotalHarta = totalSaldoKeseluruhan;
+                window._lastRealtimeKasCair = totalKasCair;
+                window._lastRealtimeStok = totalStokBelumCair;
+                window._lastRealtimePiutang = totalPiutangVal;
+            }
+
+            const info = window.hitungRingkasanProfitDanHarta();
+
+            let bgBanner = '#DCFCE7', borderBanner = '#86EFAC', colorBanner = '#166534';
+            let mainStatusText = '🟢 PAS / BENAR SESUAI PROFIT (SELISIH Rp 0)';
+            let descStatusText = 'Total harta konter saat ini cocok 100% dengan Target Modal Pokok ditambah penambahan profit.';
+            let shortStatusText = '🟢 PAS SESUAI PROFIT (Rp0)';
+
+            if (info.selisihAudit < 0) {
+                bgBanner = '#FEE2E2';
+                borderBanner = '#FCA5A5';
+                colorBanner = '#991B1B';
+                mainStatusText = `🔴 KURANG / SELISIH MINUS: ${window.formatRp(info.selisihAudit)}`;
+                descStatusText = `Total harta aktual kurang ${window.formatRp(Math.abs(info.selisihAudit))} dari yang seharusnya (${window.formatRp(info.seharusnyaTotalHarta)}). Cek apakah ada transaksi/stok yang belum tercatat!`;
+                shortStatusText = `🔴 KURANG ${window.formatRp(info.selisihAudit)}`;
+            } else if (info.selisihAudit > 0) {
+                bgBanner = '#E0F2FE';
+                borderBanner = '#7DD3FC';
+                colorBanner = '#075985';
+                mainStatusText = `🔵 LEBIH / SURPLUS DI LUAR PROFIT: +${window.formatRp(info.selisihAudit)}`;
+                descStatusText = `Total harta aktual lebih +${window.formatRp(info.selisihAudit)} di atas patokan (${window.formatRp(info.seharusnyaTotalHarta)}). Cek apakah ada pemasukan/stok lebih atau sesuaikan patokan modal.`;
+                shortStatusText = `🔵 LEBIH +${window.formatRp(info.selisihAudit)}`;
+            }
+
+            // Update Kartu Audit di Laporan -> Saldo
+            const elTarget = document.getElementById('lblAuditTargetModal');
+            if (elTarget) elTarget.innerText = window.formatRp(info.targetModalPokok);
+
+            const elBadgeMode = document.getElementById('badgeModeAuditModal');
+            if (elBadgeMode) {
+                elBadgeMode.innerText = info.modeAudit === 'AKUMULASI' ? 'Mode Akumulasi Profit' : 'Mode Profit Harian';
+            }
+
+            const elJudulProfit = document.getElementById('lblJudulProfitTambah');
+            if (elJudulProfit) {
+                elJudulProfit.innerText = info.modeAudit === 'AKUMULASI' ? '📈 SISA PROFIT AKUMULASI' : '🔥 SISA PROFIT HARI INI';
+            }
+
+            const elProfit = document.getElementById('lblAuditProfitTambah');
+            if (elProfit) {
+                elProfit.innerText = (info.penambahanProfit >= 0 ? '+' : '') + window.formatRp(info.penambahanProfit);
+                elProfit.style.color = info.penambahanProfit >= 0 ? '#D97706' : '#EF4444';
+            }
+
+            const elSubProfit = document.getElementById('lblSubProfitTambah');
+            if (elSubProfit) {
+                if (info.modeAudit === 'AKUMULASI') {
+                    elSubProfit.innerText = `Total Cuan Belum Disetor Sejak Kalibrasi`;
+                } else {
+                    elSubProfit.innerText = `Cuan Hari Ini: ${window.formatRp(info.cuanHariIni)} • Setor: ${window.formatRp(info.setoranHariIni)}`;
+                }
+            }
+
+            const elSeharusnya = document.getElementById('lblAuditSeharusnyaHarta');
+            if (elSeharusnya) elSeharusnya.innerText = window.formatRp(info.seharusnyaTotalHarta);
+
+            const elAktual = document.getElementById('lblAuditHartaAktual');
+            if (elAktual) elAktual.innerText = window.formatRp(info.totalHartaAktual);
+
+            const boxBanner = document.getElementById('boxAuditStatusBanner');
+            if (boxBanner) {
+                boxBanner.style.background = bgBanner;
+                boxBanner.style.borderColor = borderBanner;
+                boxBanner.style.color = colorBanner;
+            }
+            const txtMain = document.getElementById('txtAuditStatusMain');
+            if (txtMain) txtMain.innerText = mainStatusText;
+            const txtDesc = document.getElementById('txtAuditStatusDesc');
+            if (txtDesc) txtDesc.innerText = descStatusText;
+
+            const btnTarikNom = document.getElementById('lblBtnTarikProfitNom');
+            if (btnTarikNom) btnTarikNom.innerText = window.formatRp(info.jatahProfitSiapSetor);
+
+            // Update Kotak Kecil di Setoran Profit (Tab Kasir)
+            const elFastTarget = document.getElementById('lblFastTargetModal');
+            if (elFastTarget) elFastTarget.innerText = window.formatRp(info.targetModalPokok);
+            const elFastJatah = document.getElementById('lblFastJatahSetor');
+            if (elFastJatah) elFastJatah.innerText = window.formatRp(info.jatahProfitSiapSetor);
+
+            return Object.assign({}, info, { bgBanner, borderBanner, colorBanner, mainStatusText, descStatusText, shortStatusText });
+        };
+
+        window.updatePreviewModalBerputarSettings = function() {
+            const info = window.hitungRingkasanProfitDanHarta();
+            const rawTarget = Number(document.getElementById('setTargetModal')?.value || 0);
+            const modeVal = document.getElementById('setModeAuditModal')?.value || 'HARIAN';
+
+            const penambahanProfit = modeVal === 'AKUMULASI' ? info.sisaProfitAkumulasi : info.sisaProfitHariIni;
+            const seharusnya = rawTarget + penambahanProfit;
+            const selisih = info.totalHartaAktual - seharusnya;
+            const jatahSetor = Math.max(0, info.totalHartaAktual - rawTarget);
+
+            const elPrevTarget = document.getElementById('setPrevTargetModal');
+            if (elPrevTarget) elPrevTarget.innerText = window.formatRp(rawTarget);
+            const elPrevProfit = document.getElementById('setPrevProfitTambah');
+            if (elPrevProfit) elPrevProfit.innerText = (penambahanProfit >= 0 ? '+' : '') + window.formatRp(penambahanProfit);
+            const elPrevSeharusnya = document.getElementById('setPrevSeharusnya');
+            if (elPrevSeharusnya) elPrevSeharusnya.innerText = window.formatRp(seharusnya);
+            const elPrevAktual = document.getElementById('setPrevHartaAktual');
+            if (elPrevAktual) elPrevAktual.innerText = window.formatRp(info.totalHartaAktual);
+
+            const badgeEl = document.getElementById('setAuditBadgeStatus');
+            const boxSelisih = document.getElementById('setPrevSelisihBox');
+            const txtSelisih = document.getElementById('setPrevSelisihText');
+            const txtJatah = document.getElementById('setPrevJatahSetorText');
+
+            if (txtJatah) txtJatah.innerText = `Jatah Profit Siap Setor: ${window.formatRp(jatahSetor)}`;
+
+            if (selisih === 0) {
+                if (badgeEl) { badgeEl.innerText = '🟢 PAS / BALANCE'; badgeEl.style.background = '#DCFCE7'; badgeEl.style.color = '#166534'; }
+                if (boxSelisih) { boxSelisih.style.background = '#DCFCE7'; boxSelisih.style.color = '#166534'; boxSelisih.style.border = '1px solid #86EFAC'; }
+                if (txtSelisih) txtSelisih.innerText = '🟢 Status Audit: PAS SESUAI PROFIT (Selisih Rp 0)';
+            } else if (selisih < 0) {
+                if (badgeEl) { badgeEl.innerText = '🔴 KURANG / MINUS'; badgeEl.style.background = '#FEE2E2'; badgeEl.style.color = '#991B1B'; }
+                if (boxSelisih) { boxSelisih.style.background = '#FEE2E2'; boxSelisih.style.color = '#991B1B'; boxSelisih.style.border = '1px solid #FCA5A5'; }
+                if (txtSelisih) txtSelisih.innerText = `🔴 Status Audit: KURANG ${window.formatRp(selisih)} dari seharusnya`;
+            } else {
+                if (badgeEl) { badgeEl.innerText = '🔵 LEBIH / SURPLUS'; badgeEl.style.background = '#E0F2FE'; badgeEl.style.color = '#075985'; }
+                if (boxSelisih) { boxSelisih.style.background = '#E0F2FE'; boxSelisih.style.color = '#075985'; boxSelisih.style.border = '1px solid #7DD3FC'; }
+                if (txtSelisih) txtSelisih.innerText = `🔵 Status Audit: LEBIH +${window.formatRp(selisih)} di luar profit`;
+            }
+        };
+
+        window.isiTargetModalMurniSaatIni = function() {
+            const info = window.hitungRingkasanProfitDanHarta();
+            const modalMurni = Math.max(0, info.totalHartaAktual - info.sisaProfitHariIni);
+            const inpVal = document.getElementById('setTargetModal');
+            const inpDisp = document.getElementById('setTargetModalDisplay');
+            if (inpVal) inpVal.value = modalMurni;
+            if (inpDisp) inpDisp.value = modalMurni.toLocaleString('id-ID');
+            window.updatePreviewModalBerputarSettings();
+            window.showToast(`⚡ Diisi otomatis dengan Modal Pokok Murni saat ini: ${window.formatRp(modalMurni)}`, 'success');
+        };
+
+        window.isiTargetModalTotalHartaSaatIni = function() {
+            const info = window.hitungRingkasanProfitDanHarta();
+            const inpVal = document.getElementById('setTargetModal');
+            const inpDisp = document.getElementById('setTargetModalDisplay');
+            if (inpVal) inpVal.value = info.totalHartaAktual;
+            if (inpDisp) inpDisp.value = info.totalHartaAktual.toLocaleString('id-ID');
+            window.updatePreviewModalBerputarSettings();
+            window.showToast(`💰 Diisi otomatis dengan Total Harta Saat Ini: ${window.formatRp(info.totalHartaAktual)}`, 'success');
+        };
+
+        window.isiTargetModalPreset = function(nom) {
+            const inpVal = document.getElementById('setTargetModal');
+            const inpDisp = document.getElementById('setTargetModalDisplay');
+            if (inpVal) inpVal.value = nom;
+            if (inpDisp) inpDisp.value = Number(nom).toLocaleString('id-ID');
+            window.updatePreviewModalBerputarSettings();
+        };
+
+        window.simpanTargetModalBerputar = function(e) {
+            e.preventDefault();
+            const nom = parseFloat(document.getElementById('setTargetModal')?.value) || 0;
+            const mode = document.getElementById('setModeAuditModal')?.value || 'HARIAN';
+            const info = window.hitungRingkasanProfitDanHarta();
+
+            if (!window.pengaturanToko) window.pengaturanToko = {};
+            window.pengaturanToko.targetModalBerputar = nom;
+            window.pengaturanToko.modeAuditModal = mode;
+            if (mode === 'AKUMULASI') {
+                // Kalibrasi offset akumulasi agar sisa profit dihitung bersih dari titik penetapan
+                const currentDiff = info.totalHartaAktual - nom;
+                window.pengaturanToko.offsetCuanKalibrasi = (info.cuanAllTime - info.setoranAllTime) - Math.max(0, currentDiff);
+            }
+
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+            window.renderAll();
+            window.updatePreviewModalBerputarSettings();
+            window.catatLogAktivitas('TARGET MODAL BERPUTAR', `Menetapkan Target Modal Berputar Konter sebesar ${window.formatRp(nom)} (${mode})`);
+
+            window.flashButtonSuccess('btnSimpanModalBerputar', '✅ MODAL BERPUTAR TERSIMPAN!', '💾 SIMPAN TARGET MODAL BERPUTAR');
+            window.showSettingBanner(`✅ Target Modal Berputar berhasil ditetapkan sebesar <b>${window.formatRp(nom)}</b> & disinkronkan ke semua perangkat!`);
+            window.showToast(`✅ Target Modal Berputar (${window.formatRp(nom)}) berhasil disimpan!`, 'success');
+        };
+
+        window.isiOtomatisJatahSetorProfit = function() {
+            const info = window.hitungRingkasanProfitDanHarta();
+            if (info.jatahProfitSiapSetor <= 0) {
+                window.showToast("⚠️ Belum ada kelebihan profit di atas Target Modal Pokok untuk disetor!", "warn");
+                return;
+            }
+            const nomEl = document.getElementById('setorNom');
+            const dispEl = document.getElementById('setorNomDisplay');
+            const ketEl = document.getElementById('setorKet');
+            if (nomEl) nomEl.value = info.jatahProfitSiapSetor;
+            if (dispEl) dispEl.value = info.jatahProfitSiapSetor.toLocaleString('id-ID');
+            if (ketEl && !ketEl.value.trim()) {
+                ketEl.value = `SETOR PROFIT (KEMBALI KE MODAL ${window.formatRp(info.targetModalPokok)})`;
+            }
+            window.showToast(`⚡ Nominal Setoran Profit diisi otomatis: ${window.formatRp(info.jatahProfitSiapSetor)}`, "success");
+        };
+
+        window.tarikProfitKeKasirDariAudit = function() {
+            const info = window.hitungRingkasanProfitDanHarta();
+            window.activateMainTabById('tab-kasir');
+            const boxSetor = document.getElementById('boxSetorFast');
+            if (boxSetor) boxSetor.style.display = 'block';
+            if (info.jatahProfitSiapSetor > 0) {
+                window.isiOtomatisJatahSetorProfit();
+            } else {
+                window.showToast("💡 Membuka form Setoran Profit di menu Kasir", "success");
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.switchSettingsTab = function(tabName) {
@@ -10431,8 +10876,7 @@
                 'tab-service': 1,
                 'tab-stok': 2,
                 'tab-piutang': 3,
-                'tab-operasional': 4,
-                'tab-laporan': 5
+                'tab-laporan': 4
             };
             const navBtns = document.querySelectorAll('.bottom-nav .nav-item');
             if (navBtns[navMap[tabId]]) navBtns[navMap[tabId]].classList.add('active');
@@ -10582,14 +11026,15 @@
                 return kUp.includes(q) || katUp.includes(q);
             });
 
-            const totalAll = resStok.length + resPiutang.length + resTrx.length + resServis.length + resOp.length + resVlookup.length;
+            const totalAll = resStok.length + resPiutang.length + resTrx.length + resServis.length + resVlookup.length;
 
             document.getElementById('cntFindAll').innerText = totalAll;
             document.getElementById('cntFindStok').innerText = resStok.length;
             document.getElementById('cntFindPiutang').innerText = resPiutang.length;
             document.getElementById('cntFindTrx').innerText = resTrx.length;
             document.getElementById('cntFindServis').innerText = resServis.length;
-            document.getElementById('cntFindOp').innerText = resOp.length;
+            const elFindOp = document.getElementById('cntFindOp');
+            if (elFindOp) elFindOp.innerText = resOp.length;
             document.getElementById('cntFindVlookup').innerText = resVlookup.length;
 
             const sumCountEl = document.getElementById('globalFindSummaryCount');
