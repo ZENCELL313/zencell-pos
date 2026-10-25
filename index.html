@@ -2208,10 +2208,15 @@
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <span>🛠️ MANAJEMEN TIKET & REKAPAN SERVICE HP</span>
-                    <span id="badgeServiceCountInfo" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Tiket</span>
+                    <span>🛠️ REKAPAN SERVICE HP (SEDANG PENGERJAAN & LUNAS HARI INI)</span>
+                    <span id="badgeServiceCountInfo" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Sedang Pengerjaan</span>
+                    <span id="badgeServiceLunasTodayInfo" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; display:none;">0 Lunas Hari Ini</span>
                 </div>
                 <button class="btn" style="width:auto; padding:6px 14px; font-size:11.5px; background:#0284C7;" onclick="openModalTiketServis()">+ Buat Tiket Servis Baru</button>
+            </div>
+
+            <div style="font-size:10.5px; color:#64748B; margin-bottom:8px; padding:0 2px;">
+                💡 <i>Servis yang dilunasi <b>hari ini</b> otomatis ditaruh di <b>bagian bawah tabel ini (warna hijau)</b> selama 1 hari agar mudah dicek & cetak nota. Setelah <b>lewat hari (besoknya)</b>, data yang sudah lunas otomatis pindah ke tabel <b>Rekapan Service Lunas (Arsip Lewat Hari)</b> di bawah.</i>
             </div>
 
             <div class="filter-container" style="justify-content:space-between;">
@@ -2226,11 +2231,11 @@
                     <input type="month" id="tiketMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
 
                     <select id="tiketFilterStatus" class="date-picker-input" onchange="renderAll()">
-                        <option value="">-- Semua Status Servis --</option>
+                        <option value="">-- Semua Status (Aktif & Hari Ini) --</option>
                         <option value="MENUNGGU KONFIRMASI">MENUNGGU KONFIRMASI</option>
                         <option value="PROSES">PROSES (DIKERJAKAN)</option>
                         <option value="SIAP DIAMBIL">SIAP DIAMBIL (BERES TEKNISI)</option>
-                        <option value="SELESAI_SISTEM">✅ SELESAI / LUNAS (SUDAH DIBAYAR)</option>
+                        <option value="SELESAI_SISTEM">✅ LUNAS HARI INI (SUDAH DIBAYAR)</option>
                         <option value="CANCEL">CANCEL</option>
                     </select>
                 </div>
@@ -2255,6 +2260,43 @@
                         </tr>
                     </thead>
                     <tbody id="bodyTiketServis"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:12px; border-top:3px solid #16A34A;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(22, 163, 74, 0.1); color:#15803D;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span>✅ REKAPAN SERVICE LUNAS / SELESAI (ARSIP LEWAT HARI)</span>
+                    <span id="badgeServiceArsipCount" style="background:#FFFFFF; color:#15803D; border:1px solid #86EFAC; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Data Lunas</span>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <select id="tiketArsipFilterMode" class="date-picker-input" onchange="toggleFilterTiketArsipDate(this.value)" style="font-size:11px; padding:4px 8px;">
+                        <option value="ALL" selected>📅 Semua Tanggal Lunas</option>
+                        <option value="DAILY">📆 Per Hari Lunas</option>
+                        <option value="MONTHLY">🗓️ Per Bulan Lunas</option>
+                    </select>
+                    <input type="date" id="tiketArsipDatePicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                    <input type="month" id="tiketArsipMonthPicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                    <input type="text" id="tiketArsipSearchInput" class="form-control" placeholder="🔍 Cari arsip service lunas..." oninput="renderAll()" style="width:185px; padding:4px 9px; font-size:11px; height:28px;">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table-service">
+                    <thead>
+                        <tr>
+                            <th>NO. TIKET</th>
+                            <th>TGL MASUK</th>
+                            <th>PELANGGAN & HP</th>
+                            <th>KELUHAN & UNIT</th>
+                            <th>SPAREPART & MODAL</th>
+                            <th>DP (INFO)</th>
+                            <th>TOTAL BIAYA</th>
+                            <th>TGL LUNAS</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyTiketServisLunasArsip"></tbody>
                 </table>
             </div>
         </div>
@@ -5840,6 +5882,13 @@
             document.getElementById('tiketMonthPicker').style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
             window.renderAll();
         }
+        window.toggleFilterTiketArsipDate = function(mode) {
+            const dEl = document.getElementById('tiketArsipDatePicker');
+            const mEl = document.getElementById('tiketArsipMonthPicker');
+            if (dEl) dEl.style.display = mode === 'DAILY' ? 'inline-block' : 'none';
+            if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            window.renderAll();
+        }
         window.toggleFilterServiceDate = function(mode) {
             document.getElementById('serviceDatePicker').style.display = mode === 'DAILY' ? 'inline-block' : 'none';
             document.getElementById('serviceMonthPicker').style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
@@ -5997,10 +6046,10 @@
             
             const today = window.getTodayIso();
             const currMonth = window.getCurrentMonthIso();
-            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'tiketDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker', 'logFilterDate', 'shiftReportDate'].forEach(id => {
+            ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'tiketDatePicker', 'tiketArsipDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker', 'logFilterDate', 'shiftReportDate'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = today;
             });
-            ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'tiketMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker', 'saldoMonthPicker'].forEach(id => {
+            ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'tiketMonthPicker', 'tiketArsipMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker', 'saldoMonthPicker'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = currMonth;
             });
 
@@ -7968,6 +8017,8 @@
                 if (tk) {
                     const pakaiModal = Boolean((tk.perluSparepart && Number(tk.modalPart || 0) > 0) || (spFromTiket && Number(spFromTiket.modal || 0) > 0));
                     tk.isSettledInKasir = true;
+                    tk.tglLunas = selectedDate || window.getTodayIso();
+                    tk.waktuLunas = timeStr;
                     tk.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
                     tk.updatedAt = nowMs;
                     window.markLocalEntityEdited('tiketServis', tk);
@@ -8127,26 +8178,238 @@
                 const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
                 const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
                 const noSrv = (t.noServis || '').trim().toUpperCase();
-                const isSettled = (window.transaksiJurnal || []).some(trx => {
+                const matchedTrxList = (window.transaksiJurnal || []).filter(trx => {
                     if (trx.isPencatatanUtangAwal || trx.isPindahSaldo) return false;
                     if (trx.idTiketRef && trx.idTiketRef == t.id) return true;
                     if (spLinked && trx.idSparepartRef && trx.idSparepartRef == spLinked.id) return true;
                     const ketTrx = (trx.ket || '').trim().toUpperCase();
                     return noSrv && ketTrx.includes(noSrv);
                 });
+                const isSettled = matchedTrxList.length > 0;
 
                 if (isSettled) {
                     t.isSettledInKasir = true;
                     t.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
                     if (pakaiModal) t.statusPart = 'SELESAI & LUNAS';
+                    const latestTglLunas = matchedTrxList.reduce((maxTgl, trx) => (trx.isoDate && trx.isoDate > maxTgl ? trx.isoDate : maxTgl), '');
+                    const latestTrx = matchedTrxList[0];
+                    t.tglLunas = latestTglLunas || t.tglLunas || t.isoDate || '';
+                    t.waktuLunas = (latestTrx && latestTrx.waktu) ? latestTrx.waktu : (t.waktuLunas || '');
+                    t.biayaLunasAktual = matchedTrxList.reduce((sum, trx) => sum + Number(trx.hargaJual || 0), 0);
                 } else {
                     if (t.isSettledInKasir || t.status === 'LUNAS' || t.status === 'SELESAI & LUNAS' || t.status === 'SELESAI') {
                         t.status = 'SIAP DIAMBIL';
                     }
                     t.isSettledInKasir = false;
+                    t.tglLunas = '';
+                    t.waktuLunas = '';
+                    t.biayaLunasAktual = 0;
                     if (pakaiModal) t.statusPart = 'MODAL DI SALDO PART';
                 }
             });
+
+            const todayIsoServis = window.getTodayIso();
+            let listTiketUtama = [];
+            let listTiketArsipLunas = [];
+            let countServisProses = 0;
+            let countServisLunasHariIni = 0;
+
+            (window.tiketServisList || []).forEach(t => {
+                const isLunas = Boolean(t.isSettledInKasir);
+                const tglLunasT = t.tglLunas || t.isoDate || '';
+                const isLunasLewatHari = isLunas && (tglLunasT !== todayIsoServis);
+
+                if (isLunasLewatHari) {
+                    listTiketArsipLunas.push(t);
+                } else {
+                    if (isLunas) countServisLunasHariIni++;
+                    else if (t.status !== 'CANCEL') countServisProses++;
+                    listTiketUtama.push(t);
+                }
+            });
+
+            // Urutkan tabel utama: SEDANG PENGERJAAN di atas, CANCEL di tengah, LUNAS HARI INI di paling bawah
+            listTiketUtama.sort((a, b) => {
+                const prioA = a.isSettledInKasir ? 2 : (a.status === 'CANCEL' ? 1 : 0);
+                const prioB = b.isSettledInKasir ? 2 : (b.status === 'CANCEL' ? 1 : 0);
+                if (prioA !== prioB) return prioA - prioB;
+                return (b.id || 0) - (a.id || 0);
+            });
+
+            // Urutkan arsip lunas lewat hari: dari tanggal lunas terbaru
+            listTiketArsipLunas.sort((a, b) => {
+                const tglA = a.tglLunas || a.isoDate || '';
+                const tglB = b.tglLunas || b.isoDate || '';
+                if (tglA !== tglB) return tglB.localeCompare(tglA);
+                return (b.id || 0) - (a.id || 0);
+            });
+
+            const badgeSrvInfo = document.getElementById('badgeServiceCountInfo');
+            if (badgeSrvInfo) {
+                badgeSrvInfo.innerText = `${countServisProses} Sedang Pengerjaan`;
+            }
+            const badgeSrvToday = document.getElementById('badgeServiceLunasTodayInfo');
+            if (badgeSrvToday) {
+                badgeSrvToday.style.display = countServisLunasHariIni > 0 ? 'inline-block' : 'none';
+                badgeSrvToday.innerText = `${countServisLunasHariIni} Lunas Hari Ini`;
+            }
+            const badgeSrvArsip = document.getElementById('badgeServiceArsipCount');
+            if (badgeSrvArsip) {
+                badgeSrvArsip.innerText = `${listTiketArsipLunas.length} Data Lunas`;
+            }
+
+            const buildRowTiketServisHtml = (t, isArsipMode) => {
+                const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
+                const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
+                const modalNom = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
+                const namaPartTxt = t.namaPart || (spLinked ? spLinked.namaUnit : 'Sparepart Service');
+                const sumberKasTxt = t.sumberKasPart || (spLinked ? spLinked.sumber : 'LACI');
+
+                const rawWaktu = String(t.waktu || '');
+                const jamOnly = rawWaktu.includes('|') ? rawWaktu.split('|')[0].trim() : (rawWaktu || '-');
+                const tglOnly = t.isoDate || (rawWaktu.includes('|') ? rawWaktu.split('|')[1].trim() : '-');
+
+                const infoPart = pakaiModal
+                    ? `<div style="font-weight:800; font-size:11px; color:var(--text); line-height:1.25;">${namaPartTxt}</div>
+                       <div style="font-size:10px; color:#EF4444; font-weight:700; margin-top:2px;">Modal: ${window.formatRp(modalNom)} <span style="color:#64748B;">(${sumberKasTxt})</span></div>
+                       ${t.isSettledInKasir
+                           ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">✅ MODAL LUNAS</span>`
+                           : `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">⏳ SALDO PART</span>`}`
+                    : `<div style="color:#059669; font-size:10px; font-weight:800;">🛠️ JASA NON-MODAL</div>
+                       ${(!t.isSettledInKasir && t.status !== 'CANCEL') ? `<button type="button" class="btn-mini-part" onclick="bukaModalBeliPartTiket(${t.id})" title="Beli Sparepart Susulan (Ditalangi Toko)">+ Beli Part</button>` : ''}`;
+
+                // Kolom Status: Terkunci oleh sistem jika sudah dibayar di Kasir, atau Dropdown Teknisi jika belum dibayar
+                let kolomStatusHtml = '';
+                if (t.isSettledInKasir) {
+                    if (isArsipMode) {
+                        kolomStatusHtml = `
+                            <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.25;">
+                                ✅ ${pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI'}<br>
+                                <span style="font-size:8.5px; font-weight:700; color:#166534;">📅 ${t.tglLunas || tglOnly}${t.waktuLunas ? ' • ' + t.waktuLunas : ''}</span>
+                            </div>`;
+                    } else if (pakaiModal) {
+                        kolomStatusHtml = `
+                            <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.2;" title="Dilunasi hari ini — Besok otomatis pindah ke tabel Rekapan Service Lunas di bawah">
+                                ✅ LUNAS HARI INI<br>
+                                <span style="font-size:8px; font-weight:700; color:#166534;">(Part & Jasa${t.waktuLunas ? ' • ' + t.waktuLunas : ''})</span>
+                            </div>`;
+                    } else {
+                        kolomStatusHtml = `
+                            <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.2;" title="Dilunasi hari ini — Besok otomatis pindah ke tabel Rekapan Service Lunas di bawah">
+                                ✅ LUNAS HARI INI<br>
+                                <span style="font-size:8px; font-weight:700; color:#166534;">(Jasa Murni${t.waktuLunas ? ' • ' + t.waktuLunas : ''})</span>
+                            </div>`;
+                    }
+                } else {
+                    const selColor = t.status === 'SIAP DIAMBIL' ? '#0284C7' : (t.status === 'CANCEL' ? '#EF4444' : (t.status === 'PROSES' ? '#D97706' : 'inherit'));
+                    kolomStatusHtml = `
+                        <select class="service-status-select" style="color:${selColor};" onchange="ubahStatusTiket(${t.id}, this.value)" title="Ubah Status Pengerjaan Teknisi">
+                            <option value="MENUNGGU KONFIRMASI" ${t.status === 'MENUNGGU KONFIRMASI' ? 'selected' : ''}>⏳ KONFIRMASI</option>
+                            <option value="PROSES" ${t.status === 'PROSES' ? 'selected' : ''}>🔧 PROSES</option>
+                            <option value="SIAP DIAMBIL" ${t.status === 'SIAP DIAMBIL' ? 'selected' : ''}>✅ SIAP DIAMBIL</option>
+                            <option value="CANCEL" ${t.status === 'CANCEL' ? 'selected' : ''}>❌ CANCEL</option>
+                        </select>`;
+                }
+
+                const biayaFinalNom = (t.isSettledInKasir && Number(t.biayaLunasAktual || 0) > 0) ? Number(t.biayaLunasAktual) : Number(t.estBiaya || 0);
+                const dpNomVal = Number(t.dpNom || 0);
+                const estCuanSrv = Math.max(0, biayaFinalNom - modalNom);
+
+                // Tombol Aksi Full Icon (Tanpa Teks) dengan Tooltip Jelas
+                const btnPayIcon = (!t.isSettledInKasir && t.status !== 'CANCEL')
+                    ? `<button type="button" class="btn-aksi-icon aksi-pay" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="${pakaiModal ? 'Lunasi Service & Cairkan Modal Sparepart di Kasir' : 'Bayar Jasa Service & Selesaikan di Kasir'}" aria-label="Bayar / Lunasi di Kasir">
+                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                               <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                               <line x1="2" y1="10" x2="22" y2="10"></line>
+                               <path d="M16 15h2"></path>
+                           </svg>
+                       </button>`
+                    : '';
+
+                const btnWaReadyIcon = (!t.isSettledInKasir && t.status === 'SIAP DIAMBIL')
+                    ? `<button type="button" class="btn-aksi-icon aksi-ready" onclick='kirimWaServisSelesai(${JSON.stringify(t)})' title="Kirim Notifikasi WA: HP Selesai & Siap Diambil" aria-label="Notifikasi WA Servis Selesai">
+                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                           </svg>
+                       </button>`
+                    : '';
+
+                const btnPrintLunasIcon = t.isSettledInKasir
+                    ? `<button type="button" class="btn-aksi-icon aksi-print is-service" onclick='cetakNotaLunasServiceTrxTiket(${JSON.stringify(t)})' title="Cetak Nota Lunas & Garansi Service (A5)" aria-label="Cetak Nota Lunas Service">
+                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                               <path d="M9 11l3 3L22 4"></path>
+                               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                           </svg>
+                       </button>`
+                    : '';
+
+                const rowClass = (!isArsipMode && t.isSettledInKasir) ? 'row-piutang-lunas-today' : '';
+
+                return `
+                    <tr id="row-tiket-${t.id}" class="${rowClass}">
+                        <td>
+                            <b style="color:var(--primary); font-size:11px;">${t.noServis}</b>
+                            <div style="font-size:9.5px; color:#64748B; margin-top:1px;">👷 ${t.petugas || 'ADMIN'}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:800; font-size:10.5px; color:var(--text);">${tglOnly}</div>
+                            <small style="color:#64748B; font-size:9.5px; font-weight:600;">🕒 ${jamOnly}</small>
+                        </td>
+                        <td>
+                            <div style="font-weight:800; color:var(--text); font-size:11.5px;">${t.nama}</div>
+                            <div style="font-size:10.5px; color:var(--primary); font-weight:800; margin-top:1px;">📱 ${t.tipeHp}</div>
+                            <div style="font-size:9.5px; color:#64748B;">📞 ${t.noHp || '-'}</div>
+                        </td>
+                        <td>
+                            <div style="white-space:pre-wrap; word-break:break-word; font-size:11px; font-weight:600; color:var(--text);">${t.keluhan || '-'}</div>
+                            <div style="font-size:9.5px; color:#64748B; margin-top:2px;">📦 ${t.kelengkapan || 'UNIT SAJA'}${t.serialNum && t.serialNum !== '-' ? ' • SN: ' + t.serialNum : ''}</div>
+                        </td>
+                        <td>${infoPart}</td>
+                        <td>
+                            ${dpNomVal > 0
+                                ? `<span style="color:#0284C7; font-weight:800;">${window.formatRp(dpNomVal)}</span><br><small style="font-size:8.5px; color:#64748B;">Info Nota</small>`
+                                : `<span style="color:#94A3B8; font-weight:600;">Rp0</span>`}
+                        </td>
+                        <td>
+                            <div style="color:var(--primary); font-weight:800; font-size:11.5px;">${window.formatRp(biayaFinalNom)}</div>
+                            ${(pakaiModal || t.isSettledInKasir) && biayaFinalNom > 0 ? `<small style="font-size:9px; color:#D97706; font-weight:700;">Cuan: ${window.formatRp(estCuanSrv)}</small>` : ''}
+                        </td>
+                        <td>${kolomStatusHtml}</td>
+                        <td>
+                            <div class="aksi-icon-group">
+                                ${btnPayIcon}
+                                <button type="button" class="btn-aksi-icon aksi-wa" onclick='kirimWaTiketServis(${JSON.stringify(t)})' title="Kirim Tanda Terima Servis ke WhatsApp Pelanggan" aria-label="Kirim WA Tanda Terima">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                                    </svg>
+                                </button>
+                                ${btnWaReadyIcon}
+                                ${btnPrintLunasIcon}
+                                <button type="button" class="btn-aksi-icon aksi-print" onclick='cetakNotaTiketServis(${JSON.stringify(t)})' title="Cetak Nota Tanda Terima Servis (A5)" aria-label="Cetak Nota Tanda Terima">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                        <rect x="6" y="14" width="12" height="8"></rect>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn-aksi-icon aksi-edit" onclick="editTiketServis(${t.id})" title="Edit Data Tiket Servis & Sparepart" aria-label="Edit Tiket Servis">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn-aksi-icon aksi-delete" onclick="hapusTiketServis(${t.id})" title="Hapus Tiket Servis" aria-label="Hapus Tiket Servis">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            };
 
             const bTiket = document.getElementById('bodyTiketServis');
             if (bTiket) {
@@ -8156,10 +8419,10 @@
                 const tStatus = document.getElementById('tiketFilterStatus')?.value || '';
                 const tSearch = (document.getElementById('tiketSearchInput')?.value || '').trim().toUpperCase();
 
-                let filteredTiket = window.tiketServisList.filter(t => {
+                let filteredTiketUtama = listTiketUtama.filter(t => {
                     const itemDate = t.isoDate || '';
-                    if (tMode === 'DAILY' && itemDate !== tDate) return false;
-                    if (tMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(tMonth))) return false;
+                    if (tMode === 'DAILY' && itemDate !== tDate && t.tglLunas !== tDate) return false;
+                    if (tMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(tMonth)) && (!t.tglLunas || !t.tglLunas.startsWith(tMonth))) return false;
                     if (tStatus) {
                         if (tStatus === 'SELESAI_SISTEM') {
                             if (!t.isSettledInKasir) return false;
@@ -8174,157 +8437,28 @@
                     return true;
                 });
 
-                const badgeSrvInfo = document.getElementById('badgeServiceCountInfo');
-                if (badgeSrvInfo) {
-                    const cntAktif = filteredTiket.filter(x => !x.isSettledInKasir && x.status !== 'CANCEL').length;
-                    const cntSelesai = filteredTiket.filter(x => x.isSettledInKasir).length;
-                    badgeSrvInfo.innerText = `${filteredTiket.length} Tiket (${cntAktif} Proses • ${cntSelesai} Selesai)`;
-                }
+                bTiket.innerHTML = filteredTiketUtama.map(t => buildRowTiketServisHtml(t, false)).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada tiket servis aktif / lunas hari ini yang sesuai filter.</td></tr>`;
+            }
 
-                bTiket.innerHTML = filteredTiket.map(t => {
-                    const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
-                    const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
-                    const modalNom = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
-                    const namaPartTxt = t.namaPart || (spLinked ? spLinked.namaUnit : 'Sparepart Service');
-                    const sumberKasTxt = t.sumberKasPart || (spLinked ? spLinked.sumber : 'LACI');
+            const bTiketArsip = document.getElementById('bodyTiketServisLunasArsip');
+            if (bTiketArsip) {
+                const aMode = document.getElementById('tiketArsipFilterMode')?.value || 'ALL';
+                const aDate = document.getElementById('tiketArsipDatePicker')?.value || '';
+                const aMonth = document.getElementById('tiketArsipMonthPicker')?.value || '';
+                const aSearch = (document.getElementById('tiketArsipSearchInput')?.value || '').trim().toUpperCase();
 
-                    const rawWaktu = String(t.waktu || '');
-                    const jamOnly = rawWaktu.includes('|') ? rawWaktu.split('|')[0].trim() : (rawWaktu || '-');
-                    const tglOnly = t.isoDate || (rawWaktu.includes('|') ? rawWaktu.split('|')[1].trim() : '-');
-
-                    const infoPart = pakaiModal
-                        ? `<div style="font-weight:800; font-size:11px; color:var(--text); line-height:1.25;">${namaPartTxt}</div>
-                           <div style="font-size:10px; color:#EF4444; font-weight:700; margin-top:2px;">Modal: ${window.formatRp(modalNom)} <span style="color:#64748B;">(${sumberKasTxt})</span></div>
-                           ${t.isSettledInKasir
-                               ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">✅ MODAL LUNAS</span>`
-                               : `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">⏳ SALDO PART</span>`}`
-                        : `<div style="color:#059669; font-size:10px; font-weight:800;">🛠️ JASA NON-MODAL</div>
-                           ${(!t.isSettledInKasir && t.status !== 'CANCEL') ? `<button type="button" class="btn-mini-part" onclick="bukaModalBeliPartTiket(${t.id})" title="Beli Sparepart Susulan (Ditalangi Toko)">+ Beli Part</button>` : ''}`;
-
-                    // Kolom Status: Terkunci oleh sistem jika sudah dibayar di Kasir, atau Dropdown Teknisi jika belum dibayar
-                    let kolomStatusHtml = '';
-                    if (t.isSettledInKasir) {
-                        if (pakaiModal) {
-                            kolomStatusHtml = `
-                                <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.2;" title="Status otomatis oleh sistem karena sudah dilunasi di Kasir & modal sparepart telah kembali">
-                                    ✅ SELESAI & LUNAS<br>
-                                    <span style="font-size:8px; font-weight:700; color:#166534;">(Part & Jasa)</span>
-                                </div>`;
-                        } else {
-                            kolomStatusHtml = `
-                                <div style="background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.2;" title="Status otomatis oleh sistem karena service non-modal sudah selesai & dibayar di Kasir">
-                                    ✅ SELESAI<br>
-                                    <span style="font-size:8px; font-weight:700; color:#075985;">(Jasa Murni)</span>
-                                </div>`;
-                        }
-                    } else {
-                        const selColor = t.status === 'SIAP DIAMBIL' ? '#0284C7' : (t.status === 'CANCEL' ? '#EF4444' : (t.status === 'PROSES' ? '#D97706' : 'inherit'));
-                        kolomStatusHtml = `
-                            <select class="service-status-select" style="color:${selColor};" onchange="ubahStatusTiket(${t.id}, this.value)" title="Ubah Status Pengerjaan Teknisi">
-                                <option value="MENUNGGU KONFIRMASI" ${t.status === 'MENUNGGU KONFIRMASI' ? 'selected' : ''}>⏳ KONFIRMASI</option>
-                                <option value="PROSES" ${t.status === 'PROSES' ? 'selected' : ''}>🔧 PROSES</option>
-                                <option value="SIAP DIAMBIL" ${t.status === 'SIAP DIAMBIL' ? 'selected' : ''}>✅ SIAP DIAMBIL</option>
-                                <option value="CANCEL" ${t.status === 'CANCEL' ? 'selected' : ''}>❌ CANCEL</option>
-                            </select>`;
+                let filteredTiketArsip = listTiketArsipLunas.filter(t => {
+                    const lunasDate = t.tglLunas || t.isoDate || '';
+                    if (aMode === 'DAILY' && lunasDate !== aDate) return false;
+                    if (aMode === 'MONTHLY' && (!lunasDate || !lunasDate.startsWith(aMonth))) return false;
+                    if (aSearch) {
+                        const hay = `${t.noServis || ''} ${t.nama || ''} ${t.noHp || ''} ${t.tipeHp || ''} ${t.keluhan || ''} ${t.namaPart || ''} ${lunasDate}`.toUpperCase();
+                        if (!hay.includes(aSearch)) return false;
                     }
+                    return true;
+                });
 
-                    const estBiayaNom = Number(t.estBiaya || 0);
-                    const dpNomVal = Number(t.dpNom || 0);
-                    const estCuanSrv = Math.max(0, estBiayaNom - modalNom);
-
-                    // Tombol Aksi Full Icon (Tanpa Teks) dengan Tooltip Jelas
-                    const btnPayIcon = (!t.isSettledInKasir && t.status !== 'CANCEL')
-                        ? `<button type="button" class="btn-aksi-icon aksi-pay" onclick='prosesLunasiTiketKeKasir(${JSON.stringify(t)})' title="${pakaiModal ? 'Lunasi Service & Cairkan Modal Sparepart di Kasir' : 'Bayar Jasa Service & Selesaikan di Kasir'}" aria-label="Bayar / Lunasi di Kasir">
-                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                   <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                                   <line x1="2" y1="10" x2="22" y2="10"></line>
-                                   <path d="M16 15h2"></path>
-                               </svg>
-                           </button>`
-                        : '';
-
-                    const btnWaReadyIcon = (!t.isSettledInKasir && t.status === 'SIAP DIAMBIL')
-                        ? `<button type="button" class="btn-aksi-icon aksi-ready" onclick='kirimWaServisSelesai(${JSON.stringify(t)})' title="Kirim Notifikasi WA: HP Selesai & Siap Diambil" aria-label="Notifikasi WA Servis Selesai">
-                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                   <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                               </svg>
-                           </button>`
-                        : '';
-
-                    const btnPrintLunasIcon = t.isSettledInKasir
-                        ? `<button type="button" class="btn-aksi-icon aksi-print is-service" onclick='cetakNotaLunasServiceTrxTiket(${JSON.stringify(t)})' title="Cetak Nota Lunas & Garansi Service (A5)" aria-label="Cetak Nota Lunas Service">
-                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                   <path d="M9 11l3 3L22 4"></path>
-                                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                               </svg>
-                           </button>`
-                        : '';
-
-                    return `
-                        <tr id="row-tiket-${t.id}">
-                            <td>
-                                <b style="color:var(--primary); font-size:11px;">${t.noServis}</b>
-                                <div style="font-size:9.5px; color:#64748B; margin-top:1px;">👷 ${t.petugas || 'ADMIN'}</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:800; font-size:10.5px; color:var(--text);">${tglOnly}</div>
-                                <small style="color:#64748B; font-size:9.5px; font-weight:600;">🕒 ${jamOnly}</small>
-                            </td>
-                            <td>
-                                <div style="font-weight:800; color:var(--text); font-size:11.5px;">${t.nama}</div>
-                                <div style="font-size:10.5px; color:var(--primary); font-weight:800; margin-top:1px;">📱 ${t.tipeHp}</div>
-                                <div style="font-size:9.5px; color:#64748B;">📞 ${t.noHp || '-'}</div>
-                            </td>
-                            <td>
-                                <div style="white-space:pre-wrap; word-break:break-word; font-size:11px; font-weight:600; color:var(--text);">${t.keluhan || '-'}</div>
-                                <div style="font-size:9.5px; color:#64748B; margin-top:2px;">📦 ${t.kelengkapan || 'UNIT SAJA'}${t.serialNum && t.serialNum !== '-' ? ' • SN: ' + t.serialNum : ''}</div>
-                            </td>
-                            <td>${infoPart}</td>
-                            <td>
-                                ${dpNomVal > 0
-                                    ? `<span style="color:#0284C7; font-weight:800;">${window.formatRp(dpNomVal)}</span><br><small style="font-size:8.5px; color:#64748B;">Info Nota</small>`
-                                    : `<span style="color:#94A3B8; font-weight:600;">Rp0</span>`}
-                            </td>
-                            <td>
-                                <div style="color:var(--primary); font-weight:800; font-size:11.5px;">${window.formatRp(estBiayaNom)}</div>
-                                ${pakaiModal && estBiayaNom > 0 ? `<small style="font-size:9px; color:#D97706; font-weight:700;">Cuan: ${window.formatRp(estCuanSrv)}</small>` : ''}
-                            </td>
-                            <td>${kolomStatusHtml}</td>
-                            <td>
-                                <div class="aksi-icon-group">
-                                    ${btnPayIcon}
-                                    <button type="button" class="btn-aksi-icon aksi-wa" onclick='kirimWaTiketServis(${JSON.stringify(t)})' title="Kirim Tanda Terima Servis ke WhatsApp Pelanggan" aria-label="Kirim WA Tanda Terima">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                                        </svg>
-                                    </button>
-                                    ${btnWaReadyIcon}
-                                    ${btnPrintLunasIcon}
-                                    <button type="button" class="btn-aksi-icon aksi-print" onclick='cetakNotaTiketServis(${JSON.stringify(t)})' title="Cetak Nota Tanda Terima Servis (A5)" aria-label="Cetak Nota Tanda Terima">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                                            <rect x="6" y="14" width="12" height="8"></rect>
-                                        </svg>
-                                    </button>
-                                    <button type="button" class="btn-aksi-icon aksi-edit" onclick="editTiketServis(${t.id})" title="Edit Data Tiket Servis & Sparepart" aria-label="Edit Tiket Servis">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M12 20h9"></path>
-                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                        </svg>
-                                    </button>
-                                    <button type="button" class="btn-aksi-icon aksi-delete" onclick="hapusTiketServis(${t.id})" title="Hapus Tiket Servis" aria-label="Hapus Tiket Servis">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada tiket servis yang sesuai filter.</td></tr>`;
+                bTiketArsip.innerHTML = filteredTiketArsip.map(t => buildRowTiketServisHtml(t, true)).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada arsip servis lunas lewat hari.</td></tr>`;
             }
 
             const fMode = document.getElementById('jurnalFilterMode').value;
@@ -10928,7 +11062,19 @@
                     document.getElementById('tiketDatePicker').style.display = 'none';
                     document.getElementById('tiketMonthPicker').style.display = 'none';
                 }
+                const aMode = document.getElementById('tiketArsipFilterMode');
+                if (aMode) {
+                    aMode.value = 'ALL';
+                    const aDate = document.getElementById('tiketArsipDatePicker');
+                    const aMonth = document.getElementById('tiketArsipMonthPicker');
+                    if (aDate) aDate.style.display = 'none';
+                    if (aMonth) aMonth.style.display = 'none';
+                }
                 document.getElementById('tiketFilterStatus').value = '';
+                const sInput1 = document.getElementById('tiketSearchInput');
+                if (sInput1) sInput1.value = '';
+                const sInput2 = document.getElementById('tiketArsipSearchInput');
+                if (sInput2) sInput2.value = '';
                 window.renderAll();
                 window.highlightRowAndScroll(`row-tiket-${id}`);
             } else if (tipe === 'OP') {
