@@ -3400,8 +3400,49 @@
             'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'KOMISI EDC', 'BRANKAS'
         ];
 
-        window.masterSaldoAwal = {};
-        window.saldoList.forEach(s => { window.masterSaldoAwal[s] = 0; });
+        window.DEFAULT_SALDO_AWAL = {
+            'LACI': 59924357,
+            'SEA ECA': 9745056,
+            'DANA ECA': 0,
+            'DANA SRI': 0,
+            'DANA FINA': 2292476,
+            'OVO': 1700130,
+            'GOPAY': 681614,
+            'O KUOTA': 502877,
+            'PROPANA': 538192,
+            'DIGIPOS': 807821,
+            'RITA': 1052786,
+            'SIDIVA': 789692,
+            'SIMPEL': 584738,
+            'VOUCHER': 0,
+            'SP': 0,
+            'QRIS': 3662660,
+            'BRI': 14217909,
+            'BCA': 14004602,
+            'SEA FINA': 72463,
+            'DANA AA': 1804938,
+            'PIUTANG': 0,
+            'SPAREPART': 0,
+            'ACC': 0,
+            'NOBU': 18506000,
+            'KOMISI EDC': 205500,
+            'BRANKAS': 15590750
+        };
+
+        window.hasNonZeroSaldoAwal = function(obj) {
+            if (!obj || typeof obj !== 'object') return false;
+            return Object.keys(obj).some(k => !['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'].includes(k) && Number(obj[k] || 0) !== 0);
+        };
+
+        window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL);
+        try {
+            const cachedSaldoAwal = JSON.parse(localStorage.getItem('zencell_saldo_awal') || 'null');
+            if (window.hasNonZeroSaldoAwal(cachedSaldoAwal)) {
+                window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL, cachedSaldoAwal, {
+                    VOUCHER: 0, SP: 0, ACC: 0, SPAREPART: 0, PIUTANG: 0
+                });
+            }
+        } catch (e) {}
 
         window.formatTanggalJamPiutang = function(isoDate, waktu, tglDisplay) {
             if (tglDisplay) return tglDisplay;
@@ -3728,13 +3769,26 @@
                 window.saldoList = data.saldoListCustom.map(s => s === 'DANA NINING' ? 'DANA ECA' : (s === 'AMARTHA' ? 'KOMISI EDC' : s));
             }
             if (data.saldoAwal) {
-                window.masterSaldoAwal = Object.assign({}, data.saldoAwal, {
-                    VOUCHER: 0,
-                    SP: 0,
-                    ACC: 0,
-                    SPAREPART: 0,
-                    PIUTANG: 0
-                });
+                if (window.hasNonZeroSaldoAwal(data.saldoAwal) || data.isExplicitZeroSaldoAwal === true) {
+                    window.masterSaldoAwal = Object.assign({}, data.saldoAwal, {
+                        VOUCHER: 0,
+                        SP: 0,
+                        ACC: 0,
+                        SPAREPART: 0,
+                        PIUTANG: 0
+                    });
+                } else {
+                    // Self-healing: jika perangkat lain yang belum di-refresh tidak sengaja mengirim saldoAwal 0 semua karena bug Undo lama, pulihkan otomatis!
+                    const fallbackAwal = window.hasNonZeroSaldoAwal(window.masterSaldoAwal) ? window.masterSaldoAwal : window.DEFAULT_SALDO_AWAL;
+                    window.masterSaldoAwal = Object.assign({}, fallbackAwal, {
+                        VOUCHER: 0,
+                        SP: 0,
+                        ACC: 0,
+                        SPAREPART: 0,
+                        PIUTANG: 0
+                    });
+                    needsResyncMap.saldoAwal = true;
+                }
             }
             if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
@@ -3825,8 +3879,12 @@
                 window._logDirty = true;
             }
 
+            const wasInitialLoaded = window.hasInitialCloudLoaded;
             window.hasInitialCloudLoaded = true;
             window.saveLocalBackup();
+            if (!wasInitialLoaded && window.undoStack.length === 0) {
+                window.saveStateSnapshot(true);
+            }
             if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
 
             window.initDropdowns();
@@ -3847,7 +3905,8 @@
                 tiketServis: window.tiketServisList,
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 setoran: window.setoranOwnerList,
-                operasional: window.operasionalList
+                operasional: window.operasionalList,
+                saldoAwal: window.masterSaldoAwal
             };
             Object.keys(needsResyncMap).forEach(col => {
                 if (needsResyncMap[col] && colToVarMap[col] !== undefined) {
@@ -3946,6 +4005,7 @@
             localStorage.setItem('zencell_operasional', JSON.stringify(window.operasionalList));
             localStorage.setItem('zencell_log_aktivitas', JSON.stringify(window.logAktivitasList));
             localStorage.setItem('zencell_batas_min', JSON.stringify(window.masterBatasMinSaldo));
+            localStorage.setItem('zencell_saldo_awal', JSON.stringify(window.masterSaldoAwal));
             localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
             localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
         }
@@ -5191,15 +5251,19 @@
             window.renderAll();
         }
 
-        window.saveStateSnapshot = function() {
+        window.saveStateSnapshot = function(forceBaseline = false) {
             if (window.isUndoRedoAction) return;
+            if (!window.hasInitialCloudLoaded && !forceBaseline) return;
+            const safeSaldoAwal = window.hasNonZeroSaldoAwal(window.masterSaldoAwal)
+                ? window.masterSaldoAwal
+                : Object.assign({}, window.DEFAULT_SALDO_AWAL);
             const snap = JSON.stringify({
                 masterVlookup: window.masterVlookup, transaksiJurnal: window.transaksiJurnal,
                 stokOpnameItems: window.stokOpnameItems, piutangList: window.piutangList,
                 setoranOwnerList: window.setoranOwnerList, sparepartList: window.sparepartList, tiketServisList: window.tiketServisList,
                 riwayatBelanjaStok: window.riwayatBelanjaStok, operasionalList: window.operasionalList,
                 logAktivitasList: window.logAktivitasList,
-                masterSaldoAwal: window.masterSaldoAwal, saldoList: window.saldoList, masterBatasMinSaldo: window.masterBatasMinSaldo
+                masterSaldoAwal: safeSaldoAwal, saldoList: window.saldoList, masterBatasMinSaldo: window.masterBatasMinSaldo
             });
             if (window.undoStack.length === 0 || window.undoStack[window.undoStack.length - 1] !== snap) {
                 window.undoStack.push(snap);
@@ -5210,11 +5274,14 @@
         }
 
         window.updateUndoRedoBtnState = function() {
-            document.getElementById('btnUndo').disabled = (window.undoStack.length <= 1);
-            document.getElementById('btnRedo').disabled = (window.redoStack.length === 0);
+            const btnU = document.getElementById('btnUndo');
+            const btnR = document.getElementById('btnRedo');
+            if (btnU) btnU.disabled = (window.undoStack.length <= 1);
+            if (btnR) btnR.disabled = (window.redoStack.length === 0);
         }
 
         window.doUndo = function() {
+            if (!window.hasInitialCloudLoaded) return;
             if (window.undoStack.length > 1) {
                 window.redoStack.push(window.undoStack.pop());
                 window.applyStateSnapshot(window.undoStack[window.undoStack.length - 1]);
@@ -5223,6 +5290,7 @@
             }
         }
         window.doRedo = function() {
+            if (!window.hasInitialCloudLoaded) return;
             if (window.redoStack.length > 0) {
                 const nextSnap = window.redoStack.pop();
                 window.undoStack.push(nextSnap);
@@ -5234,22 +5302,75 @@
         window.applyStateSnapshot = function(snapStr) {
             window.isUndoRedoAction = true;
             const state = JSON.parse(snapStr);
-            window.masterVlookup = state.masterVlookup || {};
-            window.transaksiJurnal = state.transaksiJurnal || [];
-            window.stokOpnameItems = state.stokOpnameItems || [];
-            window.piutangList = state.piutangList || [];
-            window.setoranOwnerList = state.setoranOwnerList || [];
-            window.sparepartList = state.sparepartList || [];
-            window.tiketServisList = state.tiketServisList || [];
-            window.riwayatBelanjaStok = state.riwayatBelanjaStok || [];
-            window.operasionalList = state.operasionalList || [];
-            window.logAktivitasList = state.logAktivitasList || [];
-            window.masterSaldoAwal = state.masterSaldoAwal || {};
-            window.saldoList = state.saldoList || [];
-            window.masterBatasMinSaldo = state.masterBatasMinSaldo || {};
+            const nowTs = window.getNextUniqueTs();
 
-            window.clearAllEntityProtection();
-            window.saveAllToFirebase(true);
+            // Helper untuk mendeteksi item yang berubah/ditambah/dihapus saat Undo/Redo agar hanya menyinkronkan bagian yang berubah
+            function syncCollectionDiff(colName, oldArr, newArr, nodesPayload) {
+                const oldList = Array.isArray(oldArr) ? oldArr : [];
+                const newList = Array.isArray(newArr) ? newArr : [];
+                const oldMap = new Map(oldList.filter(x => x && x.id).map(x => [String(x.id), x]));
+                const newMap = new Map(newList.filter(x => x && x.id).map(x => [String(x.id), x]));
+                let changed = false;
+
+                oldMap.forEach((oldItem, idStr) => {
+                    if (!newMap.has(idStr)) {
+                        window.markLocalEntityDeleted(colName, idStr);
+                        changed = true;
+                    }
+                });
+                newMap.forEach((newItem, idStr) => {
+                    const oldItem = oldMap.get(idStr);
+                    if (!oldItem || JSON.stringify(oldItem) !== JSON.stringify(newItem)) {
+                        newItem.updatedAt = nowTs;
+                        window.markLocalEntityEdited(colName, newItem);
+                        changed = true;
+                    }
+                });
+
+                if (changed) {
+                    nodesPayload[colName] = newList;
+                }
+                return newList;
+            }
+
+            const nodesToSync = {};
+            window.transaksiJurnal = syncCollectionDiff('transaksi', window.transaksiJurnal, state.transaksiJurnal, nodesToSync);
+            window.stokOpnameItems = syncCollectionDiff('stok', window.stokOpnameItems, state.stokOpnameItems, nodesToSync);
+            window.piutangList = syncCollectionDiff('piutang', window.piutangList, state.piutangList, nodesToSync);
+            window.setoranOwnerList = syncCollectionDiff('setoran', window.setoranOwnerList, state.setoranOwnerList, nodesToSync);
+            window.sparepartList = syncCollectionDiff('sparepart', window.sparepartList, state.sparepartList, nodesToSync);
+            window.tiketServisList = syncCollectionDiff('tiketServis', window.tiketServisList, state.tiketServisList, nodesToSync);
+            window.riwayatBelanjaStok = syncCollectionDiff('riwayatBelanjaStok', window.riwayatBelanjaStok, state.riwayatBelanjaStok, nodesToSync);
+            window.operasionalList = syncCollectionDiff('operasional', window.operasionalList, state.operasionalList, nodesToSync);
+
+            if (state.masterVlookup && JSON.stringify(window.masterVlookup) !== JSON.stringify(state.masterVlookup)) {
+                window.masterVlookup = state.masterVlookup;
+                let cleanVlookup = {};
+                for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
+                nodesToSync.vlookup = cleanVlookup;
+            }
+
+            // PENTING: Jangan pernah menimpa masterSaldoAwal dengan nol semua saat Undo/Redo!
+            if (window.hasNonZeroSaldoAwal(state.masterSaldoAwal)) {
+                if (JSON.stringify(window.masterSaldoAwal) !== JSON.stringify(state.masterSaldoAwal)) {
+                    window.masterSaldoAwal = Object.assign({}, state.masterSaldoAwal, {
+                        VOUCHER: 0, SP: 0, ACC: 0, SPAREPART: 0, PIUTANG: 0
+                    });
+                    nodesToSync.saldoAwal = window.masterSaldoAwal;
+                }
+            }
+
+            if (Array.isArray(state.saldoList) && state.saldoList.length > 0) {
+                window.saldoList = state.saldoList;
+            }
+            if (state.masterBatasMinSaldo) {
+                window.masterBatasMinSaldo = state.masterBatasMinSaldo;
+            }
+
+            window.saveLocalBackup();
+            if (Object.keys(nodesToSync).length > 0) {
+                window.saveMultipleFirebaseNodes(nodesToSync, true);
+            }
             window.initDropdowns();
             window.renderAll();
             window.isUndoRedoAction = false;
@@ -5270,7 +5391,7 @@
 
             window.initDropdowns();
             window.initVlookupAutoFill();
-            window.saveStateSnapshot();
+            window.updateUndoRedoBtnState();
             window.renderAll();
         });
 
