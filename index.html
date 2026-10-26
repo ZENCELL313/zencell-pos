@@ -4344,26 +4344,30 @@
         };
 
         window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
-        window.masterVlookup = {};
+        window.masterVlookup = JSON.parse(localStorage.getItem('zencell_vlookup') || '{}');
 
         window.isManualVlookupEntry = function(key, rule) {
             if (!key || !rule) return false;
-            if (rule.isManual === true || rule.isSplit === true) return true;
             const kNorm = String(rule.origKey || key).toUpperCase().trim();
             const kSan = sanitizeKey(kNorm);
+            const kNormSlash = kNorm.replace(/[\/-]/g, '/');
 
+            // 1. Sembunyikan jika nama ini berasal dari Stok Opname
             const isFromStok = (window.stokOpnameItems || []).some(s => {
                 const nm = String(s.nama || s.namaBarang || '').toUpperCase().trim();
-                return nm && (nm === kNorm || sanitizeKey(nm) === kSan);
+                const nmSlash = nm.replace(/[\/-]/g, '/');
+                return nm && (nm === kNorm || sanitizeKey(nm) === kSan || nmSlash === kNormSlash);
             });
             if (isFromStok) return false;
 
+            // 2. Sembunyikan jika berasal dari data Piutang Konsumen
             const isFromPiutang = (window.piutangList || []).some(p => {
                 const nm = String(p.nama || '').toUpperCase().trim();
                 return nm && (nm === kNorm || sanitizeKey(nm) === kSan);
             });
             if (isFromPiutang) return false;
 
+            // 3. Sembunyikan jika berasal dari Tiket Servis atau Sparepart
             const isFromService = (window.tiketServisList || []).some(t => {
                 const nm = String(t.nama || '').toUpperCase().trim();
                 const no = String(t.noServis || '').toUpperCase().trim();
@@ -4374,7 +4378,8 @@
             });
             if (isFromService) return false;
 
-            return true;
+            // Hanya tampilkan jika sah merupakan aturan inputan manual / split
+            return rule.isManual === true || rule.isSplit === true;
         };
 
         window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
@@ -4643,16 +4648,20 @@
             const lastResetTs = Number(data.lastResetTimestamp || 0);
             const needsResyncMap = {};
 
-            if (data.vlookup) {
+            if (data.vlookup && typeof data.vlookup === 'object') {
                 let loadedVlookup = {};
                 Object.keys(data.vlookup).forEach(k => {
                     const r = data.vlookup[k];
-                    if (r) {
-                        const realKey = (r.origKey || k).toUpperCase().trim();
-                        loadedVlookup[realKey] = r;
+                    if (r && typeof r === 'object') {
+                        const realKey = String(r.origKey || k).toUpperCase().trim();
+                        loadedVlookup[realKey] = Object.assign({ origKey: realKey, isManual: true }, r);
                     }
                 });
                 window.masterVlookup = loadedVlookup;
+                localStorage.setItem('zencell_vlookup', JSON.stringify(window.masterVlookup));
+            } else if (!data.vlookup) {
+                window.masterVlookup = {};
+                localStorage.setItem('zencell_vlookup', '{}');
             }
 
             if (data.saldoListCustom) {
@@ -4898,6 +4907,7 @@
             localStorage.setItem('zencell_saldo_awal', JSON.stringify(window.masterSaldoAwal));
             localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
             localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
+            localStorage.setItem('zencell_vlookup', JSON.stringify(window.masterVlookup || {}));
         }
 
         function onFirebaseWriteComplete() {
@@ -4967,11 +4977,12 @@
             window.isSavingToFirebase = true;
 
             let cleanVlookup = {};
-            for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
+            for (let key in window.masterVlookup) {
+                cleanVlookup[sanitizeKey(key)] = Object.assign({ origKey: key, isManual: true }, window.masterVlookup[key]);
+            }
 
             try {
                 const fullPayloadObj = {
-                    vlookup: cleanVlookup,
                     transaksi: window.transaksiJurnal,
                     stok: window.stokOpnameItems,
                     piutang: window.piutangList,
@@ -4991,6 +5002,9 @@
                     pengaturan: window.pengaturanToko,
                     daftarKaryawan: window.daftarKaryawan
                 };
+                if (Object.keys(cleanVlookup).length > 0 || isExplicitReset) {
+                    fullPayloadObj.vlookup = cleanVlookup;
+                }
                 if (isExplicitReset) {
                     fullPayloadObj.lastResetTimestamp = Date.now();
                 }
@@ -7151,7 +7165,9 @@
             if (state.masterVlookup && JSON.stringify(window.masterVlookup) !== JSON.stringify(state.masterVlookup)) {
                 window.masterVlookup = state.masterVlookup;
                 let cleanVlookup = {};
-                for (let key in window.masterVlookup) { cleanVlookup[sanitizeKey(key)] = window.masterVlookup[key]; }
+                for (let key in window.masterVlookup) {
+                    cleanVlookup[sanitizeKey(key)] = Object.assign({ origKey: key, isManual: true }, window.masterVlookup[key]);
+                }
                 nodesToSync.vlookup = cleanVlookup;
             }
 
@@ -7305,12 +7321,14 @@
                     return;
                 }
 
+                const valSlash = val.replace(/[\/-]/g, '/');
                 const matchStokCandidates = window.stokOpnameItems.filter(s => {
                     const nm = (s.nama || s.namaBarang || '').toUpperCase().trim();
-                    return nm && (nm === val || val.includes(nm));
+                    const nmSlash = nm.replace(/[\/-]/g, '/');
+                    return nm && (nm === val || val.includes(nm) || nmSlash === valSlash || valSlash.includes(nmSlash));
                 }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
                 const matchStok = matchStokCandidates[0];
-                const vRuleMatch = window.masterVlookup[val] || window.masterVlookup[sanitizeKey(val)];
+                const vRuleMatch = window.masterVlookup[val] || window.masterVlookup[sanitizeKey(val)] || window.masterVlookup[valSlash] || window.masterVlookup[val.replace(/\//g, '-')];
                 const vRuleHasSplit = Boolean(vRuleMatch && vRuleMatch.isSplit && ((vRuleMatch.akunMasuk2 && Number(vRuleMatch.jualSplit2 || 0) > 0) || (vRuleMatch.akunKeluar2 && Number(vRuleMatch.modalSplit2 || 0) > 0)));
 
                 if (matchStok && !vRuleHasSplit) {
@@ -8859,11 +8877,12 @@
                 defJual: parseFloat(document.getElementById('v_jual_fast').value) || 0,
                 defModal: parseFloat(document.getElementById('v_modal_fast').value) || 0
             };
+            window.saveLocalBackup();
             if (window.closeModalVlookupFast) window.closeModalVlookupFast();
             window.catatLogAktivitas('TAMBAH VLOOKUP', `Menambah master auto-fill cepat "${ket}"`);
             let cleanVlookup = {};
             for (let k in window.masterVlookup) {
-                cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k }, window.masterVlookup[k]);
+                cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k, isManual: true }, window.masterVlookup[k]);
             }
             window.saveToFirebaseNode('vlookup', cleanVlookup);
             window.renderAll();
@@ -8988,11 +9007,12 @@
                 modalSplit2: hasValidSplit ? m2 : 0
             };
 
+            window.saveLocalBackup();
             window.batalEditVlookup();
             window.catatLogAktivitas('MASTER VLOOKUP', `Menyimpan aturan master vlookup "${ket}"${hasValidSplit ? ' (Split Saldo)' : ''}`);
             let cleanVlookup = {};
             for (let k in window.masterVlookup) {
-                cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k }, window.masterVlookup[k]);
+                cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k, isManual: true }, window.masterVlookup[k]);
             }
             window.saveToFirebaseNode('vlookup', cleanVlookup);
             window.renderAll();
@@ -9042,9 +9062,12 @@
             if (!window.masterVlookup[key]) return;
             if (confirm(`Hapus kata kunci VLOOKUP "${key}"?`)) {
                 delete window.masterVlookup[key];
+                window.saveLocalBackup();
                 window.catatLogAktivitas('HAPUS VLOOKUP', `Menghapus kata kunci VLOOKUP "${key}"`);
                 let cleanVlookup = {};
-                for (let k in window.masterVlookup) { cleanVlookup[sanitizeKey(k)] = window.masterVlookup[k]; }
+                for (let k in window.masterVlookup) {
+                    cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k, isManual: true }, window.masterVlookup[k]);
+                }
                 window.saveToFirebaseNode('vlookup', cleanVlookup);
                 window.renderAll();
                 window.showToast(`🗑️ VLOOKUP "${key}" dihapus.`, "warn");
