@@ -1904,26 +1904,60 @@
             color: #334155;
         }
 
-        /* Tata Letak Proporsional Tabel Rekap Piutang Konsumen (PC & HP) */
+        /* Tata Letak Fix & Presisi Tabel Rekap Piutang Konsumen (Anti Melebar ke Kanan) */
         .table-piutang {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto;
+            table-layout: fixed;
         }
         .table-piutang th,
         .table-piutang td {
             vertical-align: middle;
-            padding: 8px 10px;
+            padding: 6px 6px !important;
+            font-size: 10.5px;
+            white-space: normal !important;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.3;
         }
-        .table-piutang th:nth-child(1), .table-piutang td:nth-child(1) { text-align: left; white-space: nowrap; width: 115px; }
-        .table-piutang th:nth-child(2), .table-piutang td:nth-child(2) { text-align: left; white-space: normal; min-width: 145px; max-width: 210px; }
-        .table-piutang th:nth-child(3), .table-piutang td:nth-child(3) { text-align: left; white-space: normal; min-width: 140px; max-width: 240px; }
-        .table-piutang th:nth-child(4), .table-piutang td:nth-child(4) { text-align: right; white-space: nowrap; width: 120px; }
-        .table-piutang th:nth-child(5), .table-piutang td:nth-child(5) { text-align: left; white-space: normal; min-width: 165px; max-width: 260px; line-height: 1.35; }
-        .table-piutang th:nth-child(6), .table-piutang td:nth-child(6) { text-align: center; white-space: nowrap; width: 95px; }
-        .table-piutang th:nth-child(7), .table-piutang td:nth-child(7) { text-align: center; white-space: nowrap; width: 115px; }
-        .table-piutang th:nth-child(8), .table-piutang td:nth-child(8) { text-align: center; white-space: nowrap; width: 110px; }
-        .table-piutang th:nth-child(9), .table-piutang td:nth-child(9) { text-align: center; white-space: nowrap; width: 1%; }
+        .table-piutang th {
+            font-size: 10px;
+            letter-spacing: 0.2px;
+            padding: 7px 5px !important;
+        }
+        /* Proporsi 9 Kolom Pas 100% (Tidak Melebar ke Kanan) */
+        .table-piutang th:nth-child(1), .table-piutang td:nth-child(1) { text-align: left; width: 10%; }
+        .table-piutang th:nth-child(2), .table-piutang td:nth-child(2) { text-align: left; width: 14.5%; }
+        .table-piutang th:nth-child(3), .table-piutang td:nth-child(3) { text-align: left; width: 17%; }
+        .table-piutang th:nth-child(4), .table-piutang td:nth-child(4) { text-align: right; width: 12.5%; }
+        .table-piutang th:nth-child(5), .table-piutang td:nth-child(5) { text-align: left; width: 14.5%; line-height: 1.32; }
+        .table-piutang th:nth-child(6), .table-piutang td:nth-child(6) { text-align: center; width: 8.5%; }
+        .table-piutang th:nth-child(7), .table-piutang td:nth-child(7) { text-align: center; width: 8.5%; }
+        .table-piutang th:nth-child(8), .table-piutang td:nth-child(8) { text-align: center; width: 7.5%; }
+        .table-piutang th:nth-child(9), .table-piutang td:nth-child(9) { text-align: center; width: 7%; }
+
+        @media (max-width: 767px) {
+            .table-piutang {
+                min-width: 760px;
+            }
+        }
+        .table-piutang .aksi-icon-group {
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            max-width: 62px;
+        }
+        .table-piutang .btn-aksi-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+        }
+        .table-piutang .btn-aksi-icon svg {
+            width: 12.5px;
+            height: 12.5px;
+        }
         .row-piutang-lunas-today {
             background-color: rgba(22, 163, 74, 0.07);
         }
@@ -1934,14 +1968,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
-            flex-wrap: nowrap;
+            gap: 4px;
+            flex-wrap: wrap;
         }
         .btn-piutang-aksi {
             border: none;
             border-radius: 6px;
-            padding: 5px 9px;
-            font-size: 10.5px;
+            padding: 4px 8px;
+            font-size: 10px;
             font-weight: 800;
             color: #FFF;
             cursor: pointer;
@@ -2411,19 +2445,48 @@
                 </div>
 
                 <form onsubmit="simpanPengaturanPrinter(event)">
-                    <!-- Koneksi & Ukuran Kertas -->
-                    <div class="settings-card-box" style="padding:12px 14px; margin-bottom:12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                            <div style="flex:1; min-width:220px;">
-                                <label style="font-size:11px; font-weight:800; color:var(--primary); display:block; margin-bottom:4px;">📏 Ukuran Kertas Printer Struk Default (Thermal / Browser)</label>
-                                <select id="setPrinterUkuran" class="form-control" style="font-weight:700;">
-                                    <option value="58mm">Thermal 58mm (Kertas Mini Kasir / Bluetooth / USB)</option>
-                                    <option value="80mm">Thermal 80mm (Kertas Lebar Struk Kasir)</option>
+                    <!-- Koneksi & Ukuran Kertas + Bluetooth Langsung (HP/PC) -->
+                    <div class="settings-card-box" style="padding:12px 14px; margin-bottom:12px; border:1.5px solid #93C5FD; background:linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; align-items:start;">
+                            <div>
+                                <label style="font-size:11px; font-weight:800; color:var(--primary); display:block; margin-bottom:4px;">📏 Ukuran Kertas Printer Struk Default</label>
+                                <select id="setPrinterUkuran" class="form-control" style="font-weight:700;" onchange="window.onChangeQuickPrinterUkuran && window.onChangeQuickPrinterUkuran(this.value)">
+                                    <option value="58mm">Thermal 58mm (32 Karakter/Baris - Mini Bluetooth/USB)</option>
+                                    <option value="80mm">Thermal 80mm (48 Karakter/Baris - Struk Lebar)</option>
                                     <option value="A4">Standar Web Browser (A4 / Universal PDF)</option>
                                 </select>
                             </div>
-                            <div style="font-size:10px; color:#64748B; max-width:260px; line-height:1.35;">
-                                💡 <b>Catatan:</b> Nota Servis Masuk &amp; Nota Lunas Servis dicetak otomatis dalam format <b>A5 Landscape 2-Rangkap</b> (Konsumen &amp; Arsip Konter).
+                            <div>
+                                <label style="font-size:11px; font-weight:800; color:#1D4ED8; display:block; margin-bottom:4px;">📲 Metode Cetak Struk Kasir &amp; Transfer (HP / PC)</label>
+                                <select id="setPrinterMetode" class="form-control" style="font-weight:700;" onchange="window.onChangeQuickPrinterMetode && window.onChangeQuickPrinterMetode(this.value)">
+                                    <option value="OTOMATIS">⚡ Otomatis Pintar (Bluetooth Aktif ➔ Cetak Langsung, Jika Tidak ➔ Browser/USB)</option>
+                                    <option value="BLUETOOTH_DIRECT">🔵 Cetak Langsung Bluetooth Web (ESC/POS Tanpa Dialog Browser)</option>
+                                    <option value="RAWBT_ANDROID">🤖 Aplikasi Jembatan RawBT Android (Semua Printer Bluetooth 1-Klik)</option>
+                                    <option value="BROWSER_PRINT">🖥️ Dialog Print Standar Browser / Kabel USB PC</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Panel Koneksi Bluetooth Thermal Langsung (Seperti Aplikasi Kasir Native di HP) -->
+                        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #BFDBFE; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <span id="btPrinterStatusBadgeSetting" style="display:inline-flex; align-items:center; gap:5px; background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; padding:4px 10px; border-radius:999px; font-size:10.5px; font-weight:800;">
+                                    🔴 Bluetooth Belum Tersambung
+                                </span>
+                                <span style="font-size:10px; color:#475569;">
+                                    💡 <b>Tips HP Android:</b> Gunakan Chrome di HP lalu klik <b>Sambungkan Bluetooth</b> agar saat klik Print langsung keluar kertas sesuai ukuran 58mm/80mm tanpa atur ukuran lagi!
+                                </span>
+                            </div>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="btn" style="width:auto; background:#2563EB; padding:6px 12px; font-size:10.5px; font-weight:800;" onclick="window.connectBluetoothPrinter()">
+                                    🔵 Sambungkan Printer Bluetooth
+                                </button>
+                                <button type="button" class="btn" style="width:auto; background:#059669; padding:6px 11px; font-size:10.5px; font-weight:800;" onclick="window.testPrintBluetoothLangsung()">
+                                    🧪 Test Cetak Langsung
+                                </button>
+                                <button type="button" id="btnDisconnectBtSetting" class="btn" style="display:none; width:auto; background:#DC2626; padding:6px 10px; font-size:10.5px; font-weight:800;" onclick="window.disconnectBluetoothPrinter()">
+                                    🔌 Putuskan
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -3405,6 +3468,34 @@
                             <span id="lblPreviewUkuranStrukTf" style="background:#E2E8F0; color:#0F172A; padding:1px 7px; border-radius:999px; font-size:9.5px;">58mm</span>
                         </div>
                         <div id="livePreviewStrukTransferBox" style="background:#FFFFFF; border:1px dashed #64748B; padding:12px; margin:0 auto; max-width:290px; text-align:left; font-family:monospace; font-size:11px; color:#000000; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+                        </div>
+                    </div>
+
+                    <!-- Panel Cepat Printer Bluetooth & Ukuran Kertas di Modal Cetak -->
+                    <div style="background:#EFF6FF; border:1.5px solid #93C5FD; border-radius:10px; padding:9px 10px; font-size:10.5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
+                            <span id="btPrinterStatusBadgeModalTf" style="font-weight:800; color:#1E40AF; font-size:10px;">🔴 Bluetooth: Belum Tersambung</span>
+                            <button type="button" onclick="window.connectBluetoothPrinter()" style="background:#2563EB; color:#FFF; border:none; border-radius:6px; padding:3px 8px; font-size:9.5px; font-weight:800; cursor:pointer;">
+                                🔵 Pilih Printer BT
+                            </button>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                            <div>
+                                <label style="font-size:9px; font-weight:700; color:#475569; display:block; margin-bottom:2px;">Ukuran Kertas</label>
+                                <select id="stf_quickPrinterUkuran" class="form-control" style="padding:4px 6px; font-size:10px; font-weight:800; height:auto;" onchange="window.onChangeQuickPrinterUkuran(this.value)">
+                                    <option value="58mm">📏 Thermal 58mm</option>
+                                    <option value="80mm">📏 Thermal 80mm</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:9px; font-weight:700; color:#475569; display:block; margin-bottom:2px;">Mode Cetak HP/PC</label>
+                                <select id="stf_quickPrinterMetode" class="form-control" style="padding:4px 6px; font-size:10px; font-weight:800; height:auto;" onchange="window.onChangeQuickPrinterMetode(this.value)">
+                                    <option value="OTOMATIS">⚡ Otomatis (BT/USB)</option>
+                                    <option value="BLUETOOTH_DIRECT">🔵 BT Langsung</option>
+                                    <option value="RAWBT_ANDROID">🤖 App RawBT HP</option>
+                                    <option value="BROWSER_PRINT">🖥️ Print Browser/USB</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -11676,35 +11767,36 @@
                     const isChild = typeof childIndex === 'number';
                     const encNama = encodeURIComponent((p.nama || '').trim());
                     const encHp = encodeURIComponent((p.noHp || '').trim());
+                    const sumberLabel = (!p.sumber || p.sumber === 'TIDAK POTONG SALDO') ? 'TANPA POTONG' : p.sumber;
                     const rowStyle = isChild
                         ? 'background:rgba(254, 243, 199, 0.25); border-left:4px solid #F59E0B;'
                         : '';
                     return `
                         <tr id="row-piutang-${p.id}" class="${isLunas ? 'row-piutang-lunas-today' : ''}" style="${rowStyle}">
                             <td>
-                                ${isChild ? `<div style="margin-bottom:3px;"><span style="background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; font-size:9px; font-weight:800; padding:1px 6px; border-radius:4px;">↳ Nota #${childIndex + 1}${childIndex === 0 ? ' (Terlama)' : ''}</span></div>` : ''}
+                                ${isChild ? `<div style="margin-bottom:2px;"><span style="background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px;">↳ #${childIndex + 1}${childIndex === 0 ? ' (Lama)' : ''}</span></div>` : ''}
                                 ${waktuPiutangHtml}
                             </td>
                             <td>
-                                <b>${p.nama}</b>
-                                ${isChild ? `<br><span style="font-size:9.5px; color:#92400E; font-weight:700;">Rincian ke-${childIndex + 1} dari ${totalInGroup}</span>` : `<br><small style="color:#0284C7; font-weight:600;">${p.noHp ? '📱 ' + p.noHp : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small>`}
+                                <b style="font-size:11px; line-height:1.25; display:block;">${p.nama}</b>
+                                ${isChild ? `<span style="font-size:9px; color:#92400E; font-weight:700;">Nota ${childIndex + 1}/${totalInGroup}</span>` : `<small style="color:#0284C7; font-weight:600; font-size:9.5px;">${p.noHp ? '📱 ' + p.noHp : '<span style="color:#94A3B8;">-</span>'}</small>`}
                             </td>
                             <td>
-                                <span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span>
-                                ${Number(p.qty || 1) > 1 ? `<br><span style="font-size:9.5px; background:#E0F2FE; color:#0369A1; padding:1px 5px; border-radius:4px; font-weight:700;">Qty: ${p.qty} Pcs</span>` : ''}
+                                <span style="font-weight:600; font-size:10.5px; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span>
+                                ${Number(p.qty || 1) > 1 ? `<br><span style="font-size:9px; background:#E0F2FE; color:#0369A1; padding:1px 4px; border-radius:4px; font-weight:700;">${p.qty} Pcs</span>` : ''}
                             </td>
                             <td class="${isLunas ? 'text-kredit' : 'text-debit'}">
-                                <b>${window.formatRp(activeSisa)}</b>
-                                ${pokokAwalP > 0 ? `<br><small style="color:#64748B; font-size:9.5px;">Modal: ${window.formatRp(pokokAwalP)}</small>` : ''}
-                                ${(!isLunas && activeTagihanJual > activeSisa) ? `<br><span style="display:inline-block; margin-top:2px; background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; padding:1px 5px; border-radius:4px; font-size:9.5px; font-weight:800;" title="Harga jual yang ditagihkan ke konsumen saat pelunasan">Tagih Jual: ${window.formatRp(activeTagihanJual)}</span>` : ''}
+                                <b style="font-size:11.5px;">${window.formatRp(activeSisa)}</b>
+                                ${pokokAwalP > 0 ? `<br><small style="color:#64748B; font-size:9px;">Mdl: ${window.formatRp(pokokAwalP)}</small>` : ''}
+                                ${(!isLunas && activeTagihanJual > activeSisa) ? `<br><span style="display:inline-block; margin-top:1px; background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; padding:1px 4px; border-radius:4px; font-size:9px; font-weight:800;" title="Harga jual yang ditagihkan ke konsumen saat pelunasan">Tagih: ${window.formatRp(activeTagihanJual)}</span>` : ''}
                             </td>
-                            <td style="font-size:10.5px;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'}${c.isAkumulasi ? ' • Akumulasi' : ''})</small></div>`).join('') || '<span style="color:#94A3B8;">Belum ada cicilan</span>'}</td>
-                            <td><span style="font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--primary-light); color:var(--primary);">${p.kategori || 'LAIN-LAIN'}</span></td>
-                            <td><span style="font-size:10px; font-weight:700; color:${p.sumber === 'TIDAK POTONG SALDO' ? '#64748B' : 'var(--text)'};">${p.sumber || 'TIDAK POTONG SALDO'}</span></td>
+                            <td style="font-size:9.5px; line-height:1.3;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#94A3B8;">Belum dicicil</span>'}</td>
+                            <td><span style="font-size:9px; font-weight:700; padding:2px 5px; border-radius:5px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
+                            <td><span style="font-size:9px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
                             <td>
                                 ${isLunas
-                                    ? `<span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800;">✅ LUNAS HARI INI</span>`
-                                    : `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800;">⏳ BELUM LUNAS</span>`
+                                    ? `<span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">✅ LUNAS</span>`
+                                    : `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">⏳ BELUM</span>`
                                 }
                             </td>
                             <td>
@@ -11718,7 +11810,7 @@
                                             </svg>
                                         </button>
                                         ${!isChild ? `
-                                        <button type="button" class="btn-aksi-icon" style="background:#FEF3C7; color:#B45309; border-color:#FCD34D; font-weight:900; font-size:13px;" onclick="tambahUtangPelangganSama('${encNama}', '${encHp}')" title="Tambah Utang Baru Lanjutan (Pengecualian SOP) untuk ${p.nama}" aria-label="Tambah Utang Pelanggan Sama">➕</button>
+                                        <button type="button" class="btn-aksi-icon" style="background:#FEF3C7; color:#B45309; border-color:#FCD34D; font-weight:900; font-size:11px;" onclick="tambahUtangPelangganSama('${encNama}', '${encHp}')" title="Tambah Utang Baru Lanjutan (Pengecualian SOP) untuk ${p.nama}" aria-label="Tambah Utang Pelanggan Sama">➕</button>
                                         ` : ''}
                                         <button type="button" class="btn-aksi-icon aksi-wa" onclick="kirimWaPengingatPiutang(${p.id})" title="Kirim Pesan Tagihan ke WhatsApp Pelanggan" aria-label="Kirim WA Tagihan">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -11798,7 +11890,8 @@
                         totalTagihanJual += sTagih;
                         if (!foundNoHp && item.noHp) foundNoHp = item.noHp;
                         if (item.kategori) katSet.add(item.kategori);
-                        if (item.sumber) sumberSet.add(item.sumber);
+                        const sLbl = (!item.sumber || item.sumber === 'TIDAK POTONG SALDO') ? 'TANPA POTONG' : item.sumber;
+                        sumberSet.add(sLbl);
                         (item.riwayatCicilan || []).forEach(c => {
                             const keyC = `${c.trxId || ''}_${c.tgl}_${c.bayarJual || c.bayar}`;
                             if (!seenCicilanTrx.has(keyC)) {
@@ -11814,48 +11907,48 @@
                     const oldestItem = sortedChildren[0];
                     const newestItem = sortedChildren[sortedChildren.length - 1];
                     const tglRangeInfo = (oldestItem.isoDate && newestItem.isoDate && oldestItem.isoDate !== newestItem.isoDate)
-                        ? `<div style="font-size:10px; font-weight:800; color:#B45309;">📅 ${oldestItem.isoDate} s/d ${newestItem.isoDate}</div>`
+                        ? `<div style="font-size:9px; font-weight:800; color:#B45309; line-height:1.25;">${oldestItem.isoDate}<br><span style="color:#64748B; font-weight:700;">s/d ${newestItem.isoDate}</span></div>`
                         : window.formatKolomWaktuSeragam(newestItem.isoDate, newestItem.waktu, newestItem.tglDisplay);
 
                     const previewItemsText = sortedChildren.map((it, idx) => {
                         const ketIt = (it.catatan && it.catatan !== '-') ? it.catatan : (it.kategori || 'UTANG');
-                        return `<span style="display:inline-block; background:#FFF; border:1px solid #FCD34D; color:#78350F; border-radius:4px; padding:1px 5px; font-size:9.5px; font-weight:700; margin:1px 2px 1px 0;">#${idx + 1} ${ketIt}</span>`;
+                        return `<span style="display:inline-block; background:#FFF; border:1px solid #FCD34D; color:#78350F; border-radius:4px; padding:1px 4px; font-size:9px; font-weight:700; margin:1px 2px 1px 0;">#${idx + 1} ${ketIt}</span>`;
                     }).join('');
 
                     rowsHtmlList.push(`
                         <tr id="row-piutang-group-${group.namaKey.replace(/[^A-Z0-9]/g, '_')}" style="background:linear-gradient(90deg, rgba(254, 243, 199, 0.55) 0%, rgba(255, 251, 235, 0.35) 100%); border-left:4px solid #D97706;">
                             <td>
-                                <span style="display:inline-block; background:#D97706; color:#FFF; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; margin-bottom:3px;">📚 AKUMULASI ${sortedChildren.length} NOTA</span>
+                                <span style="display:inline-block; background:#D97706; color:#FFF; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-bottom:2px;">📚 ${sortedChildren.length} NOTA</span>
                                 ${tglRangeInfo}
                             </td>
                             <td>
-                                <b style="font-size:12.5px; color:#92400E;">${group.namaDisplay}</b>
-                                <br><small style="color:#0284C7; font-weight:600;">${foundNoHp ? `📱 ${foundNoHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small>
-                                <div style="margin-top:4px;">
-                                    <button type="button" onclick="toggleRincianGrupPiutang('${encNama}')" style="background:${isExpanded ? '#B45309' : '#FEF3C7'}; color:${isExpanded ? '#FFF' : '#92400E'}; border:1px solid #F59E0B; border-radius:6px; padding:2px 8px; font-size:10px; font-weight:800; cursor:pointer;">
-                                        📂 ${isExpanded ? `Tutup Rincian (${sortedChildren.length}) ▲` : `Klik Rincian (${sortedChildren.length} Utang) ▼`}
+                                <b style="font-size:11.5px; color:#92400E; line-height:1.25; display:block;">${group.namaDisplay}</b>
+                                <small style="color:#0284C7; font-weight:600; font-size:9.5px;">${foundNoHp ? `📱 ${foundNoHp}` : '<span style="color:#94A3B8;">-</span>'}</small>
+                                <div style="margin-top:3px;">
+                                    <button type="button" onclick="toggleRincianGrupPiutang('${encNama}')" style="background:${isExpanded ? '#B45309' : '#FEF3C7'}; color:${isExpanded ? '#FFF' : '#92400E'}; border:1px solid #F59E0B; border-radius:5px; padding:2px 6px; font-size:9px; font-weight:800; cursor:pointer;">
+                                        📂 ${isExpanded ? `Tutup (${sortedChildren.length}) ▲` : `Rincian (${sortedChildren.length}) ▼`}
                                     </button>
                                 </div>
                             </td>
                             <td onclick="toggleRincianGrupPiutang('${encNama}')" style="cursor:pointer;" title="Klik untuk melihat/menyembunyikan rincian tiap nota utang">
-                                <div style="font-weight:800; font-size:10.5px; color:#92400E; margin-bottom:3px;">📌 Gabungan ${sortedChildren.length} Catatan Utang:</div>
+                                <div style="font-weight:800; font-size:9.5px; color:#92400E; margin-bottom:2px;">📌 Gabungan ${sortedChildren.length} Utang:</div>
                                 <div>${previewItemsText}</div>
                             </td>
                             <td class="text-debit">
-                                <b style="font-size:13px;">${window.formatRp(totalSisaPokok)}</b>
-                                <br><small style="color:#64748B; font-size:9.5px;">Total Modal: ${window.formatRp(totalPokokAwal)}</small>
-                                ${totalTagihanJual > totalSisaPokok ? `<br><span style="display:inline-block; margin-top:2px; background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; padding:1px 6px; border-radius:4px; font-size:9.5px; font-weight:800;">Total Tagih Jual: ${window.formatRp(totalTagihanJual)}</span>` : ''}
+                                <b style="font-size:12px;">${window.formatRp(totalSisaPokok)}</b>
+                                <br><small style="color:#64748B; font-size:9px;">Mdl: ${window.formatRp(totalPokokAwal)}</small>
+                                ${totalTagihanJual > totalSisaPokok ? `<br><span style="display:inline-block; margin-top:1px; background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; padding:1px 4px; border-radius:4px; font-size:9px; font-weight:800;">Tagih: ${window.formatRp(totalTagihanJual)}</span>` : ''}
                             </td>
-                            <td style="font-size:10.5px;">
+                            <td style="font-size:9.5px; line-height:1.3;">
                                 ${cicilanGabungan.length > 0
                                     ? cicilanGabungan.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('')
-                                    : `<span style="color:#B45309; font-weight:600; font-size:10px;">Belum ada cicilan<br><small style="color:#64748B;">(Bisa lunas sekaligus / dicicil)</small></span>`
+                                    : `<span style="color:#B45309; font-weight:600; font-size:9px;">Belum dicicil</span>`
                                 }
                             </td>
-                            <td><span style="font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; background:var(--primary-light); color:var(--primary);">${Array.from(katSet).join(', ') || 'GABUNGAN'}</span></td>
-                            <td><span style="font-size:9.5px; font-weight:700; color:var(--text);">${Array.from(sumberSet).join(', ') || '-'}</span></td>
+                            <td><span style="font-size:9px; font-weight:700; padding:2px 5px; border-radius:5px; background:var(--primary-light); color:var(--primary); display:inline-block;">${Array.from(katSet).join(', ') || 'GABUNGAN'}</span></td>
+                            <td><span style="font-size:9px; font-weight:700; color:var(--text);">${Array.from(sumberSet).join(', ') || '-'}</span></td>
                             <td>
-                                <span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800;">⏳ ${sortedChildren.length} NOTA AKTIF</span>
+                                <span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">⏳ ${sortedChildren.length} NOTA</span>
                             </td>
                             <td>
                                 <div class="aksi-icon-group">
@@ -11866,13 +11959,13 @@
                                             <path d="M16 15h2"></path>
                                         </svg>
                                     </button>
-                                    <button type="button" class="btn-aksi-icon" style="background:#FEF3C7; color:#B45309; border-color:#FCD34D; font-weight:900; font-size:13px;" onclick="tambahUtangPelangganSama('${encNama}', '${encHp}')" title="Tambah Utang Baru Lanjutan untuk ${group.namaDisplay}" aria-label="Tambah Utang">➕</button>
+                                    <button type="button" class="btn-aksi-icon" style="background:#FEF3C7; color:#B45309; border-color:#FCD34D; font-weight:900; font-size:11px;" onclick="tambahUtangPelangganSama('${encNama}', '${encHp}')" title="Tambah Utang Baru Lanjutan untuk ${group.namaDisplay}" aria-label="Tambah Utang">➕</button>
                                     <button type="button" class="btn-aksi-icon aksi-wa" onclick="kirimWaPengingatPiutangGrup('${encNama}')" title="Kirim Rekap Gabungan Semua Tagihan ke WhatsApp ${group.namaDisplay}" aria-label="Kirim WA Rekap">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                                         </svg>
                                     </button>
-                                    <button type="button" class="btn-aksi-icon" style="background:${isExpanded ? '#B45309' : '#E0F2FE'}; color:${isExpanded ? '#FFF' : '#0369A1'}; border-color:${isExpanded ? '#92400E' : '#BAE6FD'}; font-weight:800; font-size:11px;" onclick="toggleRincianGrupPiutang('${encNama}')" title="Tampilkan / Sembunyikan Rincian Per Nota">${isExpanded ? '▲' : '▼'}</button>
+                                    <button type="button" class="btn-aksi-icon" style="background:${isExpanded ? '#B45309' : '#E0F2FE'}; color:${isExpanded ? '#FFF' : '#0369A1'}; border-color:${isExpanded ? '#92400E' : '#BAE6FD'}; font-weight:800; font-size:10px;" onclick="toggleRincianGrupPiutang('${encNama}')" title="Tampilkan / Sembunyikan Rincian Per Nota">${isExpanded ? '▲' : '▼'}</button>
                                 </div>
                             </td>
                         </tr>
@@ -11903,21 +11996,22 @@
                     const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
                     const tagihanJualP = Math.max(pokokAwalP, Number(p.tagihanJual || 0));
                     const waktuPiutangHtml = window.formatKolomWaktuSeragam(p.isoDate, p.waktu, p.tglDisplay);
+                    const sumberLabel = (!p.sumber || p.sumber === 'TIDAK POTONG SALDO') ? 'TANPA POTONG' : p.sumber;
                     return `
                         <tr id="row-piutang-${p.id}">
                             <td>${waktuPiutangHtml}</td>
-                            <td><b>${p.nama}</b><br><small style="color:#0284C7; font-weight:600;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">(Belum ada WA)</span>'}</small></td>
-                            <td><span style="font-weight:600; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
+                            <td><b style="font-size:11px;">${p.nama}</b><br><small style="color:#0284C7; font-weight:600; font-size:9.5px;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">-</span>'}</small></td>
+                            <td><span style="font-weight:600; font-size:10.5px; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
                             <td class="text-kredit">
-                                <b>${window.formatRp(pokokAwalP)}</b>
-                                ${tagihanJualP > pokokAwalP ? `<br><small style="color:#047857; font-size:9.5px; font-weight:700;">Jual: ${window.formatRp(tagihanJualP)}</small>` : `<br><small style="color:#16A34A; font-size:9.5px; font-weight:700;">Sisa: Rp 0</small>`}
+                                <b style="font-size:11.5px;">${window.formatRp(pokokAwalP)}</b>
+                                ${tagihanJualP > pokokAwalP ? `<br><small style="color:#047857; font-size:9px; font-weight:700;">Jual: ${window.formatRp(tagihanJualP)}</small>` : `<br><small style="color:#16A34A; font-size:9px; font-weight:700;">Sisa: Rp 0</small>`}
                             </td>
-                            <td style="font-size:10.5px;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#16A34A; font-weight:700;">Lunas</span>'}</td>
-                            <td><span style="font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--primary-light); color:var(--primary);">${p.kategori || 'LAIN-LAIN'}</span></td>
-                            <td><span style="font-size:10px; font-weight:700; color:${p.sumber === 'TIDAK POTONG SALDO' ? '#64748B' : 'var(--text)'};">${p.sumber || 'TIDAK POTONG SALDO'}</span></td>
+                            <td style="font-size:9.5px; line-height:1.3;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#16A34A; font-weight:700;">Lunas</span>'}</td>
+                            <td><span style="font-size:9px; font-weight:700; padding:2px 5px; border-radius:5px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
+                            <td><span style="font-size:9px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
                             <td>
-                                <span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800;">✅ LUNAS</span>
-                                <br><small style="color:#64748B; font-weight:700; font-size:9.5px;">${p.tglLunas || '-'}</small>
+                                <span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">✅ LUNAS</span>
+                                <br><small style="color:#64748B; font-weight:700; font-size:9px;">${p.tglLunas || '-'}</small>
                             </td>
                             <td>
                                 <div class="aksi-icon-group">
@@ -12931,7 +13025,9 @@
             const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
 
             setVal('setPrinterUkuran', p.printerUkuran || '58mm');
+            setVal('setPrinterMetode', p.printerMetode || 'OTOMATIS');
             setVal('setTeksStruk', p.teksStruk || 'Terima kasih telah berbelanja di ZENCELL!\nBarang yang sudah dibeli tidak dapat ditukar/dikembalikan.');
+            if (window.updateBluetoothPrinterStatusUI) window.updateBluetoothPrinterStatusUI();
 
             // 1. Nota Servis Masuk
             setVal('nc_sm_judulNota', nc.servisMasuk.judulNota);
@@ -13911,16 +14007,19 @@
                 }
             };
 
+            const metode = getVal('setPrinterMetode', 'OTOMATIS');
             window.pengaturanToko.printerUkuran = ukuran;
+            window.pengaturanToko.printerMetode = metode;
             window.pengaturanToko.teksStruk = teks;
             window.pengaturanToko.notaConfig = notaConfig;
 
             localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
             window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
-            window.catatLogAktivitas('PENGATURAN NOTA & PRINTER', `Menyimpan pengaturan 4 jenis nota & ukuran kertas (${ukuran})`);
+            if (window.updateBluetoothPrinterStatusUI) window.updateBluetoothPrinterStatusUI();
+            window.catatLogAktivitas('PENGATURAN NOTA & PRINTER', `Menyimpan pengaturan 4 jenis nota, ukuran kertas (${ukuran}), metode (${metode})`);
 
             window.flashButtonSuccess('btnSimpanPrinter', '✅ TERSIMPAN!', '💾 SIMPAN SEMUA PENGATURAN NOTA & PRINTER');
-            window.showSettingBanner(`✅ Pengaturan ke-4 jenis nota (Servis Masuk, Servis Lunas, Struk Transfer, Struk Kasir) & printer (${ukuran}) berhasil disimpan!`);
+            window.showSettingBanner(`✅ Pengaturan ke-4 jenis nota & printer (${ukuran} • ${metode}) berhasil disimpan!`);
             window.showToast(`✅ Semua pengaturan nota & printer (${ukuran}) berhasil disimpan!`, 'success');
         };
 
@@ -14459,7 +14558,439 @@
             window.cetakStrukKasirBiasaTrx(trxId);
         };
 
-        window.cetakStrukKasirBiasaTrx = function(trxId) {
+        // =========================================================================
+        // ENGINE CETAK THERMAL BLUETOOTH LANGSUNG (ESC/POS + RAWBT + BROWSER PRINT)
+        // =========================================================================
+        window.btPrinterState = {
+            device: null,
+            server: null,
+            characteristic: null,
+            deviceName: localStorage.getItem('zencell_bt_printer_name') || ''
+        };
+
+        window.getThermalColsCount = function() {
+            const uk = (window.pengaturanToko && window.pengaturanToko.printerUkuran) || '58mm';
+            return uk === '80mm' ? 48 : 32;
+        };
+
+        window.updateBluetoothPrinterStatusUI = function() {
+            const isConnected = Boolean(window.btPrinterState.device && window.btPrinterState.device.gatt && window.btPrinterState.device.gatt.connected && window.btPrinterState.characteristic);
+            const savedName = window.btPrinterState.deviceName || (window.btPrinterState.device && window.btPrinterState.device.name) || 'Printer Thermal';
+            const badgeSet = document.getElementById('btPrinterStatusBadgeSetting');
+            const badgeModal = document.getElementById('btPrinterStatusBadgeModalTf');
+            const btnDisc = document.getElementById('btnDisconnectBtSetting');
+
+            if (badgeSet) {
+                if (isConnected) {
+                    badgeSet.style.background = '#DCFCE7';
+                    badgeSet.style.color = '#15803D';
+                    badgeSet.style.borderColor = '#86EFAC';
+                    badgeSet.innerHTML = `🟢 Tersambung: <b>${savedName}</b> (${window.pengaturanToko?.printerUkuran || '58mm'})`;
+                } else {
+                    badgeSet.style.background = '#FEE2E2';
+                    badgeSet.style.color = '#B91C1C';
+                    badgeSet.style.borderColor = '#FCA5A5';
+                    badgeSet.innerHTML = savedName
+                        ? `🟡 Siap Sambung Ulang: <b>${savedName}</b>`
+                        : `🔴 Bluetooth Belum Tersambung`;
+                }
+            }
+            if (badgeModal) {
+                if (isConnected) {
+                    badgeModal.style.color = '#15803D';
+                    badgeModal.innerHTML = `🟢 BT Aktif: <b>${savedName}</b> (${window.pengaturanToko?.printerUkuran || '58mm'})`;
+                } else {
+                    badgeModal.style.color = '#1E40AF';
+                    badgeModal.innerHTML = savedName
+                        ? `🟡 BT Tersimpan: ${savedName} (Klik Pilih BT)`
+                        : `🔴 BT Belum Tersambung (Otomatis/USB)`;
+                }
+            }
+            if (btnDisc) {
+                btnDisc.style.display = isConnected ? 'inline-block' : 'none';
+            }
+
+            const p = window.pengaturanToko || {};
+            const qUk = document.getElementById('stf_quickPrinterUkuran');
+            if (qUk && (p.printerUkuran === '58mm' || p.printerUkuran === '80mm')) qUk.value = p.printerUkuran;
+            const qMet = document.getElementById('stf_quickPrinterMetode');
+            if (qMet) qMet.value = p.printerMetode || 'OTOMATIS';
+            const sUk = document.getElementById('setPrinterUkuran');
+            if (sUk && p.printerUkuran) sUk.value = p.printerUkuran;
+            const sMet = document.getElementById('setPrinterMetode');
+            if (sMet && p.printerMetode) sMet.value = p.printerMetode;
+            const lblUk = document.getElementById('lblPreviewUkuranStrukTf');
+            if (lblUk) lblUk.innerText = p.printerUkuran || '58mm';
+        };
+
+        window.onChangeQuickPrinterUkuran = function(val) {
+            if (!val) return;
+            window.pengaturanToko = window.pengaturanToko || {};
+            window.pengaturanToko.printerUkuran = val;
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+            window.updateBluetoothPrinterStatusUI();
+            if (window.updateLivePreviewStrukTransfer) window.updateLivePreviewStrukTransfer();
+            window.showToast(`📏 Ukuran kertas struk diatur ke ${val} (${val === '80mm' ? '48 karakter/baris' : '32 karakter/baris'})`, 'success');
+        };
+
+        window.onChangeQuickPrinterMetode = function(val) {
+            if (!val) return;
+            window.pengaturanToko = window.pengaturanToko || {};
+            window.pengaturanToko.printerMetode = val;
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+            window.updateBluetoothPrinterStatusUI();
+            window.showToast(`📲 Mode cetak struk diatur ke: ${val}`, 'success');
+        };
+
+        window.findWritableBluetoothCharacteristic = async function(server) {
+            const commonServiceUUIDs = [
+                '000018f0-0000-1000-8000-00805f9b34fb',
+                'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+                '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+                '0000ff00-0000-1000-8000-00805f9b34fb',
+                '0000ffe0-0000-1000-8000-00805f9b34fb',
+                '0000fee7-0000-1000-8000-00805f9b34fb'
+            ];
+            let services = [];
+            try {
+                services = await server.getPrimaryServices();
+            } catch (e) {
+                for (const uuid of commonServiceUUIDs) {
+                    try {
+                        const s = await server.getPrimaryService(uuid);
+                        if (s) services.push(s);
+                    } catch (_) {}
+                }
+            }
+            for (const service of services) {
+                try {
+                    const chars = await service.getCharacteristics();
+                    for (const ch of chars) {
+                        if (ch.properties && (ch.properties.write || ch.properties.writeWithoutResponse)) {
+                            return ch;
+                        }
+                    }
+                } catch (_) {}
+            }
+            return null;
+        };
+
+        window.connectBluetoothPrinter = async function() {
+            if (!navigator.bluetooth) {
+                window.showToast("⚠️ Browser ini belum mendukung Web Bluetooth langsung. Gunakan Google Chrome di HP Android / PC, atau pilih metode 'Aplikasi RawBT Android'.", "warn");
+                return false;
+            }
+            try {
+                window.showToast("🔵 Mencari printer thermal Bluetooth di sekitar...", "info");
+                const optionalServices = [
+                    '000018f0-0000-1000-8000-00805f9b34fb',
+                    'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+                    '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+                    '0000ff00-0000-1000-8000-00805f9b34fb',
+                    '0000ffe0-0000-1000-8000-00805f9b34fb',
+                    '0000fee7-0000-1000-8000-00805f9b34fb',
+                    '00001101-0000-1000-8000-00805f9b34fb'
+                ];
+                const device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices
+                });
+                if (!device) return false;
+
+                device.addEventListener('gattserverdisconnected', () => {
+                    window.btPrinterState.characteristic = null;
+                    window.updateBluetoothPrinterStatusUI();
+                });
+
+                const server = await device.gatt.connect();
+                const characteristic = await window.findWritableBluetoothCharacteristic(server);
+                if (!characteristic) {
+                    window.showToast("⚠️ Printer terdeteksi sebagai Bluetooth Classic (SPP). Mengalihkan otomatis ke mode RawBT Android agar tetap bisa cetak 1-klik!", "warn");
+                    window.onChangeQuickPrinterMetode('RAWBT_ANDROID');
+                    return false;
+                }
+
+                window.btPrinterState.device = device;
+                window.btPrinterState.server = server;
+                window.btPrinterState.characteristic = characteristic;
+                window.btPrinterState.deviceName = device.name || 'Printer Thermal BT';
+                localStorage.setItem('zencell_bt_printer_name', window.btPrinterState.deviceName);
+                window.updateBluetoothPrinterStatusUI();
+                window.showToast(`✅ Printer Bluetooth "${window.btPrinterState.deviceName}" berhasil tersambung! Siap cetak otomatis (${window.pengaturanToko?.printerUkuran || '58mm'}).`, "success");
+                return true;
+            } catch (err) {
+                if (err && err.name !== 'NotFoundError') {
+                    console.warn('Bluetooth connect error:', err);
+                    window.showToast("⚠️ Gagal menyambungkan Bluetooth: " + (err.message || 'Pastikan printer menyala & Bluetooth HP aktif'), "warn");
+                }
+                return false;
+            }
+        };
+
+        window.disconnectBluetoothPrinter = function() {
+            try {
+                if (window.btPrinterState.device && window.btPrinterState.device.gatt && window.btPrinterState.device.gatt.connected) {
+                    window.btPrinterState.device.gatt.disconnect();
+                }
+            } catch (_) {}
+            window.btPrinterState.characteristic = null;
+            window.updateBluetoothPrinterStatusUI();
+            window.showToast("🔌 Koneksi printer Bluetooth diputuskan.", "info");
+        };
+
+        window.sendEscPosBytesToBluetooth = async function(uint8Data) {
+            let ch = window.btPrinterState.characteristic;
+            if (!ch && window.btPrinterState.device && window.btPrinterState.device.gatt) {
+                try {
+                    const srv = await window.btPrinterState.device.gatt.connect();
+                    ch = await window.findWritableBluetoothCharacteristic(srv);
+                    window.btPrinterState.characteristic = ch;
+                    window.updateBluetoothPrinterStatusUI();
+                } catch (_) {}
+            }
+            if (!ch) {
+                const ok = await window.connectBluetoothPrinter();
+                if (!ok) return false;
+                ch = window.btPrinterState.characteristic;
+            }
+            if (!ch) return false;
+
+            // Kirim per potongan (chunk) 100 byte agar buffer printer thermal Bluetooth mini tidak overflow
+            const chunkSize = 100;
+            for (let i = 0; i < uint8Data.length; i += chunkSize) {
+                const slice = uint8Data.slice(i, i + chunkSize);
+                if (ch.properties && ch.properties.writeWithoutResponse && ch.writeValueWithoutResponse) {
+                    await ch.writeValueWithoutResponse(slice);
+                } else {
+                    await ch.writeValue(slice);
+                }
+                await new Promise(r => setTimeout(r, 18));
+            }
+            return true;
+        };
+
+        window.sendEscPosToRawBTAndroid = function(uint8Data) {
+            let binary = '';
+            for (let i = 0; i < uint8Data.byteLength; i++) {
+                binary += String.fromCharCode(uint8Data[i]);
+            }
+            const base64Data = btoa(binary);
+            const rawbtUrl = `rawbt:base64,${base64Data}`;
+            const a = document.createElement('a');
+            a.href = rawbtUrl;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => a.remove(), 600);
+            window.showToast("🤖 Mengirim perintah cetak langsung ke aplikasi RawBT Android...", "success");
+            return true;
+        };
+
+        // Helper pembuat baris teks ESC/POS presisi sesuai ukuran kertas (58mm = 32 kolom, 80mm = 48 kolom)
+        window.escPosFormatLR = function(left, right, width) {
+            const l = String(left || '').trim();
+            const r = String(right || '').trim();
+            const space = width - l.length - r.length;
+            if (space >= 1) {
+                return l + ' '.repeat(space) + r + '\n';
+            }
+            const maxLeft = Math.max(8, width - r.length - 1);
+            return l.slice(0, maxLeft) + ' ' + r + '\n';
+        };
+
+        window.escPosWrapCenter = function(text, width) {
+            const rawLines = String(text || '').split(/\r?\n/);
+            const out = [];
+            rawLines.forEach(line => {
+                let s = line.trim();
+                if (!s) return;
+                while (s.length > width) {
+                    let cut = s.lastIndexOf(' ', width);
+                    if (cut <= 0) cut = width;
+                    out.push(s.slice(0, cut).trim());
+                    s = s.slice(cut).trim();
+                }
+                if (s) out.push(s);
+            });
+            return out.join('\n') + (out.length ? '\n' : '');
+        };
+
+        window.encodeEscPosString = function(str) {
+            const clean = String(str || '').replace(/[^\x09\x0A\x0D\x20-\x7E]/g, '');
+            const arr = [];
+            for (let i = 0; i < clean.length; i++) arr.push(clean.charCodeAt(i));
+            return arr;
+        };
+
+        window.buildEscPosStrukTransferBytes = function(d) {
+            const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().transfer;
+            const cols = window.getThermalColsCount();
+            const divider = '-'.repeat(cols) + '\n';
+            const kasirName = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
+
+            const bytes = [];
+            const pushCmd = (...b) => bytes.push(...b);
+            const pushTxt = (t) => bytes.push(...window.encodeEscPosString(t));
+
+            // Init printer & normal font
+            pushCmd(0x1B, 0x40);
+            // Center align
+            pushCmd(0x1B, 0x61, 0x01);
+            // Bold ON
+            pushCmd(0x1B, 0x45, 0x01);
+            pushTxt((p.namaToko || 'POS ZENCELL 1').toUpperCase() + '\n');
+            pushCmd(0x1B, 0x45, 0x00);
+
+            if (nc.subJudul) pushTxt(window.escPosWrapCenter(nc.subJudul, cols));
+            if (p.alamatToko) pushTxt(window.escPosWrapCenter(p.alamatToko, cols));
+            if (p.kontakToko) pushTxt(window.escPosWrapCenter(p.kontakToko, cols));
+
+            pushTxt(divider);
+            pushCmd(0x1B, 0x45, 0x01);
+            pushTxt(`*** ${nc.judulStruk || 'STRUK BUKTI TRANSFER'} ***\n`);
+            pushTxt(`[${d.status || 'TRANSAKSI BERHASIL'}]\n`);
+            pushCmd(0x1B, 0x45, 0x00);
+            pushTxt(divider);
+
+            // Left align details
+            pushCmd(0x1B, 0x61, 0x00);
+            pushTxt(window.escPosFormatLR('WAKTU:', d.waktu || '-', cols));
+            if (nc.showNoRef) pushTxt(window.escPosFormatLR('NO.REF/SN:', d.noRef || '-', cols));
+            pushTxt(window.escPosFormatLR('LAYANAN:', d.jenisLayanan || '-', cols));
+            pushTxt(window.escPosFormatLR('BANK/TUJUAN:', d.bankTujuan || '-', cols));
+            pushTxt(window.escPosFormatLR('NO.REK/TUJUAN:', d.noRek || '-', cols));
+            pushTxt(window.escPosFormatLR('PENERIMA(A/N):', d.namaPenerima || '-', cols));
+            if (nc.showPengirim && d.pengirim) pushTxt(window.escPosFormatLR('PENGIRIM/AGEN:', d.pengirim, cols));
+            if (nc.showKasir) pushTxt(window.escPosFormatLR('PETUGAS:', kasirName, cols));
+
+            pushTxt(divider);
+            if (d.modeAdmin === 'GABUNG') {
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt(window.escPosFormatLR('TOTAL TRANSAKSI:', window.formatRp(d.total), cols));
+                pushCmd(0x1B, 0x45, 0x00);
+            } else if (d.modeAdmin === 'NOMINAL_SAJA') {
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt(window.escPosFormatLR('NOMINAL TF:', window.formatRp(d.nominal), cols));
+                pushCmd(0x1B, 0x45, 0x00);
+            } else {
+                pushTxt(window.escPosFormatLR('NOMINAL:', window.formatRp(d.nominal), cols));
+                pushTxt(window.escPosFormatLR('BIAYA ADMIN:', window.formatRp(d.admin), cols));
+                pushTxt(divider);
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt(window.escPosFormatLR('TOTAL BAYAR:', window.formatRp(d.total), cols));
+                pushCmd(0x1B, 0x45, 0x00);
+            }
+
+            pushTxt(divider);
+            pushCmd(0x1B, 0x61, 0x01);
+            pushTxt(window.escPosWrapCenter(nc.catatanFooter || 'Struk ini adalah bukti transaksi sah dari ZENCELL.', cols));
+            // Feed 3 lines & partial cut (if supported)
+            pushTxt('\n\n\n');
+            pushCmd(0x1D, 0x56, 0x42, 0x00);
+            return new Uint8Array(bytes);
+        };
+
+        window.buildEscPosStrukKasirBytes = function(t) {
+            const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().kasir;
+            const cols = window.getThermalColsCount();
+            const divider = '-'.repeat(cols) + '\n';
+            const kasirName = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
+            const qtyVal = Number(t.qty || 1);
+            const totalJual = Number(t.hargaJual || 0);
+            const hargaSatuan = qtyVal > 0 ? Math.round(totalJual / qtyVal) : totalJual;
+
+            const bytes = [];
+            const pushCmd = (...b) => bytes.push(...b);
+            const pushTxt = (tStr) => bytes.push(...window.encodeEscPosString(tStr));
+
+            pushCmd(0x1B, 0x40);
+            pushCmd(0x1B, 0x61, 0x01);
+            pushCmd(0x1B, 0x45, 0x01);
+            pushTxt((p.namaToko || 'POS ZENCELL 1').toUpperCase() + '\n');
+            pushCmd(0x1B, 0x45, 0x00);
+            if (p.alamatToko) pushTxt(window.escPosWrapCenter(p.alamatToko, cols));
+            if (p.kontakToko) pushTxt(window.escPosWrapCenter(p.kontakToko, cols));
+            if (nc.judulStruk) {
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt(`*** ${nc.judulStruk} ***\n`);
+                pushCmd(0x1B, 0x45, 0x00);
+            }
+            pushTxt(divider);
+            pushCmd(0x1B, 0x61, 0x00);
+            pushTxt(window.escPosFormatLR(`${t.isoDate || window.getTodayIso()} ${t.waktu || ''}`, nc.showKasir ? kasirName : '', cols));
+            pushTxt(divider);
+
+            const itemTitle = `${t.ket || 'ITEM'}${nc.showKategori && t.kat ? ' [' + t.kat + ']' : ''}`;
+            pushCmd(0x1B, 0x45, 0x01);
+            pushTxt(itemTitle.slice(0, cols) + '\n');
+            pushCmd(0x1B, 0x45, 0x00);
+            pushTxt(window.escPosFormatLR(`${qtyVal} x ${window.formatRp(hargaSatuan)}`, window.formatRp(totalJual), cols));
+            pushTxt(divider);
+
+            pushCmd(0x1B, 0x45, 0x01);
+            pushTxt(window.escPosFormatLR('TOTAL BAYAR:', window.formatRp(totalJual), cols));
+            pushCmd(0x1B, 0x45, 0x00);
+
+            if (nc.showMetodeBayar) {
+                if (t.isSplit && t.akunMasuk2) {
+                    pushTxt(window.escPosFormatLR(`${t.akunMasuk1}:`, window.formatRp(t.jualSplit1), cols));
+                    pushTxt(window.escPosFormatLR(`${t.akunMasuk2}:`, window.formatRp(t.jualSplit2), cols));
+                } else {
+                    pushTxt(window.escPosFormatLR(`BAYAR (${t.akunMasuk1 || 'LACI'}):`, window.formatRp(totalJual), cols));
+                }
+            }
+            pushTxt(divider);
+            pushCmd(0x1B, 0x61, 0x01);
+            if (nc.ucapanFooter) pushTxt(window.escPosWrapCenter(nc.ucapanFooter, cols));
+            pushTxt(window.escPosWrapCenter(p.teksStruk || 'Terima kasih telah berbelanja!', cols));
+            pushTxt('\n\n\n');
+            pushCmd(0x1D, 0x56, 0x42, 0x00);
+            return new Uint8Array(bytes);
+        };
+
+        window.shouldUseDirectBluetoothPrint = function() {
+            const metode = (window.pengaturanToko && window.pengaturanToko.printerMetode) || 'OTOMATIS';
+            if (metode === 'BLUETOOTH_DIRECT') return 'BLUETOOTH_DIRECT';
+            if (metode === 'RAWBT_ANDROID') return 'RAWBT_ANDROID';
+            if (metode === 'BROWSER_PRINT') return 'BROWSER_PRINT';
+            // Mode OTOMATIS: jika printer Bluetooth sedang tersambung, langsung cetak via Bluetooth tanpa dialog browser!
+            const isBtConnected = Boolean(window.btPrinterState.device && window.btPrinterState.device.gatt && window.btPrinterState.device.gatt.connected && window.btPrinterState.characteristic);
+            if (isBtConnected) return 'BLUETOOTH_DIRECT';
+            return 'BROWSER_PRINT';
+        };
+
+        window.testPrintBluetoothLangsung = async function() {
+            const sampleTf = {
+                jenisLayanan: 'TEST PRINTER BLUETOOTH',
+                noRef: window.generateNoRefStrukTransfer('TEST'),
+                bankTujuan: 'PRINTER READY',
+                noRek: (window.pengaturanToko?.printerUkuran || '58mm') + ' (' + window.getThermalColsCount() + ' KOLOM)',
+                namaPenerima: 'POS ZENCELL 1',
+                pengirim: 'SISTEM KASIR',
+                waktu: `${window.getTodayIso()} ${new Date().toTimeString().slice(0, 8)}`,
+                nominal: 100000,
+                admin: 5000,
+                total: 105000,
+                modeAdmin: 'PISAH',
+                status: 'KONEKSI BLUETOOTH OK'
+            };
+            const bytes = window.buildEscPosStrukTransferBytes(sampleTf);
+            const metode = (window.pengaturanToko && window.pengaturanToko.printerMetode) || 'OTOMATIS';
+            if (metode === 'RAWBT_ANDROID') {
+                window.sendEscPosToRawBTAndroid(bytes);
+                return;
+            }
+            const ok = await window.sendEscPosBytesToBluetooth(bytes);
+            if (ok) {
+                window.showToast("🖨️ Test struk berhasil dicetak langsung ke Printer Bluetooth!", "success");
+            }
+        };
+
+        window.cetakStrukKasirBiasaTrx = async function(trxId) {
             const t = (window.transaksiJurnal || []).find(x => x.id == trxId);
             if (!t) return;
             const p = window.pengaturanToko || {};
@@ -14468,6 +14999,24 @@
             const qtyVal = Number(t.qty || 1);
             const totalJual = Number(t.hargaJual || 0);
             const hargaSatuan = qtyVal > 0 ? Math.round(totalJual / qtyVal) : totalJual;
+
+            // Cek apakah memakai Cetak Langsung Bluetooth / RawBT Android
+            const targetMode = window.shouldUseDirectBluetoothPrint();
+            if (targetMode === 'RAWBT_ANDROID') {
+                const bytes = window.buildEscPosStrukKasirBytes(t);
+                window.sendEscPosToRawBTAndroid(bytes);
+                window.catatLogAktivitas('CETAK STRUK RAWBT', `Mencetak struk kasir "${t.ket}" via RawBT Android`);
+                return;
+            }
+            if (targetMode === 'BLUETOOTH_DIRECT') {
+                const bytes = window.buildEscPosStrukKasirBytes(t);
+                const sent = await window.sendEscPosBytesToBluetooth(bytes);
+                if (sent) {
+                    window.showToast(`🖨️ Struk "${t.ket}" langsung dicetak ke Printer Bluetooth (${p.printerUkuran || '58mm'})!`, 'success');
+                    window.catatLogAktivitas('CETAK STRUK BT', `Mencetak struk kasir "${t.ket}" via Bluetooth Langsung`);
+                    return;
+                }
+            }
 
             const metodeMasukHtml = nc.showMetodeBayar
                 ? ((t.isSplit && t.akunMasuk2)
@@ -14948,6 +15497,7 @@
             const p = window.pengaturanToko || {};
             const lblUk = document.getElementById('lblPreviewUkuranStrukTf');
             if (lblUk) lblUk.innerText = p.printerUkuran || '58mm';
+            if (window.updateBluetoothPrinterStatusUI) window.updateBluetoothPrinterStatusUI();
 
             window.populateDropdownTrxStrukTransfer(trxId);
             if (trxId) {
@@ -15110,8 +15660,28 @@
             box.innerHTML = window.buildStrukTransferThermalHtml(d, false);
         };
 
-        window.cetakStrukTransferSekarang = function() {
+        window.cetakStrukTransferSekarang = async function() {
             const d = window.getFormStrukTransferData();
+            const p = window.pengaturanToko || {};
+
+            // Jika tidak menyertakan gambar SS fisik dan memilih mode Bluetooth Langsung / RawBT Android
+            const targetMode = window.shouldUseDirectBluetoothPrint();
+            if (!d.sertakanGambarSs && targetMode === 'RAWBT_ANDROID') {
+                const bytes = window.buildEscPosStrukTransferBytes(d);
+                window.sendEscPosToRawBTAndroid(bytes);
+                window.catatLogAktivitas('CETAK STRUK TRANSFER RAWBT', `Mencetak struk bukti transfer ${d.bankTujuan} A/N ${d.namaPenerima} via RawBT`);
+                return;
+            }
+            if (!d.sertakanGambarSs && targetMode === 'BLUETOOTH_DIRECT') {
+                const bytes = window.buildEscPosStrukTransferBytes(d);
+                const sent = await window.sendEscPosBytesToBluetooth(bytes);
+                if (sent) {
+                    window.showToast(`🖨️ Struk Transfer ${d.bankTujuan} (${window.formatRp(d.total)}) langsung dicetak ke Printer Bluetooth (${p.printerUkuran || '58mm'})!`, 'success');
+                    window.catatLogAktivitas('CETAK STRUK TRANSFER BT', `Mencetak struk bukti transfer ${d.bankTujuan} A/N ${d.namaPenerima} via Bluetooth`);
+                    return;
+                }
+            }
+
             const printArea = document.getElementById('printAreaNotaLunasService');
             const printService = document.getElementById('printAreaServiceNota');
             const printReport = document.getElementById('printAreaReport');
@@ -15353,9 +15923,31 @@
             reader.readAsDataURL(file);
         };
 
-        window.testPrintStrukKasir = function() {
+        window.testPrintStrukKasir = async function() {
             const p = window.pengaturanToko || {};
             const nc = window.getNotaConfig().kasir;
+            const targetMode = window.shouldUseDirectBluetoothPrint ? window.shouldUseDirectBluetoothPrint() : 'BROWSER_PRINT';
+            const sampleTrx = {
+                ket: 'VOUCHER INTERNET 5GB',
+                kat: 'VOUCHER',
+                qty: 1,
+                hargaJual: 15000,
+                akunMasuk1: 'LACI',
+                isoDate: window.getTodayIso(),
+                waktu: new Date().toTimeString().slice(0, 5)
+            };
+            if (targetMode === 'RAWBT_ANDROID') {
+                window.sendEscPosToRawBTAndroid(window.buildEscPosStrukKasirBytes(sampleTrx));
+                return;
+            }
+            if (targetMode === 'BLUETOOTH_DIRECT') {
+                const sent = await window.sendEscPosBytesToBluetooth(window.buildEscPosStrukKasirBytes(sampleTrx));
+                if (sent) {
+                    window.showToast('🖨️ Test Struk Kasir berhasil dicetak ke Printer Bluetooth!', 'success');
+                    return;
+                }
+            }
+
             const printArea = document.getElementById('printAreaNotaLunasService');
             if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
             printArea.className = window.getStrukThermalClass ? window.getStrukThermalClass() : 'struk-thermal-mode';
@@ -15406,7 +15998,7 @@
             setTimeout(() => { printArea.style.display = 'none'; printArea.className = ''; }, 1000);
         };
 
-        window.testPrintStrukTransfer = function() {
+        window.testPrintStrukTransfer = async function() {
             const nc = window.getNotaConfig().transfer;
             const sampleData = {
                 jenisLayanan: 'TRANSFER BANK',
@@ -15423,6 +16015,19 @@
                 status: nc.statusDefault || 'TRANSAKSI BERHASIL',
                 sertakanGambarSs: false
             };
+            const targetMode = window.shouldUseDirectBluetoothPrint ? window.shouldUseDirectBluetoothPrint() : 'BROWSER_PRINT';
+            if (targetMode === 'RAWBT_ANDROID') {
+                window.sendEscPosToRawBTAndroid(window.buildEscPosStrukTransferBytes(sampleData));
+                return;
+            }
+            if (targetMode === 'BLUETOOTH_DIRECT') {
+                const sent = await window.sendEscPosBytesToBluetooth(window.buildEscPosStrukTransferBytes(sampleData));
+                if (sent) {
+                    window.showToast('🖨️ Test Struk Transfer berhasil dicetak ke Printer Bluetooth!', 'success');
+                    return;
+                }
+            }
+
             const printArea = document.getElementById('printAreaNotaLunasService');
             if (!printArea) return;
             if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
