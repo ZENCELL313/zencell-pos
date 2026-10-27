@@ -1561,11 +1561,6 @@
         .logo-preview-box { width: 110px; height: 110px; border: 2px dashed #CBD5E1; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #F8FAFC; overflow: hidden; margin: 0 auto 12px auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.04); }
         .logo-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        @page {
-            size: A5 landscape;
-            margin: 0mm;
-        }
-
         @media print {
             html, body {
                 width: 100% !important;
@@ -1619,12 +1614,23 @@
                 position: relative !important;
                 left: 0 !important;
                 top: 0 !important;
-                width: 100% !important;
-                margin: 0 auto !important;
-                padding: 4mm !important;
+                width: 48mm !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0.5mm 1mm !important;
                 background: #FFFFFF !important;
                 color: #000000 !important;
                 box-sizing: border-box !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            #printAreaNotaLunasService.struk-thermal-mode.struk-80mm {
+                width: 72mm !important;
+            }
+            #printAreaNotaLunasService.struk-thermal-mode.struk-a4 {
+                width: 80mm !important;
+                margin: 0 auto !important;
+                padding: 4mm !important;
             }
         }
 
@@ -6482,8 +6488,16 @@
             } else if (mode === 'REPORT_A4') {
                 styleEl.innerHTML = '@page { size: A4 portrait; margin: 10mm; }';
             } else {
-                styleEl.innerHTML = '@page { margin: 4mm; }';
+                // Mode STRUK Thermal (POS58 / POS80): paksa orientasi portrait & margin 0mm agar tidak terputar landscape
+                styleEl.innerHTML = '@page { size: portrait; margin: 0mm; }';
             }
+        };
+
+        window.getStrukThermalClass = function() {
+            const uk = (window.pengaturanToko && window.pengaturanToko.printerUkuran) ? window.pengaturanToko.printerUkuran : '58mm';
+            if (uk === '80mm') return 'struk-thermal-mode struk-80mm';
+            if (uk === 'A4') return 'struk-thermal-mode struk-a4';
+            return 'struk-thermal-mode';
         };
 
         window.getDefaultNotaConfig = function() {
@@ -14454,20 +14468,19 @@
             const qtyVal = Number(t.qty || 1);
             const totalJual = Number(t.hargaJual || 0);
             const hargaSatuan = qtyVal > 0 ? Math.round(totalJual / qtyVal) : totalJual;
-            const maxWidthPx = p.printerUkuran === '80mm' ? '380px' : '300px';
 
             const metodeMasukHtml = nc.showMetodeBayar
                 ? ((t.isSplit && t.akunMasuk2)
-                    ? `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                    ? `<div style="display:flex; justify-content:space-between; font-size:10px;">
                            <span>${t.akunMasuk1}:</span>
                            <span>${window.formatRp(t.jualSplit1)}</span>
                        </div>
-                       <div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                       <div style="display:flex; justify-content:space-between; font-size:10px;">
                            <span>${t.akunMasuk2}:</span>
                            <span>${window.formatRp(t.jualSplit2)}</span>
                        </div>`
-                    : `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
-                           <span>PEMBAYARAN (${t.akunMasuk1 || 'LACI'}):</span>
+                    : `<div style="display:flex; justify-content:space-between; font-size:10px;">
+                           <span>BAYAR (${t.akunMasuk1 || 'LACI'}):</span>
                            <span>${window.formatRp(totalJual)}</span>
                        </div>`)
                 : '';
@@ -14479,37 +14492,37 @@
             if (printService) printService.style.display = 'none';
             if (printReport) printReport.style.display = 'none';
             if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
-            printArea.className = 'struk-thermal-mode';
+            printArea.className = window.getStrukThermalClass ? window.getStrukThermalClass() : 'struk-thermal-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = `
-                <div style="max-width: ${maxWidthPx}; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
-                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 40px; margin-bottom: 6px; object-fit: contain;"><br>` : ''}
-                    <b style="font-size: 14px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
-                    <span style="font-size: 10px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
-                    <span style="font-size: 10px;">${p.kontakToko || 'WA: 0812-3456-7890'}</span>
-                    ${nc.judulStruk ? `<div style="font-size:10.5px; font-weight:bold; margin-top:4px; letter-spacing:0.5px;">*** ${nc.judulStruk} ***</div>` : ''}
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="display:flex; justify-content:space-between; font-size:10px;">
+                <div style="width: 100%; margin: 0; padding: 2px 0; font-family: monospace; font-size: 10.5px; color: #000; text-align: center; box-sizing: border-box;">
+                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 36px; margin-bottom: 4px; object-fit: contain;"><br>` : ''}
+                    <b style="font-size: 13px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
+                    <span style="font-size: 9.5px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
+                    <span style="font-size: 9.5px;">${p.kontakToko || 'WA: 0812-3456-7890'}</span>
+                    ${nc.judulStruk ? `<div style="font-size:10px; font-weight:bold; margin-top:3px;">*** ${nc.judulStruk} ***</div>` : ''}
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px;">
                         <span>${t.isoDate || window.getTodayIso()} ${t.waktu || ''}</span>
-                        ${nc.showKasir ? `<span>KASIR: ${kasirName.toUpperCase()}</span>` : ''}
+                        ${nc.showKasir ? `<span>${kasirName.toUpperCase()}</span>` : ''}
                     </div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="text-align:left; font-size:11px; margin-bottom:6px;">
-                        <div><b>${t.ket}</b> ${nc.showKategori ? `<span style="font-size:9.5px;">[${t.kat}]</span>` : ''}</div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="text-align:left; font-size:10.5px; margin-bottom:4px;">
+                        <div><b>${t.ket}</b> ${nc.showKategori ? `<span style="font-size:9px;">[${t.kat}]</span>` : ''}</div>
                         <div style="display:flex; justify-content:space-between; margin-top:2px;">
                             <span>${qtyVal} x ${window.formatRp(hargaSatuan)}</span>
                             <b>${window.formatRp(totalJual)}</b>
                         </div>
                     </div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px; margin-bottom:3px;">
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11.5px; margin-bottom:2px;">
                         <span>TOTAL BAYAR:</span>
                         <span>${window.formatRp(totalJual)}</span>
                     </div>
                     ${metodeMasukHtml}
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    ${nc.ucapanFooter ? `<div style="font-size:10px; font-weight:bold; margin-bottom:3px;">${nc.ucapanFooter}</div>` : ''}
-                    <div style="font-size: 9.5px; white-space: pre-wrap; margin-top: 3px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    ${nc.ucapanFooter ? `<div style="font-size:9.5px; font-weight:bold; margin-bottom:2px;">${nc.ucapanFooter}</div>` : ''}
+                    <div style="font-size: 9px; white-space: pre-wrap; margin-top: 2px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
                 </div>
             `;
             window.catatLogAktivitas('CETAK STRUK', `Mencetak struk transaksi "${t.ket}" (${window.formatRp(totalJual)})`);
@@ -14982,107 +14995,110 @@
             const p = window.pengaturanToko || {};
             const nc = window.getNotaConfig().transfer;
             const kasirName = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
-            const maxWidthPx = (isForPrint && p.printerUkuran === '80mm') ? '380px' : '290px';
 
             let rincianUangHtml = '';
             if (d.modeAdmin === 'GABUNG') {
                 rincianUangHtml = `
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px; margin:4px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11.5px; margin:3px 0;">
                         <span>TOTAL TRANSAKSI:</span>
                         <span>${window.formatRp(d.total)}</span>
                     </div>
                 `;
             } else if (d.modeAdmin === 'NOMINAL_SAJA') {
                 rincianUangHtml = `
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px; margin:4px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11.5px; margin:3px 0;">
                         <span>NOMINAL TRANSFER:</span>
                         <span>${window.formatRp(d.nominal)}</span>
                     </div>
                 `;
             } else {
                 rincianUangHtml = `
-                    <div style="display:flex; justify-content:space-between; font-size:10.5px; margin-bottom:2px;">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:2px;">
                         <span>NOMINAL:</span>
                         <b>${window.formatRp(d.nominal)}</b>
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:10.5px; margin-bottom:4px;">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:3px;">
                         <span>BIAYA ADMIN:</span>
                         <b>${window.formatRp(d.admin)}</b>
                     </div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12.5px;">
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 4px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11.5px;">
                         <span>TOTAL BAYAR:</span>
                         <span>${window.formatRp(d.total)}</span>
                     </div>
                 `;
             }
 
+            const containerStyle = isForPrint
+                ? 'width: 100%; margin: 0; padding: 2px 0; font-family: monospace; font-size: 10px; color: #000; text-align: center; box-sizing: border-box;'
+                : 'max-width: 280px; margin: 0 auto; padding: 4px; font-family: monospace; font-size: 10.5px; color: #000; text-align: center; box-sizing: border-box;';
+
             return `
-                <div style="max-width: ${maxWidthPx}; margin: 0 auto; padding: ${isForPrint ? '10px' : '4px'}; font-family: monospace; font-size: 11px; color: #000; text-align: center; ${isForPrint ? 'border: 1px dashed #000;' : ''}">
-                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 38px; margin-bottom: 4px; object-fit: contain;"><br>` : ''}
-                    <b style="font-size: 13.5px; letter-spacing: 0.4px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
-                    ${nc.subJudul ? `<span style="font-size: 9.5px; font-weight: bold;">${nc.subJudul}</span><br>` : ''}
-                    <span style="font-size: 9.5px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
-                    ${p.kontakToko ? `<span style="font-size: 9.5px;">${p.kontakToko}</span>` : ''}
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
-                    <div style="font-weight:bold; font-size:11.5px; letter-spacing:0.5px;">*** ${nc.judulStruk || 'STRUK BUKTI TRANSFER'} ***</div>
-                    <div style="font-size:10px; font-weight:bold; margin-top:2px;">[${d.status}]</div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
-                    <div style="text-align:left; font-size:10.5px; line-height:1.45;">
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                <div style="${containerStyle}">
+                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 34px; margin-bottom: 3px; object-fit: contain;"><br>` : ''}
+                    <b style="font-size: 13px; letter-spacing: 0.3px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
+                    ${nc.subJudul ? `<span style="font-size: 9px; font-weight: bold;">${nc.subJudul}</span><br>` : ''}
+                    <span style="font-size: 9px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
+                    ${p.kontakToko ? `<span style="font-size: 9px;">${p.kontakToko}</span>` : ''}
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="font-weight:bold; font-size:10.5px;">*** ${nc.judulStruk || 'STRUK BUKTI TRANSFER'} ***</div>
+                    <div style="font-size:9.5px; font-weight:bold; margin-top:1px;">[${d.status}]</div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="text-align:left; font-size:10px; line-height:1.4;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>WAKTU:</span>
                             <b style="text-align:right;">${d.waktu}</b>
                         </div>
                         ${nc.showNoRef ? `
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>NO. REF/SN:</span>
-                            <b style="text-align:right;">${d.noRef}</b>
+                            <b style="text-align:right; word-break:break-all;">${d.noRef}</b>
                         </div>` : ''}
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>LAYANAN:</span>
                             <b style="text-align:right;">${d.jenisLayanan}</b>
                         </div>
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>BANK/TUJUAN:</span>
                             <b style="text-align:right;">${d.bankTujuan}</b>
                         </div>
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>NO. REK/TUJUAN:</span>
-                            <b style="text-align:right;">${d.noRek || '-'}</b>
+                            <b style="text-align:right; word-break:break-all;">${d.noRek || '-'}</b>
                         </div>
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>PENERIMA (A/N):</span>
                             <b style="text-align:right;">${d.namaPenerima || '-'}</b>
                         </div>
                         ${nc.showPengirim && d.pengirim ? `
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>PENGIRIM/AGEN:</span>
                             <span style="text-align:right;">${d.pengirim}</span>
                         </div>` : ''}
                         ${nc.showKasir ? `
-                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; gap:4px;">
                             <span>PETUGAS:</span>
                             <span style="text-align:right;">${kasirName}</span>
                         </div>` : ''}
                     </div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
                     <div style="text-align:left;">
                         ${rincianUangHtml}
                     </div>
                     ${nc.showTtd ? `
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
-                    <div style="display:flex; justify-content:space-between; font-size:9.5px; margin-top:4px; padding:0 6px;">
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="display:flex; justify-content:space-between; font-size:9px; margin-top:4px; padding:0 4px;">
                         <div>Pelanggan<br><br><br>( ............ )</div>
                         <div>Kasir / Agen<br><br><br>( ${kasirName} )</div>
                     </div>
                     ` : ''}
                     ${d.sertakanGambarSs && window.currentSsBuktiDataUrl ? `
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
-                    <div style="font-size:9px; font-weight:bold; margin-bottom:3px;">LAMPIRAN BUKTI SCREENSHOT:</div>
-                    <img src="${window.currentSsBuktiDataUrl}" style="max-width:100%; max-height:240px; object-fit:contain; filter:grayscale(100%) contrast(135%); border:1px solid #000;">
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="font-size:8.5px; font-weight:bold; margin-bottom:3px;">LAMPIRAN BUKTI SCREENSHOT:</div>
+                    <img src="${window.currentSsBuktiDataUrl}" style="max-width:100%; max-height:220px; object-fit:contain; filter:grayscale(100%) contrast(135%); border:1px solid #000;">
                     ` : ''}
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
-                    <div style="font-size: 9.5px; white-space: pre-wrap; line-height: 1.35;">${nc.catatanFooter || 'Struk ini adalah bukti transaksi sah dari ZENCELL.'}</div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="font-size: 9px; white-space: pre-wrap; line-height: 1.3;">${nc.catatanFooter || 'Struk ini adalah bukti transaksi sah dari ZENCELL.'}</div>
                 </div>
             `;
         };
@@ -15104,7 +15120,7 @@
             if (printReport) printReport.style.display = 'none';
             if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
 
-            printArea.className = 'struk-thermal-mode';
+            printArea.className = window.getStrukThermalClass ? window.getStrukThermalClass() : 'struk-thermal-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = window.buildStrukTransferThermalHtml(d, true);
 
@@ -15340,51 +15356,50 @@
         window.testPrintStrukKasir = function() {
             const p = window.pengaturanToko || {};
             const nc = window.getNotaConfig().kasir;
-            const maxWidthPx = p.printerUkuran === '80mm' ? '380px' : '300px';
             const printArea = document.getElementById('printAreaNotaLunasService');
             if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
-            printArea.className = 'struk-thermal-mode';
+            printArea.className = window.getStrukThermalClass ? window.getStrukThermalClass() : 'struk-thermal-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = `
-                <div style="max-width: ${maxWidthPx}; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
-                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 40px; margin-bottom: 6px; object-fit: contain;"><br>` : ''}
-                    <b style="font-size: 14px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
-                    <span style="font-size: 10px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
-                    <span style="font-size: 10px;">${p.kontakToko || 'WA: 0812-3456-7890'}</span>
-                    ${nc.judulStruk ? `<div style="font-size:10.5px; font-weight:bold; margin-top:4px;">*** ${nc.judulStruk} ***</div>` : ''}
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="display:flex; justify-content:space-between; font-size:10px;">
+                <div style="width: 100%; margin: 0; padding: 2px 0; font-family: monospace; font-size: 10.5px; color: #000; text-align: center; box-sizing: border-box;">
+                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 36px; margin-bottom: 4px; object-fit: contain;"><br>` : ''}
+                    <b style="font-size: 13px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
+                    <span style="font-size: 9.5px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
+                    <span style="font-size: 9.5px;">${p.kontakToko || 'WA: 0812-3456-7890'}</span>
+                    ${nc.judulStruk ? `<div style="font-size:10px; font-weight:bold; margin-top:3px;">*** ${nc.judulStruk} ***</div>` : ''}
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px;">
                         <span>${window.getTodayIso()}</span>
                         ${nc.showKasir ? `<span>KASIR: ADMIN</span>` : ''}
                     </div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="text-align:left; font-size:11px; margin-bottom:6px;">
-                        <div><b>VOUCHER INTERNET 5GB</b> ${nc.showKategori ? `<span style="font-size:9.5px;">[VOUCHER]</span>` : ''}</div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="text-align:left; font-size:10.5px; margin-bottom:4px;">
+                        <div><b>VOUCHER INTERNET 5GB</b> ${nc.showKategori ? `<span style="font-size:9px;">[VOUCHER]</span>` : ''}</div>
                         <div style="display:flex; justify-content:space-between;">
                             <span>1 x Rp15.000</span>
                             <b>Rp15.000</b>
                         </div>
                     </div>
-                    <div style="text-align:left; font-size:11px; margin-bottom:6px;">
-                        <div><b>KABEL DATA TYPE-C FAST</b> ${nc.showKategori ? `<span style="font-size:9.5px;">[ACC]</span>` : ''}</div>
+                    <div style="text-align:left; font-size:10.5px; margin-bottom:4px;">
+                        <div><b>KABEL DATA TYPE-C FAST</b> ${nc.showKategori ? `<span style="font-size:9px;">[ACC]</span>` : ''}</div>
                         <div style="display:flex; justify-content:space-between;">
                             <span>1 x Rp25.000</span>
                             <b>Rp25.000</b>
                         </div>
                     </div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px;">
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11.5px;">
                         <span>TOTAL BAYAR:</span>
                         <span>Rp40.000</span>
                     </div>
                     ${nc.showMetodeBayar ? `
-                    <div style="display:flex; justify-content:space-between; font-size:10.5px;">
-                        <span>PEMBAYARAN (LACI):</span>
+                    <div style="display:flex; justify-content:space-between; font-size:10px;">
+                        <span>BAYAR (LACI):</span>
                         <span>Rp40.000</span>
                     </div>` : ''}
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    ${nc.ucapanFooter ? `<div style="font-size:10px; font-weight:bold; margin-bottom:3px;">${nc.ucapanFooter}</div>` : ''}
-                    <div style="font-size: 9.5px; white-space: pre-wrap; margin-top: 3px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    ${nc.ucapanFooter ? `<div style="font-size:9.5px; font-weight:bold; margin-bottom:2px;">${nc.ucapanFooter}</div>` : ''}
+                    <div style="font-size: 9px; white-space: pre-wrap; margin-top: 2px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
                 </div>
             `;
             window.print();
@@ -15411,7 +15426,7 @@
             const printArea = document.getElementById('printAreaNotaLunasService');
             if (!printArea) return;
             if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
-            printArea.className = 'struk-thermal-mode';
+            printArea.className = window.getStrukThermalClass ? window.getStrukThermalClass() : 'struk-thermal-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = window.buildStrukTransferThermalHtml(sampleData, true);
             window.print();
@@ -15427,7 +15442,7 @@
             if (printService) printService.style.display = 'none';
             if (printReport) printReport.style.display = 'none';
             window.setPrintPageMode('NOTA_A5');
-            printArea.className = '';
+            printArea.className = 'nota-a5-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = window.buildNotaLunasServiceA5Html({
                 noServis: 'SRV-TEST-001',
@@ -15444,7 +15459,7 @@
                 garansiText: nc.garansiDefault || 'Garansi servis 7 Hari.'
             });
             window.print();
-            setTimeout(() => { printArea.style.display = 'none'; }, 1000);
+            setTimeout(() => { printArea.style.display = 'none'; printArea.className = ''; }, 1000);
         };
 
         window.testPrintNotaServis = function() {
