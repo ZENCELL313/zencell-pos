@@ -11554,26 +11554,32 @@
                 let remJual = remJualInit;
                 let remPokok = remPokokInit;
                 notesList.forEach((pNote, idx) => {
-                    if (remJual <= 0 && remPokok <= 0) return;
+                    if (remPokok <= 0) return;
+                    // Jangan biarkan transaksi pelunasan lama (sebelum tanggal utang baru dibuat) bocor ke utang baru, kecuali terhubung langsung lewat idPiutangRef
+                    if (t.idPiutangRef != pNote.id && t.isoDate && pNote.isoDate && t.isoDate < pNote.isoDate) return;
+
                     const pokokAwalN = Number(pNote.pokokAwal || 0);
                     const tagihanAwalN = Math.max(pokokAwalN, Number(pNote.tagihanJual || 0));
                     const needPokok = Math.max(0, pokokAwalN - (pNote._terbayarPokok || 0));
                     const needJual = Math.max(needPokok, tagihanAwalN - (pNote._terbayarJual || 0));
-                    if (needPokok <= 0 && needJual <= 0) return;
+                    if (needPokok <= 0) return;
 
                     let allocJual = 0;
                     let allocPokok = 0;
                     const isLastNote = (idx === notesList.length - 1);
 
-                    if (remJual >= needJual || isLastNote) {
-                        allocJual = isLastNote ? remJual : needJual;
-                        allocPokok = isLastNote ? Math.min(needPokok, remPokok) : needPokok;
+                    // Jika sisa pembayaran pokok (remPokok) habis seluruhnya di nota ini (atau ini nota terakhir),
+                    // maka seluruh sisa remJual (termasuk biaya admin/cuan kasir) adalah milik nota ini,
+                    // sehingga TIDAK bocor menjadi histori cicilan di nota utang baru berikutnya.
+                    if (remPokok <= needPokok || isLastNote) {
+                        allocPokok = Math.min(needPokok, remPokok);
+                        allocJual = Math.max(allocPokok, remJual);
                     } else {
-                        allocJual = remJual;
-                        allocPokok = Math.min(needPokok, remPokok, allocJual);
+                        allocPokok = needPokok;
+                        allocJual = Math.min(remJual, Math.max(needJual, allocPokok));
                     }
 
-                    if (allocJual > 0 || allocPokok > 0) {
+                    if (allocPokok > 0) {
                         pNote._terbayarPokok = (pNote._terbayarPokok || 0) + allocPokok;
                         pNote._terbayarJual = (pNote._terbayarJual || 0) + allocJual;
                         pNote.riwayatCicilan.push({
@@ -11603,10 +11609,10 @@
                     if (targetP) {
                         const custNm = (targetP.nama || '').trim().toUpperCase();
                         const otherNotesSameCust = window.piutangList
-                            .filter(x => x.id != targetP.id && (x.nama || '').trim().toUpperCase() === custNm)
+                            .filter(x => x.id != targetP.id && (x.nama || '').trim().toUpperCase() === custNm && (!t.isoDate || !x.isoDate || x.isoDate <= t.isoDate))
                             .sort((a, b) => (a.isoDate || '').localeCompare(b.isoDate || '') || (Number(a.id) - Number(b.id)));
                         const orderedNotes = [targetP, ...otherNotesSameCust];
-                        applyPaymentToNotesFifo(orderedNotes, t, nomJual, nomPokokBayar, otherNotesSameCust.length > 0 && nomJual > Math.max(Number(targetP.pokokAwal || 0), Number(targetP.tagihanJual || 0)));
+                        applyPaymentToNotesFifo(orderedNotes, t, nomJual, nomPokokBayar, otherNotesSameCust.length > 0 && nomPokokBayar > Number(targetP.pokokAwal || 0));
                         return;
                     }
                 }
@@ -11630,6 +11636,7 @@
                 let matchingNotes = window.piutangList.filter(p => {
                     const pName = (p.nama || '').trim().toUpperCase();
                     if (!pName) return false;
+                    if (t.isoDate && p.isoDate && t.isoDate < p.isoDate) return false;
                     return pName === targetCustName || ketTrx === pName || ketTrx === `[PELUNASAN UTANG] ${pName}` || cleanFromKet.startsWith(pName + ' (');
                 }).sort((a, b) => {
                     const dA = a.isoDate || '';
