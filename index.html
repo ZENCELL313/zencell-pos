@@ -1904,7 +1904,7 @@
             color: #334155;
         }
 
-        /* Tata Letak Fix & Presisi Tabel Rekap Piutang Konsumen (Anti Melebar ke Kanan) */
+        /* Tata Letak Fix, Ramping & Presisi Tabel Rekap Piutang Konsumen (Baris Rapat, Kolom Lega & Icon Aksi Berjejer 1 Baris) */
         .table-piutang {
             width: 100%;
             border-collapse: collapse;
@@ -1913,28 +1913,39 @@
         .table-piutang th,
         .table-piutang td {
             vertical-align: middle;
-            padding: 6px 6px !important;
-            font-size: 10.5px;
+            padding: 4px 5px !important;
+            font-size: 11px;
             white-space: normal !important;
             word-break: break-word;
             overflow-wrap: break-word;
-            line-height: 1.3;
+            line-height: 1.2;
         }
         .table-piutang th {
             font-size: 10px;
-            letter-spacing: 0.2px;
-            padding: 7px 5px !important;
+            letter-spacing: 0.15px;
+            padding: 5.5px 5px !important;
+            line-height: 1.15;
         }
-        /* Proporsi 9 Kolom Pas 100% (Tidak Melebar ke Kanan) */
+        .table-piutang .waktu-seragam-wrap {
+            line-height: 1.15;
+        }
+        .table-piutang .waktu-seragam-top {
+            font-size: 10.5px;
+        }
+        .table-piutang .waktu-seragam-bottom {
+            font-size: 9px;
+            margin-top: 0.5px;
+        }
+        /* Proporsi 9 Kolom Pas 100%: Tanpa Icon +, Kolom Aksi Cukup 9.5% (4 Icon) & Ruang Kolom Konten Lebih Lega */
         .table-piutang th:nth-child(1), .table-piutang td:nth-child(1) { text-align: left; width: 10%; }
-        .table-piutang th:nth-child(2), .table-piutang td:nth-child(2) { text-align: left; width: 14.5%; }
-        .table-piutang th:nth-child(3), .table-piutang td:nth-child(3) { text-align: left; width: 17%; }
-        .table-piutang th:nth-child(4), .table-piutang td:nth-child(4) { text-align: right; width: 12.5%; }
-        .table-piutang th:nth-child(5), .table-piutang td:nth-child(5) { text-align: left; width: 14.5%; line-height: 1.32; }
-        .table-piutang th:nth-child(6), .table-piutang td:nth-child(6) { text-align: center; width: 8.5%; }
-        .table-piutang th:nth-child(7), .table-piutang td:nth-child(7) { text-align: center; width: 8.5%; }
-        .table-piutang th:nth-child(8), .table-piutang td:nth-child(8) { text-align: center; width: 7.5%; }
-        .table-piutang th:nth-child(9), .table-piutang td:nth-child(9) { text-align: center; width: 7%; }
+        .table-piutang th:nth-child(2), .table-piutang td:nth-child(2) { text-align: left; width: 16.5%; }
+        .table-piutang th:nth-child(3), .table-piutang td:nth-child(3) { text-align: left; width: 19%; }
+        .table-piutang th:nth-child(4), .table-piutang td:nth-child(4) { text-align: right; width: 10.5%; white-space: nowrap !important; }
+        .table-piutang th:nth-child(5), .table-piutang td:nth-child(5) { text-align: left; width: 14.5%; line-height: 1.25; }
+        .table-piutang th:nth-child(6), .table-piutang td:nth-child(6) { text-align: center; width: 7%; }
+        .table-piutang th:nth-child(7), .table-piutang td:nth-child(7) { text-align: center; width: 6.5%; }
+        .table-piutang th:nth-child(8), .table-piutang td:nth-child(8) { text-align: center; width: 6.5%; }
+        .table-piutang th:nth-child(9), .table-piutang td:nth-child(9) { text-align: center; width: 9.5%; white-space: nowrap !important; }
 
         @media (max-width: 767px) {
             .table-piutang {
@@ -1943,20 +1954,21 @@
         }
         .table-piutang .aksi-icon-group {
             display: inline-flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap !important;
             justify-content: center;
             align-items: center;
             gap: 3px;
-            max-width: 62px;
+            max-width: none !important;
+            white-space: nowrap;
         }
         .table-piutang .btn-aksi-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
+            width: 23px;
+            height: 23px;
+            border-radius: 5px;
         }
         .table-piutang .btn-aksi-icon svg {
-            width: 12.5px;
-            height: 12.5px;
+            width: 11.5px;
+            height: 11.5px;
         }
         .row-piutang-lunas-today {
             background-color: rgba(22, 163, 74, 0.07);
@@ -3126,6 +3138,8 @@
                 <span id="badgeRadarAlertCount" class="radar-notif-badge" style="display:none;">0</span>
             </button>
         </div>
+        <!-- BANNER KONFIRMASI 1-KLIK BUNGA HARIAN SEABANK (MUNCUL OTOMATIS LEWAT JAM 06:00 PAGI JIKA BELUM DICAIRKAN) -->
+        <div id="topSeaBankBungaBanner" style="display:none; margin-top:6px;"></div>
     </div>
 
     <div class="fab-container" id="fabContainer">
@@ -4169,6 +4183,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- KARTU BUNGA HARIAN SEABANK (OPSI 2: KONFIRMASI 1-KLIK & EDITABLE NOMINAL MULAI JAM 06:00 PAGI, NON-TRANSAKSI) -->
+            <div class="card" id="cardSeaBankBungaSaldo" style="border:1.5px solid #0284C7; background:linear-gradient(180deg, #F0F9FF 0%, var(--card) 100%);"></div>
 
             <div class="card">
                 <div class="card-header" id="formTransferSaldoTitle">🔀 Transfer Antar Akun (Khusus Kas / Bank / E-Wallet Cair)</div>
@@ -7704,6 +7721,10 @@
                 const greet = hr < 11 ? '🌅 Selamat Pagi' : (hr < 15 ? '☀️ Selamat Siang' : (hr < 18 ? '🌤️ Selamat Sore' : '🌙 Selamat Malam'));
                 loginGreet.innerText = `${greet} • Siap Cuan & Tertib Pembukuan!`;
             }
+            // Jika tepat masuk jam 06:00:00 pagi, perbarui tampilan pengingat Bunga Harian SeaBank otomatis
+            if (hh === '06' && mm === '00' && ss === '00' && typeof window.renderSeaBankBungaUI === 'function') {
+                window.renderSeaBankBungaUI();
+            }
         };
         window.updateHeaderAndLoginClock();
         setInterval(window.updateHeaderAndLoginClock, 1000);
@@ -9595,6 +9616,20 @@
                 window.highlightRowAndScroll(`row-piutang-${p.id}`);
                 window.showToast(`✅ Perubahan data piutang ${nama} berhasil disimpan & disinkronkan!`, "success");
                 return;
+            }
+
+            // Cek jika pelanggan ini masih memiliki piutang aktif yang belum lunas (SOP Konter: Pengecualian Akumulasi)
+            const activeSameCustomerList = (window.piutangList || []).filter(item =>
+                item && item.status !== 'LUNAS' && Number(item.sisa || 0) > 0 && (item.nama || '').trim().toUpperCase() === nama
+            );
+            if (activeSameCustomerList.length > 0) {
+                const totalSisaExisting = activeSameCustomerList.reduce((acc, it) => acc + Number(it.sisa || 0), 0);
+                const okTambah = confirm(
+                    `⚠️ PERINGATAN SOP PIUTANG:\nPelanggan "${nama}" tercatat masih memiliki ${activeSameCustomerList.length} nota utang aktif yang BELUM LUNAS (Total Sisa: ${window.formatRp(totalSisaExisting)}).\n\nLanjutkan catat sebagai Utang Tambahan / Akumulasi untuk ${nama}?`
+                );
+                if (!okTambah) return;
+                if (!window._expandedPiutangGroups) window._expandedPiutangGroups = {};
+                window._expandedPiutangGroups[nama] = true;
             }
 
             const idUnik = window.getNextUniqueTs();
@@ -11771,32 +11806,34 @@
                     const rowStyle = isChild
                         ? 'background:rgba(254, 243, 199, 0.25); border-left:4px solid #F59E0B;'
                         : '';
+                    const subInfoUtangHtml = (!isLunas && activeTagihanJual > activeSisa)
+                        ? `<div style="font-size:9.5px; color:#B45309; font-weight:800; line-height:1.15;" title="Modal Pokok: ${window.formatRp(pokokAwalP)} • Harga Jual Ditagih: ${window.formatRp(activeTagihanJual)}">Tagih: ${window.formatRp(activeTagihanJual)}</div>`
+                        : (pokokAwalP > 0 && pokokAwalP !== activeSisa ? `<div style="color:#64748B; font-size:9.5px; line-height:1.15;">Awal: ${window.formatRp(pokokAwalP)}</div>` : '');
                     return `
                         <tr id="row-piutang-${p.id}" class="${isLunas ? 'row-piutang-lunas-today' : ''}" style="${rowStyle}">
                             <td>
-                                ${isChild ? `<div style="margin-bottom:2px;"><span style="background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px;">↳ #${childIndex + 1}${childIndex === 0 ? ' (Lama)' : ''}</span></div>` : ''}
+                                ${isChild ? `<span style="background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; font-size:8.5px; font-weight:800; padding:0.5px 4px; border-radius:3px; display:inline-block; margin-bottom:1px;">↳ #${childIndex + 1}</span>` : ''}
                                 ${waktuPiutangHtml}
                             </td>
                             <td>
-                                <b style="font-size:11px; line-height:1.25; display:block;">${p.nama}</b>
-                                ${isChild ? `<span style="font-size:9px; color:#92400E; font-weight:700;">Nota ${childIndex + 1}/${totalInGroup}</span>` : `<small style="color:#0284C7; font-weight:600; font-size:9.5px;">${p.noHp ? '📱 ' + p.noHp : '<span style="color:#94A3B8;">-</span>'}</small>`}
+                                <b style="font-size:11.5px; line-height:1.2; display:block;">${p.nama}</b>
+                                ${isChild ? `<span style="font-size:9.5px; color:#92400E; font-weight:700;">Nota ${childIndex + 1}/${totalInGroup}</span>` : `<small style="color:#0284C7; font-weight:600; font-size:9.5px; line-height:1.15;">${p.noHp ? '📱 ' + p.noHp : '<span style="color:#94A3B8;">-</span>'}</small>`}
                             </td>
                             <td>
-                                <span style="font-weight:600; font-size:10.5px; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span>
-                                ${Number(p.qty || 1) > 1 ? `<br><span style="font-size:9px; background:#E0F2FE; color:#0369A1; padding:1px 4px; border-radius:4px; font-weight:700;">${p.qty} Pcs</span>` : ''}
+                                <span style="font-weight:600; font-size:11px; line-height:1.2; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span>
+                                ${Number(p.qty || 1) > 1 ? ` <span style="font-size:9px; background:#E0F2FE; color:#0369A1; padding:0.5px 4px; border-radius:3px; font-weight:700; white-space:nowrap;">${p.qty} Pcs</span>` : ''}
                             </td>
                             <td class="${isLunas ? 'text-kredit' : 'text-debit'}">
-                                <b style="font-size:11.5px;">${window.formatRp(activeSisa)}</b>
-                                ${pokokAwalP > 0 ? `<br><small style="color:#64748B; font-size:9px;">Mdl: ${window.formatRp(pokokAwalP)}</small>` : ''}
-                                ${(!isLunas && activeTagihanJual > activeSisa) ? `<br><span style="display:inline-block; margin-top:1px; background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; padding:1px 4px; border-radius:4px; font-size:9px; font-weight:800;" title="Harga jual yang ditagihkan ke konsumen saat pelunasan">Tagih: ${window.formatRp(activeTagihanJual)}</span>` : ''}
+                                <b style="font-size:11.5px; line-height:1.2; display:block;">${window.formatRp(activeSisa)}</b>
+                                ${subInfoUtangHtml}
                             </td>
-                            <td style="font-size:9.5px; line-height:1.3;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#94A3B8;">Belum dicicil</span>'}</td>
-                            <td><span style="font-size:9px; font-weight:700; padding:2px 5px; border-radius:5px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
-                            <td><span style="font-size:9px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
+                            <td style="font-size:10px; line-height:1.25;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:1.5px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#94A3B8;">Belum dicicil</span>'}</td>
+                            <td><span style="font-size:9.5px; font-weight:700; padding:1.5px 4.5px; border-radius:4px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
+                            <td><span style="font-size:9.5px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
                             <td>
                                 ${isLunas
-                                    ? `<span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">✅ LUNAS</span>`
-                                    : `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">⏳ BELUM</span>`
+                                    ? `<span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">✅ LUNAS</span>`
+                                    : `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">⏳ BELUM</span>`
                                 }
                             </td>
                             <td>
@@ -11809,9 +11846,6 @@
                                                 <path d="M16 15h2"></path>
                                             </svg>
                                         </button>
-                                        ${!isChild ? `
-                                        <button type="button" class="btn-aksi-icon" style="background:#FEF3C7; color:#B45309; border-color:#FCD34D; font-weight:900; font-size:11px;" onclick="tambahUtangPelangganSama('${encNama}', '${encHp}')" title="Tambah Utang Baru Lanjutan (Pengecualian SOP) untuk ${p.nama}" aria-label="Tambah Utang Pelanggan Sama">➕</button>
-                                        ` : ''}
                                         <button type="button" class="btn-aksi-icon aksi-wa" onclick="kirimWaPengingatPiutang(${p.id})" title="Kirim Pesan Tagihan ke WhatsApp Pelanggan" aria-label="Kirim WA Tagihan">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
@@ -11902,53 +11936,54 @@
                     });
 
                     const encNama = encodeURIComponent(group.namaKey);
-                    const encHp = encodeURIComponent(foundNoHp);
                     const isExpanded = Boolean((window._expandedPiutangGroups && window._expandedPiutangGroups[group.namaKey]) || qPiutangAktif);
                     const oldestItem = sortedChildren[0];
                     const newestItem = sortedChildren[sortedChildren.length - 1];
                     const tglRangeInfo = (oldestItem.isoDate && newestItem.isoDate && oldestItem.isoDate !== newestItem.isoDate)
-                        ? `<div style="font-size:9px; font-weight:800; color:#B45309; line-height:1.25;">${oldestItem.isoDate}<br><span style="color:#64748B; font-weight:700;">s/d ${newestItem.isoDate}</span></div>`
+                        ? `<div style="font-size:9.5px; font-weight:800; color:#B45309; line-height:1.15;">${oldestItem.isoDate.slice(2)}<br><span style="color:#64748B; font-weight:700;">s/d ${newestItem.isoDate.slice(2)}</span></div>`
                         : window.formatKolomWaktuSeragam(newestItem.isoDate, newestItem.waktu, newestItem.tglDisplay);
 
                     const previewItemsText = sortedChildren.map((it, idx) => {
                         const ketIt = (it.catatan && it.catatan !== '-') ? it.catatan : (it.kategori || 'UTANG');
-                        return `<span style="display:inline-block; background:#FFF; border:1px solid #FCD34D; color:#78350F; border-radius:4px; padding:1px 4px; font-size:9px; font-weight:700; margin:1px 2px 1px 0;">#${idx + 1} ${ketIt}</span>`;
+                        return `<span style="display:inline-block; background:#FFF; border:1px solid #FCD34D; color:#78350F; border-radius:3px; padding:1px 4.5px; font-size:9.5px; font-weight:700; margin:1px 2px 1px 0;">#${idx + 1} ${ketIt}</span>`;
                     }).join('');
+
+                    const subInfoGroupHtml = totalTagihanJual > totalSisaPokok
+                        ? `<div style="font-size:9.5px; color:#B45309; font-weight:800; line-height:1.15;" title="Modal Pokok: ${window.formatRp(totalPokokAwal)} • Total Tagih: ${window.formatRp(totalTagihanJual)}">Tagih: ${window.formatRp(totalTagihanJual)}</div>`
+                        : (totalPokokAwal > 0 && totalPokokAwal !== totalSisaPokok ? `<div style="color:#64748B; font-size:9.5px; line-height:1.15;">Awal: ${window.formatRp(totalPokokAwal)}</div>` : '');
 
                     rowsHtmlList.push(`
                         <tr id="row-piutang-group-${group.namaKey.replace(/[^A-Z0-9]/g, '_')}" style="background:linear-gradient(90deg, rgba(254, 243, 199, 0.55) 0%, rgba(255, 251, 235, 0.35) 100%); border-left:4px solid #D97706;">
                             <td>
-                                <span style="display:inline-block; background:#D97706; color:#FFF; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-bottom:2px;">📚 ${sortedChildren.length} NOTA</span>
+                                <span style="display:inline-block; background:#D97706; color:#FFF; font-size:8.5px; font-weight:800; padding:0.5px 4px; border-radius:3px; margin-bottom:1px;">📚 ${sortedChildren.length} NOTA</span>
                                 ${tglRangeInfo}
                             </td>
                             <td>
-                                <b style="font-size:11.5px; color:#92400E; line-height:1.25; display:block;">${group.namaDisplay}</b>
-                                <small style="color:#0284C7; font-weight:600; font-size:9.5px;">${foundNoHp ? `📱 ${foundNoHp}` : '<span style="color:#94A3B8;">-</span>'}</small>
-                                <div style="margin-top:3px;">
-                                    <button type="button" onclick="toggleRincianGrupPiutang('${encNama}')" style="background:${isExpanded ? '#B45309' : '#FEF3C7'}; color:${isExpanded ? '#FFF' : '#92400E'}; border:1px solid #F59E0B; border-radius:5px; padding:2px 6px; font-size:9px; font-weight:800; cursor:pointer;">
-                                        📂 ${isExpanded ? `Tutup (${sortedChildren.length}) ▲` : `Rincian (${sortedChildren.length}) ▼`}
+                                <b style="font-size:11.5px; color:#92400E; line-height:1.2; display:block;">${group.namaDisplay}</b>
+                                <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-top:1.5px;">
+                                    ${foundNoHp ? `<small style="color:#0284C7; font-weight:600; font-size:9.5px;">📱 ${foundNoHp}</small>` : ''}
+                                    <button type="button" onclick="toggleRincianGrupPiutang('${encNama}')" style="background:${isExpanded ? '#B45309' : '#FEF3C7'}; color:${isExpanded ? '#FFF' : '#92400E'}; border:1px solid #F59E0B; border-radius:4px; padding:1.5px 5.5px; font-size:8.5px; font-weight:800; cursor:pointer; line-height:1.1;">
+                                        📂 ${isExpanded ? `Tutup ▲` : `Rincian (${sortedChildren.length}) ▼`}
                                     </button>
                                 </div>
                             </td>
                             <td onclick="toggleRincianGrupPiutang('${encNama}')" style="cursor:pointer;" title="Klik untuk melihat/menyembunyikan rincian tiap nota utang">
-                                <div style="font-weight:800; font-size:9.5px; color:#92400E; margin-bottom:2px;">📌 Gabungan ${sortedChildren.length} Utang:</div>
-                                <div>${previewItemsText}</div>
+                                <div style="line-height:1.25;"><b style="font-size:9.5px; color:#92400E;">📌 ${sortedChildren.length} Utang:</b> ${previewItemsText}</div>
                             </td>
                             <td class="text-debit">
-                                <b style="font-size:12px;">${window.formatRp(totalSisaPokok)}</b>
-                                <br><small style="color:#64748B; font-size:9px;">Mdl: ${window.formatRp(totalPokokAwal)}</small>
-                                ${totalTagihanJual > totalSisaPokok ? `<br><span style="display:inline-block; margin-top:1px; background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; padding:1px 4px; border-radius:4px; font-size:9px; font-weight:800;">Tagih: ${window.formatRp(totalTagihanJual)}</span>` : ''}
+                                <b style="font-size:11.5px; line-height:1.2; display:block;">${window.formatRp(totalSisaPokok)}</b>
+                                ${subInfoGroupHtml}
                             </td>
-                            <td style="font-size:9.5px; line-height:1.3;">
+                            <td style="font-size:10px; line-height:1.25;">
                                 ${cicilanGabungan.length > 0
-                                    ? cicilanGabungan.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('')
-                                    : `<span style="color:#B45309; font-weight:600; font-size:9px;">Belum dicicil</span>`
+                                    ? cicilanGabungan.map(c => `<div style="margin-bottom:1.5px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('')
+                                    : `<span style="color:#B45309; font-weight:600; font-size:9.5px;">Belum dicicil</span>`
                                 }
                             </td>
-                            <td><span style="font-size:9px; font-weight:700; padding:2px 5px; border-radius:5px; background:var(--primary-light); color:var(--primary); display:inline-block;">${Array.from(katSet).join(', ') || 'GABUNGAN'}</span></td>
-                            <td><span style="font-size:9px; font-weight:700; color:var(--text);">${Array.from(sumberSet).join(', ') || '-'}</span></td>
+                            <td><span style="font-size:9.5px; font-weight:700; padding:1.5px 4.5px; border-radius:4px; background:var(--primary-light); color:var(--primary); display:inline-block;">${Array.from(katSet).join(', ') || 'GABUNGAN'}</span></td>
+                            <td><span style="font-size:9.5px; font-weight:700; color:var(--text);">${Array.from(sumberSet).join(', ') || '-'}</span></td>
                             <td>
-                                <span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">⏳ ${sortedChildren.length} NOTA</span>
+                                <span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">⏳ ${sortedChildren.length} NOTA</span>
                             </td>
                             <td>
                                 <div class="aksi-icon-group">
@@ -11959,13 +11994,12 @@
                                             <path d="M16 15h2"></path>
                                         </svg>
                                     </button>
-                                    <button type="button" class="btn-aksi-icon" style="background:#FEF3C7; color:#B45309; border-color:#FCD34D; font-weight:900; font-size:11px;" onclick="tambahUtangPelangganSama('${encNama}', '${encHp}')" title="Tambah Utang Baru Lanjutan untuk ${group.namaDisplay}" aria-label="Tambah Utang">➕</button>
                                     <button type="button" class="btn-aksi-icon aksi-wa" onclick="kirimWaPengingatPiutangGrup('${encNama}')" title="Kirim Rekap Gabungan Semua Tagihan ke WhatsApp ${group.namaDisplay}" aria-label="Kirim WA Rekap">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                                         </svg>
                                     </button>
-                                    <button type="button" class="btn-aksi-icon" style="background:${isExpanded ? '#B45309' : '#E0F2FE'}; color:${isExpanded ? '#FFF' : '#0369A1'}; border-color:${isExpanded ? '#92400E' : '#BAE6FD'}; font-weight:800; font-size:10px;" onclick="toggleRincianGrupPiutang('${encNama}')" title="Tampilkan / Sembunyikan Rincian Per Nota">${isExpanded ? '▲' : '▼'}</button>
+                                    <button type="button" class="btn-aksi-icon" style="background:${isExpanded ? '#B45309' : '#E0F2FE'}; color:${isExpanded ? '#FFF' : '#0369A1'}; border-color:${isExpanded ? '#92400E' : '#BAE6FD'}; font-weight:800; font-size:9.5px;" onclick="toggleRincianGrupPiutang('${encNama}')" title="Tampilkan / Sembunyikan Rincian Per Nota">${isExpanded ? '▲' : '▼'}</button>
                                 </div>
                             </td>
                         </tr>
@@ -12000,18 +12034,18 @@
                     return `
                         <tr id="row-piutang-${p.id}">
                             <td>${waktuPiutangHtml}</td>
-                            <td><b style="font-size:11px;">${p.nama}</b><br><small style="color:#0284C7; font-weight:600; font-size:9.5px;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">-</span>'}</small></td>
-                            <td><span style="font-weight:600; font-size:10.5px; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
+                            <td><b style="font-size:11.5px; line-height:1.2; display:block;">${p.nama}</b><small style="color:#0284C7; font-weight:600; font-size:9.5px; line-height:1.15;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">-</span>'}</small></td>
+                            <td><span style="font-weight:600; font-size:11px; line-height:1.2; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
                             <td class="text-kredit">
-                                <b style="font-size:11.5px;">${window.formatRp(pokokAwalP)}</b>
-                                ${tagihanJualP > pokokAwalP ? `<br><small style="color:#047857; font-size:9px; font-weight:700;">Jual: ${window.formatRp(tagihanJualP)}</small>` : `<br><small style="color:#16A34A; font-size:9px; font-weight:700;">Sisa: Rp 0</small>`}
+                                <b style="font-size:11.5px; line-height:1.2; display:block;">${window.formatRp(pokokAwalP)}</b>
+                                ${tagihanJualP > pokokAwalP ? `<div style="color:#047857; font-size:9.5px; font-weight:700; line-height:1.15;">Jual: ${window.formatRp(tagihanJualP)}</div>` : ''}
                             </td>
-                            <td style="font-size:9.5px; line-height:1.3;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:2px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#16A34A; font-weight:700;">Lunas</span>'}</td>
-                            <td><span style="font-size:9px; font-weight:700; padding:2px 5px; border-radius:5px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
-                            <td><span style="font-size:9px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
+                            <td style="font-size:10px; line-height:1.25;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:1.5px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#16A34A; font-weight:700;">Lunas</span>'}</td>
+                            <td><span style="font-size:9.5px; font-weight:700; padding:1.5px 4.5px; border-radius:4px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
+                            <td><span style="font-size:9.5px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
                             <td>
-                                <span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:999px; font-size:9px; font-weight:800;">✅ LUNAS</span>
-                                <br><small style="color:#64748B; font-weight:700; font-size:9px;">${p.tglLunas || '-'}</small>
+                                <span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1.5px 5px; border-radius:999px; font-size:8.5px; font-weight:800;">✅ LUNAS</span>
+                                <div style="color:#64748B; font-weight:700; font-size:8.5px; line-height:1.1; margin-top:1px;">${p.tglLunas || '-'}</div>
                             </td>
                             <td>
                                 <div class="aksi-icon-group">
@@ -12324,6 +12358,7 @@
 
                 let sumKemarinSb = 0, sumMasukSb = 0, sumKeluarSb = 0, sumAkhirSb = 0;
                 let sbKasCair = 0, sbStokOpnameVal = 0, sbSparepartVal = 0, sbPiutangVal = 0;
+                window._latestActualSaldoPerAkun = {};
 
                 const rowsMutasiHtml = window.saldoList.map(s => {
                     const isAutoData = akunDataOtomatis.includes(s);
@@ -12334,6 +12369,7 @@
                     else if (akunStokFisik.includes(s)) {
                         akhirAktual = mapNilaiStokOpname[s] !== undefined ? Number(mapNilaiStokOpname[s] || 0) : Math.max(0, (masukAllSb[s] || 0) - (keluarAllSb[s] || 0));
                     }
+                    window._latestActualSaldoPerAkun[s] = akhirAktual;
 
                     const akhirRow = akhirAktual - (masukAfterSb[s] || 0) + (keluarAfterSb[s] || 0);
                     const masukH = Number(masukHariSb[s] || 0);
@@ -12525,6 +12561,7 @@
                             <span>${window.formatRp(sumAkhirSb)}</span>
                         </div>
                         ${auditBoxSidebarHtml}
+                        <div id="sidebarSeaBankBungaBox"></div>
                     </div>
 
                     <!-- 3. TABEL HISTORI PINDAH SALDO (SEJAJAR DI BAWAH TABEL SALDO) -->
@@ -12558,6 +12595,10 @@
                 `;
             } else if (window.hitungDanRenderAuditModalBerputar) {
                 window.hitungDanRenderAuditModalBerputar(totalSaldoKeseluruhan, totalKasCair, totalSemuaStokBelumCair, totalPiutangVal, saldoMode);
+            }
+
+            if (typeof window.renderSeaBankBungaUI === 'function') {
+                window.renderSeaBankBungaUI();
             }
 
             // Sinkronkan Kartu Header "SALDO KONTER" dengan TOTAL SALDO KESELURUHAN
@@ -13415,6 +13456,405 @@
                 window.isiOtomatisJatahSetorProfit();
             } else {
                 window.showToast("💡 Membuka form Setoran Profit", "success");
+            }
+        };
+
+        // =========================================================================
+        // FITUR BUNGA HARIAN CAIR SEABANK (OPSI 2: KONFIRMASI 1-KLIK & EDITABLE NOMINAL SETELAH JAM 06:00 PAGI, NON-TRANSAKSI)
+        // =========================================================================
+        window.getSeaBankAccountsList = function() {
+            const nonCash = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            return (window.saldoList || []).filter(s => s && !nonCash.includes(s) && String(s).toUpperCase().includes('SEA'));
+        };
+
+        window.getSeaBankBungaState = function() {
+            if (!window.pengaturanToko) window.pengaturanToko = {};
+            if (!window.pengaturanToko.seaBankBungaState || typeof window.pengaturanToko.seaBankBungaState !== 'object') {
+                window.pengaturanToko.seaBankBungaState = {
+                    lastClaimedByAccount: {},
+                    lastSkippedDate: '',
+                    riwayatBunga: []
+                };
+            }
+            const st = window.pengaturanToko.seaBankBungaState;
+            if (!st.lastClaimedByAccount || typeof st.lastClaimedByAccount !== 'object') st.lastClaimedByAccount = {};
+            if (!Array.isArray(st.riwayatBunga)) {
+                st.riwayatBunga = st.riwayatBunga && typeof st.riwayatBunga === 'object' ? Object.values(st.riwayatBunga) : [];
+            }
+            return st;
+        };
+
+        window.formatRpDesimal2 = function(num) {
+            const n = Number(num || 0);
+            return 'Rp' + n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        // Rumus Resmi SeaBank:
+        // - Suku Bunga: 2,50% p.a. (saldo < Rp150 juta) dan 3,50% p.a. (saldo >= Rp150 juta)
+        // - Bunga Kotor Harian = (Saldo × Suku Bunga) ÷ 365
+        // - Pajak PPh Final 20% HANYA jika saldo > Rp7.500.000 (Bebas Pajak jika saldo <= Rp7.500.000)
+        window.hitungBungaHarianSeaBank = function(saldo) {
+            const s = Math.max(0, Number(saldo || 0));
+            const isTierTinggi = s >= 150000000;
+            const sukuBunga = isTierTinggi ? 0.035 : 0.025;
+            const sukuBungaPersenText = isTierTinggi ? '3,50% p.a.' : '2,50% p.a.';
+            const bungaKotor = (s * sukuBunga) / 365;
+            const kenaPajak = s > 7500000;
+            const pajak = kenaPajak ? (bungaKotor * 0.20) : 0;
+            const bungaBersih = bungaKotor - pajak;
+            const nominalBulat = Math.round(bungaBersih);
+            return {
+                saldo: s,
+                sukuBunga,
+                sukuBungaPersenText,
+                bungaKotor,
+                kenaPajak,
+                pajak,
+                bungaBersih,
+                nominalBulat
+            };
+        };
+
+        window.cairkanBungaSeaBank = function(akun, inputId) {
+            if (!akun) return;
+            const saldoAktual = Number((window._latestActualSaldoPerAkun && window._latestActualSaldoPerAkun[akun]) || 0);
+            const calc = window.hitungBungaHarianSeaBank(saldoAktual);
+            let nominalCair = calc.nominalBulat;
+
+            if (inputId) {
+                const inpEl = document.getElementById(inputId);
+                if (inpEl) {
+                    const rawVal = String(inpEl.value || '').replace(/[^0-9]/g, '');
+                    const parsedVal = parseInt(rawVal, 10);
+                    if (!isNaN(parsedVal) && parsedVal > 0) {
+                        nominalCair = parsedVal;
+                    }
+                }
+            }
+
+            if (nominalCair <= 0) {
+                window.showToast(`⚠️ Nominal bunga cair untuk akun ${akun} harus lebih dari Rp0!`, 'warn');
+                return;
+            }
+
+            const todayIso = window.getTodayIso();
+            const st = window.getSeaBankBungaState();
+            if (st.lastClaimedByAccount[akun] === todayIso) {
+                const okUlang = confirm(`ℹ️ Bunga harian untuk akun ${akun} hari ini (${todayIso}) sudah pernah dicairkan.\n\nApakah Anda tetap ingin menambahkan Rp${nominalCair.toLocaleString('id-ID')} lagi ke saldo ${akun}?`);
+                if (!okUlang) return;
+            }
+
+            const now = new Date();
+            const waktuStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const petugas = (sessionStorage.getItem('zencell_user') || 'OWNER').toUpperCase();
+
+            // 1. Tambahkan langsung ke Master Saldo Awal akun SeaBank (Bukan Transaksi Kasir agar tidak mengotori Total Trx / Cuan Penjualan)
+            if (!window.masterSaldoAwal) window.masterSaldoAwal = {};
+            const prevAwal = Number(window.masterSaldoAwal[akun] || 0);
+            window.masterSaldoAwal[akun] = prevAwal + nominalCair;
+
+            // 2. Sesuaikan Target Modal Berputar otomatis dengan jumlah yang sama agar Audit Modal Berputar tetap PAS (Selisih Rp 0)
+            let modalAdjusted = false;
+            const prevTargetModal = Number((window.pengaturanToko && window.pengaturanToko.targetModalBerputar) || 0);
+            if (prevTargetModal > 0) {
+                window.pengaturanToko.targetModalBerputar = prevTargetModal + nominalCair;
+                modalAdjusted = true;
+            }
+
+            // 3. Simpan riwayat pencairan bunga & tandai sudah cair hari ini
+            const logItem = {
+                id: 'bunga_sea_' + window.getNextUniqueTs(),
+                isoDate: todayIso,
+                waktu: waktuStr,
+                akun: akun,
+                saldoDasar: saldoAktual,
+                sukuBungaText: calc.sukuBungaPersenText,
+                kenaPajak: calc.kenaPajak,
+                bungaKotor: Number(calc.bungaKotor.toFixed(2)),
+                pajak: Number(calc.pajak.toFixed(2)),
+                bungaBersihDesimal: Number(calc.bungaBersih.toFixed(2)),
+                nominalCair: nominalCair,
+                modalAdjusted: modalAdjusted,
+                oleh: petugas
+            };
+            st.lastClaimedByAccount[akun] = todayIso;
+            st.riwayatBunga.unshift(logItem);
+            if (st.riwayatBunga.length > 90) st.riwayatBunga.length = 90;
+
+            window.catatLogAktivitas(
+                'BUNGA SEABANK',
+                `Mencairkan bunga harian ${akun} sebesar +${window.formatRp(nominalCair)} (Saldo Dasar: ${window.formatRp(saldoAktual)} • ${calc.sukuBungaPersenText} • ${calc.kenaPajak ? 'Pajak 20%' : 'Bebas Pajak'} → Hitungan: ${window.formatRpDesimal2(calc.bungaBersih)}) [Non-Transaksi]`
+            );
+
+            window.saveMultipleFirebaseNodes({
+                saldoAwal: window.masterSaldoAwal,
+                pengaturan: window.pengaturanToko
+            });
+
+            if (window.triggerMutasiBlink) window.triggerMutasiBlink([akun]);
+            window.renderAll();
+            window.showToast(`🌅 Bunga harian ${akun} (+${window.formatRp(nominalCair)}) berhasil ditambahkan ke Saldo & Modal Berputar!`, 'success');
+        };
+
+        window.cairkanSemuaBungaSeaBank = function(prefixInputId) {
+            const seaAccounts = window.getSeaBankAccountsList();
+            const todayIso = window.getTodayIso();
+            const st = window.getSeaBankBungaState();
+            const unclaimed = seaAccounts.filter(akun => {
+                const saldo = Number((window._latestActualSaldoPerAkun && window._latestActualSaldoPerAkun[akun]) || 0);
+                return saldo > 0 && st.lastClaimedByAccount[akun] !== todayIso;
+            });
+            if (unclaimed.length === 0) {
+                window.showToast('ℹ️ Semua akun SeaBank sudah dicairkan bunganya hari ini!', 'warn');
+                return;
+            }
+            unclaimed.forEach((akun, idx) => {
+                const safeKey = String(akun).replace(/[^A-Za-z0-9]/g, '_');
+                const inpId = prefixInputId ? `${prefixInputId}_${safeKey}` : `inpBungaSeaCard_${safeKey}`;
+                window.cairkanBungaSeaBank(akun, inpId);
+            });
+        };
+
+        window.lewatiReminderBungaSeaBankHariIni = function() {
+            const st = window.getSeaBankBungaState();
+            st.lastSkippedDate = window.getTodayIso();
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko, true);
+            window.renderSeaBankBungaUI();
+            window.showToast('👍 Pengingat bunga SeaBank bagian atas disembunyikan untuk hari ini. Anda tetap bisa mencairkannya lewat menu Laporan ➔ Saldo.', 'success');
+        };
+
+        window.batalRiwayatBungaSeaBank = function(logId) {
+            const st = window.getSeaBankBungaState();
+            const idx = (st.riwayatBunga || []).findIndex(item => item && item.id === logId);
+            if (idx === -1) return;
+            const item = st.riwayatBunga[idx];
+            if (!confirm(`↩️ Batalkan pencairan bunga ${item.akun} sebesar ${window.formatRp(item.nominalCair)} (${item.isoDate} ${item.waktu})?\n\nSaldo ${item.akun} & Target Modal Berputar akan dikembalikan seperti semula.`)) {
+                return;
+            }
+            const nom = Number(item.nominalCair || 0);
+            if (window.masterSaldoAwal && window.masterSaldoAwal[item.akun] !== undefined) {
+                window.masterSaldoAwal[item.akun] = Number(window.masterSaldoAwal[item.akun] || 0) - nom;
+            }
+            if (item.modalAdjusted && window.pengaturanToko && Number(window.pengaturanToko.targetModalBerputar || 0) > 0) {
+                window.pengaturanToko.targetModalBerputar = Math.max(0, Number(window.pengaturanToko.targetModalBerputar || 0) - nom);
+            }
+            st.riwayatBunga.splice(idx, 1);
+
+            // Jika tidak ada lagi klaim untuk akun tersebut pada tanggal itu, buka kembali status klaimnya
+            const stillHasSameDate = st.riwayatBunga.some(r => r && r.akun === item.akun && r.isoDate === item.isoDate);
+            if (!stillHasSameDate && st.lastClaimedByAccount[item.akun] === item.isoDate) {
+                delete st.lastClaimedByAccount[item.akun];
+            }
+
+            window.catatLogAktivitas('BATAL BUNGA SEABANK', `Membatalkan pencairan bunga harian ${item.akun} sebesar -${window.formatRp(nom)} (${item.isoDate})`);
+            window.saveMultipleFirebaseNodes({
+                saldoAwal: window.masterSaldoAwal,
+                pengaturan: window.pengaturanToko
+            });
+            if (window.triggerMutasiBlink) window.triggerMutasiBlink([item.akun]);
+            window.renderAll();
+            window.showToast(`↩️ Pencairan bunga ${item.akun} (${window.formatRp(nom)}) berhasil dibatalkan!`, 'warn');
+        };
+
+        window.renderSeaBankBungaUI = function() {
+            const topBannerEl = document.getElementById('topSeaBankBungaBanner');
+            const cardSaldoEl = document.getElementById('cardSeaBankBungaSaldo');
+            const sidebarBoxEl = document.getElementById('sidebarSeaBankBungaBox');
+
+            const seaAccounts = window.getSeaBankAccountsList();
+            if (seaAccounts.length === 0) {
+                if (topBannerEl) topBannerEl.style.display = 'none';
+                if (cardSaldoEl) cardSaldoEl.style.display = 'none';
+                if (sidebarBoxEl) sidebarBoxEl.innerHTML = '';
+                return;
+            }
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            const isPastSixAm = currentHour >= 6;
+            const todayIso = window.getTodayIso();
+            const st = window.getSeaBankBungaState();
+
+            const accountDetails = seaAccounts.map(akun => {
+                const saldoAktual = Number((window._latestActualSaldoPerAkun && window._latestActualSaldoPerAkun[akun]) || 0);
+                const calc = window.hitungBungaHarianSeaBank(saldoAktual);
+                const isClaimedToday = st.lastClaimedByAccount[akun] === todayIso;
+                const todayLog = (st.riwayatBunga || []).find(r => r && r.akun === akun && r.isoDate === todayIso);
+                const safeKey = String(akun).replace(/[^A-Za-z0-9]/g, '_');
+                return {
+                    akun,
+                    safeKey,
+                    saldoAktual,
+                    calc,
+                    isClaimedToday,
+                    todayLog
+                };
+            });
+
+            const pendingAccounts = accountDetails.filter(d => !d.isClaimedToday && d.saldoAktual > 0 && d.calc.nominalBulat > 0);
+
+            // 1. RENDER TOP BANNER (Muncul otomatis jika sudah lewat jam 06:00 pagi & ada akun SEA yang belum klaim hari ini & belum di-skip)
+            if (topBannerEl) {
+                if (isPastSixAm && pendingAccounts.length > 0 && st.lastSkippedDate !== todayIso) {
+                    const itemsBannerHtml = pendingAccounts.map(d => `
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; background:rgba(255,255,255,0.92); border:1px solid #BAE6FD; padding:6px 9px; border-radius:8px; flex:1 1 280px;">
+                            <div style="line-height:1.25;">
+                                <div style="font-size:11px; font-weight:900; color:#0369A1;">
+                                    🏦 ${d.akun} <span style="font-weight:700; color:#475569;">(Saldo: ${window.formatRp(d.saldoAktual)})</span>
+                                </div>
+                                <div style="font-size:9.5px; color:#334155; font-weight:600;">
+                                    Bunga ${d.calc.sukuBungaPersenText}: <b>${window.formatRpDesimal2(d.calc.bungaKotor)}</b>
+                                    ${d.calc.kenaPajak
+                                        ? `• <span style="color:#DC2626;">PPh 20%: -${window.formatRpDesimal2(d.calc.pajak)}</span> ➔ Bersih: <b style="color:#047857;">${window.formatRpDesimal2(d.calc.bungaBersih)}</b>`
+                                        : `• <span style="color:#059669; font-weight:800;">Bebas Pajak (≤Rp7,5Jt)</span>`
+                                    }
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <div style="display:flex; align-items:center; background:#FFF; border:1.5px solid #0284C7; border-radius:6px; padding:2px 6px;">
+                                    <span style="font-size:10px; font-weight:800; color:#0284C7; margin-right:3px;">+Rp</span>
+                                    <input type="number" id="inpBungaSeaTop_${d.safeKey}" value="${d.calc.nominalBulat}" min="1" step="1" style="width:68px; border:none; outline:none; font-size:11.5px; font-weight:900; color:#0F172A; background:transparent; text-align:right;" title="Nominal bunga bersih yang cair di aplikasi SeaBank (bisa disesuaikan 1-2 rupiah jika pembulatan bank berbeda)">
+                                </div>
+                                <button type="button" onclick="cairkanBungaSeaBank('${d.akun}', 'inpBungaSeaTop_${d.safeKey}')" style="background:#0284C7; color:#FFF; border:none; border-radius:6px; padding:5px 10px; font-size:10.5px; font-weight:800; cursor:pointer; white-space:nowrap; box-shadow:0 1px 3px rgba(2,132,199,0.25);">
+                                    ✅ Tambah ke ${d.akun}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    topBannerEl.style.display = 'block';
+                    topBannerEl.innerHTML = `
+                        <div style="background:linear-gradient(90deg, #E0F2FE 0%, #F0F9FF 100%); border:1.5px solid #38BDF8; border-radius:10px; padding:8px 11px; box-shadow:0 2px 8px rgba(2,132,199,0.10);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                    <span style="background:#0284C7; color:#FFF; font-size:9.5px; font-weight:900; padding:2px 7px; border-radius:999px;">🌅 JAM 06:00+ WIB</span>
+                                    <b style="font-size:11.5px; color:#0C4A6E;">Bunga Harian SeaBank Hari Ini (${todayIso}) Siap Dicairkan ke Pembukuan!</b>
+                                    <small style="font-size:9.5px; color:#0369A1; font-weight:700;">(Non-Transaksi • Otomatis Sesuaikan Target Modal Berputar)</small>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:5px;">
+                                    ${pendingAccounts.length > 1 ? `<button type="button" onclick="cairkanSemuaBungaSeaBank('inpBungaSeaTop')" style="background:#059669; color:#FFF; border:none; border-radius:6px; padding:4px 9px; font-size:10px; font-weight:800; cursor:pointer;">⚡ Cairkan Semua (${pendingAccounts.length} Akun)</button>` : ''}
+                                    <button type="button" onclick="lewatiReminderBungaSeaBankHariIni()" style="background:rgba(15,23,42,0.08); color:#334155; border:none; border-radius:6px; padding:4px 8px; font-size:10px; font-weight:700; cursor:pointer;" title="Sembunyikan banner ini untuk hari ini">Nanti ✕</button>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                ${itemsBannerHtml}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    topBannerEl.style.display = 'none';
+                    topBannerEl.innerHTML = '';
+                }
+            }
+
+            // 2. RENDER KARTU PERMANEN DI TAB LAPORAN -> SALDO (#cardSeaBankBungaSaldo)
+            if (cardSaldoEl) {
+                cardSaldoEl.style.display = 'block';
+                const rowsCardHtml = accountDetails.map(d => {
+                    const pajakBadge = d.calc.kenaPajak
+                        ? `<span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:1px 6px; border-radius:999px; font-size:9px; font-weight:800;">PPh 20% (&gt;Rp7,5Jt): -${window.formatRpDesimal2(d.calc.pajak)}</span>`
+                        : `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1px 6px; border-radius:999px; font-size:9px; font-weight:800;">Bebas Pajak (≤Rp7,5Jt)</span>`;
+
+                    const statusRightHtml = d.isClaimedToday
+                        ? `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <span style="background:#DCFCE7; color:#166534; border:1px solid #86EFAC; padding:4px 9px; border-radius:7px; font-size:10.5px; font-weight:800;">
+                                    ✅ Sudah Cair Hari Ini: +${window.formatRp(d.todayLog ? d.todayLog.nominalCair : d.calc.nominalBulat)} ${d.todayLog ? `(${d.todayLog.waktu})` : ''}
+                                </span>
+                                ${d.todayLog ? `<button type="button" onclick="batalRiwayatBungaSeaBank('${d.todayLog.id}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:6px; padding:4px 8px; font-size:10px; font-weight:800; cursor:pointer;" title="Batalkan pencairan bunga hari ini">↩️ Batal</button>` : ''}
+                           </div>`
+                        : `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <div style="display:flex; align-items:center; background:var(--card); border:1.5px solid #0284C7; border-radius:7px; padding:3px 7px;">
+                                    <span style="font-size:10.5px; font-weight:800; color:#0284C7; margin-right:3px;">+Rp</span>
+                                    <input type="number" id="inpBungaSeaCard_${d.safeKey}" value="${d.calc.nominalBulat}" min="1" step="1" style="width:76px; border:none; outline:none; font-size:12px; font-weight:900; color:var(--text); background:transparent; text-align:right;">
+                                </div>
+                                <button type="button" class="btn" style="width:auto; padding:6px 12px; font-size:10.5px; background:#0284C7;" onclick="cairkanBungaSeaBank('${d.akun}', 'inpBungaSeaCard_${d.safeKey}')">
+                                    🌅 Cairkan Bunga ke Saldo ${d.akun}
+                                </button>
+                           </div>`;
+
+                    return `
+                        <div style="background:var(--card); border:1px solid var(--border); border-left:4px solid ${d.isClaimedToday ? '#10B981' : '#0284C7'}; border-radius:9px; padding:9px 11px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="line-height:1.35;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                    <b style="font-size:12px; color:var(--text);">🏦 Akun ${d.akun}</b>
+                                    <span style="font-size:11px; font-weight:800; color:#0284C7;">Saldo Saat Ini: ${window.formatRp(d.saldoAktual)}</span>
+                                    <span style="background:#E0F2FE; color:#0369A1; padding:1px 6px; border-radius:999px; font-size:9px; font-weight:800;">Bunga ${d.calc.sukuBungaPersenText}</span>
+                                    ${pajakBadge}
+                                </div>
+                                <div style="font-size:10px; color:#475569; margin-top:2px;">
+                                    Rumus: (${window.formatRp(d.saldoAktual)} × ${d.calc.sukuBungaPersenText.split(' ')[0]} ÷ 365) = Kotor <b>${window.formatRpDesimal2(d.calc.bungaKotor)}</b>/hari
+                                    ${d.calc.kenaPajak ? ` − Pajak 20% (<b>${window.formatRpDesimal2(d.calc.pajak)}</b>)` : ''}
+                                    ➔ Bersih: <b style="color:#047857;">${window.formatRpDesimal2(d.calc.bungaBersih)}/hari</b> (Dibulatkan: <b>${window.formatRp(d.calc.nominalBulat)}</b>)
+                                </div>
+                            </div>
+                            ${statusRightHtml}
+                        </div>
+                    `;
+                }).join('');
+
+                const recentLogs = (st.riwayatBunga || []).slice(0, 5);
+                const riwayatHtml = recentLogs.length > 0 ? `
+                    <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #BAE6FD;">
+                        <div style="font-size:10px; font-weight:800; color:#0369A1; margin-bottom:4px;">📜 RIWAYAT PENCAIRAN BUNGA SEABANK TERAKHIR (NON-TRANSAKSI):</div>
+                        <div style="display:flex; flex-direction:column; gap:3px;">
+                            ${recentLogs.map(r => `
+                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; font-size:10px; background:rgba(255,255,255,0.65); padding:3.5px 7px; border-radius:6px; border:1px solid #E0F2FE;">
+                                    <span>📅 <b>${r.isoDate}</b> (${r.waktu || '-'}) • <b>${r.akun}</b> (Saldo Dasar: ${window.formatRp(r.saldoDasar)}) • ${r.kenaPajak ? 'Kena Pajak 20%' : 'Bebas Pajak'}</span>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <b style="color:#059669;">+${window.formatRp(r.nominalCair)}</b>
+                                        <button type="button" onclick="batalRiwayatBungaSeaBank('${r.id}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:4px; padding:1px 6px; font-size:9px; font-weight:800; cursor:pointer;" title="Batalkan pencairan bunga ini">↩️ Batal</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : '';
+
+                cardSaldoEl.innerHTML = `
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; border-bottom:1px solid #BAE6FD; padding-bottom:7px; color:#0369A1;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span>🌅 KALKULATOR & KONFIRMASI BUNGA HARIAN SEABANK (CAIR JAM 06:00 PAGI)</span>
+                            <span style="font-size:9px; background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; padding:2px 7px; border-radius:999px; font-weight:800;">Opsi 2 • Non-Transaksi</span>
+                        </div>
+                        <span style="font-size:10px; color:#0284C7; font-weight:700;">2,50% (&lt;150Jt) • 3,50% (≥150Jt) • PPh 20% jika &gt;Rp7,5Jt</span>
+                    </div>
+                    <div style="font-size:10px; color:#475569; margin-top:6px; margin-bottom:8px; line-height:1.35;">
+                        💡 Bunga cair otomatis menambah <b>Saldo ${seaAccounts.join(' / ')}</b> &amp; <b>Target Modal Berputar</b> secara bersamaan (tidak masuk ke Jurnal Transaksi Kasir agar tidak mengubah jumlah Pelanggan / Omset Penjualan). Nominal dapat diedit jika ada selisih pembulatan 1–2 rupiah di aplikasi SeaBank.
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        ${rowsCardHtml}
+                    </div>
+                    ${riwayatHtml}
+                `;
+            }
+
+            // 3. RENDER BOX RINGKAS DI SIDEBAR KIRI CEK SALDO (#sidebarSeaBankBungaBox)
+            if (sidebarBoxEl) {
+                const sbRowsHtml = accountDetails.map(d => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; margin-top:4px; padding-top:4px; border-top:1px dashed #BAE6FD;">
+                        <div style="line-height:1.2;">
+                            <b style="font-size:10.5px; color:#0C4A6E;">🏦 ${d.akun}</b>
+                            <span style="font-size:9.5px; color:#0369A1; display:block;">Hitungan: <b>${window.formatRpDesimal2(d.calc.bungaBersih)}</b>/hr (${d.calc.kenaPajak ? 'Pajak 20%' : 'Bebas Pajak'})</span>
+                        </div>
+                        ${d.isClaimedToday
+                            ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:5px; font-size:9.5px; font-weight:800;">✅ +${window.formatRp(d.todayLog ? d.todayLog.nominalCair : d.calc.nominalBulat)}</span>`
+                            : `<div style="display:flex; align-items:center; gap:3px;">
+                                    <input type="number" id="inpBungaSeaSb_${d.safeKey}" value="${d.calc.nominalBulat}" min="1" step="1" style="width:54px; padding:2px 4px; font-size:10.5px; font-weight:800; border:1px solid #0284C7; border-radius:4px; text-align:right; background:#FFF; color:#0F172A;">
+                                    <button type="button" onclick="cairkanBungaSeaBank('${d.akun}', 'inpBungaSeaSb_${d.safeKey}')" style="background:#0284C7; color:#FFF; border:none; border-radius:4px; padding:3px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">+Cairkan</button>
+                               </div>`
+                        }
+                    </div>
+                `).join('');
+
+                sidebarBoxEl.innerHTML = `
+                    <div style="margin-top:8px; padding:7px 9px; border-radius:8px; background:#F0F9FF; border:1.5px solid #7DD3FC; color:#0C4A6E; font-size:10.5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b style="font-size:10.5px;">🌅 BUNGA HARIAN SEABANK (06:00)</b>
+                            <span style="font-size:9px; font-weight:800; color:#0284C7;">Non-Trx</span>
+                        </div>
+                        ${sbRowsHtml}
+                    </div>
+                `;
             }
         };
 
