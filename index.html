@@ -584,6 +584,57 @@
             border-color: #4338CA;
         }
 
+        /* Animasi Kedap-Kedip Slow / Santai (10 Detik) untuk Baris Mutasi Akun yang Baru Berubah */
+        @keyframes blinkMutasiSantai {
+            0%, 100% {
+                background-color: rgba(254, 240, 138, 0.15);
+                box-shadow: inset 3px 0 0 rgba(5, 150, 105, 0.35);
+            }
+            50% {
+                background-color: rgba(250, 204, 21, 0.52);
+                box-shadow: inset 4px 0 0 #059669, 0 0 12px rgba(245, 158, 11, 0.28);
+            }
+        }
+        @keyframes blinkMutasiSantaiDark {
+            0%, 100% {
+                background-color: rgba(250, 204, 21, 0.06);
+                box-shadow: inset 3px 0 0 rgba(52, 211, 153, 0.35);
+            }
+            50% {
+                background-color: rgba(250, 204, 21, 0.28);
+                box-shadow: inset 4px 0 0 #34D399, 0 0 12px rgba(250, 204, 21, 0.22);
+            }
+        }
+        tr.mutasi-akun-blink-slow {
+            animation: blinkMutasiSantai 2.1s ease-in-out infinite !important;
+            transition: background-color 0.4s ease;
+        }
+        tr.mutasi-akun-blink-slow td {
+            border-top-color: #F59E0B !important;
+            border-bottom-color: #F59E0B !important;
+        }
+        body.theme-dark tr.mutasi-akun-blink-slow {
+            animation: blinkMutasiSantaiDark 2.1s ease-in-out infinite !important;
+        }
+        .badge-mutasi-baru {
+            display: inline-block;
+            font-size: 8.5px;
+            font-weight: 900;
+            background: #FEF3C7;
+            color: #B45309;
+            border: 1px solid #F59E0B;
+            padding: 0.5px 4px;
+            border-radius: 4px;
+            margin-left: 3px;
+            vertical-align: middle;
+            letter-spacing: 0.2px;
+        }
+        body.theme-dark .badge-mutasi-baru {
+            background: rgba(245, 158, 11, 0.25);
+            color: #FDE68A;
+            border-color: #F59E0B;
+        }
+
         .right-sidebar {
             position: fixed; top: 0; right: -370px; width: 350px; max-width: 92vw; height: 100%; background: var(--card);
             box-shadow: -5px 0 28px rgba(0,0,0,0.28); z-index: 99995; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -4050,13 +4101,14 @@
                 <div class="row-2" style="margin-bottom:8px;">
                     <div class="form-group" style="margin-bottom:0;">
                         <label style="color:var(--primary); font-weight:bold;">📅 Tanggal</label>
-                        <input type="date" id="trxDateInput" class="form-control" required style="font-weight:bold; border-color:var(--primary); background-color:var(--primary-light);">
+                        <input type="date" id="trxDateInput" class="form-control" required style="font-weight:bold; border-color:var(--primary); background-color:var(--primary-light);" onchange="updateTrxDateNoticeBadge()" oninput="updateTrxDateNoticeBadge()">
                     </div>
                     <div class="form-group" style="margin-bottom:0;">
                         <label>Jumlah (Pcs)</label>
                         <input type="number" id="trxQty" class="form-control" value="1" min="1" inputmode="numeric" pattern="[0-9]*" required oninput="hitungSubtotalModal()">
                     </div>
                 </div>
+                <div id="trxDateNoticeBadge" style="display:none; background:#FEF3C7; color:#92400E; border:1.5px solid #F59E0B; border-radius:8px; padding:6px 10px; font-size:11px; font-weight:800; margin-top:-2px; margin-bottom:8px; line-height:1.35;"></div>
 
                 <div class="form-group">
                     <label>Keterangan Transaksi / Nama Barang / Pelanggan Utang / Tiket Servis</label>
@@ -5722,7 +5774,8 @@
 
         window.prosesLunasiTiketKeKasir = function(t) {
             window.cancelEditTrx();
-            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
+            window.updateTrxDateNoticeBadge();
             document.getElementById('keterangan').value = `${t.nama} [${t.tipeHp}] ${t.noServis}`;
             document.getElementById('kategori').value = 'SERVICE';
             document.getElementById('trxQty').value = '1';
@@ -7147,12 +7200,85 @@
             window.showToast(ikutResetSaldoAwal ? "✅ Seluruh data & Saldo Awal berhasil di-reset bersih ke Rp 0!" : "✅ Seluruh data transaksi berhasil di-reset bersih (Saldo Awal tetap dipertahankan)!", "warn");
         };
 
+        window.getDefaultKasirDate = function() {
+            const fMode = document.getElementById('jurnalFilterMode')?.value || 'DAILY';
+            const fDate = document.getElementById('jurnalDatePicker')?.value || '';
+            if (fMode === 'DAILY' && fDate) return fDate;
+            return window.getTodayIso();
+        };
+
+        window.updateTrxDateNoticeBadge = function() {
+            const dateInput = document.getElementById('trxDateInput');
+            const badgeEl = document.getElementById('trxDateNoticeBadge');
+            if (!dateInput || !badgeEl) return;
+            const today = window.getTodayIso();
+            const val = dateInput.value || today;
+            if (val !== today) {
+                badgeEl.style.display = 'block';
+                badgeEl.innerHTML = `⚠️ <b>Mode Tanggal Mundur / Beda Hari:</b> Transaksi ini akan tercatat di tanggal <b>${val}</b> (Bukan Hari Ini). <button type="button" onclick="document.getElementById('trxDateInput').value = window.getTodayIso(); window.updateTrxDateNoticeBadge();" style="margin-left:4px; background:#D97706; color:#FFF; border:none; border-radius:4px; padding:2px 6px; font-size:10px; font-weight:800; cursor:pointer;">Ubah ke Hari Ini</button>`;
+                dateInput.style.borderColor = '#F59E0B';
+                dateInput.style.backgroundColor = '#FEF3C7';
+                dateInput.style.color = '#92400E';
+            } else {
+                badgeEl.style.display = 'none';
+                badgeEl.innerHTML = '';
+                dateInput.style.borderColor = 'var(--primary)';
+                dateInput.style.backgroundColor = 'var(--primary-light)';
+                dateInput.style.color = 'var(--text)';
+            }
+        };
+
+        window._blinkingMutasiAccounts = window._blinkingMutasiAccounts || {};
+        window._blinkMutasiCleanupTimer = null;
+
+        window.isMutasiAkunBlinking = function(akun) {
+            if (!akun || !window._blinkingMutasiAccounts) return false;
+            const exp = window._blinkingMutasiAccounts[akun];
+            if (!exp) return false;
+            if (Date.now() > exp) {
+                delete window._blinkingMutasiAccounts[akun];
+                return false;
+            }
+            return true;
+        };
+
+        window.triggerBlinkMutasiAkun = function(accountsList, durationMs = 10000) {
+            if (!Array.isArray(accountsList)) return;
+            window._blinkingMutasiAccounts = window._blinkingMutasiAccounts || {};
+            const expTime = Date.now() + durationMs;
+            const validAccounts = [];
+            accountsList.forEach(acc => {
+                const cleanAcc = String(acc || '').trim().toUpperCase();
+                if (!cleanAcc || cleanAcc === 'TIDAK POTONG SALDO') return;
+                window._blinkingMutasiAccounts[cleanAcc] = expTime;
+                if (!validAccounts.includes(cleanAcc)) validAccounts.push(cleanAcc);
+            });
+            if (validAccounts.length === 0) return;
+
+            const applyDomBlinkState = () => {
+                document.querySelectorAll('tr[data-mutasi-akun]').forEach(row => {
+                    const aName = row.getAttribute('data-mutasi-akun');
+                    const isBlink = window.isMutasiAkunBlinking(aName);
+                    row.classList.toggle('mutasi-akun-blink-slow', isBlink);
+                    const badge = row.querySelector('.badge-mutasi-baru');
+                    if (badge && !isBlink) badge.remove();
+                });
+            };
+            applyDomBlinkState();
+
+            if (window._blinkMutasiCleanupTimer) clearTimeout(window._blinkMutasiCleanupTimer);
+            window._blinkMutasiCleanupTimer = setTimeout(() => {
+                applyDomBlinkState();
+            }, durationMs + 80);
+        };
+
         window.openModalKasir = function() { 
             if (!document.getElementById('editTrxId').value) {
-                document.getElementById('trxDateInput').value = window.getTodayIso();
+                document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
                 document.getElementById('chkSplit').checked = false;
                 window.toggleSplitMode(false);
             }
+            window.updateTrxDateNoticeBadge();
             document.getElementById('modalKasirOverlay').classList.add('show');
         }
         window.closeModalKasir = function() { 
@@ -7167,7 +7293,8 @@
             if (titleEl) titleEl.innerText = '+ Input Transaksi Kasir';
             const btnSubmitEl = document.getElementById('btnSubmitTrx');
             if (btnSubmitEl) btnSubmitEl.innerText = 'Simpan Transaksi';
-            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
+            window.updateTrxDateNoticeBadge();
             document.getElementById('hargaJual').value = '0';
             document.getElementById('hargaModal').value = '0';
             document.getElementById('jualSplit1').value = '0';
@@ -8021,7 +8148,8 @@
 
             window.openModalKasir();
             document.getElementById('editTrxId').value = '';
-            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
+            window.updateTrxDateNoticeBadge();
             document.getElementById('keterangan').value = `[SERVIS PART] ${sp.namaUnit}`;
             document.getElementById('trxQty').value = 1;
             document.getElementById('kategori').value = 'SERVICE';
@@ -8569,7 +8697,8 @@
 
             window.openModalKasir();
             document.getElementById('editTrxId').value = '';
-            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
+            window.updateTrxDateNoticeBadge();
             const ketSuffix = (p.catatan && p.catatan !== '-') ? ` (${p.catatan})` : '';
             document.getElementById('keterangan').value = `[PELUNASAN UTANG] ${p.nama}${ketSuffix}`;
             document.getElementById('trxQty').value = Number(p.qty || 1);
@@ -8948,6 +9077,7 @@
             document.getElementById('setorKet').value = '';
             if (window.closeModalSetorFast) window.closeModalSetorFast();
             window.catatLogAktivitas('SETORAN PROFIT', `Mencatat setoran profit ${window.formatRp(nom)} dari akun ${sumber}`);
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber], 10000);
             window.saveToFirebaseNode('setoran', window.setoranOwnerList);
             window.renderAll();
             window.showToast(`✅ Setoran profit ${window.formatRp(nom)} dari ${sumber} berhasil dicatat!`, "success");
@@ -9107,6 +9237,7 @@
             document.getElementById('tfAdmin_fast').value = '0';
             if (document.getElementById('editTfFastId')) document.getElementById('editTfFastId').value = '';
             if (window.closeModalTfFast) window.closeModalTfFast();
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber, tujuan], 10000);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
             if (window.showToast) window.showToast(`✅ Pindah saldo ${sumber} ➔ ${tujuan} (${window.formatRp(nom)}) berhasil disimpan!`, "success");
@@ -9356,6 +9487,7 @@
             }
             window.markLocalTrxEdited(tfTrx);
             window.batalEditPindahSaldo();
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber, tujuan], 10000);
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
             window.renderAll();
             if (window.showToast) window.showToast(`✅ Pindah saldo ${sumber} ➔ ${tujuan} (${window.formatRp(nom)}) berhasil disimpan!`, "success");
@@ -9540,11 +9672,16 @@
             // Simpan ke proteksi lokal anti-rollback sebelum sinkronisasi Firebase
             window.markLocalTrxEdited(trxData);
 
-            // Jika sedang di filter harian dan tanggal transaksi yang diedit berbeda, sesuaikan filter agar langsung terlihat
+            // Jika sedang di filter harian dan tanggal transaksi yang disimpan/diedit berbeda, sesuaikan filter agar langsung terlihat
             const fModeEl = document.getElementById('jurnalFilterMode');
             const fDateEl = document.getElementById('jurnalDatePicker');
-            if (editId && fModeEl && fModeEl.value === 'DAILY' && fDateEl && fDateEl.value !== selectedDate) {
+            if (fModeEl && fModeEl.value === 'DAILY' && fDateEl && fDateEl.value !== selectedDate) {
                 fDateEl.value = selectedDate;
+            }
+
+            // Aktifkan kedap-kedip santai (10 detik) pada baris Mutasi Akun yang bersangkutan
+            if (window.triggerBlinkMutasiAkun) {
+                window.triggerBlinkMutasiAkun([akunMasuk1, akunMasuk2, akunKeluar1, akunKeluar2], 10000);
             }
 
             window.closeModalKasir();
@@ -9584,8 +9721,8 @@
             }
             window.saveMultipleFirebaseNodes(nodesToSync, false);
 
+            window.highlightRowAndScroll(`row-trx-${trxData.id}`);
             if (editId) {
-                window.highlightRowAndScroll(`row-trx-${trxData.id}`);
                 window.showToast(`✅ Perubahan transaksi "${ket}" berhasil disimpan & disinkronkan!`, "success");
             } else {
                 window.showToast(`✅ Transaksi "${ket}" berhasil disimpan!`, "success");
@@ -10664,7 +10801,9 @@
                         : (akunStokFisik.includes(s)
                             ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 5px; border-radius:4px; font-weight:700;">Data Stok</span>'
                             : ''));
-                return `<tr><td><b>${s}</b>${labelBadge}</td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><span class="${isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam'}" title="${minLimit > 0 ? 'Batas Minimal: ' + window.formatRp(minLimit) : ''}">${window.formatRp(akhir)}</span></td></tr>`;
+                const isBlinkRow = window.isMutasiAkunBlinking && window.isMutasiAkunBlinking(s);
+                const blinkBadgeMain = isBlinkRow ? '<span class="badge-mutasi-baru">🔄 UPDATE</span>' : '';
+                return `<tr data-mutasi-akun="${s}" class="${isBlinkRow ? 'mutasi-akun-blink-slow' : ''}"><td><b>${s}</b>${labelBadge}${blinkBadgeMain}</td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><span class="${isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam'}" title="${minLimit > 0 ? 'Batas Minimal: ' + window.formatRp(minLimit) : ''}">${window.formatRp(akhir)}</span></td></tr>`;
             }).join('');
 
             const totalSemuaStokBelumCair = totalStokOpnameAkunVal + totalSparepartVal;
@@ -10835,9 +10974,12 @@
                                 ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 4px; border-radius:3px; font-weight:800;">Stok</span>'
                                 : ''));
 
+                    const isBlinkSb = window.isMutasiAkunBlinking && window.isMutasiAkunBlinking(s);
+                    const blinkBadgeSb = isBlinkSb ? '<span class="badge-mutasi-baru">🔄 UPDATE</span>' : '';
+
                     return `
-                        <tr title="${minLimit > 0 ? 'Batas Minimal ' + s + ': ' + window.formatRp(minLimit) : s}">
-                            <td><b>${s}</b>${badgeTag}</td>
+                        <tr data-mutasi-akun="${s}" class="${isBlinkSb ? 'mutasi-akun-blink-slow' : ''}" title="${minLimit > 0 ? 'Batas Minimal ' + s + ': ' + window.formatRp(minLimit) : s}">
+                            <td><b>${s}</b>${badgeTag}${blinkBadgeSb}</td>
                             <td style="color:#475569; font-weight:700;">${window.formatRp(kemarinRow)}</td>
                             <td class="text-kredit" style="font-weight:${masukH > 0 ? '800' : '600'}; opacity:${masukH > 0 ? '1' : '0.45'};">${masukH > 0 ? '+' + window.formatRp(masukH) : 'Rp0'}</td>
                             <td class="text-debit" style="font-weight:${keluarH > 0 ? '800' : '600'}; opacity:${keluarH > 0 ? '1' : '0.45'};">${keluarH > 0 ? '-' + window.formatRp(keluarH) : 'Rp0'}</td>
@@ -13238,7 +13380,8 @@
             window.closeModalGlobalFind();
             window.openModalKasir();
             document.getElementById('editTrxId').value = '';
-            document.getElementById('trxDateInput').value = window.getTodayIso();
+            document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
+            window.updateTrxDateNoticeBadge();
             document.getElementById('trxQty').value = 1;
             const ketEl = document.getElementById('keterangan');
             if (ketEl) {
