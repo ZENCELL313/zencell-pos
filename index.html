@@ -245,7 +245,193 @@
 
         .header-status-bar {
             display: flex; justify-content: space-between; align-items: center; gap: 6px; background: rgba(255,255,255,0.15);
-            padding: 6px 10px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: 600;
+            padding: 5px 10px; border-radius: 10px; margin-top: 8px; font-size: 11px; font-weight: 600;
+        }
+        .hdr-clock-stacked {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            background: transparent;
+            padding: 1px 2px 1px 10px;
+            border-left: 1px solid rgba(255, 255, 255, 0.28);
+            line-height: 1.2;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .hdr-clock-stacked .hdr-clock-date {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.88);
+            letter-spacing: 0.15px;
+        }
+        .hdr-clock-stacked .hdr-clock-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #FFFFFF;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.25px;
+            margin-top: 1px;
+            text-shadow: 0 1px 2px rgba(15, 23, 42, 0.22);
+        }
+        .hdr-clock-stacked .hdr-clock-time svg {
+            width: 12px;
+            height: 12px;
+            color: #FEF08A;
+            flex-shrink: 0;
+        }
+        body.theme-dark .hdr-clock-stacked {
+            border-left-color: rgba(255, 255, 255, 0.22);
+        }
+        body.theme-dark .hdr-clock-stacked .hdr-clock-date {
+            color: rgba(226, 232, 240, 0.88);
+        }
+        body.theme-dark .hdr-clock-stacked .hdr-clock-time {
+            color: #F8FAFC;
+        }
+        body.theme-dark .hdr-clock-stacked .hdr-clock-time svg {
+            color: #34D399;
+        }
+        @media (max-width: 640px) {
+            .hdr-clock-stacked {
+                padding: 1px 1px 1px 7px;
+            }
+            .hdr-clock-stacked .hdr-clock-date {
+                font-size: 9px;
+            }
+            .hdr-clock-stacked .hdr-clock-time {
+                font-size: 11px;
+                gap: 3px;
+            }
+            .hdr-clock-stacked .hdr-clock-time svg {
+                width: 10.5px;
+                height: 10.5px;
+            }
+        }
+
+        /* Sub-Tab Setting Semua Jenis Nota & Modal Struk Transfer */
+        .nota-type-tabs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 6px;
+            margin-bottom: 14px;
+            background: var(--bg);
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .nota-type-tab-btn {
+            background: var(--card);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .nota-type-tab-btn:hover {
+            border-color: var(--primary);
+        }
+        .nota-type-tab-btn.active {
+            background: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary-dark);
+            box-shadow: 0 3px 8px rgba(5, 150, 105, 0.25);
+        }
+        .nota-sub-pane {
+            display: none;
+        }
+        .nota-sub-pane.active {
+            display: block;
+            animation: settingsFadeIn 0.2s ease-in-out;
+        }
+        .nota-toggle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .nota-toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .nota-toggle-item input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .struk-tf-layout {
+            display: grid;
+            grid-template-columns: 1.25fr 0.95fr;
+            gap: 14px;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .struk-tf-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .ss-dropzone-box {
+            border: 2px dashed #0284C7;
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .ss-dropzone-box:hover, .ss-dropzone-box.drag-active {
+            border-color: #0369A1;
+            background: #E0F2FE;
+            transform: translateY(-1px);
+        }
+        body.theme-dark .ss-dropzone-box {
+            background: rgba(2, 132, 199, 0.12);
+            border-color: #38BDF8;
+        }
+        .bank-chip-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .bank-chip-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .bank-chip-btn:hover {
+            background: var(--primary);
+            color: #FFF;
+            border-color: var(--primary);
         }
         .status-marquee-box {
             flex: 1; min-width: 0; overflow: hidden; margin: 0 6px;
@@ -2062,7 +2248,7 @@
                     <span>🎯</span> Modal Berputar
                 </button>
                 <button type="button" class="settings-tab-btn" id="btnSetTab-printer" onclick="switchSettingsTab('printer')">
-                    <span>🖨️</span> Perangkat & Printer
+                    <span>🖨️</span> Printer & Setting Nota
                 </button>
                 <button type="button" class="settings-tab-btn" id="btnSetTab-akses" onclick="switchSettingsTab('akses')">
                     <span>👥</span> Akun & Akses
@@ -2208,39 +2394,306 @@
                 </form>
             </div>
 
-            <!-- TAB 2: PERANGKAT & PRINTER -->
+            <!-- TAB 2: PERANGKAT, PRINTER & SETTING SEMUA JENIS NOTA -->
             <div id="setPane-printer" class="settings-sub-pane">
-                <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; padding:10px 14px; font-size:11.5px; color:#065F46; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
-                    <span>✅</span>
-                    <span>Pilih opsi cetak sesuai kebutuhan. Sistem mendukung fitur cetak browser, printer thermal Bluetooth/USB 58mm & 80mm.</span>
+                <div style="background:linear-gradient(135deg, #ECFDF5 0%, #E0F2FE 100%); border:1.5px solid #10B981; border-radius:12px; padding:10px 14px; font-size:11px; color:#065F46; margin-bottom:12px; line-height:1.45;">
+                    <div style="font-weight:800; font-size:12px; margin-bottom:2px; display:flex; align-items:center; gap:6px;">
+                        <span>🖨️</span>
+                        <span>PUSAT PENGATURAN PRINTER & KUSTOMISASI SEMUA JENIS NOTA (4 TIPE NOTA TERPISAH)</span>
+                    </div>
+                    Setiap jenis nota memiliki pengaturan tersendiri. Pilih jenis nota di bawah untuk mengedit judul, syarat &amp; ketentuan, garansi, catatan kaki, serta memilih elemen apa saja yang ingin ditampilkan atau disembunyikan.
                 </div>
 
                 <form onsubmit="simpanPengaturanPrinter(event)">
-                    <div class="settings-card-box">
-                        <h4 style="font-size:11.5px; font-weight:800; color:#475569; margin-bottom:8px; text-transform:uppercase;">Koneksi Hardware & Format Struk</h4>
-                        <div class="form-group">
-                            <label>Printer Kasir & Ukuran Kertas</label>
-                            <select id="setPrinterUkuran" class="form-control">
-                                <option value="58mm">Thermal 58mm (Kertas Mini Kasir / Bluetooth / USB)</option>
-                                <option value="80mm">Thermal 80mm (Kertas Lebar Struk)</option>
-                                <option value="A4">Standar Web Browser (A4 / Universal PDF)</option>
-                            </select>
-                        </div>
-                        <div style="display:flex; gap:8px; margin-top:8px;">
-                            <button type="button" class="btn" style="background:#0284C7; font-size:11px;" onclick="testPrintStrukKasir()">🖨️ Test Print Struk Kasir</button>
-                            <button type="button" class="btn" style="background:#059669; font-size:11px;" onclick="testPrintNotaServis()">🖨️ Test Print Nota Servis</button>
+                    <!-- Koneksi & Ukuran Kertas -->
+                    <div class="settings-card-box" style="padding:12px 14px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="flex:1; min-width:220px;">
+                                <label style="font-size:11px; font-weight:800; color:var(--primary); display:block; margin-bottom:4px;">📏 Ukuran Kertas Printer Struk Default (Thermal / Browser)</label>
+                                <select id="setPrinterUkuran" class="form-control" style="font-weight:700;">
+                                    <option value="58mm">Thermal 58mm (Kertas Mini Kasir / Bluetooth / USB)</option>
+                                    <option value="80mm">Thermal 80mm (Kertas Lebar Struk Kasir)</option>
+                                    <option value="A4">Standar Web Browser (A4 / Universal PDF)</option>
+                                </select>
+                            </div>
+                            <div style="font-size:10px; color:#64748B; max-width:260px; line-height:1.35;">
+                                💡 <b>Catatan:</b> Nota Servis Masuk &amp; Nota Lunas Servis dicetak otomatis dalam format <b>A5 Landscape 2-Rangkap</b> (Konsumen &amp; Arsip Konter).
+                            </div>
                         </div>
                     </div>
 
-                    <div class="settings-card-box">
-                        <h4 style="font-size:11.5px; font-weight:800; color:#475569; margin-bottom:8px; text-transform:uppercase;">Teks Struk Kasir (Catatan Footer Bawah)</h4>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <textarea id="setTeksStruk" class="form-control" rows="3" placeholder="Terima kasih telah berbelanja di ZENCELL!&#10;Barang yang sudah dibeli tidak dapat ditukar/dikembalikan."></textarea>
+                    <!-- Pemilih 4 Jenis Nota Berbeda -->
+                    <div style="font-size:11px; font-weight:800; color:#475569; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.3px;">
+                        👇 Pilih Jenis Nota yang Ingin Diatur / Diedit:
+                    </div>
+                    <div class="nota-type-tabs">
+                        <button type="button" class="nota-type-tab-btn active" id="btnNotaType-servisMasuk" onclick="switchNotaSettingSubTab('servisMasuk')">
+                            <span>🎫</span> 1. Nota Servis Masuk
+                        </button>
+                        <button type="button" class="nota-type-tab-btn" id="btnNotaType-servisLunas" onclick="switchNotaSettingSubTab('servisLunas')">
+                            <span>✅</span> 2. Nota Lunas Servis
+                        </button>
+                        <button type="button" class="nota-type-tab-btn" id="btnNotaType-transfer" onclick="switchNotaSettingSubTab('transfer')">
+                            <span>🏦</span> 3. Nota / Struk Transfer
+                        </button>
+                        <button type="button" class="nota-type-tab-btn" id="btnNotaType-kasir" onclick="switchNotaSettingSubTab('kasir')">
+                            <span>🛒</span> 4. Nota / Struk Kasir
+                        </button>
+                    </div>
+
+                    <!-- SUB-PANE 1: NOTA SERVIS MASUK (TANDA TERIMA SERVIS) -->
+                    <div id="notaSubPane-servisMasuk" class="nota-sub-pane active">
+                        <div class="settings-card-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <div>
+                                    <h4 style="font-size:12.5px; font-weight:800; color:#0284C7; margin:0;">🎫 Pengaturan Nota Servis Masuk (Tanda Terima Unit)</h4>
+                                    <small style="font-size:10px; color:#64748B;">Digunakan saat konsumen pertama kali menyerahkan HP untuk diservis</small>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#0284C7;" onclick="testPrintNotaServis()">🖨️ Test Print Nota Masuk</button>
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#64748B;" onclick="resetNotaConfigPerType('servisMasuk')">🔄 Reset Default</button>
+                                </div>
+                            </div>
+
+                            <div class="row-3">
+                                <div class="form-group">
+                                    <label>Sub-Judul Nota Konsumen</label>
+                                    <input type="text" id="nc_sm_judulNota" class="form-control" placeholder="TANDA TERIMA SERVIS">
+                                </div>
+                                <div class="form-group">
+                                    <label>Label Badge Lembar Kiri</label>
+                                    <input type="text" id="nc_sm_badgeKonsumen" class="form-control" placeholder="LEMBAR KONSUMEN">
+                                </div>
+                                <div class="form-group">
+                                    <label>Judul Lembar Kanan (Arsip)</label>
+                                    <input type="text" id="nc_sm_judulArsip" class="form-control" placeholder="ARSIP KONTER">
+                                </div>
+                            </div>
+
+                            <div class="row-3">
+                                <div class="form-group">
+                                    <label>Teks Garansi Default (Jika Kosong)</label>
+                                    <input type="text" id="nc_sm_garansiDefault" class="form-control" placeholder="Garansi servis 7 Hari.">
+                                </div>
+                                <div class="form-group">
+                                    <label>Label Tanda Tangan (Konsumen)</label>
+                                    <input type="text" id="nc_sm_labelTtdKonsumen" class="form-control" placeholder="TANDA TANGAN">
+                                </div>
+                                <div class="form-group">
+                                    <label>Label Tanda Tangan (Arsip Konter)</label>
+                                    <input type="text" id="nc_sm_labelTtdArsip" class="form-control" placeholder="TIM KONTER">
+                                </div>
+                            </div>
+
+                            <div class="row-2">
+                                <div class="form-group">
+                                    <label>📋 Poin Syarat &amp; Ketentuan (Lembar Konsumen — Pisahkan Tiap Baris)</label>
+                                    <textarea id="nc_sm_syaratKonsumen" class="form-control" rows="3" placeholder="Pengambilan unit wajib membawa nota tanda terima ini.&#10;Barang tidak diambil >30 hari bukan tanggung jawab kami."></textarea>
+                                    <small style="font-size:9.5px; color:#64748B;">Baris ke-1 otomatis diisi Garansi, baris berikutnya diambil dari kotak ini.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>📋 Poin Checklist &amp; Ketentuan (Lembar Arsip Teknisi — Tiap Baris)</label>
+                                    <textarea id="nc_sm_syaratArsip" class="form-control" rows="3" placeholder="Pastikan pola/PIN & kondisi fisik unit telah dicek.&#10;Barang tidak diambil >30 hari bukan tanggung jawab kami."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="row-2">
+                                <div class="form-group" style="margin-bottom:4px;">
+                                    <label>Banner Footer Bawah (Lembar Konsumen)</label>
+                                    <input type="text" id="nc_sm_bannerBawahKonsumen" class="form-control" placeholder="TERIMA KASIH ATAS KEPERCAYAAN ANDA">
+                                </div>
+                                <div class="form-group" style="margin-bottom:4px;">
+                                    <label>Banner Footer Bawah (Lembar Arsip Konter)</label>
+                                    <input type="text" id="nc_sm_bannerBawahArsip" class="form-control" placeholder="ARSIP INTERNAL KONTER — TEMPEL / SIMPAN BERSAMA UNIT">
+                                </div>
+                            </div>
+
+                            <div style="margin-top:8px;">
+                                <label style="font-size:11px; font-weight:800; color:#0F172A;">☑️ Pilih Informasi yang Ditampilkan di Nota Servis Masuk:</label>
+                                <div class="nota-toggle-grid">
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_sm_showEstimasiDp" checked> <span>Tampilkan DP Masuk &amp; Estimasi Biaya</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_sm_showKelengkapanSn" checked> <span>Tampilkan SN/IMEI &amp; Kelengkapan Unit</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_sm_showPolaPin" checked> <span>Tampilkan Kotak Pola Kunci 9-Titik &amp; PIN</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_sm_showLembarArsip" checked> <span>Cetak Sekaligus Lembar Arsip Konter (Kanan)</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANE 2: NOTA LUNAS SERVIS (PENGAMBILAN & GARANSI) -->
+                    <div id="notaSubPane-servisLunas" class="nota-sub-pane">
+                        <div class="settings-card-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <div>
+                                    <h4 style="font-size:12.5px; font-weight:800; color:#059669; margin:0;">✅ Pengaturan Nota Lunas Servis (Bukti Lunas &amp; Garansi)</h4>
+                                    <small style="font-size:10px; color:#64748B;">Digunakan saat HP selesai diperbaiki, dibayar lunas, dan diambil konsumen</small>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#059669;" onclick="testPrintNotaLunasServis()">🖨️ Test Print Nota Lunas</button>
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#64748B;" onclick="resetNotaConfigPerType('servisLunas')">🔄 Reset Default</button>
+                                </div>
+                            </div>
+
+                            <div class="row-3">
+                                <div class="form-group">
+                                    <label>Sub-Judul Nota Lunas</label>
+                                    <input type="text" id="nc_sl_judulNota" class="form-control" placeholder="BUKTI LUNAS & GARANSI">
+                                </div>
+                                <div class="form-group">
+                                    <label>Label Badge Lembar Kiri</label>
+                                    <input type="text" id="nc_sl_badgeKonsumen" class="form-control" placeholder="NOTA LUNAS">
+                                </div>
+                                <div class="form-group">
+                                    <label>Judul Lembar Kanan (Arsip)</label>
+                                    <input type="text" id="nc_sl_judulArsip" class="form-control" placeholder="ARSIP KONTER">
+                                </div>
+                            </div>
+
+                            <div class="row-2">
+                                <div class="form-group">
+                                    <label>Teks Keterangan Penanganan Selesai</label>
+                                    <input type="text" id="nc_sl_catatanPenanganan" class="form-control" placeholder="✔ Penanganan Teknisi Selesai & Diuji Normal">
+                                </div>
+                                <div class="form-group">
+                                    <label>Teks Garansi Default (Jika Tidak Diisi di Tiket)</label>
+                                    <input type="text" id="nc_sl_garansiDefault" class="form-control" placeholder="Garansi servis 7 Hari.">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>📋 Poin Syarat &amp; Ketentuan Garansi Servis (Pisahkan Tiap Baris)</label>
+                                <textarea id="nc_sl_syaratGaransi" class="form-control" rows="3" placeholder="Garansi berlaku untuk kerusakan yang sama & segel utuh.&#10;Barang tidak diambil >30 hari bukan tanggung jawab kami."></textarea>
+                                <small style="font-size:9.5px; color:#64748B;">Bebas tambah aturan garansi (misal: LCD pecah/kena air garansi hangus, dll).</small>
+                            </div>
+
+                            <div class="row-2">
+                                <div class="form-group" style="margin-bottom:4px;">
+                                    <label>Banner Footer Bawah (Lembar Konsumen)</label>
+                                    <input type="text" id="nc_sl_bannerBawahKonsumen" class="form-control" placeholder="TERIMA KASIH ATAS KEPERCAYAAN ANDA">
+                                </div>
+                                <div class="form-group" style="margin-bottom:4px;">
+                                    <label>Banner Footer Bawah (Lembar Arsip Lunas)</label>
+                                    <input type="text" id="nc_sl_bannerBawahArsip" class="form-control" placeholder="ARSIP LUNAS KONTER — SIMPAN SEBAGAI BUKTI">
+                                </div>
+                            </div>
+
+                            <div style="margin-top:8px;">
+                                <label style="font-size:11px; font-weight:800; color:#0F172A;">☑️ Pilih Informasi yang Ditampilkan di Nota Lunas Servis:</label>
+                                <div class="nota-toggle-grid">
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_sl_showPotonganDp" checked> <span>Tampilkan Baris Info Potongan DP Sebelumnya</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_sl_showPolaPin" checked> <span>Tampilkan Kotak Pola/PIN di Lembar Arsip</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_sl_showLembarArsip" checked> <span>Cetak Sekaligus Lembar Arsip Lunas (Kanan)</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANE 3: NOTA / STRUK TRANSFER & MINI-ATM -->
+                    <div id="notaSubPane-transfer" class="nota-sub-pane">
+                        <div class="settings-card-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <div>
+                                    <h4 style="font-size:12.5px; font-weight:800; color:#4F46E5; margin:0;">🏦 Pengaturan Nota / Struk Bukti Transfer &amp; Mini-ATM</h4>
+                                    <small style="font-size:10px; color:#64748B;">Khusus cetak struk transfer BRImo, myBCA, Livin', DANA, Tarik Tunai &amp; Topup</small>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#4F46E5;" onclick="testPrintStrukTransfer()">🖨️ Test Print Struk Transfer</button>
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#64748B;" onclick="resetNotaConfigPerType('transfer')">🔄 Reset Default</button>
+                                </div>
+                            </div>
+
+                            <div class="row-2">
+                                <div class="form-group">
+                                    <label>Judul Header Struk Transfer</label>
+                                    <input type="text" id="nc_tf_judulStruk" class="form-control" placeholder="STRUK BUKTI TRANSFER">
+                                </div>
+                                <div class="form-group">
+                                    <label>Sub-Judul Layanan di Bawah Nama Toko</label>
+                                    <input type="text" id="nc_tf_subJudul" class="form-control" placeholder="LAYANAN TRANSFER BANK & TOPUP DIGITAL">
+                                </div>
+                            </div>
+
+                            <div class="row-3">
+                                <div class="form-group">
+                                    <label>Prefix Kode Referensi / SN Otomatis</label>
+                                    <input type="text" id="nc_tf_prefixRef" class="form-control" placeholder="ZCL-TF">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mode Default Tampilan Biaya Admin</label>
+                                    <select id="nc_tf_modeAdmin" class="form-control" style="font-weight:700;">
+                                        <option value="PISAH">Pisah Rincian (Nominal + Admin + Total)</option>
+                                        <option value="GABUNG">Gabung (Langsung Tampil Total Bayar)</option>
+                                        <option value="NOMINAL_SAJA">Nominal Pokok Saja (Tanpa Admin)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Teks Status Berhasil Default</label>
+                                    <input type="text" id="nc_tf_statusDefault" class="form-control" placeholder="TRANSAKSI BERHASIL">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:6px;">
+                                <label>Catatan Kaki / Footer Struk Transfer</label>
+                                <textarea id="nc_tf_catatanFooter" class="form-control" rows="2" placeholder="Struk ini adalah bukti transaksi sah dari ZENCELL.&#10;Harap simpan struk ini sebagai bukti pembayaran."></textarea>
+                            </div>
+
+                            <div style="margin-top:8px;">
+                                <label style="font-size:11px; font-weight:800; color:#0F172A;">☑️ Pilih Informasi yang Ditampilkan di Struk Transfer:</label>
+                                <div class="nota-toggle-grid">
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_tf_showLogo" checked> <span>Tampilkan Logo Toko di Atas Struk</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_tf_showNoRef" checked> <span>Tampilkan No. Referensi / SN Transaksi</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_tf_showPengirim" checked> <span>Tampilkan Baris Pengirim / Agen</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_tf_showKasir" checked> <span>Tampilkan Nama Petugas Kasir</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_tf_showTtd"> <span>Tampilkan Kolom Tanda Tangan / Cap Konter</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANE 4: NOTA / STRUK KASIR UMUM (BARANG / VOUCHER / PULSA) -->
+                    <div id="notaSubPane-kasir" class="nota-sub-pane">
+                        <div class="settings-card-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <div>
+                                    <h4 style="font-size:12.5px; font-weight:800; color:#D97706; margin:0;">🛒 Pengaturan Nota / Struk Kasir Umum (Barang, Voucher, SP, ACC)</h4>
+                                    <small style="font-size:10px; color:#64748B;">Digunakan untuk cetak struk belanja produk fisik, voucher, perdana &amp; aksesoris</small>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#D97706;" onclick="testPrintStrukKasir()">🖨️ Test Print Struk Kasir</button>
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#64748B;" onclick="resetNotaConfigPerType('kasir')">🔄 Reset Default</button>
+                                </div>
+                            </div>
+
+                            <div class="row-2">
+                                <div class="form-group">
+                                    <label>Judul Header Struk Kasir</label>
+                                    <input type="text" id="nc_ks_judulStruk" class="form-control" placeholder="STRUK PEMBAYARAN KASIR">
+                                </div>
+                                <div class="form-group">
+                                    <label>Ucapan Terima Kasih (Baris Utama Footer)</label>
+                                    <input type="text" id="nc_ks_ucapanFooter" class="form-control" placeholder="Terima kasih telah berbelanja di ZENCELL!">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:6px;">
+                                <label>Catatan Garansi Barang / Ketentuan Retur (Teks Struk Bawah)</label>
+                                <textarea id="setTeksStruk" class="form-control" rows="3" placeholder="Terima kasih telah berbelanja di ZENCELL!&#10;Barang yang sudah dibeli tidak dapat ditukar/dikembalikan."></textarea>
+                            </div>
+
+                            <div style="margin-top:8px;">
+                                <label style="font-size:11px; font-weight:800; color:#0F172A;">☑️ Pilih Informasi yang Ditampilkan di Struk Kasir Umum:</label>
+                                <div class="nota-toggle-grid">
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_ks_showLogo" checked> <span>Tampilkan Logo Toko di Atas Struk</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_ks_showKasir" checked> <span>Tampilkan Nama Petugas Kasir</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_ks_showKategori" checked> <span>Tampilkan Label Kategori Barang ([VOUCHER], [ACC])</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_ks_showMetodeBayar" checked> <span>Tampilkan Rincian Akun / Metode Pembayaran</span></label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div style="display:flex; gap:8px; margin-top:12px;">
-                        <button type="submit" id="btnSimpanPrinter" class="btn" style="background:#0F172A; font-weight:700; flex:1; transition:all 0.25s ease;">💾 SIMPAN PERUBAHAN</button>
+                        <button type="submit" id="btnSimpanPrinter" class="btn" style="background:#0F172A; font-weight:800; flex:1; transition:all 0.25s ease;">💾 SIMPAN SEMUA PENGATURAN NOTA &amp; PRINTER</button>
                         <button type="button" class="btn" style="background:#64748B; width:auto; padding:10px 18px;" onclick="closeModalSetting()">Tutup</button>
                     </div>
                 </form>
@@ -2494,7 +2947,13 @@
                 <div class="status-marquee-box" id="hdrMarqueeBox" title="Pemberitahuan / SOP Toko">
                     <span class="status-marquee-track" id="hdrRunningText">📢 HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER</span>
                 </div>
-                <span id="hdrRealtimeClock" style="flex-shrink:0; white-space:nowrap;">RABU, 14 OKTOBER 2026 00:00:00</span>
+                <div id="hdrRealtimeClock" class="hdr-clock-stacked" title="Waktu & Tanggal Realtime">
+                    <span class="hdr-clock-date" id="hdrRealtimeDateText">Selasa, 27 Okt 2026</span>
+                    <span class="hdr-clock-time">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span id="hdrRealtimeTimeText">00:00:00</span>
+                    </span>
+                </div>
             </div>
         </header>
 
@@ -2614,6 +3073,10 @@
             <div class="fab-item" onclick="closeFabMenu(); openModalInputPiutang();">
                 <span>Catat Utang Baru</span>
                 <span class="icon-badge" style="background:#D97706;">🤝</span>
+            </div>
+            <div class="fab-item" onclick="closeFabMenu(); openModalStrukTransfer();">
+                <span>Cetak Struk Transfer / Scan SS</span>
+                <span class="icon-badge" style="background:#4F46E5;">🧾</span>
             </div>
         </div>
     </div>
@@ -2775,11 +3238,192 @@
         </div>
     </div>
 
+    <!-- MODAL POPUP 4: 🧾 CETAK STRUK BUKTI TRANSFER / MINI-ATM (CARA 1 AUTO-PARSE & CARA 2 SCAN SS BUKTI TF) -->
+    <div id="modalStrukTransferOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 820px; width: 96%;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px; gap:8px;">
+                <div>
+                    <h3 style="font-size:15.5px; color:#4F46E5; margin:0; display:flex; align-items:center; gap:6px;">
+                        <span>🧾</span> Cetak Struk Bukti Transfer &amp; Mini-ATM (BRImo, myBCA, Livin', DANA, dll)
+                    </h3>
+                    <small style="font-size:10.5px; color:#64748B; font-weight:600;">
+                        Solusi cetak struk thermal rapi dari <b>Data Transaksi Kasir (Cara 1)</b> atau <b>Upload / Paste Screenshot Bukti TF (Cara 2)</b>
+                    </small>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button type="button" onclick="bukaSettingNotaDariStruk('transfer')" style="background:#EEF2FF; border:1px solid #C7D2FE; color:#4338CA; padding:4px 9px; border-radius:7px; font-size:10.5px; font-weight:800; cursor:pointer;" title="Atur format permanen Struk Transfer (Khusus Owner)">⚙️ Setting Nota</button>
+                    <button type="button" onclick="closeModalStrukTransfer()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+                </div>
+            </div>
+
+            <div class="struk-tf-layout">
+                <!-- KOLOM KIRI: CARA 2 (UPLOAD/PASTE SS) + CARA 1 (PILIH TRX & EDIT CEPAT) -->
+                <div>
+                    <!-- CARA 2: SCAN / PASTE SCREENSHOT BUKTI TRANSFER -->
+                    <div class="ss-dropzone-box" id="ssDropzoneBox" onclick="document.getElementById('fileUploadSsBuktiTf').click()" ondragover="handleSsDragOver(event)" ondragleave="handleSsDragLeave(event)" ondrop="handleSsDrop(event)">
+                        <input type="file" id="fileUploadSsBuktiTf" accept="image/*" style="display:none;" onchange="handleUploadSsBuktiTf(event)">
+                        <div style="font-size:11.5px; font-weight:800; color:#0369A1; display:flex; align-items:center; justify-content:center; gap:6px;">
+                            <span>📸</span>
+                            <span>CARA 2: UPLOAD / PASTE (Ctrl+V) SCREENSHOT BUKTI TF (BRImo, myBCA, Livin', DANA)</span>
+                        </div>
+                        <div style="font-size:10px; color:#475569; margin-top:3px;">
+                            Klik kotak ini untuk pilih foto SS bukti transfer, tarik gambar ke sini, atau tekan <b>Ctrl+V</b> untuk membaca otomatis!
+                        </div>
+                        <div id="ssOcrStatusBox" style="display:none; margin-top:8px; padding:6px 10px; border-radius:8px; background:#FFFFFF; border:1px solid #BAE6FD; font-size:10.5px; font-weight:700; color:#0284C7; align-items:center; justify-content:space-between; gap:8px;" onclick="event.stopPropagation()">
+                            <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                                <img id="ssThumbPreview" src="" style="display:none; width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid #CBD5E1; flex-shrink:0;" alt="SS">
+                                <span id="ssOcrStatusText" style="text-align:left; line-height:1.3;">Menunggu gambar...</span>
+                            </div>
+                            <button type="button" onclick="hapusSsBuktiTf(event)" style="background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; border-radius:6px; padding:3px 7px; font-size:10px; font-weight:800; cursor:pointer; flex-shrink:0;">✕ Hapus SS</button>
+                        </div>
+                        <div id="ssPrintImageOptionWrap" style="display:none; margin-top:6px; text-align:left;" onclick="event.stopPropagation()">
+                            <label style="font-size:10px; font-weight:700; color:#0F172A; display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+                                <input type="checkbox" id="chkSertakanGambarSs" onchange="updateLivePreviewStrukTransfer()">
+                                <span>🖼️ Ikut cetak gambar screenshot asli (hitam-putih) di bagian bawah struk</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- CARA 1: AMBIL DARI TRANSAKSI JURNAL & EDIT CEPAT -->
+                    <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px; margin-top:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+                            <span style="font-size:11.5px; font-weight:800; color:#0F172A;">⚡ CARA 1: OTOMATIS DARI JURNAL KASIR &amp; EDIT CEPAT</span>
+                            <button type="button" onclick="resetFormStrukTransferManual()" style="background:#E2E8F0; color:#334155; border:none; border-radius:6px; padding:3px 8px; font-size:10px; font-weight:800; cursor:pointer;">🔄 Kosongkan / Input Baru</button>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:8px;">
+                            <label style="font-size:10.5px;">Pilih dari Transaksi Kasir (Otomatis Isi Nominal, Admin &amp; Keterangan)</label>
+                            <select id="stf_selectTrxJurnal" class="form-control" onchange="isiStrukTransferDariTrxId(this.value)" style="font-weight:700; font-size:11px;">
+                                <option value="">-- Ketik Manual / Pilih Transaksi dari Jurnal --</option>
+                            </select>
+                        </div>
+
+                        <div class="row-2">
+                            <div class="form-group">
+                                <label>Jenis Layanan *</label>
+                                <select id="stf_jenisLayanan" class="form-control" onchange="updateLivePreviewStrukTransfer()" style="font-weight:700;">
+                                    <option value="TRANSFER BANK">🏦 TRANSFER ANTAR BANK</option>
+                                    <option value="TOPUP E-WALLET">📱 TOPUP SALDO / E-WALLET</option>
+                                    <option value="TARIK TUNAI">💵 TARIK TUNAI / MINI ATM</option>
+                                    <option value="PEMBAYARAN / VA">🧾 PEMBAYARAN BRIVA / VA / TAGIHAN</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>No. Referensi / SN (Otomatis / Edit)</label>
+                                <div style="display:flex; gap:4px;">
+                                    <input type="text" id="stf_noRef" class="form-control" placeholder="ZCL-TF-..." oninput="updateLivePreviewStrukTransfer()" style="font-family:monospace; font-weight:700;">
+                                    <button type="button" onclick="acakNoRefStrukTransfer()" title="Buat Nomor Referensi Baru" style="background:#0F172A; color:#FFF; border:none; border-radius:7px; padding:0 9px; font-size:11px; cursor:pointer;">🔄</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:8px;">
+                            <label>Bank / E-Wallet Tujuan *</label>
+                            <input type="text" id="stf_bankTujuan" class="form-control" placeholder="CONTOH: BANK BRI / BANK BCA / DANA..." oninput="updateLivePreviewStrukTransfer()" style="font-weight:800;">
+                            <div class="bank-chip-bar">
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('BANK BRI')">BRI</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('BANK BCA')">BCA</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('BANK MANDIRI')">MANDIRI</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('BANK BNI')">BNI</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('BANK BSI')">BSI</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('SEABANK')">SEABANK</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('DANA')">DANA</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('GOPAY')">GOPAY</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('OVO')">OVO</button>
+                                <button type="button" class="bank-chip-btn" onclick="pilihBankCepatStruk('SHOPEEPAY')">SHOPEEPAY</button>
+                            </div>
+                        </div>
+
+                        <div class="row-2">
+                            <div class="form-group">
+                                <label>No. Rekening / Nomor Tujuan</label>
+                                <input type="text" id="stf_noRek" class="form-control" placeholder="Kosongkan jika tidak ada (-)" oninput="updateLivePreviewStrukTransfer()" style="font-weight:700;">
+                            </div>
+                            <div class="form-group">
+                                <label>Nama Penerima (Atas Nama / A.N) *</label>
+                                <input type="text" id="stf_namaPenerima" class="form-control" placeholder="NAMA PENERIMA / TUJUAN..." oninput="updateLivePreviewStrukTransfer()" style="font-weight:800;">
+                            </div>
+                        </div>
+
+                        <div class="row-2">
+                            <div class="form-group">
+                                <label>Pengirim / Sumber / Keterangan</label>
+                                <input type="text" id="stf_pengirim" class="form-control" placeholder="Cth: AGEN ZENCELL / TUNAI" oninput="updateLivePreviewStrukTransfer()">
+                            </div>
+                            <div class="form-group">
+                                <label>Waktu &amp; Tanggal Transaksi</label>
+                                <input type="text" id="stf_waktu" class="form-control" oninput="updateLivePreviewStrukTransfer()">
+                            </div>
+                        </div>
+
+                        <div class="row-3">
+                            <div class="form-group">
+                                <label>Nominal Transfer (Rp) *</label>
+                                <input type="text" id="stf_nominalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stf_nominal'); hitungTotalStrukTransfer();" style="font-weight:800; color:#0F172A;">
+                                <input type="hidden" id="stf_nominal" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Biaya Admin (Rp)</label>
+                                <input type="text" id="stf_adminDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stf_admin'); hitungTotalStrukTransfer();" style="font-weight:800; color:#D97706;">
+                                <input type="hidden" id="stf_admin" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Bayar (Rp)</label>
+                                <input type="text" id="stf_totalDisplay" class="form-control" placeholder="Rp0" readonly style="background:#F0FDF4; border-color:#86EFAC; font-weight:900; color:#15803D;">
+                                <input type="hidden" id="stf_total" value="0">
+                            </div>
+                        </div>
+
+                        <div class="row-2">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Mode Tampilan Biaya Admin di Struk</label>
+                                <select id="stf_modeAdmin" class="form-control" onchange="updateLivePreviewStrukTransfer()" style="font-weight:700;">
+                                    <option value="PISAH">Pisah Rincian (Nominal + Admin + Total)</option>
+                                    <option value="GABUNG">Gabung (Langsung Tampil Total Bayar)</option>
+                                    <option value="NOMINAL_SAJA">Nominal Pokok Saja (Tanpa Tampil Admin)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Status di Struk</label>
+                                <input type="text" id="stf_status" class="form-control" value="TRANSAKSI BERHASIL" oninput="updateLivePreviewStrukTransfer()" style="font-weight:800; color:#15803D;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KOLOM KANAN: LIVE PREVIEW STRUK THERMAL & TOMBOL CETAK -->
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="background:#F8FAFC; border:1.5px solid #CBD5E1; border-radius:12px; padding:12px; text-align:center;">
+                        <div style="font-size:10.5px; font-weight:800; color:#475569; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>👁️ PREVIEW STRUK THERMAL REALTIME</span>
+                            <span id="lblPreviewUkuranStrukTf" style="background:#E2E8F0; color:#0F172A; padding:1px 7px; border-radius:999px; font-size:9.5px;">58mm</span>
+                        </div>
+                        <div id="livePreviewStrukTransferBox" style="background:#FFFFFF; border:1px dashed #64748B; padding:12px; margin:0 auto; max-width:290px; text-align:left; font-family:monospace; font-size:11px; color:#000000; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn" style="background:linear-gradient(135deg, #059669, #047857); font-size:13px; font-weight:900; padding:12px; box-shadow:0 4px 12px rgba(5,150,105,0.35);" onclick="cetakStrukTransferSekarang()">
+                        🖨️ CETAK STRUK TRANSFER SEKARANG
+                    </button>
+
+                    <button type="button" id="btnSwitchKeStrukKasirBiasa" class="btn" style="display:none; background:#0284C7; font-size:11px; font-weight:800; padding:9px;" onclick="cetakStrukKasirBiasaDariModalTf()">
+                        🛒 Cetak Sebagai Struk Barang / Kasir Biasa
+                    </button>
+
+                    <button type="button" class="btn" style="background:#64748B; font-size:11.5px; padding:9px;" onclick="closeModalStrukTransfer()">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <span>📖 Jurnal Transaksi Harian</span>
                 <div class="jurnal-header-actions">
+                    <button type="button" class="btn-jurnal-hdr" style="background:#0F172A;" onclick="openModalStrukTransfer()" title="Cetak Struk Bukti Transfer / Scan Screenshot BRImo, myBCA, Livin, DANA">🧾 Struk TF / Scan SS</button>
                     <button type="button" class="btn-jurnal-hdr" style="background:#0284C7;" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
                     <button type="button" class="btn-jurnal-hdr" style="background:#4F46E5;" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
                     <button type="button" class="btn-jurnal-hdr" style="background:#DC2626;" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
@@ -5842,15 +6486,97 @@
             }
         };
 
+        window.getDefaultNotaConfig = function() {
+            return {
+                servisMasuk: {
+                    judulNota: 'TANDA TERIMA SERVIS',
+                    badgeKonsumen: 'LEMBAR KONSUMEN',
+                    judulArsip: 'ARSIP KONTER',
+                    garansiDefault: 'Garansi servis 7 Hari.',
+                    labelTtdKonsumen: 'TANDA TANGAN',
+                    labelTtdArsip: 'TIM KONTER',
+                    syaratKonsumen: 'Pengambilan unit wajib membawa nota tanda terima ini.\nBarang tidak diambil >30 hari bukan tanggung jawab kami.',
+                    syaratArsip: 'Pastikan pola/PIN & kondisi fisik unit telah dicek.\nBarang tidak diambil >30 hari bukan tanggung jawab kami.',
+                    bannerBawahKonsumen: 'TERIMA KASIH ATAS KEPERCAYAAN ANDA',
+                    bannerBawahArsip: 'ARSIP INTERNAL KONTER — TEMPEL / SIMPAN BERSAMA UNIT',
+                    showEstimasiDp: true,
+                    showKelengkapanSn: true,
+                    showPolaPin: true,
+                    showLembarArsip: true
+                },
+                servisLunas: {
+                    judulNota: 'BUKTI LUNAS & GARANSI',
+                    badgeKonsumen: 'NOTA LUNAS',
+                    judulArsip: 'ARSIP KONTER',
+                    catatanPenanganan: '✔ Penanganan Teknisi Selesai & Diuji Normal',
+                    garansiDefault: 'Garansi servis 7 Hari.',
+                    syaratGaransi: 'Garansi berlaku untuk kerusakan yang sama & segel utuh.\nBarang tidak diambil >30 hari bukan tanggung jawab kami.',
+                    bannerBawahKonsumen: 'TERIMA KASIH ATAS KEPERCAYAAN ANDA',
+                    bannerBawahArsip: 'ARSIP LUNAS KONTER — SIMPAN SEBAGAI BUKTI',
+                    showPotonganDp: true,
+                    showPolaPin: true,
+                    showLembarArsip: true
+                },
+                transfer: {
+                    judulStruk: 'STRUK BUKTI TRANSFER',
+                    subJudul: 'LAYANAN TRANSFER BANK & TOPUP DIGITAL',
+                    prefixRef: 'ZCL-TF',
+                    modeAdmin: 'PISAH',
+                    statusDefault: 'TRANSAKSI BERHASIL',
+                    catatanFooter: 'Struk ini adalah bukti transaksi sah dari ZENCELL.\nHarap simpan struk ini sebagai bukti pembayaran.',
+                    showLogo: true,
+                    showNoRef: true,
+                    showPengirim: true,
+                    showKasir: true,
+                    showTtd: false
+                },
+                kasir: {
+                    judulStruk: 'STRUK PEMBAYARAN KASIR',
+                    ucapanFooter: 'Terima kasih telah berbelanja di ZENCELL!',
+                    showLogo: true,
+                    showKasir: true,
+                    showKategori: true,
+                    showMetodeBayar: true
+                }
+            };
+        };
+
+        window.getNotaConfig = function() {
+            const def = window.getDefaultNotaConfig();
+            const saved = (window.pengaturanToko && window.pengaturanToko.notaConfig) ? window.pengaturanToko.notaConfig : {};
+            return {
+                servisMasuk: Object.assign({}, def.servisMasuk, saved.servisMasuk || {}),
+                servisLunas: Object.assign({}, def.servisLunas, saved.servisLunas || {}),
+                transfer: Object.assign({}, def.transfer, saved.transfer || {}),
+                kasir: Object.assign({}, def.kasir, saved.kasir || {})
+            };
+        };
+
+        window.formatSyaratNotaHtml = function(garansiLine, multiLineText) {
+            const lines = [];
+            if (garansiLine && String(garansiLine).trim()) {
+                lines.push(String(garansiLine).trim());
+            }
+            String(multiLineText || '').split('\n').forEach(l => {
+                const clean = l.trim().replace(/^\d+[\.\)]\s*/, '');
+                if (clean) lines.push(clean);
+            });
+            return lines.map((txt, idx) => `${idx + 1}. ${txt}`).join('<br>');
+        };
+
         window.cetakNotaTiketServis = function(t) {
             const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().servisMasuk;
             const storeName = p.namaToko || 'ZENCELL 1';
             const storeAddr = p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar';
             const storeKontak = p.kontakToko ? ` • ${p.kontakToko}` : '';
             const storeLogo = p.logoUrl ? `<img src="${p.logoUrl}" class="nota-logo-img" alt="Logo">` : '';
-            const garansiText = (t.garansi && String(t.garansi).trim()) ? String(t.garansi).trim() : 'Garansi servis 7 Hari.';
+            const garansiText = (t.garansi && String(t.garansi).trim()) ? String(t.garansi).trim() : (nc.garansiDefault || 'Garansi servis 7 Hari.');
             const estBiayaVal = Number(t.estBiaya || 0);
             const dpNomVal = Number(t.dpNom || 0);
+
+            const syaratKonsumenHtml = window.formatSyaratNotaHtml(garansiText, nc.syaratKonsumen);
+            const syaratArsipHtml = window.formatSyaratNotaHtml(garansiText, nc.syaratArsip);
 
             window.setPrintPageMode('NOTA_A5');
             const pReport = document.getElementById('printAreaReport');
@@ -5861,10 +6587,10 @@
             const printArea = document.getElementById('printAreaServiceNota');
             printArea.style.display = 'block';
             printArea.innerHTML = `
-                <div class="nota-a5-sheet">
+                <div class="nota-a5-sheet" style="${!nc.showLembarArsip ? 'grid-template-columns: 1fr;' : ''}">
                     <!-- BELAHAN KIRI (50% A5 = A6 PORTRAIT PRESISI): LEMBAR KONSUMEN -->
-                    <div class="nota-half kiri">
-                        <span class="nota-cut-badge">✂</span>
+                    <div class="nota-half kiri" style="${!nc.showLembarArsip ? 'border-right:none;' : ''}">
+                        ${nc.showLembarArsip ? '<span class="nota-cut-badge">✂</span>' : ''}
                         <div class="nota-card">
                             <div class="nota-header">
                                 <div class="nota-brand-wrap">
@@ -5872,7 +6598,7 @@
                                     <div class="nota-title">
                                         <div class="nota-title-top">
                                             <h2>${storeName}</h2>
-                                            <span class="nota-lembar-badge">LEMBAR KONSUMEN</span>
+                                            <span class="nota-lembar-badge">${nc.badgeKonsumen || 'LEMBAR KONSUMEN'}</span>
                                         </div>
                                         <p>${storeAddr}${storeKontak}</p>
                                     </div>
@@ -5887,7 +6613,7 @@
                                 <div class="nota-section">
                                     <div class="nota-section-title">
                                         <span>👤 INFO PELANGGAN</span>
-                                        <span style="font-size:8px; color:#64748B; font-weight:700;">TANDA TERIMA SERVIS</span>
+                                        <span style="font-size:8px; color:#64748B; font-weight:700;">${nc.judulNota || 'TANDA TERIMA SERVIS'}</span>
                                     </div>
                                     <div class="nota-section-content">
                                         <b>${t.nama || '-'}</b><br>
@@ -5898,9 +6624,8 @@
                                 <div class="nota-section">
                                     <div class="nota-section-title"><span>📱 DETAIL PERANGKAT</span></div>
                                     <div class="nota-section-content">
-                                        <b>${t.tipeHp || '-'}</b><br>
-                                        <span>SN / IMEI: ${t.serialNum || '-'}</span><br>
-                                        <span>Kelengkapan: <b>${t.kelengkapan || 'UNIT SAJA'}</b></span>
+                                        <b>${t.tipeHp || '-'}</b>
+                                        ${nc.showKelengkapanSn ? `<br><span>SN / IMEI: ${t.serialNum || '-'}</span><br><span>Kelengkapan: <b>${t.kelengkapan || 'UNIT SAJA'}</b></span>` : ''}
                                     </div>
                                 </div>
 
@@ -5911,6 +6636,7 @@
                                     </div>
                                 </div>
 
+                                ${nc.showEstimasiDp ? `
                                 <div class="nota-section">
                                     <div class="nota-section-title"><span>📄 STATUS & ESTIMASI BIAYA</span></div>
                                     <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
@@ -5921,13 +6647,12 @@
                                         </div>
                                     </div>
                                 </div>
+                                ` : ''}
 
                                 <div class="nota-section">
                                     <div class="nota-section-title"><span>📋 SYARAT & KETENTUAN SERVIS</span></div>
                                     <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
-                                        1. ${garansiText}<br>
-                                        2. Pengambilan unit wajib membawa nota tanda terima ini.<br>
-                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                        ${syaratKonsumenHtml}
                                     </div>
                                 </div>
                             </div>
@@ -5939,16 +6664,17 @@
                                         Karyawan: <b>${t.petugas || 'ADMIN'}</b>
                                     </div>
                                     <div class="nota-sign-box">
-                                        TANDA TANGAN
+                                        ${nc.labelTtdKonsumen || 'TANDA TANGAN'}
                                         <div class="nota-sign-space"></div>
                                         <b>( ....................... )</b>
                                     </div>
                                 </div>
-                                <div class="nota-bottom-banner">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
+                                <div class="nota-bottom-banner">${nc.bannerBawahKonsumen || 'TERIMA KASIH ATAS KEPERCAYAAN ANDA'}</div>
                             </div>
                         </div>
                     </div>
 
+                    ${nc.showLembarArsip ? `
                     <!-- BELAHAN KANAN (50% A5 = A6 PORTRAIT PRESISI): ARSIP KONTER -->
                     <div class="nota-half kanan">
                         <div class="nota-card arsip">
@@ -5957,7 +6683,7 @@
                                     ${storeLogo}
                                     <div class="nota-title">
                                         <div class="nota-title-top">
-                                            <h2>ARSIP KONTER</h2>
+                                            <h2>${nc.judulArsip || 'ARSIP KONTER'}</h2>
                                             <span class="nota-lembar-badge">${storeName}</span>
                                         </div>
                                         <p>${storeAddr}${storeKontak}</p>
@@ -5982,13 +6708,14 @@
                                 </div>
 
                                 <div class="nota-section">
-                                    <div class="nota-section-title"><span>📱 PERANGKAT & POLA KUNCI / PIN</span></div>
-                                    <div class="nota-grid-2col">
+                                    <div class="nota-section-title"><span>📱 PERANGKAT ${nc.showPolaPin ? '& POLA KUNCI / PIN' : ''}</span></div>
+                                    <div class="${nc.showPolaPin ? 'nota-grid-2col' : ''}">
                                         <div class="nota-section-content">
                                             <b>${t.tipeHp || '-'}</b><br>
-                                            <span>SN: ${t.serialNum || '-'} • ${t.kelengkapan || 'UNIT SAJA'}</span><br>
-                                            <span style="font-size:8.5px; color:#334155;">PIN / Sandi: ..........................</span>
+                                            ${nc.showKelengkapanSn ? `<span>SN: ${t.serialNum || '-'} • ${t.kelengkapan || 'UNIT SAJA'}</span><br>` : ''}
+                                            ${nc.showPolaPin ? `<span style="font-size:8.5px; color:#334155;">PIN / Sandi: ..........................</span>` : ''}
                                         </div>
+                                        ${nc.showPolaPin ? `
                                         <div class="pin-box-wrap">
                                             <div class="pin-grid">
                                                 <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
@@ -5996,6 +6723,7 @@
                                                 <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
                                             </div>
                                         </div>
+                                        ` : ''}
                                     </div>
                                 </div>
 
@@ -6007,6 +6735,7 @@
                                     </div>
                                 </div>
 
+                                ${nc.showEstimasiDp ? `
                                 <div class="nota-section">
                                     <div class="nota-section-title"><span>📄 STATUS & ESTIMASI BIAYA</span></div>
                                     <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
@@ -6017,13 +6746,12 @@
                                         </div>
                                     </div>
                                 </div>
+                                ` : ''}
 
                                 <div class="nota-section">
                                     <div class="nota-section-title"><span>📋 CHECKLIST & KETENTUAN</span></div>
                                     <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
-                                        1. ${garansiText}<br>
-                                        2. Pastikan pola/PIN &amp; kondisi fisik unit telah dicek.<br>
-                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                        ${syaratArsipHtml}
                                     </div>
                                 </div>
                             </div>
@@ -6035,15 +6763,16 @@
                                         Karyawan: <b>${t.petugas || 'ADMIN'}</b>
                                     </div>
                                     <div class="nota-sign-box">
-                                        TIM KONTER
+                                        ${nc.labelTtdArsip || 'TIM KONTER'}
                                         <div class="nota-sign-space"></div>
                                         <b>( ....................... )</b>
                                     </div>
                                 </div>
-                                <div class="nota-bottom-banner">ARSIP INTERNAL KONTER — TEMPEL / SIMPAN BERSAMA UNIT</div>
+                                <div class="nota-bottom-banner">${nc.bannerBawahArsip || 'ARSIP INTERNAL KONTER — TEMPEL / SIMPAN BERSAMA UNIT'}</div>
                             </div>
                         </div>
                     </div>
+                    ` : ''}
                 </div>
             `;
             window.print();
@@ -6052,6 +6781,7 @@
 
         window.buildNotaLunasServiceA5Html = function(opts) {
             const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().servisLunas;
             const storeName = p.namaToko || 'ZENCELL 1';
             const storeAddr = p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar';
             const storeKontak = p.kontakToko ? ` • ${p.kontakToko}` : '';
@@ -6068,13 +6798,14 @@
             const totalBiayaVal = Number(opts.totalBiayaVal || 0);
             const petugasName = opts.petugasName || 'ADMIN';
             const waktuCetak = opts.waktuCetak || window.getTodayIso();
-            const garansiText = opts.garansiText || 'Garansi servis 7 Hari.';
+            const garansiText = (opts.garansiText && String(opts.garansiText).trim()) ? String(opts.garansiText).trim() : (nc.garansiDefault || 'Garansi servis 7 Hari.');
+            const syaratGaransiHtml = window.formatSyaratNotaHtml(garansiText, nc.syaratGaransi);
 
             return `
-                <div class="nota-a5-sheet">
+                <div class="nota-a5-sheet" style="${!nc.showLembarArsip ? 'grid-template-columns: 1fr;' : ''}">
                     <!-- BELAHAN KIRI (50% A5 = A6 PORTRAIT PRESISI): LEMBAR KONSUMEN LUNAS -->
-                    <div class="nota-half kiri">
-                        <span class="nota-cut-badge">✂</span>
+                    <div class="nota-half kiri" style="${!nc.showLembarArsip ? 'border-right:none;' : ''}">
+                        ${nc.showLembarArsip ? '<span class="nota-cut-badge">✂</span>' : ''}
                         <div class="nota-card">
                             <div class="nota-header">
                                 <div class="nota-brand-wrap">
@@ -6082,7 +6813,7 @@
                                     <div class="nota-title">
                                         <div class="nota-title-top">
                                             <h2>${storeName}</h2>
-                                            <span class="nota-lembar-badge">NOTA LUNAS</span>
+                                            <span class="nota-lembar-badge">${nc.badgeKonsumen || 'NOTA LUNAS'}</span>
                                         </div>
                                         <p>${storeAddr}${storeKontak}</p>
                                     </div>
@@ -6097,7 +6828,7 @@
                                 <div class="nota-section">
                                     <div class="nota-section-title">
                                         <span>👤 INFO PELANGGAN</span>
-                                        <span style="font-size:8px; color:#047857; font-weight:800;">BUKTI LUNAS &amp; GARANSI</span>
+                                        <span style="font-size:8px; color:#047857; font-weight:800;">${nc.judulNota || 'BUKTI LUNAS & GARANSI'}</span>
                                     </div>
                                     <div class="nota-section-content">
                                         <b>${namaPelanggan}</b><br>
@@ -6118,7 +6849,7 @@
                                     <div class="nota-section-title"><span>💬 KELUHAN &amp; PENANGANAN</span></div>
                                     <div class="nota-section-content">
                                         <div style="font-style:italic;">"${keluhanText}"</div>
-                                        <div style="font-size:8.5px; color:#047857; font-weight:700; margin-top:1px;">✔ Penanganan Teknisi Selesai &amp; Diuji Normal</div>
+                                        <div style="font-size:8.5px; color:#047857; font-weight:700; margin-top:1px;">${nc.catatanPenanganan || '✔ Penanganan Teknisi Selesai & Diuji Normal'}</div>
                                     </div>
                                 </div>
 
@@ -6127,7 +6858,7 @@
                                     <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
                                         <span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2.5px 8px; border-radius:4px; font-weight:900; font-size:9.5px;">✅ LUNAS</span>
                                         <div style="text-align:right; line-height:1.25;">
-                                            <span style="font-size:8.5px; color:#64748B; display:block;">DP Sebelumnya: -${window.formatRp(dpNomVal)}</span>
+                                            ${nc.showPotonganDp ? `<span style="font-size:8.5px; color:#64748B; display:block;">DP Sebelumnya: -${window.formatRp(dpNomVal)}</span>` : ''}
                                             <span style="font-size:11px; font-weight:900; color:#047857;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
                                         </div>
                                     </div>
@@ -6136,9 +6867,7 @@
                                 <div class="nota-section">
                                     <div class="nota-section-title"><span>📋 SYARAT &amp; KETENTUAN GARANSI</span></div>
                                     <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
-                                        1. ${garansiText}<br>
-                                        2. Garansi berlaku untuk kerusakan yang sama &amp; segel utuh.<br>
-                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                        ${syaratGaransiHtml}
                                     </div>
                                 </div>
                             </div>
@@ -6155,11 +6884,12 @@
                                         <b>( ....................... )</b>
                                     </div>
                                 </div>
-                                <div class="nota-bottom-banner">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
+                                <div class="nota-bottom-banner">${nc.bannerBawahKonsumen || 'TERIMA KASIH ATAS KEPERCAYAAN ANDA'}</div>
                             </div>
                         </div>
                     </div>
 
+                    ${nc.showLembarArsip ? `
                     <!-- BELAHAN KANAN (50% A5 = A6 PORTRAIT PRESISI): ARSIP KONTER LUNAS -->
                     <div class="nota-half kanan">
                         <div class="nota-card arsip">
@@ -6168,7 +6898,7 @@
                                     ${storeLogo}
                                     <div class="nota-title">
                                         <div class="nota-title-top">
-                                            <h2>ARSIP KONTER</h2>
+                                            <h2>${nc.judulArsip || 'ARSIP KONTER'}</h2>
                                             <span class="nota-lembar-badge">${storeName}</span>
                                         </div>
                                         <p>${storeAddr}${storeKontak}</p>
@@ -6193,13 +6923,14 @@
                                 </div>
 
                                 <div class="nota-section">
-                                    <div class="nota-section-title"><span>📱 PERANGKAT &amp; POLA KUNCI / PIN</span></div>
-                                    <div class="nota-grid-2col">
+                                    <div class="nota-section-title"><span>📱 PERANGKAT ${nc.showPolaPin ? '&amp; POLA KUNCI / PIN' : ''}</span></div>
+                                    <div class="${nc.showPolaPin ? 'nota-grid-2col' : ''}">
                                         <div class="nota-section-content">
                                             <b>${tipeHp}</b><br>
                                             <span>SN: ${snHp} • ${kelengkapanHp}</span><br>
-                                            <span style="font-size:8.5px; color:#334155;">PIN / Sandi: ..........................</span>
+                                            ${nc.showPolaPin ? `<span style="font-size:8.5px; color:#334155;">PIN / Sandi: ..........................</span>` : ''}
                                         </div>
+                                        ${nc.showPolaPin ? `
                                         <div class="pin-box-wrap">
                                             <div class="pin-grid">
                                                 <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
@@ -6207,6 +6938,7 @@
                                                 <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
                                             </div>
                                         </div>
+                                        ` : ''}
                                     </div>
                                 </div>
 
@@ -6214,7 +6946,7 @@
                                     <div class="nota-section-title"><span>📝 CATATAN TEKNISI / TINDAKAN</span></div>
                                     <div class="nota-section-content">
                                         <div>Keluhan: <i>"${keluhanText}"</i></div>
-                                        <div style="font-size:8.5px; color:#15803D; font-weight:700; margin-top:1px;">✔ Perbaikan Selesai, Diuji Normal &amp; Diserahkan</div>
+                                        <div style="font-size:8.5px; color:#15803D; font-weight:700; margin-top:1px;">${nc.catatanPenanganan || '✔ Perbaikan Selesai, Diuji Normal & Diserahkan'}</div>
                                     </div>
                                 </div>
 
@@ -6223,7 +6955,7 @@
                                     <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:2px;">
                                         <span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2.5px 8px; border-radius:4px; font-weight:900; font-size:9.5px;">✅ LUNAS</span>
                                         <div style="text-align:right; line-height:1.25;">
-                                            <span style="font-size:8.5px; color:#64748B; display:block;">DP Sebelumnya: -${window.formatRp(dpNomVal)}</span>
+                                            ${nc.showPotonganDp ? `<span style="font-size:8.5px; color:#64748B; display:block;">DP Sebelumnya: -${window.formatRp(dpNomVal)}</span>` : ''}
                                             <span style="font-size:11px; font-weight:900; color:#0F172A;">TOTAL BIAYA: ${window.formatRp(totalBiayaVal)}</span>
                                         </div>
                                     </div>
@@ -6232,9 +6964,7 @@
                                 <div class="nota-section">
                                     <div class="nota-section-title"><span>📋 SYARAT &amp; KETENTUAN GARANSI</span></div>
                                     <div class="nota-section-content" style="font-size:8.5px; line-height:1.28; color:#334155;">
-                                        1. ${garansiText}<br>
-                                        2. Garansi berlaku untuk kerusakan yang sama &amp; segel utuh.<br>
-                                        3. Barang tidak diambil &gt;30 hari bukan tanggung jawab kami.
+                                        ${syaratGaransiHtml}
                                     </div>
                                 </div>
                             </div>
@@ -6251,10 +6981,11 @@
                                         <b>( ....................... )</b>
                                     </div>
                                 </div>
-                                <div class="nota-bottom-banner">ARSIP LUNAS KONTER — SIMPAN SEBAGAI BUKTI</div>
+                                <div class="nota-bottom-banner">${nc.bannerBawahArsip || 'ARSIP LUNAS KONTER — SIMPAN SEBAGAI BUKTI'}</div>
                             </div>
                         </div>
                     </div>
+                    ` : ''}
                 </div>
             `;
         };
@@ -6841,19 +7572,26 @@
             window.catatLogAktivitas('GANTI TEMA', `Mengubah tema tampilan ke ${newTheme || 'Default'}`);
         }
 
-        setInterval(() => {
+        window.updateHeaderAndLoginClock = function() {
             const now = new Date();
-            const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
-            const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
-            const shortMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
-            const timeStr = now.toLocaleTimeString('id-ID');
-            const hdrClock = document.getElementById('hdrRealtimeClock');
-            if (hdrClock) {
-                hdrClock.innerText = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()} ${timeStr}`;
+            const daysUpper = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+            const daysTitle = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const shortMonthsUpper = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+            const shortMonthsTitle = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const timeColon = `${hh}:${mm}:${ss}`;
+
+            const hdrDateEl = document.getElementById('hdrRealtimeDateText');
+            const hdrTimeEl = document.getElementById('hdrRealtimeTimeText');
+            if (hdrDateEl && hdrTimeEl) {
+                hdrDateEl.innerText = `${daysTitle[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${shortMonthsTitle[now.getMonth()]} ${now.getFullYear()}`;
+                hdrTimeEl.innerText = timeColon;
             }
             const loginClock = document.getElementById('loginLiveClockText');
             if (loginClock) {
-                loginClock.innerText = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${shortMonths[now.getMonth()]} ${now.getFullYear()} • ${timeStr}`;
+                loginClock.innerText = `${daysUpper[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${shortMonthsUpper[now.getMonth()]} ${now.getFullYear()} • ${timeColon}`;
             }
             const loginGreet = document.getElementById('loginGreetingText');
             if (loginGreet) {
@@ -6861,7 +7599,9 @@
                 const greet = hr < 11 ? '🌅 Selamat Pagi' : (hr < 15 ? '☀️ Selamat Siang' : (hr < 18 ? '🌤️ Selamat Sore' : '🌙 Selamat Malam'));
                 loginGreet.innerText = `${greet} • Siap Cuan & Tertib Pembukuan!`;
             }
-        }, 1000);
+        };
+        window.updateHeaderAndLoginClock();
+        setInterval(window.updateHeaderAndLoginClock, 1000);
 
         window.toggleShowLoginPin = function() {
             const inp = document.getElementById('loginPass');
@@ -10601,7 +11341,8 @@
                     : (t.akunKeluar1 || '-');
 
                 const isServiceTrx = t.kat === 'SERVICE';
-                const printTitle = isServiceTrx ? 'Cetak Nota Lunas Service' : 'Cetak Struk Transaksi';
+                const isTfAtmTrx = window.isTransaksiTransferAtm ? window.isTransaksiTransferAtm(t) : (['TRANSFER', 'TOPUP', 'TARIK TUNAI', 'EDC'].includes(t.kat));
+                const printTitle = isServiceTrx ? 'Cetak Nota Lunas Service' : (isTfAtmTrx ? 'Cetak Struk Bukti Transfer / Mini-ATM' : 'Cetak Struk Transaksi');
 
                 return `
                     <tr id="row-trx-${t.id}">
@@ -12159,6 +12900,95 @@
 
         window.closeModalSetting = function() { document.getElementById('modalSettingOverlay').classList.remove('show'); };
 
+        window.switchNotaSettingSubTab = function(typeName) {
+            ['servisMasuk', 'servisLunas', 'transfer', 'kasir'].forEach(k => {
+                const btn = document.getElementById('btnNotaType-' + k);
+                const pane = document.getElementById('notaSubPane-' + k);
+                if (btn) btn.classList.toggle('active', k === typeName);
+                if (pane) pane.classList.toggle('active', k === typeName);
+            });
+        };
+
+        window.populateNotaSettingsForm = function() {
+            const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig();
+
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val !== undefined && val !== null ? val : ''; };
+            const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
+
+            setVal('setPrinterUkuran', p.printerUkuran || '58mm');
+            setVal('setTeksStruk', p.teksStruk || 'Terima kasih telah berbelanja di ZENCELL!\nBarang yang sudah dibeli tidak dapat ditukar/dikembalikan.');
+
+            // 1. Nota Servis Masuk
+            setVal('nc_sm_judulNota', nc.servisMasuk.judulNota);
+            setVal('nc_sm_badgeKonsumen', nc.servisMasuk.badgeKonsumen);
+            setVal('nc_sm_judulArsip', nc.servisMasuk.judulArsip);
+            setVal('nc_sm_garansiDefault', nc.servisMasuk.garansiDefault);
+            setVal('nc_sm_labelTtdKonsumen', nc.servisMasuk.labelTtdKonsumen);
+            setVal('nc_sm_labelTtdArsip', nc.servisMasuk.labelTtdArsip);
+            setVal('nc_sm_syaratKonsumen', nc.servisMasuk.syaratKonsumen);
+            setVal('nc_sm_syaratArsip', nc.servisMasuk.syaratArsip);
+            setVal('nc_sm_bannerBawahKonsumen', nc.servisMasuk.bannerBawahKonsumen);
+            setVal('nc_sm_bannerBawahArsip', nc.servisMasuk.bannerBawahArsip);
+            setChk('nc_sm_showEstimasiDp', nc.servisMasuk.showEstimasiDp);
+            setChk('nc_sm_showKelengkapanSn', nc.servisMasuk.showKelengkapanSn);
+            setChk('nc_sm_showPolaPin', nc.servisMasuk.showPolaPin);
+            setChk('nc_sm_showLembarArsip', nc.servisMasuk.showLembarArsip);
+
+            // 2. Nota Lunas Servis
+            setVal('nc_sl_judulNota', nc.servisLunas.judulNota);
+            setVal('nc_sl_badgeKonsumen', nc.servisLunas.badgeKonsumen);
+            setVal('nc_sl_judulArsip', nc.servisLunas.judulArsip);
+            setVal('nc_sl_catatanPenanganan', nc.servisLunas.catatanPenanganan);
+            setVal('nc_sl_garansiDefault', nc.servisLunas.garansiDefault);
+            setVal('nc_sl_syaratGaransi', nc.servisLunas.syaratGaransi);
+            setVal('nc_sl_bannerBawahKonsumen', nc.servisLunas.bannerBawahKonsumen);
+            setVal('nc_sl_bannerBawahArsip', nc.servisLunas.bannerBawahArsip);
+            setChk('nc_sl_showPotonganDp', nc.servisLunas.showPotonganDp);
+            setChk('nc_sl_showPolaPin', nc.servisLunas.showPolaPin);
+            setChk('nc_sl_showLembarArsip', nc.servisLunas.showLembarArsip);
+
+            // 3. Nota / Struk Transfer
+            setVal('nc_tf_judulStruk', nc.transfer.judulStruk);
+            setVal('nc_tf_subJudul', nc.transfer.subJudul);
+            setVal('nc_tf_prefixRef', nc.transfer.prefixRef);
+            setVal('nc_tf_modeAdmin', nc.transfer.modeAdmin || 'PISAH');
+            setVal('nc_tf_statusDefault', nc.transfer.statusDefault);
+            setVal('nc_tf_catatanFooter', nc.transfer.catatanFooter);
+            setChk('nc_tf_showLogo', nc.transfer.showLogo);
+            setChk('nc_tf_showNoRef', nc.transfer.showNoRef);
+            setChk('nc_tf_showPengirim', nc.transfer.showPengirim);
+            setChk('nc_tf_showKasir', nc.transfer.showKasir);
+            setChk('nc_tf_showTtd', nc.transfer.showTtd);
+
+            // 4. Nota / Struk Kasir Umum
+            setVal('nc_ks_judulStruk', nc.kasir.judulStruk);
+            setVal('nc_ks_ucapanFooter', nc.kasir.ucapanFooter);
+            setChk('nc_ks_showLogo', nc.kasir.showLogo);
+            setChk('nc_ks_showKasir', nc.kasir.showKasir);
+            setChk('nc_ks_showKategori', nc.kasir.showKategori);
+            setChk('nc_ks_showMetodeBayar', nc.kasir.showMetodeBayar);
+        };
+
+        window.resetNotaConfigPerType = function(typeName) {
+            const def = window.getDefaultNotaConfig();
+            if (!def[typeName]) return;
+            if (!window.pengaturanToko.notaConfig) window.pengaturanToko.notaConfig = {};
+            window.pengaturanToko.notaConfig[typeName] = Object.assign({}, def[typeName]);
+            window.populateNotaSettingsForm();
+            window.showToast(`🔄 Pengaturan nota "${typeName}" dikembalikan ke default. Klik Simpan untuk menyimpan permanen.`, 'info');
+        };
+
+        window.bukaSettingNotaDariStruk = function(notaType = 'transfer') {
+            if (!window.isUserOwner()) {
+                window.showToast('⛔ Pengaturan format nota permanen hanya dapat diakses oleh akun OWNER.', 'error');
+                return;
+            }
+            window.closeModalStrukTransfer();
+            window.bukaPengaturan('printer');
+            window.switchNotaSettingSubTab(notaType);
+        };
+
         window.bukaPengaturan = function(tabName = 'identitas') {
             if (!window.isUserOwner()) {
                 window.showToast("⛔ Akses ditolak! Menu Pengaturan hanya untuk akun OWNER.", "error");
@@ -12176,8 +13006,8 @@
                     ? p.teksBerjalan
                     : 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER';
             }
-            document.getElementById('setPrinterUkuran').value = p.printerUkuran || '58mm';
-            document.getElementById('setTeksStruk').value = p.teksStruk || '';
+
+            window.populateNotaSettingsForm();
 
             const imgLogo = document.getElementById('imgLogoPreview');
             const txtPlaceholder = document.getElementById('txtLogoPlaceholder');
@@ -13007,18 +13837,77 @@
 
         window.simpanPengaturanPrinter = function(e) {
             e.preventDefault();
-            const ukuran = document.getElementById('setPrinterUkuran').value;
-            const teks = document.getElementById('setTeksStruk').value.trim();
+            const getVal = (id, fallback = '') => { const el = document.getElementById(id); return el ? el.value.trim() : fallback; };
+            const getChk = (id, fallback = true) => { const el = document.getElementById(id); return el ? Boolean(el.checked) : fallback; };
+
+            const ukuran = getVal('setPrinterUkuran', '58mm');
+            const teks = getVal('setTeksStruk', 'Terima kasih telah berbelanja di ZENCELL!');
+
+            const def = window.getDefaultNotaConfig();
+            const notaConfig = {
+                servisMasuk: {
+                    judulNota: getVal('nc_sm_judulNota', def.servisMasuk.judulNota),
+                    badgeKonsumen: getVal('nc_sm_badgeKonsumen', def.servisMasuk.badgeKonsumen),
+                    judulArsip: getVal('nc_sm_judulArsip', def.servisMasuk.judulArsip),
+                    garansiDefault: getVal('nc_sm_garansiDefault', def.servisMasuk.garansiDefault),
+                    labelTtdKonsumen: getVal('nc_sm_labelTtdKonsumen', def.servisMasuk.labelTtdKonsumen),
+                    labelTtdArsip: getVal('nc_sm_labelTtdArsip', def.servisMasuk.labelTtdArsip),
+                    syaratKonsumen: getVal('nc_sm_syaratKonsumen', def.servisMasuk.syaratKonsumen),
+                    syaratArsip: getVal('nc_sm_syaratArsip', def.servisMasuk.syaratArsip),
+                    bannerBawahKonsumen: getVal('nc_sm_bannerBawahKonsumen', def.servisMasuk.bannerBawahKonsumen),
+                    bannerBawahArsip: getVal('nc_sm_bannerBawahArsip', def.servisMasuk.bannerBawahArsip),
+                    showEstimasiDp: getChk('nc_sm_showEstimasiDp', true),
+                    showKelengkapanSn: getChk('nc_sm_showKelengkapanSn', true),
+                    showPolaPin: getChk('nc_sm_showPolaPin', true),
+                    showLembarArsip: getChk('nc_sm_showLembarArsip', true)
+                },
+                servisLunas: {
+                    judulNota: getVal('nc_sl_judulNota', def.servisLunas.judulNota),
+                    badgeKonsumen: getVal('nc_sl_badgeKonsumen', def.servisLunas.badgeKonsumen),
+                    judulArsip: getVal('nc_sl_judulArsip', def.servisLunas.judulArsip),
+                    catatanPenanganan: getVal('nc_sl_catatanPenanganan', def.servisLunas.catatanPenanganan),
+                    garansiDefault: getVal('nc_sl_garansiDefault', def.servisLunas.garansiDefault),
+                    syaratGaransi: getVal('nc_sl_syaratGaransi', def.servisLunas.syaratGaransi),
+                    bannerBawahKonsumen: getVal('nc_sl_bannerBawahKonsumen', def.servisLunas.bannerBawahKonsumen),
+                    bannerBawahArsip: getVal('nc_sl_bannerBawahArsip', def.servisLunas.bannerBawahArsip),
+                    showPotonganDp: getChk('nc_sl_showPotonganDp', true),
+                    showPolaPin: getChk('nc_sl_showPolaPin', true),
+                    showLembarArsip: getChk('nc_sl_showLembarArsip', true)
+                },
+                transfer: {
+                    judulStruk: getVal('nc_tf_judulStruk', def.transfer.judulStruk),
+                    subJudul: getVal('nc_tf_subJudul', def.transfer.subJudul),
+                    prefixRef: getVal('nc_tf_prefixRef', def.transfer.prefixRef),
+                    modeAdmin: getVal('nc_tf_modeAdmin', 'PISAH'),
+                    statusDefault: getVal('nc_tf_statusDefault', def.transfer.statusDefault),
+                    catatanFooter: getVal('nc_tf_catatanFooter', def.transfer.catatanFooter),
+                    showLogo: getChk('nc_tf_showLogo', true),
+                    showNoRef: getChk('nc_tf_showNoRef', true),
+                    showPengirim: getChk('nc_tf_showPengirim', true),
+                    showKasir: getChk('nc_tf_showKasir', true),
+                    showTtd: getChk('nc_tf_showTtd', false)
+                },
+                kasir: {
+                    judulStruk: getVal('nc_ks_judulStruk', def.kasir.judulStruk),
+                    ucapanFooter: getVal('nc_ks_ucapanFooter', def.kasir.ucapanFooter),
+                    showLogo: getChk('nc_ks_showLogo', true),
+                    showKasir: getChk('nc_ks_showKasir', true),
+                    showKategori: getChk('nc_ks_showKategori', true),
+                    showMetodeBayar: getChk('nc_ks_showMetodeBayar', true)
+                }
+            };
 
             window.pengaturanToko.printerUkuran = ukuran;
             window.pengaturanToko.teksStruk = teks;
+            window.pengaturanToko.notaConfig = notaConfig;
 
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
             window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
-            window.catatLogAktivitas('PENGATURAN PRINTER', `Format printer struk diatur ke ${ukuran}`);
+            window.catatLogAktivitas('PENGATURAN NOTA & PRINTER', `Menyimpan pengaturan 4 jenis nota & ukuran kertas (${ukuran})`);
 
-            window.flashButtonSuccess('btnSimpanPrinter', '✅ TERSIMPAN!', '💾 SIMPAN PERUBAHAN');
-            window.showSettingBanner(`✅ Pengaturan printer (${ukuran}) & teks struk berhasil disimpan!`);
-            window.showToast(`✅ Pengaturan printer (${ukuran}) berhasil disimpan!`, 'success');
+            window.flashButtonSuccess('btnSimpanPrinter', '✅ TERSIMPAN!', '💾 SIMPAN SEMUA PENGATURAN NOTA & PRINTER');
+            window.showSettingBanner(`✅ Pengaturan ke-4 jenis nota (Servis Masuk, Servis Lunas, Struk Transfer, Struk Kasir) & printer (${ukuran}) berhasil disimpan!`);
+            window.showToast(`✅ Semua pengaturan nota & printer (${ukuran}) berhasil disimpan!`, 'success');
         };
 
         window.getPinForUsername = function(username) {
@@ -13534,6 +14423,14 @@
             window.catatLogAktivitas('KIRIM WA STRUK', `Mengirim struk transaksi "${t.ket}" via WhatsApp`);
         };
 
+        window.isTransaksiTransferAtm = function(t) {
+            if (!t) return false;
+            const kat = String(t.kat || '').toUpperCase();
+            if (['TRANSFER', 'TOPUP', 'TARIK TUNAI', 'EDC'].includes(kat)) return true;
+            const ket = String(t.ket || '').toUpperCase();
+            return /\b(TF|TRF|TRANSFER|BRIMO|BRI|BCA|MANDIRI|LIVIN|BNI|BSI|SEABANK|DANA|OVO|GOPAY|SHOPEEPAY|LINKAJA|TARIK TUNAI|BRIVA)\b/.test(ket);
+        };
+
         window.cetakStrukAtauNotaTrx = function(trxId) {
             const t = (window.transaksiJurnal || []).find(x => x.id == trxId);
             if (!t) return;
@@ -13541,24 +14438,39 @@
                 window.cetakNotaLunasServiceTrx(trxId);
                 return;
             }
+            if (window.isTransaksiTransferAtm(t)) {
+                window.openModalStrukTransfer(trxId);
+                return;
+            }
+            window.cetakStrukKasirBiasaTrx(trxId);
+        };
+
+        window.cetakStrukKasirBiasaTrx = function(trxId) {
+            const t = (window.transaksiJurnal || []).find(x => x.id == trxId);
+            if (!t) return;
             const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().kasir;
             const kasirName = sessionStorage.getItem('zencell_user') || 'KASIR';
             const qtyVal = Number(t.qty || 1);
             const totalJual = Number(t.hargaJual || 0);
             const hargaSatuan = qtyVal > 0 ? Math.round(totalJual / qtyVal) : totalJual;
-            const metodeMasukHtml = (t.isSplit && t.akunMasuk2)
-                ? `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
-                       <span>${t.akunMasuk1}:</span>
-                       <span>${window.formatRp(t.jualSplit1)}</span>
-                   </div>
-                   <div style="display:flex; justify-content:space-between; font-size:10.5px;">
-                       <span>${t.akunMasuk2}:</span>
-                       <span>${window.formatRp(t.jualSplit2)}</span>
-                   </div>`
-                : `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
-                       <span>PEMBAYARAN (${t.akunMasuk1 || 'LACI'}):</span>
-                       <span>${window.formatRp(totalJual)}</span>
-                   </div>`;
+            const maxWidthPx = p.printerUkuran === '80mm' ? '380px' : '300px';
+
+            const metodeMasukHtml = nc.showMetodeBayar
+                ? ((t.isSplit && t.akunMasuk2)
+                    ? `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                           <span>${t.akunMasuk1}:</span>
+                           <span>${window.formatRp(t.jualSplit1)}</span>
+                       </div>
+                       <div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                           <span>${t.akunMasuk2}:</span>
+                           <span>${window.formatRp(t.jualSplit2)}</span>
+                       </div>`
+                    : `<div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                           <span>PEMBAYARAN (${t.akunMasuk1 || 'LACI'}):</span>
+                           <span>${window.formatRp(totalJual)}</span>
+                       </div>`)
+                : '';
 
             const printArea = document.getElementById('printAreaNotaLunasService');
             const printService = document.getElementById('printAreaServiceNota');
@@ -13570,19 +14482,20 @@
             printArea.className = 'struk-thermal-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = `
-                <div style="max-width: 300px; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
-                    ${p.logoUrl ? `<img src="${p.logoUrl}" style="max-height: 40px; margin-bottom: 6px; object-fit: contain;"><br>` : ''}
+                <div style="max-width: ${maxWidthPx}; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
+                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 40px; margin-bottom: 6px; object-fit: contain;"><br>` : ''}
                     <b style="font-size: 14px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
                     <span style="font-size: 10px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
                     <span style="font-size: 10px;">${p.kontakToko || 'WA: 0812-3456-7890'}</span>
+                    ${nc.judulStruk ? `<div style="font-size:10.5px; font-weight:bold; margin-top:4px; letter-spacing:0.5px;">*** ${nc.judulStruk} ***</div>` : ''}
                     <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
                     <div style="display:flex; justify-content:space-between; font-size:10px;">
                         <span>${t.isoDate || window.getTodayIso()} ${t.waktu || ''}</span>
-                        <span>KASIR: ${kasirName.toUpperCase()}</span>
+                        ${nc.showKasir ? `<span>KASIR: ${kasirName.toUpperCase()}</span>` : ''}
                     </div>
                     <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
                     <div style="text-align:left; font-size:11px; margin-bottom:6px;">
-                        <div><b>${t.ket}</b> <span style="font-size:9.5px;">[${t.kat}]</span></div>
+                        <div><b>${t.ket}</b> ${nc.showKategori ? `<span style="font-size:9.5px;">[${t.kat}]</span>` : ''}</div>
                         <div style="display:flex; justify-content:space-between; margin-top:2px;">
                             <span>${qtyVal} x ${window.formatRp(hargaSatuan)}</span>
                             <b>${window.formatRp(totalJual)}</b>
@@ -13595,7 +14508,8 @@
                     </div>
                     ${metodeMasukHtml}
                     <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="font-size: 9.5px; white-space: pre-wrap; margin-top: 6px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
+                    ${nc.ucapanFooter ? `<div style="font-size:10px; font-weight:bold; margin-bottom:3px;">${nc.ucapanFooter}</div>` : ''}
+                    <div style="font-size: 9.5px; white-space: pre-wrap; margin-top: 3px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
                 </div>
             `;
             window.catatLogAktivitas('CETAK STRUK', `Mencetak struk transaksi "${t.ket}" (${window.formatRp(totalJual)})`);
@@ -13793,31 +14707,666 @@
             window.catatLogAktivitas('KIRIM LAPORAN SHIFT WA', `Mengirim laporan shift kasir ${kasirName} ke WA Owner`);
         };
 
+        // =========================================================================
+        // SISTEM CETAK STRUK BUKTI TRANSFER & MINI-ATM (CARA 1 AUTO-PARSE + CARA 2 SCAN SS)
+        // =========================================================================
+        window.currentStrukTfTrxId = null;
+        window.currentSsBuktiDataUrl = null;
+
+        window.generateNoRefStrukTransfer = function(seedId) {
+            const nc = window.getNotaConfig().transfer;
+            const prefix = (nc.prefixRef || 'ZCL-TF').trim();
+            const d = new Date();
+            const ymd = `${String(d.getFullYear()).slice(-2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+            const tail = seedId ? String(seedId).slice(-5) : String(Math.floor(10000 + Math.random() * 90000));
+            return `${prefix}-${ymd}-${tail}`;
+        };
+
+        window.acakNoRefStrukTransfer = function() {
+            const el = document.getElementById('stf_noRef');
+            if (el) {
+                el.value = window.generateNoRefStrukTransfer();
+                window.updateLivePreviewStrukTransfer();
+            }
+        };
+
+        window.pilihBankCepatStruk = function(namaBank) {
+            const el = document.getElementById('stf_bankTujuan');
+            if (el) {
+                el.value = namaBank;
+                if (['DANA', 'OVO', 'GOPAY', 'SHOPEEPAY', 'LINKAJA'].includes(namaBank.toUpperCase())) {
+                    const jEl = document.getElementById('stf_jenisLayanan');
+                    if (jEl) jEl.value = 'TOPUP E-WALLET';
+                }
+                window.updateLivePreviewStrukTransfer();
+            }
+        };
+
+        window.parseDataTransaksiKeStrukTransfer = function(t) {
+            const nc = window.getNotaConfig().transfer;
+            const ketRaw = String(t.ket || '').trim();
+            const ketUpper = ketRaw.toUpperCase();
+            const katUpper = String(t.kat || 'TRANSFER').toUpperCase();
+
+            // 1. Deteksi Jenis Layanan
+            let jenisLayanan = 'TRANSFER BANK';
+            if (katUpper === 'TARIK TUNAI' || ketUpper.includes('TARIK TUNAI') || ketUpper.includes('TARIK ')) {
+                jenisLayanan = 'TARIK TUNAI';
+            } else if (katUpper === 'TOPUP' || /\b(DANA|OVO|GOPAY|SHOPEEPAY|LINKAJA|MAXIM|GRAB|GOJEK|TOPUP|TOP UP)\b/.test(ketUpper)) {
+                jenisLayanan = 'TOPUP E-WALLET';
+            } else if (/\b(BRIVA|VA|VIRTUAL ACCOUNT|BPJS|PLN|PDAM|FIF|BAF|ADIRA|TAGIHAN|ANGSURAN)\b/.test(ketUpper)) {
+                jenisLayanan = 'PEMBAYARAN / VA';
+            }
+
+            // 2. Deteksi Bank / E-Wallet Tujuan dari Keterangan atau Akun
+            let bankTujuan = '';
+            const bankMap = [
+                { rx: /\b(BRI|BRIMO|SIMPEDES|BRITAMA)\b/, name: 'BANK BRI' },
+                { rx: /\b(BCA|MYBCA|TAHAPAN)\b/, name: 'BANK BCA' },
+                { rx: /\b(MANDIRI|LIVIN)\b/, name: 'BANK MANDIRI' },
+                { rx: /\b(BNI|WONDR)\b/, name: 'BANK BNI' },
+                { rx: /\b(BSI|SYARIAH INDONESIA)\b/, name: 'BANK BSI' },
+                { rx: /\b(SEABANK|SEA BANK)\b/, name: 'SEABANK' },
+                { rx: /\b(BJB)\b/, name: 'BANK BJB' },
+                { rx: /\b(BTN)\b/, name: 'BANK BTN' },
+                { rx: /\b(CIMB|NIAGA)\b/, name: 'CIMB NIAGA' },
+                { rx: /\b(PERMATA)\b/, name: 'BANK PERMATA' },
+                { rx: /\b(DANAMON)\b/, name: 'BANK DANAMON' },
+                { rx: /\b(JAGO)\b/, name: 'BANK JAGO' },
+                { rx: /\b(DANA)\b/, name: 'DANA' },
+                { rx: /\b(GOPAY|GO-PAY)\b/, name: 'GOPAY' },
+                { rx: /\b(OVO)\b/, name: 'OVO' },
+                { rx: /\b(SHOPEEPAY|SPAY|SHOPEE)\b/, name: 'SHOPEEPAY' },
+                { rx: /\b(LINKAJA)\b/, name: 'LINKAJA' },
+                { rx: /\b(BRIVA)\b/, name: 'BRIVA' }
+            ];
+            for (const bm of bankMap) {
+                if (bm.rx.test(ketUpper)) {
+                    bankTujuan = bm.name;
+                    break;
+                }
+            }
+            if (!bankTujuan) {
+                const akunCek = (jenisLayanan === 'TARIK TUNAI' ? (t.akunMasuk1 || '') : (t.akunKeluar1 || '')).toUpperCase();
+                for (const bm of bankMap) {
+                    if (bm.rx.test(akunCek)) {
+                        bankTujuan = bm.name;
+                        break;
+                    }
+                }
+            }
+            if (!bankTujuan) bankTujuan = jenisLayanan === 'TOPUP E-WALLET' ? 'E-WALLET / SALDO DIGITAL' : 'TRANSFER ANTAR BANK';
+
+            // 3. Deteksi Nomor Rekening / Nomor HP Tujuan (8 - 18 digit)
+            let noRek = '-';
+            const rekMatch = ketRaw.match(/\b(\d{8,18})\b/);
+            if (rekMatch) noRek = rekMatch[1];
+
+            // 4. Deteksi Nama Penerima (A/N)
+            let namaPenerima = ketRaw
+                .replace(/\b(TF|TRF|TRANSFER|TOPUP|TOP UP|TARIK TUNAI|KE|DARI|VIA|BANK|BRI|BRIMO|BCA|MYBCA|MANDIRI|LIVIN|BNI|BSI|SEABANK|BJB|DANA|GOPAY|OVO|SHOPEEPAY|LINKAJA|BRIVA|A\.N|A\/N|AN)\b/gi, ' ')
+                .replace(/\b\d{8,18}\b/g, ' ')
+                .replace(/\b\d+([.,]\d+)?\s*(JT|JUTA|RB|RIBU|K)\b/gi, ' ')
+                .replace(/[-_/:()]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!namaPenerima || namaPenerima.length < 2) {
+                namaPenerima = ketRaw || 'PELANGGAN';
+            }
+
+            // 5. Hitung Nominal Transfer (Pokok) & Biaya Admin dari Modal vs Jual
+            const modalVal = Number(t.hargaModal || 0);
+            const jualVal = Number(t.hargaJual || 0);
+            let nominalTf = modalVal > 0 ? modalVal : jualVal;
+            let biayaAdmin = (jualVal > modalVal && modalVal > 0) ? (jualVal - modalVal) : Number(t.cuan || 0);
+            if (biayaAdmin < 0) biayaAdmin = 0;
+            const totalBayar = nominalTf + biayaAdmin;
+
+            const waktuStr = `${t.isoDate || window.getTodayIso()} ${t.waktu || new Date().toTimeString().slice(0, 5)}`.trim();
+
+            return {
+                noRef: window.generateNoRefStrukTransfer(t.id),
+                jenisLayanan,
+                bankTujuan: bankTujuan.toUpperCase(),
+                noRek,
+                namaPenerima: namaPenerima.toUpperCase(),
+                pengirim: (window.pengaturanToko?.namaToko || 'AGEN ZENCELL 1').toUpperCase(),
+                waktu: waktuStr,
+                nominal: nominalTf,
+                admin: biayaAdmin,
+                total: totalBayar,
+                modeAdmin: nc.modeAdmin || 'PISAH',
+                status: nc.statusDefault || 'TRANSAKSI BERHASIL'
+            };
+        };
+
+        window.populateDropdownTrxStrukTransfer = function(selectedId = '') {
+            const sel = document.getElementById('stf_selectTrxJurnal');
+            if (!sel) return;
+            const list = (window.transaksiJurnal || []).filter(t => !t.isPencatatanUtangAwal && !t.isPindahSaldo && t.kat !== 'GADAI');
+            // Urutkan transaksi terbaru di atas, prioritaskan transaksi transfer/ATM
+            const sorted = [...list].sort((a, b) => Number(b.id || 0) - Number(a.id || 0)).slice(0, 80);
+
+            let html = `<option value="">-- Ketik Manual / Pilih Transaksi dari Jurnal (${sorted.length} Terbaru) --</option>`;
+            sorted.forEach(t => {
+                const isTf = window.isTransaksiTransferAtm(t);
+                const badge = isTf ? '🏦 ' : '🛒 ';
+                const tgl = t.isoDate || t.tgl || '';
+                const label = `${badge}[${tgl} ${t.waktu || ''}] ${t.ket} — Modal: ${window.formatRp(t.hargaModal)} | Jual: ${window.formatRp(t.hargaJual)}`;
+                html += `<option value="${t.id}" ${String(t.id) === String(selectedId) ? 'selected' : ''}>${label}</option>`;
+            });
+            sel.innerHTML = html;
+        };
+
+        window.applyDataToFormStrukTransfer = function(d) {
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v !== undefined && v !== null ? v : ''; };
+            setVal('stf_jenisLayanan', d.jenisLayanan || 'TRANSFER BANK');
+            setVal('stf_noRef', d.noRef || window.generateNoRefStrukTransfer());
+            setVal('stf_bankTujuan', d.bankTujuan || 'BANK BRI');
+            setVal('stf_noRek', d.noRek || '-');
+            setVal('stf_namaPenerima', d.namaPenerima || '-');
+            setVal('stf_pengirim', d.pengirim || (window.pengaturanToko?.namaToko || 'AGEN ZENCELL 1'));
+            setVal('stf_waktu', d.waktu || `${window.getTodayIso()} ${new Date().toTimeString().slice(0, 8)}`);
+
+            const nom = Number(d.nominal || 0);
+            const adm = Number(d.admin || 0);
+            setVal('stf_nominal', nom);
+            setVal('stf_nominalDisplay', nom > 0 ? nom.toLocaleString('id-ID') : '');
+            setVal('stf_admin', adm);
+            setVal('stf_adminDisplay', adm > 0 ? adm.toLocaleString('id-ID') : '0');
+
+            const nc = window.getNotaConfig().transfer;
+            setVal('stf_modeAdmin', d.modeAdmin || nc.modeAdmin || 'PISAH');
+            setVal('stf_status', d.status || nc.statusDefault || 'TRANSAKSI BERHASIL');
+
+            window.hitungTotalStrukTransfer();
+        };
+
+        window.hitungTotalStrukTransfer = function() {
+            const nom = Number(document.getElementById('stf_nominal')?.value || 0);
+            const adm = Number(document.getElementById('stf_admin')?.value || 0);
+            const tot = nom + adm;
+            const totEl = document.getElementById('stf_total');
+            const totDispEl = document.getElementById('stf_totalDisplay');
+            if (totEl) totEl.value = tot;
+            if (totDispEl) totDispEl.value = window.formatRp(tot);
+            window.updateLivePreviewStrukTransfer();
+        };
+
+        window.isiStrukTransferDariTrxId = function(trxId) {
+            window.currentStrukTfTrxId = trxId || null;
+            const btnSwitchKasir = document.getElementById('btnSwitchKeStrukKasirBiasa');
+            if (btnSwitchKasir) btnSwitchKasir.style.display = trxId ? 'block' : 'none';
+
+            if (!trxId) {
+                window.resetFormStrukTransferManual();
+                return;
+            }
+            const t = (window.transaksiJurnal || []).find(x => String(x.id) === String(trxId));
+            if (!t) return;
+            const parsed = window.parseDataTransaksiKeStrukTransfer(t);
+            window.applyDataToFormStrukTransfer(parsed);
+        };
+
+        window.resetFormStrukTransferManual = function() {
+            window.currentStrukTfTrxId = null;
+            const sel = document.getElementById('stf_selectTrxJurnal');
+            if (sel) sel.value = '';
+            const btnSwitchKasir = document.getElementById('btnSwitchKeStrukKasirBiasa');
+            if (btnSwitchKasir) btnSwitchKasir.style.display = 'none';
+            const nc = window.getNotaConfig().transfer;
+            window.applyDataToFormStrukTransfer({
+                jenisLayanan: 'TRANSFER BANK',
+                noRef: window.generateNoRefStrukTransfer(),
+                bankTujuan: 'BANK BRI',
+                noRek: '-',
+                namaPenerima: '',
+                pengirim: (window.pengaturanToko?.namaToko || 'AGEN ZENCELL 1').toUpperCase(),
+                waktu: `${window.getTodayIso()} ${new Date().toTimeString().slice(0, 8)}`,
+                nominal: 0,
+                admin: 0,
+                modeAdmin: nc.modeAdmin || 'PISAH',
+                status: nc.statusDefault || 'TRANSAKSI BERHASIL'
+            });
+        };
+
+        window.openModalStrukTransfer = function(trxId = '') {
+            const p = window.pengaturanToko || {};
+            const lblUk = document.getElementById('lblPreviewUkuranStrukTf');
+            if (lblUk) lblUk.innerText = p.printerUkuran || '58mm';
+
+            window.populateDropdownTrxStrukTransfer(trxId);
+            if (trxId) {
+                window.isiStrukTransferDariTrxId(trxId);
+            } else {
+                // Jika dibuka tanpa trxId, cek apakah ada transaksi transfer terbaru hari ini, atau kosongkan siap input/scan SS
+                window.resetFormStrukTransferManual();
+            }
+            document.getElementById('modalStrukTransferOverlay').classList.add('show');
+        };
+
+        window.closeModalStrukTransfer = function() {
+            document.getElementById('modalStrukTransferOverlay').classList.remove('show');
+        };
+
+        window.cetakStrukKasirBiasaDariModalTf = function() {
+            const trxId = window.currentStrukTfTrxId;
+            if (!trxId) return;
+            window.closeModalStrukTransfer();
+            window.cetakStrukKasirBiasaTrx(trxId);
+        };
+
+        window.getFormStrukTransferData = function() {
+            const getV = (id) => (document.getElementById(id)?.value || '').trim();
+            const nom = Number(document.getElementById('stf_nominal')?.value || 0);
+            const adm = Number(document.getElementById('stf_admin')?.value || 0);
+            return {
+                jenisLayanan: getV('stf_jenisLayanan') || 'TRANSFER BANK',
+                noRef: getV('stf_noRef') || window.generateNoRefStrukTransfer(),
+                bankTujuan: getV('stf_bankTujuan') || 'BANK TUJUAN',
+                noRek: getV('stf_noRek') || '-',
+                namaPenerima: getV('stf_namaPenerima') || '-',
+                pengirim: getV('stf_pengirim') || '-',
+                waktu: getV('stf_waktu') || window.getTodayIso(),
+                nominal: nom,
+                admin: adm,
+                total: nom + adm,
+                modeAdmin: getV('stf_modeAdmin') || 'PISAH',
+                status: getV('stf_status') || 'TRANSAKSI BERHASIL',
+                sertakanGambarSs: Boolean(document.getElementById('chkSertakanGambarSs')?.checked && window.currentSsBuktiDataUrl)
+            };
+        };
+
+        window.buildStrukTransferThermalHtml = function(d, isForPrint = false) {
+            const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().transfer;
+            const kasirName = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
+            const maxWidthPx = (isForPrint && p.printerUkuran === '80mm') ? '380px' : '290px';
+
+            let rincianUangHtml = '';
+            if (d.modeAdmin === 'GABUNG') {
+                rincianUangHtml = `
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px; margin:4px 0;">
+                        <span>TOTAL TRANSAKSI:</span>
+                        <span>${window.formatRp(d.total)}</span>
+                    </div>
+                `;
+            } else if (d.modeAdmin === 'NOMINAL_SAJA') {
+                rincianUangHtml = `
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px; margin:4px 0;">
+                        <span>NOMINAL TRANSFER:</span>
+                        <span>${window.formatRp(d.nominal)}</span>
+                    </div>
+                `;
+            } else {
+                rincianUangHtml = `
+                    <div style="display:flex; justify-content:space-between; font-size:10.5px; margin-bottom:2px;">
+                        <span>NOMINAL:</span>
+                        <b>${window.formatRp(d.nominal)}</b>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:10.5px; margin-bottom:4px;">
+                        <span>BIAYA ADMIN:</span>
+                        <b>${window.formatRp(d.admin)}</b>
+                    </div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12.5px;">
+                        <span>TOTAL BAYAR:</span>
+                        <span>${window.formatRp(d.total)}</span>
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="max-width: ${maxWidthPx}; margin: 0 auto; padding: ${isForPrint ? '10px' : '4px'}; font-family: monospace; font-size: 11px; color: #000; text-align: center; ${isForPrint ? 'border: 1px dashed #000;' : ''}">
+                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 38px; margin-bottom: 4px; object-fit: contain;"><br>` : ''}
+                    <b style="font-size: 13.5px; letter-spacing: 0.4px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
+                    ${nc.subJudul ? `<span style="font-size: 9.5px; font-weight: bold;">${nc.subJudul}</span><br>` : ''}
+                    <span style="font-size: 9.5px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
+                    ${p.kontakToko ? `<span style="font-size: 9.5px;">${p.kontakToko}</span>` : ''}
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
+                    <div style="font-weight:bold; font-size:11.5px; letter-spacing:0.5px;">*** ${nc.judulStruk || 'STRUK BUKTI TRANSFER'} ***</div>
+                    <div style="font-size:10px; font-weight:bold; margin-top:2px;">[${d.status}]</div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
+                    <div style="text-align:left; font-size:10.5px; line-height:1.45;">
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>WAKTU:</span>
+                            <b style="text-align:right;">${d.waktu}</b>
+                        </div>
+                        ${nc.showNoRef ? `
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>NO. REF/SN:</span>
+                            <b style="text-align:right;">${d.noRef}</b>
+                        </div>` : ''}
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>LAYANAN:</span>
+                            <b style="text-align:right;">${d.jenisLayanan}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>BANK/TUJUAN:</span>
+                            <b style="text-align:right;">${d.bankTujuan}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>NO. REK/TUJUAN:</span>
+                            <b style="text-align:right;">${d.noRek || '-'}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>PENERIMA (A/N):</span>
+                            <b style="text-align:right;">${d.namaPenerima || '-'}</b>
+                        </div>
+                        ${nc.showPengirim && d.pengirim ? `
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>PENGIRIM/AGEN:</span>
+                            <span style="text-align:right;">${d.pengirim}</span>
+                        </div>` : ''}
+                        ${nc.showKasir ? `
+                        <div style="display:flex; justify-content:space-between; gap:6px;">
+                            <span>PETUGAS:</span>
+                            <span style="text-align:right;">${kasirName}</span>
+                        </div>` : ''}
+                    </div>
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
+                    <div style="text-align:left;">
+                        ${rincianUangHtml}
+                    </div>
+                    ${nc.showTtd ? `
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px; margin-top:4px; padding:0 6px;">
+                        <div>Pelanggan<br><br><br>( ............ )</div>
+                        <div>Kasir / Agen<br><br><br>( ${kasirName} )</div>
+                    </div>
+                    ` : ''}
+                    ${d.sertakanGambarSs && window.currentSsBuktiDataUrl ? `
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
+                    <div style="font-size:9px; font-weight:bold; margin-bottom:3px;">LAMPIRAN BUKTI SCREENSHOT:</div>
+                    <img src="${window.currentSsBuktiDataUrl}" style="max-width:100%; max-height:240px; object-fit:contain; filter:grayscale(100%) contrast(135%); border:1px solid #000;">
+                    ` : ''}
+                    <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
+                    <div style="font-size: 9.5px; white-space: pre-wrap; line-height: 1.35;">${nc.catatanFooter || 'Struk ini adalah bukti transaksi sah dari ZENCELL.'}</div>
+                </div>
+            `;
+        };
+
+        window.updateLivePreviewStrukTransfer = function() {
+            const box = document.getElementById('livePreviewStrukTransferBox');
+            if (!box) return;
+            const d = window.getFormStrukTransferData();
+            box.innerHTML = window.buildStrukTransferThermalHtml(d, false);
+        };
+
+        window.cetakStrukTransferSekarang = function() {
+            const d = window.getFormStrukTransferData();
+            const printArea = document.getElementById('printAreaNotaLunasService');
+            const printService = document.getElementById('printAreaServiceNota');
+            const printReport = document.getElementById('printAreaReport');
+            if (!printArea) return;
+            if (printService) printService.style.display = 'none';
+            if (printReport) printReport.style.display = 'none';
+            if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
+
+            printArea.className = 'struk-thermal-mode';
+            printArea.style.display = 'block';
+            printArea.innerHTML = window.buildStrukTransferThermalHtml(d, true);
+
+            window.catatLogAktivitas('CETAK STRUK TRANSFER', `Mencetak struk bukti transfer ${d.bankTujuan} A/N ${d.namaPenerima} (${window.formatRp(d.total)})`);
+            window.print();
+            setTimeout(() => {
+                printArea.style.display = 'none';
+                printArea.className = '';
+            }, 1000);
+        };
+
+        // --- CARA 2: UPLOAD / DRAG & DROP / PASTE (Ctrl+V) SCREENSHOT BUKTI TF & OCR OTOMATIS ---
+        window.handleSsDragOver = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const box = document.getElementById('ssDropzoneBox');
+            if (box) box.classList.add('dragover');
+        };
+
+        window.handleSsDragLeave = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const box = document.getElementById('ssDropzoneBox');
+            if (box) box.classList.remove('dragover');
+        };
+
+        window.handleSsDrop = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const box = document.getElementById('ssDropzoneBox');
+            if (box) box.classList.remove('dragover');
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+                window.prosesFileGambarSsBuktiTf(files[0]);
+            }
+        };
+
+        window.handleUploadSsBuktiTf = function(e) {
+            const file = e.target?.files?.[0];
+            if (file) {
+                window.prosesFileGambarSsBuktiTf(file);
+            }
+        };
+
+        window.hapusSsBuktiTf = function(e) {
+            if (e) e.stopPropagation();
+            window.currentSsBuktiDataUrl = null;
+            const fileInput = document.getElementById('fileUploadSsBuktiTf');
+            if (fileInput) fileInput.value = '';
+            const statusBox = document.getElementById('ssOcrStatusBox');
+            if (statusBox) statusBox.style.display = 'none';
+            const optWrap = document.getElementById('ssPrintImageOptionWrap');
+            if (optWrap) optWrap.style.display = 'none';
+            const chk = document.getElementById('chkSertakanGambarSs');
+            if (chk) chk.checked = false;
+            window.updateLivePreviewStrukTransfer();
+        };
+
+        // Listener Paste (Ctrl+V) saat modal Struk Transfer sedang terbuka
+        window.addEventListener('paste', function(e) {
+            const modalTf = document.getElementById('modalStrukTransferOverlay');
+            if (!modalTf || !modalTf.classList.contains('show')) return;
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type && items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    if (blob) {
+                        e.preventDefault();
+                        window.prosesFileGambarSsBuktiTf(blob);
+                        break;
+                    }
+                }
+            }
+        });
+
+        window.loadTesseractLibrary = function() {
+            return new Promise((resolve, reject) => {
+                if (window.Tesseract) return resolve(window.Tesseract);
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+                script.onload = () => resolve(window.Tesseract);
+                script.onerror = () => reject(new Error('Gagal memuat mesin pembaca gambar (OCR).'));
+                document.head.appendChild(script);
+            });
+        };
+
+        window.parseOcrTeksBuktiTransfer = function(rawText) {
+            const text = String(rawText || '');
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            const fullUpper = text.toUpperCase();
+
+            // 1. Deteksi Bank / Aplikasi M-Banking
+            let bankTujuan = 'TRANSFER BANK';
+            let jenisLayanan = 'TRANSFER BANK';
+            if (/\b(BRIMO|BRI|BRITAMA|SIMPEDES)\b/.test(fullUpper)) bankTujuan = 'BANK BRI';
+            else if (/\b(BCA|MYBCA|M-BCA)\b/.test(fullUpper)) bankTujuan = 'BANK BCA';
+            else if (/\b(MANDIRI|LIVIN)\b/.test(fullUpper)) bankTujuan = 'BANK MANDIRI';
+            else if (/\b(BNI|WONDR)\b/.test(fullUpper)) bankTujuan = 'BANK BNI';
+            else if (/\b(BSI|SYARIAH INDONESIA)\b/.test(fullUpper)) bankTujuan = 'BANK BSI';
+            else if (/\b(SEABANK|SEA BANK)\b/.test(fullUpper)) bankTujuan = 'SEABANK';
+            else if (/\b(BJB|DIGI)\b/.test(fullUpper)) bankTujuan = 'BANK BJB';
+            else if (/\b(DANA)\b/.test(fullUpper)) { bankTujuan = 'DANA'; jenisLayanan = 'TOPUP E-WALLET'; }
+            else if (/\b(GOPAY|GO-PAY)\b/.test(fullUpper)) { bankTujuan = 'GOPAY'; jenisLayanan = 'TOPUP E-WALLET'; }
+            else if (/\b(OVO)\b/.test(fullUpper)) { bankTujuan = 'OVO'; jenisLayanan = 'TOPUP E-WALLET'; }
+            else if (/\b(SHOPEEPAY|SHOPEE)\b/.test(fullUpper)) { bankTujuan = 'SHOPEEPAY'; jenisLayanan = 'TOPUP E-WALLET'; }
+
+            // Cek jika ada baris eksplisit "Bank Tujuan"
+            for (let i = 0; i < lines.length; i++) {
+                const lUp = lines[i].toUpperCase();
+                if (lUp.includes('BANK TUJUAN') || lUp.includes('KE BANK') || lUp.includes('INSTITUSI')) {
+                    const afterColon = lines[i].split(/[:\-]/)[1]?.trim();
+                    const candidate = afterColon || lines[i + 1] || '';
+                    if (candidate && candidate.length >= 3 && candidate.length <= 32) {
+                        bankTujuan = candidate.toUpperCase();
+                        break;
+                    }
+                }
+            }
+
+            // 2. Deteksi Nominal Rupiah (cari angka format Rp 100.000 atau 1.500.000)
+            let nominal = 0;
+            const rpMatches = [...text.matchAll(/(?:RP\.?\s*|IDR\s*|NOMINAL\s*[:\-]?\s*RP\.?\s*|JUMLAH\s*[:\-]?\s*RP\.?\s*)(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?|\d{4,9})/gi)];
+            const candidatesNom = [];
+            rpMatches.forEach(m => {
+                let rawNum = m[1].replace(/[.,]\d{2}$/, '').replace(/[^\d]/g, '');
+                const val = parseInt(rawNum, 10);
+                if (val >= 1000 && val <= 500000000) candidatesNom.push(val);
+            });
+            if (candidatesNom.length > 0) {
+                nominal = Math.max(...candidatesNom);
+            }
+
+            // 3. Deteksi Nomor Rekening / Tujuan & No. Referensi / SN
+            let noRek = '-';
+            let noRef = '';
+            const digitMatches = [...text.matchAll(/\b(\d[\d\s\-]{7,20}\d)\b/g)];
+            for (const dm of digitMatches) {
+                const cleanDigits = dm[1].replace(/[^\d]/g, '');
+                if (cleanDigits.length >= 16 && !noRef) {
+                    noRef = cleanDigits;
+                } else if (cleanDigits.length >= 8 && cleanDigits.length <= 16 && noRek === '-') {
+                    noRek = cleanDigits;
+                }
+            }
+
+            // 4. Deteksi Nama Penerima
+            let namaPenerima = '';
+            const labelPenerimaRx = /(?:PENERIMA|NAMA PENERIMA|TUJUAN|KEPADA|ATAS NAMA|REKENING TUJUAN)/i;
+            for (let i = 0; i < lines.length; i++) {
+                if (labelPenerimaRx.test(lines[i])) {
+                    const parts = lines[i].split(/[:\-]/);
+                    if (parts.length > 1 && parts[1].trim().length >= 3) {
+                        namaPenerima = parts[1].trim();
+                        break;
+                    } else if (lines[i + 1] && !/\d{6,}/.test(lines[i + 1])) {
+                        namaPenerima = lines[i + 1].trim();
+                        break;
+                    }
+                }
+            }
+            if (!namaPenerima) {
+                // Cari baris huruf kapital yang tampak seperti nama orang
+                const nameLine = lines.find(l => /^[A-Z][A-Z\s.,']{3,30}$/.test(l.trim()) && !/\b(BERHASIL|SUKSES|TRANSAKSI|TRANSFER|BRIMO|MANDIRI|BCA|BNI|DANA|DETAIL|BUKTI|STRUK|TOTAL|NOMINAL|TANGGAL)\b/.test(l.toUpperCase()));
+                if (nameLine) namaPenerima = nameLine.trim();
+            }
+
+            return {
+                jenisLayanan,
+                bankTujuan,
+                noRek: noRek || '-',
+                noRef: noRef || window.generateNoRefStrukTransfer(),
+                namaPenerima: (namaPenerima || 'PELANGGAN').toUpperCase(),
+                nominal
+            };
+        };
+
+        window.prosesFileGambarSsBuktiTf = async function(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                window.showToast('⚠️ Harap pilih atau paste file gambar screenshot (PNG/JPG).', 'error');
+                return;
+            }
+            const statusBox = document.getElementById('ssOcrStatusBox');
+            const statusText = document.getElementById('ssOcrStatusText');
+            const thumb = document.getElementById('ssThumbPreview');
+            const optWrap = document.getElementById('ssPrintImageOptionWrap');
+
+            if (statusBox) statusBox.style.display = 'flex';
+            if (statusText) statusText.innerHTML = '⏳ Membaca teks dari gambar screenshot (OCR)...';
+
+            const reader = new FileReader();
+            reader.onload = async function(ev) {
+                const dataUrl = ev.target.result;
+                window.currentSsBuktiDataUrl = dataUrl;
+                if (thumb) {
+                    thumb.src = dataUrl;
+                    thumb.style.display = 'block';
+                }
+                if (optWrap) optWrap.style.display = 'block';
+                window.updateLivePreviewStrukTransfer();
+
+                try {
+                    const TesseractLib = await window.loadTesseractLibrary();
+                    const result = await TesseractLib.recognize(dataUrl, 'ind+eng');
+                    const rawText = result?.data?.text || '';
+                    const parsed = window.parseOcrTeksBuktiTransfer(rawText);
+
+                    if (parsed.bankTujuan) document.getElementById('stf_bankTujuan').value = parsed.bankTujuan;
+                    if (parsed.jenisLayanan) document.getElementById('stf_jenisLayanan').value = parsed.jenisLayanan;
+                    if (parsed.noRek && parsed.noRek !== '-') document.getElementById('stf_noRek').value = parsed.noRek;
+                    if (parsed.noRef) document.getElementById('stf_noRef').value = parsed.noRef;
+                    if (parsed.namaPenerima) document.getElementById('stf_namaPenerima').value = parsed.namaPenerima;
+                    if (parsed.nominal > 0) {
+                        document.getElementById('stf_nominal').value = parsed.nominal;
+                        document.getElementById('stf_nominalDisplay').value = parsed.nominal.toLocaleString('id-ID');
+                    }
+                    window.hitungTotalStrukTransfer();
+
+                    if (statusText) {
+                        statusText.innerHTML = `✅ <b>Screenshot terbaca otomatis!</b> Silakan cek/koreksi kolom di bawah bila perlu lalu klik Cetak.`;
+                    }
+                    window.showToast('✅ Data screenshot bukti transfer berhasil diekstrak ke struk!', 'success');
+                } catch (err) {
+                    console.warn('OCR fallback:', err);
+                    if (statusText) {
+                        statusText.innerHTML = `📸 Gambar dimuat. Silakan lengkapi kolom manual atau centang "Ikut cetak gambar screenshot".`;
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
         window.testPrintStrukKasir = function() {
             const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().kasir;
+            const maxWidthPx = p.printerUkuran === '80mm' ? '380px' : '300px';
             const printArea = document.getElementById('printAreaNotaLunasService');
+            if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
+            printArea.className = 'struk-thermal-mode';
             printArea.style.display = 'block';
             printArea.innerHTML = `
-                <div style="max-width: 300px; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
-                    ${p.logoUrl ? `<img src="${p.logoUrl}" style="max-height: 40px; margin-bottom: 6px; object-fit: contain;"><br>` : ''}
+                <div style="max-width: ${maxWidthPx}; margin: 0 auto; padding: 12px; font-family: monospace; font-size: 11px; color: #000; text-align: center; border: 1px dashed #000;">
+                    ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 40px; margin-bottom: 6px; object-fit: contain;"><br>` : ''}
                     <b style="font-size: 14px;">${p.namaToko || 'POS ZENCELL 1'}</b><br>
                     <span style="font-size: 10px;">${p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar'}</span><br>
                     <span style="font-size: 10px;">${p.kontakToko || 'WA: 0812-3456-7890'}</span>
+                    ${nc.judulStruk ? `<div style="font-size:10.5px; font-weight:bold; margin-top:4px;">*** ${nc.judulStruk} ***</div>` : ''}
                     <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
                     <div style="display:flex; justify-content:space-between; font-size:10px;">
-                        <span>TEST PRINT STRUK</span>
                         <span>${window.getTodayIso()}</span>
+                        ${nc.showKasir ? `<span>KASIR: ADMIN</span>` : ''}
                     </div>
                     <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
                     <div style="text-align:left; font-size:11px; margin-bottom:6px;">
-                        <div><b>1x VOUCHER INTERNET 5GB</b></div>
+                        <div><b>VOUCHER INTERNET 5GB</b> ${nc.showKategori ? `<span style="font-size:9.5px;">[VOUCHER]</span>` : ''}</div>
                         <div style="display:flex; justify-content:space-between;">
                             <span>1 x Rp15.000</span>
                             <b>Rp15.000</b>
                         </div>
                     </div>
                     <div style="text-align:left; font-size:11px; margin-bottom:6px;">
-                        <div><b>1x KABEL DATA TYPE-C FAST</b></div>
+                        <div><b>KABEL DATA TYPE-C FAST</b> ${nc.showKategori ? `<span style="font-size:9.5px;">[ACC]</span>` : ''}</div>
                         <div style="display:flex; justify-content:space-between;">
                             <span>1 x Rp25.000</span>
                             <b>Rp25.000</b>
@@ -13825,27 +15374,81 @@
                     </div>
                     <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
                     <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px;">
-                        <span>TOTAL:</span>
+                        <span>TOTAL BAYAR:</span>
                         <span>Rp40.000</span>
                     </div>
+                    ${nc.showMetodeBayar ? `
                     <div style="display:flex; justify-content:space-between; font-size:10.5px;">
-                        <span>TUNAI (LACI):</span>
-                        <span>Rp50.000</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:10.5px;">
-                        <span>KEMBALI:</span>
-                        <span>Rp10.000</span>
-                    </div>
+                        <span>PEMBAYARAN (LACI):</span>
+                        <span>Rp40.000</span>
+                    </div>` : ''}
                     <hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">
-                    <div style="font-size: 9.5px; white-space: pre-wrap; margin-top: 6px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
+                    ${nc.ucapanFooter ? `<div style="font-size:10px; font-weight:bold; margin-bottom:3px;">${nc.ucapanFooter}</div>` : ''}
+                    <div style="font-size: 9.5px; white-space: pre-wrap; margin-top: 3px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
                 </div>
             `;
+            window.print();
+            setTimeout(() => { printArea.style.display = 'none'; printArea.className = ''; }, 1000);
+        };
+
+        window.testPrintStrukTransfer = function() {
+            const nc = window.getNotaConfig().transfer;
+            const sampleData = {
+                jenisLayanan: 'TRANSFER BANK',
+                noRef: window.generateNoRefStrukTransfer('88901'),
+                bankTujuan: 'BANK BRI',
+                noRek: '427101029384501',
+                namaPenerima: 'BUDI SANTOSO',
+                pengirim: (window.pengaturanToko?.namaToko || 'AGEN ZENCELL 1').toUpperCase(),
+                waktu: `${window.getTodayIso()} 14:30:00`,
+                nominal: 500000,
+                admin: 5000,
+                total: 505000,
+                modeAdmin: nc.modeAdmin || 'PISAH',
+                status: nc.statusDefault || 'TRANSAKSI BERHASIL',
+                sertakanGambarSs: false
+            };
+            const printArea = document.getElementById('printAreaNotaLunasService');
+            if (!printArea) return;
+            if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
+            printArea.className = 'struk-thermal-mode';
+            printArea.style.display = 'block';
+            printArea.innerHTML = window.buildStrukTransferThermalHtml(sampleData, true);
+            window.print();
+            setTimeout(() => { printArea.style.display = 'none'; printArea.className = ''; }, 1000);
+        };
+
+        window.testPrintNotaLunasServis = function() {
+            const nc = window.getNotaConfig().servisLunas;
+            const printArea = document.getElementById('printAreaNotaLunasService');
+            const printService = document.getElementById('printAreaServiceNota');
+            const printReport = document.getElementById('printAreaReport');
+            if (!printArea) return;
+            if (printService) printService.style.display = 'none';
+            if (printReport) printReport.style.display = 'none';
+            window.setPrintPageMode('NOTA_A5');
+            printArea.className = '';
+            printArea.style.display = 'block';
+            printArea.innerHTML = window.buildNotaLunasServiceA5Html({
+                noServis: 'SRV-TEST-001',
+                namaPelanggan: 'CONTOH PELANGGAN',
+                noHpPelanggan: '08123456789',
+                tipeHp: 'SAMSUNG GALAXY A51',
+                snHp: 'SN1234567890',
+                kelengkapanHp: 'UNIT SAJA',
+                keluhanText: 'GANTI LCD TOUCHSCREEN ORIGINAL',
+                dpNomVal: 50000,
+                totalBiayaVal: 350000,
+                petugasName: sessionStorage.getItem('zencell_user') || 'ADMIN',
+                waktuCetak: `${window.getTodayIso()} 15:00`,
+                garansiText: nc.garansiDefault || 'Garansi servis 7 Hari.'
+            });
             window.print();
             setTimeout(() => { printArea.style.display = 'none'; }, 1000);
         };
 
         window.testPrintNotaServis = function() {
-            const p = window.pengaturanToko || {};
+            const nc = window.getNotaConfig().servisMasuk;
             const sampleTicket = {
                 noServis: 'SRV-TEST-001',
                 waktu: '12:00 | ' + window.getTodayIso(),
@@ -13857,7 +15460,8 @@
                 keluhan: 'GANTI LCD TOUCHSCREEN PECAH',
                 status: 'DALAM PENGERJAAN',
                 dpNom: 50000,
-                garansi: 'Garansi servis 7 hari',
+                estBiaya: 350000,
+                garansi: nc.garansiDefault || 'Garansi servis 7 hari',
                 petugas: sessionStorage.getItem('zencell_user') || 'ADMIN'
             };
             window.cetakNotaTiketServis(sampleTicket);
