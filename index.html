@@ -2868,14 +2868,50 @@
                         <span>☁️</span> CLOUD DATABASE (FIREBASE REALTIME)
                     </h4>
                     <p style="font-size:11.5px; color:#475569; margin-bottom:10px;">Sinkronisasi otomatis multi-perangkat via Google Firebase Realtime Database.</p>
-                    <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:10px 12px; margin-bottom:12px;">
+                    <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:10px 12px; margin-bottom:10px;">
                         <div style="font-size:11px; font-weight:bold; color:#166534; display:flex; align-items:center; gap:6px;">
                             <span class="realtime-dot" style="display:inline-block;"></span>
-                            <span>STATUS: TERKONEKSI REALTIME</span>
+                            <span id="setCloudConnLabel">STATUS: TERKONEKSI REALTIME</span>
                         </div>
                         <div style="font-size:10.5px; color:#15803D; margin-top:2px;">Database Project: <b>keuangan-pribadi-e713a</b></div>
                     </div>
-                    <button type="button" class="btn" style="background:#0284C7; font-size:11.5px;" onclick="window.saveAllToFirebase(); alert('✅ Seluruh data berhasil disinkronkan ke Firebase Cloud!');">☁️ Backup / Sinkronkan ke Cloud Sekarang</button>
+
+                    <!-- PANEL PROTEKSI KEAMANAN FIREBASE AUTH (OPSI 2) -->
+                    <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:10px 12px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                            <div style="font-size:11px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:5px;">
+                                <span>🛡️</span> PROTEKSI KEAMANAN FIREBASE AUTH (OPSI 2)
+                            </div>
+                            <span id="firebaseAuthSecurityBadge" style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:6px; background:#FEF3C7; color:#92400E; border:1px solid #FDE68A;">MEMERIKSA AUTH...</span>
+                        </div>
+                        <div id="firebaseAuthSecuritySub" style="font-size:10.5px; color:#475569; line-height:1.45; margin-bottom:8px;">
+                            Sistem otomatis meminta <b>Token Auth Resmi</b> ke Firebase saat Anda login PIN. Agar database terkunci rapat dari akses luar & bebas peringatan email Firebase, pastikan <b>Anonymous Auth</b> aktif dan Rules memakai <code>auth != null</code>.
+                        </div>
+                        <div style="background:#0F172A; color:#E2E8F0; font-family:monospace; font-size:10.5px; padding:8px 10px; border-radius:6px; overflow-x:auto; margin-bottom:8px; line-height:1.35; border:1px solid #334155;">{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "zencellNodes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "keuanganData": {
+      ".read": true,
+      ".write": true
+    },
+    "master_vlookup": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}</div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button type="button" class="btn" style="flex:1; min-width:160px; background:#0F172A; color:#F8FAFC; font-size:11px; padding:7px 10px; margin:0;" onclick="window.copyFirebaseSecureRules()">📋 Salin Kode Rules (Aman 2 Web)</button>
+                            <button type="button" class="btn" style="flex:0 0 auto; width:auto; background:#E2E8F0; color:#0F172A; font-size:11px; padding:7px 12px; margin:0;" onclick="window.testUlangFirebaseAuth()">🔄 Cek / Tes Auth</button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn" style="background:#0284C7; font-size:11.5px;" onclick="window.saveAllToFirebase(); window.showToast('✅ Seluruh data berhasil disinkronkan ke Firebase Cloud!', 'success');">☁️ Backup / Sinkronkan ke Cloud Sekarang</button>
                 </div>
 
                 <div class="settings-card-box">
@@ -4991,7 +5027,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, update, get, off } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
         function cekStatusKoneksiOnline() {
             const isOnline = navigator.onLine;
@@ -5071,6 +5108,11 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
+        window._firebaseAuth = auth;
+        window._firebaseAuthState = 'INIT';
+        window._firebaseAuthUid = null;
+        window._firebaseAuthErrorMsg = '';
 
         function sanitizeKey(str) {
             if (!str) return '';
@@ -5750,16 +5792,228 @@
             }
         }
 
-        onValue(ref(db, 'zencellNodes'), (snapshot) => {
-            if (window.pendingFirebaseWrites > 0 || window.isSavingToFirebase) {
-                window._deferredSnapshot = snapshot;
-                return;
+        window._rtdbListenerAttached = false;
+        window._rtdbUnsubscribe = null;
+
+        window.updateFirebaseSecurityStatusUI = function() {
+            const badge = document.getElementById('firebaseAuthSecurityBadge');
+            const sub = document.getElementById('firebaseAuthSecuritySub');
+            const connLabel = document.getElementById('setCloudConnLabel');
+            const state = window._firebaseAuthState || 'INIT';
+            const uid = window._firebaseAuthUid || (auth.currentUser ? auth.currentUser.uid : '');
+
+            if (badge) {
+                if (state === 'AUTHENTICATED' && uid) {
+                    badge.style.background = '#DCFCE7';
+                    badge.style.color = '#166534';
+                    badge.style.borderColor = '#86EFAC';
+                    badge.innerText = `🟢 AUTH AKTIF (TOKEN TERVERIFIKASI)`;
+                } else if (state === 'CONSOLE_NOT_ENABLED') {
+                    badge.style.background = '#FEF3C7';
+                    badge.style.color = '#92400E';
+                    badge.style.borderColor = '#FDE68A';
+                    badge.innerText = `🟡 MENUNGGU AKTIVASI ANONYMOUS DI CONSOLE`;
+                } else if (state === 'PERMISSION_DENIED') {
+                    badge.style.background = '#FEE2E2';
+                    badge.style.color = '#991B1B';
+                    badge.style.borderColor = '#FCA5A5';
+                    badge.innerText = `🔴 AKSES DITOLAK (AKTIFKAN ANONYMOUS AUTH)`;
+                } else {
+                    badge.style.background = '#E0F2FE';
+                    badge.style.color = '#075985';
+                    badge.style.borderColor = '#BAE6FD';
+                    badge.innerText = `⏳ MENYIAPKAN SESI AUTH...`;
+                }
             }
-            window._deferredSnapshot = null;
-            applyCloudSnapshotData(snapshot.val());
-        }, (error) => {
-            if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:7px; height:7px; background-color:#EF4444; border-radius:50%; margin-right:5px; box-shadow:0 0 6px #EF4444;"></span>OFFLINE';
+
+            if (sub) {
+                if (state === 'AUTHENTICATED' && uid) {
+                    sub.innerHTML = `✅ Perangkat ini sudah memiliki <b>Token Resmi Firebase Auth</b> (ID Sesi: <code>${uid.slice(0, 10)}...</code>). Anda sudah aman memasang Rules <code>"auth != null"</code> di Firebase Console.`;
+                } else if (state === 'CONSOLE_NOT_ENABLED') {
+                    sub.innerHTML = `⚠️ Aplikasi tetap berjalan normal, namun fitur <b>Anonymous Sign-in</b> belum diaktifkan di Firebase Console Anda. Aktifkan menu <b>Authentication ➔ Sign-in method ➔ Anonymous (Enable)</b> sebelum mengubah Rules menjadi <code>"auth != null"</code>.`;
+                } else if (state === 'PERMISSION_DENIED') {
+                    sub.innerHTML = `⛔ Rules database sudah dikunci dengan <code>"auth != null"</code>, tetapi <b>Anonymous Sign-in</b> di Firebase Console belum di-Enable. Silakan buka <b>Firebase Console ➔ Authentication ➔ Sign-in method ➔ Anonymous ➔ Enable</b> lalu klik tombol <b>Cek / Tes Auth</b> di bawah.`;
+                }
+            }
+
+            if (connLabel) {
+                if (state === 'PERMISSION_DENIED') {
+                    connLabel.innerText = 'STATUS: TERKUNCI (AKTIFKAN ANONYMOUS AUTH DI CONSOLE)';
+                } else if (state === 'AUTHENTICATED') {
+                    connLabel.innerText = 'STATUS: TERKONEKSI REALTIME (TERPROTEKSI AUTH)';
+                } else {
+                    connLabel.innerText = 'STATUS: TERKONEKSI REALTIME';
+                }
+            }
+        };
+
+        window.copyFirebaseSecureRules = function() {
+            const rulesJson = JSON.stringify({
+                rules: {
+                    ".read": false,
+                    ".write": false,
+                    zencellNodes: {
+                        ".read": "auth != null",
+                        ".write": "auth != null"
+                    },
+                    keuanganData: {
+                        ".read": true,
+                        ".write": true
+                    },
+                    master_vlookup: {
+                        ".read": true,
+                        ".write": true
+                    }
+                }
+            }, null, 2);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(rulesJson).then(() => {
+                    window.showToast("📋 Kode Rules (Aman untuk Zencell POS & Keuangan Pribadi) berhasil disalin!", "success");
+                }).catch(() => {
+                    window.showToast("⚠️ Gagal menyalin otomatis, silakan blok & salin teks pada kotak kode.", "warning");
+                });
+            } else {
+                window.showToast("⚠️ Silakan blok & salin teks pada kotak kode Rules.", "info");
+            }
+        };
+
+        window.testUlangFirebaseAuth = async function() {
+            window.showToast("🔄 Memeriksa status Firebase Authentication...", "info");
+            await window.ensureFirebaseAuthAndSync(true);
+            if (window._firebaseAuthState === 'AUTHENTICATED') {
+                window.showToast("✅ Firebase Auth Aktif & Terverifikasi! Database siap dikunci dengan auth != null.", "success");
+            } else if (window._firebaseAuthState === 'CONSOLE_NOT_ENABLED') {
+                window.showToast("⚠️ Anonymous Auth belum di-Enable di Firebase Console (Authentication > Sign-in method).", "warning");
+            } else if (window._firebaseAuthState === 'PERMISSION_DENIED') {
+                window.showToast("⛔ Akses ditolak: Pastikan Anonymous Auth sudah di-Enable di Firebase Console!", "error");
+            }
+        };
+
+        window.startRealtimeDatabaseListener = function() {
+            if (window._rtdbListenerAttached) return;
+            window._rtdbListenerAttached = true;
+            const zencellRef = ref(db, 'zencellNodes');
+            window._rtdbUnsubscribe = onValue(zencellRef, (snapshot) => {
+                if (window._firebaseAuthState === 'PERMISSION_DENIED') {
+                    window._firebaseAuthState = auth.currentUser ? 'AUTHENTICATED' : 'CONSOLE_NOT_ENABLED';
+                }
+                window.updateFirebaseSecurityStatusUI();
+                if (window.pendingFirebaseWrites > 0 || window.isSavingToFirebase) {
+                    window._deferredSnapshot = snapshot;
+                    return;
+                }
+                window._deferredSnapshot = null;
+                applyCloudSnapshotData(snapshot.val());
+            }, async (error) => {
+                window._rtdbListenerAttached = false;
+                const errCode = (error && (error.code || error.message || '')).toUpperCase();
+                if (errCode.includes('PERMISSION_DENIED')) {
+                    window._firebaseAuthState = 'PERMISSION_DENIED';
+                    window.updateFirebaseSecurityStatusUI();
+                    if (statusEl) {
+                        statusEl.innerHTML = '<span style="display:inline-block; width:7px; height:7px; background-color:#F59E0B; border-radius:50%; margin-right:5px; box-shadow:0 0 6px #F59E0B;"></span>AUTH LOCKED';
+                    }
+                    // Coba login anonymous ulang sekali jika token belum siap
+                    if (!auth.currentUser && !window._retryingAnonAuth) {
+                        window._retryingAnonAuth = true;
+                        try {
+                            const cred = await signInAnonymously(auth);
+                            if (cred && cred.user) {
+                                window._firebaseAuthUid = cred.user.uid;
+                                window._firebaseAuthState = 'AUTHENTICATED';
+                                window._retryingAnonAuth = false;
+                                window.updateFirebaseSecurityStatusUI();
+                                window.startRealtimeDatabaseListener();
+                                return;
+                            }
+                        } catch (retryErr) {
+                            window._retryingAnonAuth = false;
+                        }
+                    }
+                } else {
+                    if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:7px; height:7px; background-color:#EF4444; border-radius:50%; margin-right:5px; box-shadow:0 0 6px #EF4444;"></span>OFFLINE';
+                }
+            });
+        };
+
+        window.stopRealtimeDatabaseListener = function() {
+            try {
+                if (window._rtdbUnsubscribe) {
+                    window._rtdbUnsubscribe();
+                    window._rtdbUnsubscribe = null;
+                } else {
+                    off(ref(db, 'zencellNodes'));
+                }
+            } catch (e) {}
+            window._rtdbListenerAttached = false;
+        };
+
+        window.ensureFirebaseAuthAndSync = async function(forceRetry = false) {
+            try {
+                if (auth.currentUser && !forceRetry) {
+                    window._firebaseAuthUid = auth.currentUser.uid;
+                    window._firebaseAuthState = 'AUTHENTICATED';
+                    window.updateFirebaseSecurityStatusUI();
+                    window.startRealtimeDatabaseListener();
+                    return true;
+                }
+                const cred = await signInAnonymously(auth);
+                if (cred && cred.user) {
+                    window._firebaseAuthUid = cred.user.uid;
+                    window._firebaseAuthState = 'AUTHENTICATED';
+                    window._firebaseAuthErrorMsg = '';
+                    window.updateFirebaseSecurityStatusUI();
+                    window.startRealtimeDatabaseListener();
+                    return true;
+                }
+            } catch (err) {
+                const code = (err && err.code) ? String(err.code) : '';
+                window._firebaseAuthErrorMsg = code || (err && err.message) || 'Auth Error';
+                // Jika user belum klik Enable Anonymous di Firebase Console, tetap jalankan listener agar tidak macet
+                window._firebaseAuthState = 'CONSOLE_NOT_ENABLED';
+                window.updateFirebaseSecurityStatusUI();
+                window.startRealtimeDatabaseListener();
+                return false;
+            }
+            window.startRealtimeDatabaseListener();
+            return false;
+        };
+
+        window.verifyPinFromCloudIfNeeded = async function(user, pass) {
+            try {
+                await window.ensureFirebaseAuthAndSync();
+                const snap = await get(ref(db, 'zencellNodes/daftarKaryawan'));
+                if (snap && snap.exists()) {
+                    const cloudStaff = snap.val();
+                    if (Array.isArray(cloudStaff) && cloudStaff.length > 0) {
+                        window.daftarKaryawan = cloudStaff;
+                        localStorage.setItem('zencell_daftarKaryawan', JSON.stringify(cloudStaff));
+                        const matched = cloudStaff.find(k => k && k.username && k.username.toUpperCase() === user.toUpperCase());
+                        if (matched && String(matched.pin) === String(pass)) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (e) {}
+            return false;
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window._firebaseAuthUid = user.uid;
+                window._firebaseAuthState = 'AUTHENTICATED';
+                window.updateFirebaseSecurityStatusUI();
+                if (sessionStorage.getItem('zencell_user')) {
+                    window.startRealtimeDatabaseListener();
+                }
+            } else {
+                window._firebaseAuthUid = null;
+                window.updateFirebaseSecurityStatusUI();
+            }
         });
+
+        // Inisialisasi awal: jika sesi kasir/owner sudah aktif, langsung minta token Auth & nyalakan sinkronisasi
+        window.ensureFirebaseAuthAndSync();
 
         window.catatLogAktivitas = function(tipe, deskripsi) {
             const now = new Date();
@@ -8050,6 +8304,10 @@
                 if (window.updateUserAvatarUI) {
                     window.updateUserAvatarUI();
                 }
+
+                if (window.ensureFirebaseAuthAndSync) {
+                    window.ensureFirebaseAuthAndSync();
+                }
             } else { 
                 document.getElementById('loginOverlay').style.display = 'flex';
                 if (btnSetting) btnSetting.style.display = 'none';
@@ -8097,7 +8355,7 @@
             }
         };
 
-        window.prosesLogin = function(e) {
+        window.prosesLogin = async function(e) {
             e.preventDefault();
             const user = document.getElementById('loginUser').value;
             const pass = document.getElementById('loginPass').value;
@@ -8114,12 +8372,19 @@
                 valid = true;
             }
 
+            if (!valid && window.verifyPinFromCloudIfNeeded) {
+                valid = await window.verifyPinFromCloudIfNeeded(user, pass);
+            }
+
             if (valid) {
                 sessionStorage.setItem('zencell_user', user);
                 document.getElementById('hdrUserActive').innerText = user.toUpperCase();
                 document.getElementById('loginOverlay').style.display = 'none';
                 const passEl = document.getElementById('loginPass');
                 if (passEl) { passEl.value = ''; passEl.type = 'password'; }
+                if (window.ensureFirebaseAuthAndSync) {
+                    await window.ensureFirebaseAuthAndSync();
+                }
                 window.checkSessionLogin();
                 window.catatLogAktivitas('LOGIN', `Pengguna ${user} masuk ke aplikasi`);
                 window.showToast(`👋 Selamat datang kembali, ${user.toUpperCase()}!`, "success");
@@ -8132,6 +8397,10 @@
             if (confirm("Apakah Anda yakin ingin keluar / logout dari akun ini?")) {
                 window.catatLogAktivitas('LOGOUT', `Pengguna keluar dari aplikasi`);
                 sessionStorage.removeItem('zencell_user');
+                if (window.stopRealtimeDatabaseListener) window.stopRealtimeDatabaseListener();
+                if (window._firebaseAuth) {
+                    signOut(window._firebaseAuth).catch(() => {});
+                }
                 document.getElementById('loginOverlay').style.display = 'flex';
                 window.renderLoginUserOptions();
                 window.initLoginLiveBackground();
@@ -13190,6 +13459,7 @@
             window.renderDaftarKaryawanSettings();
             if (window.updateUserAvatarUI) window.updateUserAvatarUI();
             if (window.updatePreviewModalBerputarSettings) window.updatePreviewModalBerputarSettings();
+            if (window.updateFirebaseSecurityStatusUI) window.updateFirebaseSecurityStatusUI();
             window.switchSettingsTab(tabName);
             document.getElementById('modalSettingOverlay').classList.add('show');
         };
