@@ -475,23 +475,23 @@
 
         @media (min-width: 960px) {
             .left-sidebar {
-                width: clamp(470px, 41vw, 550px);
-                max-width: 550px;
-                left: -570px;
+                width: clamp(490px, 42vw, 575px);
+                max-width: 575px;
+                left: -595px;
                 z-index: 9990;
                 box-shadow: 4px 0 22px rgba(15, 23, 42, 0.14);
             }
             .left-sidebar.show { left: 0; }
             body.saldo-sidebar-open {
                 max-width: 100% !important;
-                padding-left: calc(clamp(470px, 41vw, 550px) + 14px) !important;
+                padding-left: calc(clamp(490px, 42vw, 575px) + 14px) !important;
                 padding-right: 14px !important;
                 margin: 0 !important;
             }
             body.saldo-sidebar-open .bottom-nav {
-                left: clamp(470px, 41vw, 550px) !important;
+                left: clamp(490px, 42vw, 575px) !important;
                 right: 0 !important;
-                width: calc(100% - clamp(470px, 41vw, 550px) - 28px) !important;
+                width: calc(100% - clamp(490px, 42vw, 575px) - 28px) !important;
                 max-width: 1218px !important;
                 margin: 0 auto !important;
             }
@@ -512,10 +512,10 @@
             align-items: center;
             gap: 6px;
             flex-wrap: wrap;
-            padding: 7px 10px;
+            padding: 8px 10px;
             background: var(--primary-light);
             border-bottom: 1px solid var(--border);
-            font-size: 10.5px;
+            font-size: 11.5px;
             font-weight: 800;
             color: var(--primary);
         }
@@ -525,15 +525,15 @@
         .sidebar-mutasi-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10.2px;
+            font-size: 11.2px;
             font-variant-numeric: tabular-nums;
         }
         .sidebar-mutasi-table th {
             background: #F1F5F9;
             color: #334155;
-            font-size: 9.2px;
+            font-size: 10.2px;
             font-weight: 800;
-            padding: 6px 5px;
+            padding: 6.5px 5.5px;
             border: 1px solid var(--border);
             text-transform: uppercase;
             letter-spacing: 0.2px;
@@ -544,7 +544,7 @@
             color: #CBD5E1;
         }
         .sidebar-mutasi-table td {
-            padding: 5.5px 5px;
+            padding: 6px 5.5px;
             border: 1px solid var(--border);
             white-space: nowrap;
             vertical-align: middle;
@@ -571,9 +571,9 @@
             border: 1px solid var(--border);
             background: var(--card);
             color: var(--text);
-            font-size: 9.5px;
+            font-size: 10.5px;
             font-weight: 800;
-            padding: 3px 7px;
+            padding: 3.5px 8px;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.15s ease;
@@ -10828,11 +10828,11 @@
                     const minLimit = Number((window.masterBatasMinSaldo && window.masterBatasMinSaldo[s]) || 0);
                     const isBelowLimit = (minLimit > 0 && akhirRow < minLimit) || akhirRow < 0;
                     const badgeTag = s === 'PIUTANG'
-                        ? ' <span style="font-size:8px; background:#FEE2E2; color:#B91C1C; padding:1px 3.5px; border-radius:3px; font-weight:800;">Piutang</span>'
+                        ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 4px; border-radius:3px; font-weight:800;">Piutang</span>'
                         : (s === 'SPAREPART'
-                            ? ' <span style="font-size:8px; background:#F5F3FF; color:#6D28D9; padding:1px 3.5px; border-radius:3px; font-weight:800;">Part</span>'
+                            ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 4px; border-radius:3px; font-weight:800;">Part</span>'
                             : (akunStokFisik.includes(s)
-                                ? ' <span style="font-size:8px; background:#FEF3C7; color:#B45309; padding:1px 3.5px; border-radius:3px; font-weight:800;">Stok</span>'
+                                ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 4px; border-radius:3px; font-weight:800;">Stok</span>'
                                 : ''));
 
                     return `
@@ -10851,10 +10851,10 @@
                     : null;
 
                 const auditBoxSidebarHtml = auditInfoSidebar ? `
-                    <div style="margin-top:8px; padding:8px 10px; border-radius:9px; background:${auditInfoSidebar.bgBanner}; border:1.5px solid ${auditInfoSidebar.borderBanner}; color:${auditInfoSidebar.colorBanner}; font-size:10px;">
+                    <div style="margin-top:8px; padding:8px 10px; border-radius:9px; background:${auditInfoSidebar.bgBanner}; border:1.5px solid ${auditInfoSidebar.borderBanner}; color:${auditInfoSidebar.colorBanner}; font-size:11px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                            <b style="font-size:10px;">🎯 AUDIT MODAL BERPUTAR</b>
-                            <button type="button" onclick="bukaPengaturan('modal');" style="background:rgba(15,23,42,0.12); border:none; border-radius:5px; padding:2px 6px; font-size:9px; font-weight:800; cursor:pointer; color:inherit;">⚙️ Atur</button>
+                            <b style="font-size:11px;">🎯 AUDIT MODAL BERPUTAR</b>
+                            <button type="button" onclick="bukaPengaturan('modal');" style="background:rgba(15,23,42,0.12); border:none; border-radius:5px; padding:2px 7px; font-size:10px; font-weight:800; cursor:pointer; color:inherit;">⚙️ Atur</button>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
                             <span>Target Modal Pokok:</span>
@@ -10868,7 +10868,7 @@
                             <span>Seharusnya (Modal+Profit):</span>
                             <b>${window.formatRp(auditInfoSidebar.seharusnyaTotalHarta)}</b>
                         </div>
-                        <div style="font-weight:900; font-size:10.5px; text-align:center;">
+                        <div style="font-weight:900; font-size:11.5px; text-align:center;">
                             ${auditInfoSidebar.shortStatusText}
                         </div>
                     </div>
@@ -10894,32 +10894,32 @@
                     totalAdmTfSb += admin;
                     return `
                         <tr>
-                            <td style="text-align:left; line-height:1.2;">
-                                <div style="font-weight:800; font-size:9.8px;">${t.waktu || '-'}</div>
-                                <div style="font-size:8.5px; color:#64748B; font-weight:700;">${t.isoDate || '-'}</div>
+                            <td style="text-align:left; line-height:1.25;">
+                                <div style="font-weight:800; font-size:10.8px;">${t.waktu || '-'}</div>
+                                <div style="font-size:9.5px; color:#64748B; font-weight:700;">${t.isoDate || '-'}</div>
                             </td>
                             <td style="text-align:left;">
                                 <div style="display:inline-flex; align-items:center; gap:3px; flex-wrap:wrap;">
-                                    <span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:1px 5px; border-radius:4px; font-weight:800; font-size:9px;">${t.akunKeluar1 || '-'}</span>
-                                    <span style="font-size:9px; font-weight:900; color:#64748B;">➔</span>
-                                    <span style="background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; padding:1px 5px; border-radius:4px; font-weight:800; font-size:9px;">${t.akunMasuk1 || '-'}</span>
+                                    <span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:1.5px 5.5px; border-radius:4px; font-weight:800; font-size:10px;">${t.akunKeluar1 || '-'}</span>
+                                    <span style="font-size:10px; font-weight:900; color:#64748B;">➔</span>
+                                    <span style="background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; padding:1.5px 5.5px; border-radius:4px; font-weight:800; font-size:10px;">${t.akunMasuk1 || '-'}</span>
                                 </div>
                             </td>
                             <td class="text-kredit" style="font-weight:800;">${window.formatRp(nom)}</td>
                             <td style="color:${admin > 0 ? '#EF4444' : '#94A3B8'}; font-weight:${admin > 0 ? '800' : '500'};">${admin > 0 ? window.formatRp(admin) : 'Rp0'}</td>
                             <td style="text-align:center;">
                                 <div style="display:inline-flex; gap:3px; justify-content:center;">
-                                    <button type="button" onclick="openModalEditTfFast('${t.id}')" title="Edit Pindah Saldo" style="background:#F59E0B; color:#FFF; border:none; border-radius:5px; padding:3px 6px; font-size:9.5px; font-weight:800; cursor:pointer;">✏️</button>
-                                    <button type="button" onclick="hapusPindahSaldo('${t.id}')" title="Hapus Pindah Saldo" style="background:#EF4444; color:#FFF; border:none; border-radius:5px; padding:3px 6px; font-size:9.5px; font-weight:800; cursor:pointer;">🗑️</button>
+                                    <button type="button" onclick="openModalEditTfFast('${t.id}')" title="Edit Pindah Saldo" style="background:#F59E0B; color:#FFF; border:none; border-radius:5px; padding:3.5px 6.5px; font-size:10.5px; font-weight:800; cursor:pointer;">✏️</button>
+                                    <button type="button" onclick="hapusPindahSaldo('${t.id}')" title="Hapus Pindah Saldo" style="background:#EF4444; color:#FFF; border:none; border-radius:5px; padding:3.5px 6.5px; font-size:10.5px; font-weight:800; cursor:pointer;">🗑️</button>
                                 </div>
                             </td>
                         </tr>
                     `;
                 }).join('') || `
                     <tr>
-                        <td colspan="5" style="text-align:center; color:#64748B; padding:12px 8px; white-space:normal; font-size:10px;">
+                        <td colspan="5" style="text-align:center; color:#64748B; padding:12px 8px; white-space:normal; font-size:11px;">
                             Belum ada histori pindah saldo pada <b>${activeTfFilter === 'DAILY' ? ('tanggal ' + targetDateSidebar) : 'periode ini'}</b>.
-                            ${activeTfFilter === 'DAILY' && allPindahSaldoList.length > 0 ? `<br><button type="button" onclick="setSidebarTfFilter('ALL')" style="margin-top:5px; background:#E0E7FF; color:#3730A3; border:1px solid #C7D2FE; padding:3px 8px; border-radius:5px; font-size:9.5px; font-weight:800; cursor:pointer;">📅 Lihat Semua Histori (${allPindahSaldoList.length}x)</button>` : ''}
+                            ${activeTfFilter === 'DAILY' && allPindahSaldoList.length > 0 ? `<br><button type="button" onclick="setSidebarTfFilter('ALL')" style="margin-top:5px; background:#E0E7FF; color:#3730A3; border:1px solid #C7D2FE; padding:3.5px 9px; border-radius:5px; font-size:10.5px; font-weight:800; cursor:pointer;">📅 Lihat Semua Histori (${allPindahSaldoList.length}x)</button>` : ''}
                         </td>
                     </tr>
                 `;
@@ -10927,9 +10927,9 @@
                 const footTfSbHtml = shownPindahSaldoList.length > 0 ? `
                     <tfoot>
                         <tr style="background:#EEF2FF; font-weight:900; border-top:1.5px solid #C7D2FE; color:#1E1B4B;">
-                            <td colspan="2" style="text-align:left; font-size:9.5px;">TOTAL PINDAH SALDO (${shownPindahSaldoList.length}x)</td>
-                            <td class="text-kredit" style="font-size:10px;">${window.formatRp(totalNomTfSb)}</td>
-                            <td class="text-debit" style="font-size:10px;">${window.formatRp(totalAdmTfSb)}</td>
+                            <td colspan="2" style="text-align:left; font-size:10.5px;">TOTAL PINDAH SALDO (${shownPindahSaldoList.length}x)</td>
+                            <td class="text-kredit" style="font-size:11px;">${window.formatRp(totalNomTfSb)}</td>
+                            <td class="text-debit" style="font-size:11px;">${window.formatRp(totalAdmTfSb)}</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -10942,7 +10942,7 @@
                     <div class="sidebar-section-card">
                         <div class="sidebar-section-hdr">
                             <span>📊 REKAP SALDO &amp; MUTASI AKUN</span>
-                            <span style="background:var(--card); color:var(--text); border:1px solid var(--border); padding:2px 7px; border-radius:6px; font-size:9.5px; font-weight:800;">📆 ${labelTanggalAktif}</span>
+                            <span style="background:var(--card); color:var(--text); border:1px solid var(--border); padding:2px 7px; border-radius:6px; font-size:10.5px; font-weight:800;">📆 ${labelTanggalAktif}</span>
                         </div>
                         <div class="table-responsive" style="margin-bottom:0;">
                             <table class="sidebar-mutasi-table">
@@ -10960,11 +10960,11 @@
                                 </tbody>
                                 <tfoot>
                                     <tr style="background:#ECFDF5; font-weight:900; border-top:2px solid #059669; color:#064E3B;">
-                                        <td style="font-size:9.8px;">TOTAL SALDO</td>
-                                        <td style="font-size:9.8px;">${window.formatRp(sumKemarinSb)}</td>
-                                        <td class="text-kredit" style="font-size:9.8px;">+${window.formatRp(sumMasukSb)}</td>
-                                        <td class="text-debit" style="font-size:9.8px;">-${window.formatRp(sumKeluarSb)}</td>
-                                        <td class="text-cuan" style="font-size:10.5px;">${window.formatRp(sumAkhirSb)}</td>
+                                        <td style="font-size:10.8px;">TOTAL SALDO</td>
+                                        <td style="font-size:10.8px;">${window.formatRp(sumKemarinSb)}</td>
+                                        <td class="text-kredit" style="font-size:10.8px;">+${window.formatRp(sumMasukSb)}</td>
+                                        <td class="text-debit" style="font-size:10.8px;">-${window.formatRp(sumKeluarSb)}</td>
+                                        <td class="text-cuan" style="font-size:11.5px;">${window.formatRp(sumAkhirSb)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -11006,7 +11006,7 @@
                             <div style="display:flex; align-items:center; gap:4px;">
                                 <button type="button" class="sidebar-tf-filter-btn ${activeTfFilter === 'DAILY' ? 'active' : ''}" onclick="setSidebarTfFilter('DAILY')">📆 Tgl Aktif (${dailyPindahSaldoList.length})</button>
                                 <button type="button" class="sidebar-tf-filter-btn ${activeTfFilter === 'ALL' ? 'active' : ''}" onclick="setSidebarTfFilter('ALL')">📅 Semua (${allPindahSaldoList.length})</button>
-                                <button type="button" onclick="openModalTfFast()" style="background:#4F46E5; color:#FFF; border:none; border-radius:6px; padding:3px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">+ Transfer</button>
+                                <button type="button" onclick="openModalTfFast()" style="background:#4F46E5; color:#FFF; border:none; border-radius:6px; padding:3.5px 8px; font-size:10.5px; font-weight:800; cursor:pointer;">+ Transfer</button>
                             </div>
                         </div>
                         <div class="table-responsive" style="margin-bottom:0; max-height:290px; overflow-y:auto;">
