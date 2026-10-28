@@ -1078,6 +1078,8 @@
             background: var(--bg);
             box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
         }
+        body.kpi-collapsed-mode #topKpiSection,
+        body.kpi-collapsed-mode .top-kpi-wrapper,
         body.kpi-collapsed-mode .dashboard-grid { display: none !important; }
         body.kpi-collapsed-mode .sticky-subnav { top: 68px; }
 
@@ -9054,10 +9056,31 @@
             window.toggleSplitMode(false);
         }
 
-        window.toggleKpiCardsCollapse = function() {
-            const isCollapsed = document.body.classList.toggle('kpi-collapsed-mode');
+        window.applyKpiCollapseUI = function(isCollapsed) {
+            document.body.classList.toggle('kpi-collapsed-mode', Boolean(isCollapsed));
+            const kpiEl = document.getElementById('topKpiSection');
+            if (kpiEl) {
+                kpiEl.style.display = isCollapsed ? 'none' : '';
+            }
             const lbl = document.getElementById('lblToggleKpiCollapse');
             if (lbl) lbl.innerText = isCollapsed ? '🔽 BUKA KPI' : '🔼 LIPAT KPI';
+            const btn = document.getElementById('btnToggleKpiCollapse');
+            if (btn) {
+                btn.style.background = isCollapsed
+                    ? 'linear-gradient(135deg, #D97706, #B45309)'
+                    : 'linear-gradient(135deg, #475569, #334155)';
+                btn.title = isCollapsed
+                    ? 'Tampilkan kembali 8 Kartu Ringkasan KPI di atas'
+                    : 'Sembunyikan / Lipat 8 Kartu Ringkasan KPI agar layar lebih lega';
+            }
+        };
+
+        window.toggleKpiCardsCollapse = function() {
+            const isCollapsed = !document.body.classList.contains('kpi-collapsed-mode');
+            window.applyKpiCollapseUI(isCollapsed);
+            try {
+                localStorage.setItem('zencell_kpi_collapsed', isCollapsed ? '1' : '0');
+            } catch (e) {}
         };
 
         window.switchMainTab = function(evt, tabId) {
@@ -9255,6 +9278,11 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             window.initTheme();
+            try {
+                if (localStorage.getItem('zencell_kpi_collapsed') === '1' && window.applyKpiCollapseUI) {
+                    window.applyKpiCollapseUI(true);
+                }
+            } catch (e) {}
             window.checkSessionLogin();
             
             const today = window.getTodayIso();
