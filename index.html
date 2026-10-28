@@ -3362,6 +3362,106 @@
         </div>
     </div>
 
+    <!-- MODAL POPUP: KOREKSI / SAMAKAN SALDO RIIL (NON-TRANSAKSI - KHUSUS OWNER) -->
+    <div id="modalKoreksiSaldoOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 520px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #DDD6FE; padding-bottom:8px;">
+                <div>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <h3 id="modalKoreksiSaldoTitle" style="font-size:15px; color:#6D28D9; margin:0;">⚖️ Koreksi / Samakan Saldo Riil</h3>
+                        <span style="background:#F3E8FF; color:#6D28D9; border:1px solid #C4B5FD; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:999px;">🔒 Otoritas Owner • Non-Transaksi</span>
+                    </div>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Menyamakan saldo akun dengan mutasi riil tanpa mengubah Cuan &amp; Riwayat Transaksi lalu</small>
+                </div>
+                <button type="button" onclick="closeModalKoreksiSaldo()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <form id="formKoreksiSaldo" onsubmit="simpanKoreksiSaldo(event)">
+                <input type="hidden" id="editKoreksiId" value="">
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Pilih Akun Kas / Bank / Server</label>
+                        <select id="korAkunSelect" class="form-control" required onchange="onKoreksiAkunChange()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori / Penyebab Selisih</label>
+                        <select id="korKategoriAlasan" class="form-control" onchange="onKoreksiSaldoFormChange()">
+                            <option value="BONUS / CASHBACK SERVER">🎁 Bonus / Cashback Server &amp; Bank (+)</option>
+                            <option value="SELISIH MUTASI TIDAK KETEMU">🔍 Selisih Mutasi Tidak Ketemu (+/-)</option>
+                            <option value="BIAYA ADMIN / POTONGAN BANK">🏦 Potongan Admin / Biaya Bank (-)</option>
+                            <option value="PENYESUAIAN FISIK LACI">💵 Penyesuaian Fisik Kas / Laci (+/-)</option>
+                            <option value="KOREKSI SALDO LAINNYA">📝 Koreksi / Penyesuaian Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Metode Penyesuaian Saldo</label>
+                    <select id="korModeInput" class="form-control" onchange="onKoreksiModeChange()">
+                        <option value="SAMAKAN_RIIL">🎯 Ketik Saldo Riil di Aplikasi / Laci Saat Ini (Otomatis Hitung Selisih)</option>
+                        <option value="NOMINAL_SELISIH">➕/➖ Ketik Nominal Penambahan / Pengurangan Langsung</option>
+                    </select>
+                </div>
+
+                <div id="korBoxSamakanRiil" class="form-group" style="background:#F5F3FF; border:1px solid #DDD6FE; padding:9px 10px; border-radius:8px;">
+                    <label style="color:#5B21B6;">💵 Saldo Riil Aktual di Aplikasi / Laci Saat Ini (Rp)</label>
+                    <input type="text" id="korSaldoRiilDisplay" class="form-control" placeholder="Ketik angka saldo riil yang benar saat ini..." inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'korSaldoRiil'); onKoreksiSaldoFormChange();" style="font-weight:800; font-size:13.5px; border-color:#8B5CF6;">
+                    <input type="hidden" id="korSaldoRiil" value="0">
+                </div>
+
+                <div id="korBoxNominalSelisih" style="display:none; background:#F5F3FF; border:1px solid #DDD6FE; padding:9px 10px; border-radius:8px; margin-bottom:8px;">
+                    <div class="row-2" style="margin-bottom:0;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="color:#5B21B6;">Arah Penyesuaian</label>
+                            <select id="korArahSelisih" class="form-control" onchange="onKoreksiSaldoFormChange()" style="font-weight:800;">
+                                <option value="TAMBAH">➕ TAMBAH SALDO (+)</option>
+                                <option value="KURANG">➖ KURANGI SALDO (-)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="color:#5B21B6;">Nominal Koreksi (Rp)</label>
+                            <input type="text" id="korNominalSelisihDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'korNominalSelisih'); onKoreksiSaldoFormChange();" style="font-weight:800; font-size:13px;">
+                            <input type="hidden" id="korNominalSelisih" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIVE PREVIEW KOREKSI 3 KOLOM -->
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:9px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:8px;">
+                    <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:6px; padding:5px 7px; text-align:center;">
+                        <span style="display:block; font-size:9px; font-weight:700; color:#64748B;">SALDO SISTEM SAAT INI</span>
+                        <b id="korPrevSistem" style="font-size:11.5px; color:#0F172A;">Rp0</b>
+                    </div>
+                    <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:6px; padding:5px 7px; text-align:center;">
+                        <span style="display:block; font-size:9px; font-weight:700; color:#64748B;">SELISIH KOREKSI (+/-)</span>
+                        <b id="korPrevSelisih" style="font-size:11.5px; color:#64748B;">Rp0</b>
+                    </div>
+                    <div style="background:#F3E8FF; border:1px solid #C4B5FD; border-radius:6px; padding:5px 7px; text-align:center;">
+                        <span style="display:block; font-size:9px; font-weight:800; color:#5B21B6;">SALDO BARU (RIIL)</span>
+                        <b id="korPrevBaru" style="font-size:11.5px; color:#6D28D9;">Rp0</b>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Catatan / Bukti Koreksi (Wajib Diisi untuk Audit)</label>
+                    <input type="text" id="korCatatan" class="form-control" placeholder="CONTOH: BONUS SALDO DIGIPOS / SELISIH MUTASI BCA TGL 25..." required>
+                </div>
+
+                <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:7px 9px; margin-bottom:10px;">
+                    <label style="display:flex; align-items:flex-start; gap:7px; cursor:pointer; margin:0; font-size:10.5px; color:#065F46; font-weight:700; line-height:1.35;">
+                        <input type="checkbox" id="korChkAdjustModal" checked style="margin-top:2px; width:15px; height:15px; accent-color:#059669;">
+                        <span>🎯 Sesuaikan otomatis <b>Target Modal Berputar</b> sebesar selisih koreksi agar indikator Audit Modal tetap <b>PAS / BALANCE</b> (Direkomendasikan)</span>
+                    </label>
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" id="btnSubmitKoreksiSaldo" class="btn" style="flex:1; background:linear-gradient(135deg, #7C3AED, #5B21B6); font-weight:800;">⚖️ Simpan Koreksi Saldo (Owner)</button>
+                    <button type="button" class="btn" onclick="closeModalKoreksiSaldo()" style="width:auto; background:#64748B; padding:10px 14px;">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL POPUP 1: + DATA OTOMATIS (VLOOKUP CEPAT) -->
     <div id="modalVlookupFastOverlay" class="modal-overlay">
         <div class="modal-content" style="max-width: 480px;">
@@ -4425,6 +4525,7 @@
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                     <span>💰 Rekap Saldo Realtime</span>
                     <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <button type="button" onclick="openModalKoreksiSaldo()" style="background:#7C3AED; color:#FFF; border:none; border-radius:6px; padding:4px 9px; font-size:10px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Koreksi / Samakan Saldo Riil Tanpa Mengubah Transaksi Lalu (Khusus Owner)">⚖️ Koreksi Saldo</button>
                         <button type="button" onclick="openModalSeaBankBunga(true)" style="background:#0284C7; color:#FFF; border:none; border-radius:6px; padding:4px 9px; font-size:10px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Lihat / Konfirmasi Bunga Harian SeaBank">🌅 Bunga SeaBank</button>
                         <select id="saldoFilterMode" class="date-picker-input" onchange="toggleFilterSaldoDate(this.value)" style="padding:4px 6px; font-size:10px;">
                             <option value="ALL">📅 Semua Tanggal</option>
@@ -4506,6 +4607,50 @@
                             </thead>
                             <tbody id="bodyHistoriPindahSaldo"></tbody>
                             <tfoot id="footHistoriPindahSaldo"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header flex justify-between items-center cursor-pointer" style="background: linear-gradient(135deg, #6D28D9, #4C1D95); color: white;" onclick="toggleCardCollapse('bodyKoreksiSaldoCard', this)">
+                    <span>⚖️ Histori Koreksi / Penyesuaian Saldo Riil (Otoritas Owner)</span>
+                    <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Sembunyikan / Munculkan ▼</span>
+                </div>
+                <div id="bodyKoreksiSaldoCard" class="p-3">
+                    <div class="filter-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span style="font-size:11px; font-weight:700; color:#6D28D9;">🔍 FILTER KOREKSI SALDO:</span>
+                            <select id="korFilterMode" class="date-picker-input" onchange="toggleFilterKorDate(this.value)">
+                                <option value="ALL" selected>📅 Semua Tanggal</option>
+                                <option value="DAILY">📆 Per Hari (Tanggal)</option>
+                                <option value="MONTHLY">🗓️ Per Bulan</option>
+                            </select>
+                            <input type="date" id="korDatePicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                            <input type="month" id="korMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span id="txtHistoriKoreksiSummary" style="font-size:11px; font-weight:800; color:#5B21B6; background:#F3E8FF; border:1px solid #DDD6FE; padding:3px 9px; border-radius:6px;">0 Koreksi • Net: Rp0</span>
+                            <button type="button" onclick="openModalKoreksiSaldo()" style="background:#7C3AED; color:#FFF; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:800; cursor:pointer;">+ Koreksi Saldo Baru</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>WAKTU</th>
+                                    <th>TANGGAL</th>
+                                    <th>AKUN</th>
+                                    <th>SALDO SISTEM LAMA</th>
+                                    <th>SELISIH (+/-)</th>
+                                    <th>SALDO RIIL BARU</th>
+                                    <th>KATEGORI &amp; CATATAN AUDIT</th>
+                                    <th>OLEH</th>
+                                    <th>AKSI (OWNER)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyHistoriKoreksiSaldo"></tbody>
+                            <tfoot id="footHistoriKoreksiSaldo"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -9634,6 +9779,10 @@
                 if (window.showToast) window.showToast("⚠️ Pilih akun saldo terlebih dahulu!", "error");
                 return;
             }
+            const awalLama = Number(window.masterSaldoAwal[lama] || 0);
+            if ((awal !== awalLama || lama !== baru) && window.verifyOwnerAccessForKoreksi) {
+                if (!window.verifyOwnerAccessForKoreksi('Ubah Saldo Awal / Nama Akun Master')) return;
+            }
 
             if (!window.masterBatasMinSaldo) window.masterBatasMinSaldo = {};
             if (lama !== baru) {
@@ -9662,6 +9811,7 @@
         }
 
         window.resetSemuaSaldoAwalKeNol = function() {
+            if (window.verifyOwnerAccessForKoreksi && !window.verifyOwnerAccessForKoreksi('Reset Semua Saldo Awal ke Rp 0')) return;
             if (!confirm("Yakin ingin mereset SEMUA nominal Saldo Awal menjadi Rp 0?")) return;
             window.saldoList.forEach(s => { window.masterSaldoAwal[s] = 0; });
             const target = document.getElementById('cfgAkunTarget')?.value;
@@ -13925,6 +14075,68 @@
                     </tfoot>
                 ` : '';
 
+                // Data Histori Koreksi Saldo untuk Sidebar Kiri Cek Saldo
+                const korStateSb = window.getKoreksiSaldoState ? window.getKoreksiSaldoState() : { riwayatKoreksi: [] };
+                const allKoreksiList = Array.isArray(korStateSb.riwayatKoreksi) ? korStateSb.riwayatKoreksi : [];
+                const dailyKoreksiList = allKoreksiList.filter(k => (k.isoDate || '') === targetDateSidebar);
+                const activeKorFilter = window._sidebarKorFilterMode === 'DAILY' ? 'DAILY' : 'ALL';
+                const shownKoreksiList = activeKorFilter === 'DAILY' ? dailyKoreksiList : allKoreksiList;
+
+                let totalNetKoreksiSb = 0;
+                const rowsKorSbHtml = shownKoreksiList.map(k => {
+                    const sel = Number(k.selisih || 0);
+                    totalNetKoreksiSb += sel;
+                    const isPlus = sel >= 0;
+                    const selFormatted = (isPlus ? '+' : '-') + window.formatRp(Math.abs(sel));
+                    const safeCatatan = window.escapeHtml ? window.escapeHtml(k.catatan || '-') : (k.catatan || '-');
+                    const safeKat = window.escapeHtml ? window.escapeHtml(k.kategoriAlasan || 'KOREKSI') : (k.kategoriAlasan || 'KOREKSI');
+                    return `
+                        <tr>
+                            <td style="text-align:left; line-height:1.25;">
+                                <div style="font-weight:800; font-size:10.5px;">${k.waktu || '-'}</div>
+                                <div style="font-size:9px; color:#64748B; font-weight:700;">${k.isoDate || '-'}</div>
+                            </td>
+                            <td style="text-align:left; white-space:normal; min-width:130px; line-height:1.25;">
+                                <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                                    <span style="background:#F3E8FF; color:#6D28D9; border:1px solid #DDD6FE; padding:1px 5px; border-radius:4px; font-weight:800; font-size:9.5px;">${k.akun || '-'}</span>
+                                    <span style="font-size:9px; color:#475569; font-weight:700;">${safeKat}</span>
+                                </div>
+                                <div style="font-size:9.5px; color:#334155; margin-top:2px;">${safeCatatan}</div>
+                            </td>
+                            <td style="text-align:right; font-size:10px; line-height:1.25;">
+                                <div style="color:#64748B;">Lama: ${window.formatRp(k.saldoSistemSebelum || 0)}</div>
+                                <div style="font-weight:800; color:#0F172A;">Baru: ${window.formatRp(k.saldoRiilBaru || 0)}</div>
+                            </td>
+                            <td style="text-align:right; font-weight:900; color:${isPlus ? '#059669' : '#DC2626'};">
+                                ${selFormatted}
+                            </td>
+                            <td style="text-align:center;">
+                                <div style="display:inline-flex; gap:3px; justify-content:center;">
+                                    <button type="button" onclick="editRiwayatKoreksiSaldo('${k.id}')" title="Edit Koreksi Saldo (Owner)" style="background:#F59E0B; color:#FFF; border:none; border-radius:5px; padding:3px 6px; font-size:10px; font-weight:800; cursor:pointer;">✏️</button>
+                                    <button type="button" onclick="batalRiwayatKoreksiSaldo('${k.id}')" title="Batalkan & Kembalikan Saldo (Owner)" style="background:#EF4444; color:#FFF; border:none; border-radius:5px; padding:3px 6px; font-size:10px; font-weight:800; cursor:pointer;">↩️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:#64748B; padding:12px 8px; white-space:normal; font-size:11px;">
+                            Belum ada riwayat koreksi saldo pada <b>${activeKorFilter === 'DAILY' ? ('tanggal ' + targetDateSidebar) : 'periode ini'}</b>.
+                            ${activeKorFilter === 'DAILY' && allKoreksiList.length > 0 ? `<br><button type="button" onclick="setSidebarKorFilter('ALL')" style="margin-top:5px; background:#F3E8FF; color:#6D28D9; border:1px solid #DDD6FE; padding:3.5px 9px; border-radius:5px; font-size:10.5px; font-weight:800; cursor:pointer;">📅 Lihat Semua Koreksi (${allKoreksiList.length}x)</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+
+                const footKorSbHtml = shownKoreksiList.length > 0 ? `
+                    <tfoot>
+                        <tr style="background:#F5F3FF; font-weight:900; border-top:1.5px solid #DDD6FE; color:#4C1D95;">
+                            <td colspan="3" style="text-align:left; font-size:10.5px;">TOTAL NET KOREKSI (${shownKoreksiList.length}x)</td>
+                            <td style="text-align:right; font-size:11px; color:${totalNetKoreksiSb >= 0 ? '#059669' : '#DC2626'};">${(totalNetKoreksiSb >= 0 ? '+' : '-') + window.formatRp(Math.abs(totalNetKoreksiSb))}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                ` : '';
+
                 const labelTanggalAktif = targetDateSidebar === todayIsoSb ? `HARI INI (${targetDateSidebar})` : targetDateSidebar;
 
                 sidebarContent.innerHTML = `
@@ -13988,6 +14200,12 @@
                         </div>
                         ${auditBoxSidebarHtml}
                         <div id="sidebarSeaBankBungaBox"></div>
+                        <div onclick="openModalKoreksiSaldo()" style="margin-top:6px; padding:7px 9px; border-radius:8px; background:#F5F3FF; border:1.5px solid #C4B5FD; color:#5B21B6; font-size:10.5px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                            <b style="font-size:10.5px;">⚖️ Koreksi / Samakan Saldo Riil</b>
+                            <span style="font-size:9.5px; font-weight:800; background:#7C3AED; color:#FFF; padding:2px 8px; border-radius:999px;">
+                                🔒 Owner (${allKoreksiList.length})
+                            </span>
+                        </div>
                     </div>
 
                     <!-- 3. TABEL HISTORI PINDAH SALDO (SEJAJAR DI BAWAH TABEL SALDO) -->
@@ -14015,6 +14233,35 @@
                                     ${rowsTfSbHtml}
                                 </tbody>
                                 ${footTfSbHtml}
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 4. TABEL HISTORI KOREKSI SALDO RIIL (SEJAJAR DI BAWAH HISTORI PINDAH SALDO) -->
+                    <div class="sidebar-section-card" style="border-color:#DDD6FE;">
+                        <div class="sidebar-section-hdr" style="background:#F5F3FF; color:#5B21B6; border-bottom-color:#DDD6FE;">
+                            <span>⚖️ HISTORI KOREKSI SALDO</span>
+                            <div style="display:flex; align-items:center; gap:4px;">
+                                <button type="button" class="sidebar-tf-filter-btn ${activeKorFilter === 'DAILY' ? 'active' : ''}" onclick="setSidebarKorFilter('DAILY')">📆 Tgl Aktif (${dailyKoreksiList.length})</button>
+                                <button type="button" class="sidebar-tf-filter-btn ${activeKorFilter === 'ALL' ? 'active' : ''}" onclick="setSidebarKorFilter('ALL')">📅 Semua (${allKoreksiList.length})</button>
+                                <button type="button" onclick="openModalKoreksiSaldo()" style="background:#7C3AED; color:#FFF; border:none; border-radius:6px; padding:3.5px 8px; font-size:10.5px; font-weight:800; cursor:pointer;">+ Koreksi</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="margin-bottom:0; max-height:290px; overflow-y:auto;">
+                            <table class="sidebar-mutasi-table">
+                                <thead>
+                                    <tr>
+                                        <th>WAKTU</th>
+                                        <th>AKUN &amp; ALASAN</th>
+                                        <th>LAMA ➔ BARU</th>
+                                        <th>SELISIH</th>
+                                        <th style="text-align:center;">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsKorSbHtml}
+                                </tbody>
+                                ${footKorSbHtml}
                             </table>
                         </div>
                     </div>
@@ -14093,6 +14340,82 @@
                             <td class="text-kredit"><b>${window.formatRp(totalNominalTf)}</b></td>
                             <td class="text-debit"><b>${window.formatRp(totalAdminTf)}</b></td>
                             <td></td>
+                        </tr>
+                    ` : '';
+                }
+            }
+
+            // Render Tabel Histori Koreksi Saldo di Tab Laporan -> Saldo
+            const bHistoriKor = document.getElementById('bodyHistoriKoreksiSaldo');
+            if (bHistoriKor) {
+                const korMode = document.getElementById('korFilterMode')?.value || 'ALL';
+                const korDate = document.getElementById('korDatePicker')?.value || '';
+                const korMonth = document.getElementById('korMonthPicker')?.value || '';
+
+                const korState = window.getKoreksiSaldoState ? window.getKoreksiSaldoState() : { riwayatKoreksi: [] };
+                const listKoreksi = (korState.riwayatKoreksi || []).filter(k => {
+                    if (!k) return false;
+                    const itemDate = k.isoDate || '';
+                    if (korMode === 'DAILY' && itemDate !== korDate) return false;
+                    if (korMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(korMonth))) return false;
+                    return true;
+                });
+
+                let totalPlusKor = 0;
+                let totalMinusKor = 0;
+                let totalNetKor = 0;
+
+                bHistoriKor.innerHTML = listKoreksi.map(k => {
+                    const sel = Number(k.selisih || 0);
+                    if (sel >= 0) totalPlusKor += sel;
+                    else totalMinusKor += Math.abs(sel);
+                    totalNetKor += sel;
+                    const isPlus = sel >= 0;
+                    const selStr = (isPlus ? '+' : '-') + window.formatRp(Math.abs(sel));
+                    const safeKat = window.escapeHtml ? window.escapeHtml(k.kategoriAlasan || 'KOREKSI') : (k.kategoriAlasan || 'KOREKSI');
+                    const safeCat = window.escapeHtml ? window.escapeHtml(k.catatan || '-') : (k.catatan || '-');
+                    const modalBadge = k.modalAdjusted
+                        ? `<span style="background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;">🎯 Modal Disesuaikan</span>`
+                        : '';
+                    return `
+                        <tr id="row-kor-${k.id}">
+                            <td><b>${k.waktu || '-'}</b></td>
+                            <td>${k.isoDate || '-'}</td>
+                            <td><span style="background:#F3E8FF; color:#6D28D9; border:1px solid #DDD6FE; padding:2px 8px; border-radius:6px; font-weight:800; font-size:10.5px;">${k.akun || '-'}</span></td>
+                            <td style="color:#475569; font-weight:700;">${window.formatRp(k.saldoSistemSebelum || 0)}</td>
+                            <td style="font-weight:900; color:${isPlus ? '#059669' : '#DC2626'};">${selStr}</td>
+                            <td style="font-weight:900; color:#0F172A;">${window.formatRp(k.saldoRiilBaru || 0)}</td>
+                            <td style="text-align:left; white-space:normal; max-width:280px;">
+                                <div><b style="font-size:10.5px; color:#5B21B6;">${safeKat}</b>${modalBadge}</div>
+                                <div style="font-size:10.5px; color:#334155;">${safeCat}</div>
+                            </td>
+                            <td><span style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; padding:2px 6px; border-radius:5px; font-size:9.5px; font-weight:800;">👑 ${k.oleh || 'OWNER'}</span></td>
+                            <td>
+                                <div style="display:flex; gap:4px; justify-content:center;">
+                                    <button type="button" class="btn-edit" onclick="editRiwayatKoreksiSaldo('${k.id}')">Edit</button>
+                                    <button type="button" class="btn-delete" onclick="batalRiwayatKoreksiSaldo('${k.id}')">Batal</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada histori koreksi / penyesuaian saldo pada periode ini.</td></tr>`;
+
+                const txtKorSum = document.getElementById('txtHistoriKoreksiSummary');
+                if (txtKorSum) {
+                    const netStr = (totalNetKor >= 0 ? '+' : '-') + window.formatRp(Math.abs(totalNetKor));
+                    txtKorSum.innerText = `${listKoreksi.length} Koreksi • Net: ${netStr}`;
+                }
+
+                const footKor = document.getElementById('footHistoriKoreksiSaldo');
+                if (footKor) {
+                    const netStr = (totalNetKor >= 0 ? '+' : '-') + window.formatRp(Math.abs(totalNetKor));
+                    footKor.innerHTML = listKoreksi.length > 0 ? `
+                        <tr style="background:#F5F3FF; font-weight:800; border-top:2px solid #DDD6FE; color:#4C1D95;">
+                            <td colspan="4" style="text-align:right;">TOTAL AKUMULASI KOREKSI (${listKoreksi.length}x):</td>
+                            <td style="font-weight:900; color:${totalNetKor >= 0 ? '#059669' : '#DC2626'};">${netStr}</td>
+                            <td colspan="4" style="text-align:left; font-size:10.5px; color:#5B21B6;">
+                                Surplus (+): <b style="color:#059669;">+${window.formatRp(totalPlusKor)}</b> &nbsp;|&nbsp; Minus (-): <b style="color:#DC2626;">-${window.formatRp(totalMinusKor)}</b>
+                            </td>
                         </tr>
                     ` : '';
                 }
@@ -15554,6 +15877,363 @@
                     </div>
                 `;
             }
+        };
+
+        // =========================================================================
+        // ⚖️ FITUR KOREKSI / SAMAKAN SALDO RIIL (NON-TRANSAKSI - KHUSUS OWNER)
+        // =========================================================================
+        window._sidebarKorFilterMode = 'ALL';
+        window.setSidebarKorFilter = function(mode) {
+            window._sidebarKorFilterMode = mode === 'DAILY' ? 'DAILY' : 'ALL';
+            window.renderAll();
+        };
+
+        window.toggleFilterKorDate = function(mode) {
+            const dEl = document.getElementById('korDatePicker');
+            const mEl = document.getElementById('korMonthPicker');
+            if (dEl) dEl.style.display = mode === 'DAILY' ? 'inline-block' : 'none';
+            if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            if (mode === 'DAILY' && dEl && !dEl.value) dEl.value = window.getTodayIso();
+            if (mode === 'MONTHLY' && mEl && !mEl.value) mEl.value = window.getTodayIso().slice(0, 7);
+            window.renderAll();
+        };
+
+        window.getKoreksiSaldoState = function() {
+            if (!window.pengaturanToko) window.pengaturanToko = {};
+            if (!window.pengaturanToko.koreksiSaldoState || typeof window.pengaturanToko.koreksiSaldoState !== 'object') {
+                window.pengaturanToko.koreksiSaldoState = {
+                    riwayatKoreksi: []
+                };
+            }
+            if (!Array.isArray(window.pengaturanToko.koreksiSaldoState.riwayatKoreksi)) {
+                window.pengaturanToko.koreksiSaldoState.riwayatKoreksi = [];
+            }
+            return window.pengaturanToko.koreksiSaldoState;
+        };
+
+        window.verifyOwnerAccessForKoreksi = function(actionLabel) {
+            if (typeof window.isUserOwner === 'function' && window.isUserOwner()) {
+                return true;
+            }
+            const label = actionLabel || 'Koreksi Saldo Riil';
+            const inputPin = prompt(
+                `🔒 OTORISASI KHUSUS OWNER\n\n` +
+                `Fitur "${label}" hanya berhak dilakukan oleh OWNER agar akuntabilitas kas & saldo terjaga.\n\n` +
+                `Silakan masukkan PIN OWNER untuk melanjutkan:`
+            );
+            if (inputPin === null) return false;
+            const cleanPin = String(inputPin).trim();
+            const ownerUsers = (window.daftarKaryawan || []).filter(u => String(u.role || '').toUpperCase() === 'OWNER');
+            const isValidOwnerPin = ownerUsers.length > 0
+                ? ownerUsers.some(u => String(u.pin || '').trim() === cleanPin)
+                : cleanPin === '122333';
+
+            if (!isValidOwnerPin) {
+                if (window.showToast) window.showToast("⛔ PIN OWNER salah! Akses Koreksi Saldo ditolak.", "error");
+                else alert("⛔ PIN OWNER salah! Akses Koreksi Saldo ditolak.");
+                window.catatLogAktivitas('AKSES DITOLAK', `Percobaan gagal akses ${label} (PIN Owner tidak sesuai)`);
+                return false;
+            }
+            return true;
+        };
+
+        window.getCurrentSystemBalanceForAkun = function(akun, editingRecord) {
+            const currentActual = (window._latestActualSaldoPerAkun && window._latestActualSaldoPerAkun[akun] !== undefined)
+                ? Number(window._latestActualSaldoPerAkun[akun] || 0)
+                : Number((window.masterSaldoAwal && window.masterSaldoAwal[akun]) || 0);
+            if (editingRecord && editingRecord.akun === akun) {
+                return currentActual - Number(editingRecord.selisih || 0);
+            }
+            return currentActual;
+        };
+
+        window.populateKoreksiAkunDropdown = function(selectedAkun) {
+            const selEl = document.getElementById('korAkunSelect');
+            if (!selEl) return;
+            const nonLiquid = window.AKUN_DATA_OTOMATIS || ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            const accounts = (window.saldoList || []).filter(s => !nonLiquid.includes(s));
+            selEl.innerHTML = accounts.map(s => {
+                const cur = window.getCurrentSystemBalanceForAkun(s, window._editingKoreksiObj || null);
+                return `<option value="${s}">${s} (Sistem: ${window.formatRp(cur)})</option>`;
+            }).join('');
+            if (selectedAkun && accounts.includes(selectedAkun)) {
+                selEl.value = selectedAkun;
+            }
+        };
+
+        window.onKoreksiModeChange = function() {
+            const mode = document.getElementById('korModeInput')?.value || 'SAMAKAN_RIIL';
+            const boxRiil = document.getElementById('korBoxSamakanRiil');
+            const boxSel = document.getElementById('korBoxNominalSelisih');
+            if (boxRiil) boxRiil.style.display = mode === 'SAMAKAN_RIIL' ? 'block' : 'none';
+            if (boxSel) boxSel.style.display = mode === 'NOMINAL_SELISIH' ? 'block' : 'none';
+            window.onKoreksiSaldoFormChange();
+        };
+
+        window.onKoreksiAkunChange = function() {
+            const akun = document.getElementById('korAkunSelect')?.value || '';
+            const curSistem = window.getCurrentSystemBalanceForAkun(akun, window._editingKoreksiObj || null);
+            const mode = document.getElementById('korModeInput')?.value || 'SAMAKAN_RIIL';
+            if (mode === 'SAMAKAN_RIIL' && !window._editingKoreksiObj) {
+                const rValEl = document.getElementById('korSaldoRiil');
+                const rDispEl = document.getElementById('korSaldoRiilDisplay');
+                if (rValEl && rDispEl) {
+                    rValEl.value = curSistem;
+                    rDispEl.value = curSistem > 0 ? curSistem.toLocaleString('id-ID') : '0';
+                }
+            }
+            window.onKoreksiSaldoFormChange();
+        };
+
+        window.onKoreksiSaldoFormChange = function() {
+            const akun = document.getElementById('korAkunSelect')?.value || '';
+            const curSistem = window.getCurrentSystemBalanceForAkun(akun, window._editingKoreksiObj || null);
+            const mode = document.getElementById('korModeInput')?.value || 'SAMAKAN_RIIL';
+
+            let saldoBaru = curSistem;
+            let selisih = 0;
+
+            if (mode === 'SAMAKAN_RIIL') {
+                saldoBaru = parseFloat(document.getElementById('korSaldoRiil')?.value) || 0;
+                selisih = saldoBaru - curSistem;
+            } else {
+                const arah = document.getElementById('korArahSelisih')?.value || 'TAMBAH';
+                const nomSel = parseFloat(document.getElementById('korNominalSelisih')?.value) || 0;
+                selisih = arah === 'KURANG' ? -Math.abs(nomSel) : Math.abs(nomSel);
+                saldoBaru = curSistem + selisih;
+            }
+
+            const elSis = document.getElementById('korPrevSistem');
+            const elSel = document.getElementById('korPrevSelisih');
+            const elBaru = document.getElementById('korPrevBaru');
+
+            if (elSis) elSis.innerText = window.formatRp(curSistem);
+            if (elSel) {
+                if (selisih === 0) {
+                    elSel.innerText = 'Rp0 (Tetap)';
+                    elSel.style.color = '#64748B';
+                } else if (selisih > 0) {
+                    elSel.innerText = '+' + window.formatRp(selisih);
+                    elSel.style.color = '#059669';
+                } else {
+                    elSel.innerText = '-' + window.formatRp(Math.abs(selisih));
+                    elSel.style.color = '#DC2626';
+                }
+            }
+            if (elBaru) elBaru.innerText = window.formatRp(saldoBaru);
+        };
+
+        window.openModalKoreksiSaldo = function(defaultAkun) {
+            if (!window.verifyOwnerAccessForKoreksi('Tambah Koreksi Saldo Riil')) return;
+            window._editingKoreksiObj = null;
+            const editEl = document.getElementById('editKoreksiId');
+            if (editEl) editEl.value = '';
+            const titleEl = document.getElementById('modalKoreksiSaldoTitle');
+            if (titleEl) titleEl.innerText = '⚖️ Koreksi / Samakan Saldo Riil';
+            const btnSub = document.getElementById('btnSubmitKoreksiSaldo');
+            if (btnSub) btnSub.innerText = '⚖️ Simpan Koreksi Saldo (Owner)';
+
+            window.populateKoreksiAkunDropdown(defaultAkun || 'LACI');
+            const modeEl = document.getElementById('korModeInput');
+            if (modeEl) modeEl.value = 'SAMAKAN_RIIL';
+            const katEl = document.getElementById('korKategoriAlasan');
+            if (katEl) katEl.value = 'SELISIH MUTASI TIDAK KETEMU';
+            const catEl = document.getElementById('korCatatan');
+            if (catEl) catEl.value = '';
+            const nomSelEl = document.getElementById('korNominalSelisih');
+            const nomSelDisp = document.getElementById('korNominalSelisihDisplay');
+            if (nomSelEl) nomSelEl.value = '0';
+            if (nomSelDisp) nomSelDisp.value = '';
+            const chkEl = document.getElementById('korChkAdjustModal');
+            if (chkEl) chkEl.checked = true;
+
+            window.onKoreksiModeChange();
+            window.onKoreksiAkunChange();
+
+            const modalEl = document.getElementById('modalKoreksiSaldoOverlay');
+            if (modalEl) modalEl.classList.add('show');
+        };
+
+        window.closeModalKoreksiSaldo = function() {
+            window._editingKoreksiObj = null;
+            const modalEl = document.getElementById('modalKoreksiSaldoOverlay');
+            if (modalEl) modalEl.classList.remove('show');
+        };
+
+        window.simpanKoreksiSaldo = function(e) {
+            if (e) e.preventDefault();
+            if (!window.verifyOwnerAccessForKoreksi('Simpan Koreksi Saldo Riil')) return;
+
+            const editId = document.getElementById('editKoreksiId')?.value || '';
+            const akun = document.getElementById('korAkunSelect')?.value || '';
+            const kategoriAlasan = document.getElementById('korKategoriAlasan')?.value || 'KOREKSI SALDO';
+            const mode = document.getElementById('korModeInput')?.value || 'SAMAKAN_RIIL';
+            const catatan = (document.getElementById('korCatatan')?.value || '').trim().toUpperCase();
+            const adjustModal = Boolean(document.getElementById('korChkAdjustModal')?.checked);
+
+            if (!akun) {
+                window.showToast("⚠️ Pilih akun kas/bank terlebih dahulu!", "error");
+                return;
+            }
+            if (!catatan) {
+                window.showToast("⚠️ Isi catatan / alasan koreksi saldo untuk jejak audit!", "error");
+                return;
+            }
+
+            const st = window.getKoreksiSaldoState();
+            const existingIdx = editId ? st.riwayatKoreksi.findIndex(x => x.id === editId) : -1;
+            const oldItem = existingIdx !== -1 ? st.riwayatKoreksi[existingIdx] : null;
+
+            const curSistem = window.getCurrentSystemBalanceForAkun(akun, oldItem);
+            let saldoBaru = curSistem;
+            let selisih = 0;
+
+            if (mode === 'SAMAKAN_RIIL') {
+                saldoBaru = parseFloat(document.getElementById('korSaldoRiil')?.value) || 0;
+                selisih = Math.round(saldoBaru - curSistem);
+            } else {
+                const arah = document.getElementById('korArahSelisih')?.value || 'TAMBAH';
+                const nomSel = Math.round(parseFloat(document.getElementById('korNominalSelisih')?.value) || 0);
+                selisih = arah === 'KURANG' ? -Math.abs(nomSel) : Math.abs(nomSel);
+                saldoBaru = curSistem + selisih;
+            }
+
+            if (selisih === 0) {
+                window.showToast("ℹ️ Selisih Rp 0 (Saldo sistem sudah sama dengan saldo riil).", "info");
+                return;
+            }
+
+            // 1. Jika sedang Edit koreksi lama, kembalikan dulu efek koreksi lama
+            if (oldItem) {
+                const oldAkun = oldItem.akun;
+                const oldSel = Number(oldItem.selisih || 0);
+                window.masterSaldoAwal[oldAkun] = Number(window.masterSaldoAwal[oldAkun] || 0) - oldSel;
+                if (oldItem.modalAdjusted && Number(window.pengaturanToko?.targetModalBerputar || 0) > 0) {
+                    window.pengaturanToko.targetModalBerputar = Math.max(0, Number(window.pengaturanToko.targetModalBerputar || 0) - oldSel);
+                }
+            }
+
+            // 2. Terapkan koreksi baru pada masterSaldoAwal (Non-Transaksi, tidak mengubah transaksiJurnal / Cuan)
+            window.masterSaldoAwal[akun] = Number(window.masterSaldoAwal[akun] || 0) + selisih;
+
+            let modalAdjusted = false;
+            if (adjustModal && Number(window.pengaturanToko?.targetModalBerputar || 0) > 0) {
+                window.pengaturanToko.targetModalBerputar = Math.max(0, Number(window.pengaturanToko.targetModalBerputar || 0) + selisih);
+                modalAdjusted = true;
+            }
+
+            const nowTs = window.getNextUniqueTs();
+            const activeUserName = (window.currentUser && window.currentUser.nama) ? `${window.currentUser.nama} (OWNER)` : 'OWNER';
+            const record = {
+                id: oldItem ? oldItem.id : ('kor_' + nowTs),
+                isoDate: oldItem ? (oldItem.isoDate || window.getTodayIso()) : window.getTodayIso(),
+                waktu: oldItem ? (oldItem.waktu || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })) : new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                akun,
+                saldoSistemSebelum: curSistem,
+                saldoRiilBaru: saldoBaru,
+                selisih,
+                kategoriAlasan,
+                catatan,
+                modalAdjusted,
+                oleh: activeUserName,
+                updatedAt: nowTs
+            };
+
+            if (existingIdx !== -1) {
+                st.riwayatKoreksi[existingIdx] = record;
+            } else {
+                st.riwayatKoreksi.unshift(record);
+            }
+            if (st.riwayatKoreksi.length > 300) {
+                st.riwayatKoreksi = st.riwayatKoreksi.slice(0, 300);
+            }
+
+            const selText = (selisih >= 0 ? '+' : '-') + window.formatRp(Math.abs(selisih));
+            window.catatLogAktivitas(
+                oldItem ? 'EDIT KOREKSI SALDO' : 'KOREKSI SALDO RIIL',
+                `${oldItem ? 'Mengubah' : 'Menambahkan'} koreksi saldo [${akun}] ${selText} (Sistem: ${window.formatRp(curSistem)} ➔ Riil: ${window.formatRp(saldoBaru)}) • ${kategoriAlasan}: ${catatan}`
+            );
+
+            window.closeModalKoreksiSaldo();
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([akun], 8000);
+            window.saveMultipleFirebaseNodes({
+                saldoAwal: window.masterSaldoAwal,
+                pengaturan: window.pengaturanToko
+            }, false);
+            window.renderAll();
+            window.showToast(`✅ Saldo ${akun} berhasil dikoreksi (${selText}) menjadi ${window.formatRp(saldoBaru)}!`, "success");
+        };
+
+        window.editRiwayatKoreksiSaldo = function(id) {
+            if (!window.verifyOwnerAccessForKoreksi('Edit Riwayat Koreksi Saldo')) return;
+            const st = window.getKoreksiSaldoState();
+            const item = (st.riwayatKoreksi || []).find(x => x.id === id);
+            if (!item) return;
+
+            window._editingKoreksiObj = item;
+            const editEl = document.getElementById('editKoreksiId');
+            if (editEl) editEl.value = item.id;
+            const titleEl = document.getElementById('modalKoreksiSaldoTitle');
+            if (titleEl) titleEl.innerText = `✏️ Edit Koreksi Saldo [${item.akun}]`;
+            const btnSub = document.getElementById('btnSubmitKoreksiSaldo');
+            if (btnSub) btnSub.innerText = '💾 Simpan Perubahan Koreksi (Owner)';
+
+            window.populateKoreksiAkunDropdown(item.akun);
+            const katEl = document.getElementById('korKategoriAlasan');
+            if (katEl) katEl.value = item.kategoriAlasan || 'KOREKSI SALDO LAINNYA';
+            const modeEl = document.getElementById('korModeInput');
+            if (modeEl) modeEl.value = 'SAMAKAN_RIIL';
+
+            const curSistem = window.getCurrentSystemBalanceForAkun(item.akun, item);
+            const targetRiil = curSistem + Number(item.selisih || 0);
+            const rValEl = document.getElementById('korSaldoRiil');
+            const rDispEl = document.getElementById('korSaldoRiilDisplay');
+            if (rValEl) rValEl.value = targetRiil;
+            if (rDispEl) rDispEl.value = targetRiil > 0 ? targetRiil.toLocaleString('id-ID') : '0';
+
+            const catEl = document.getElementById('korCatatan');
+            if (catEl) catEl.value = item.catatan || '';
+            const chkEl = document.getElementById('korChkAdjustModal');
+            if (chkEl) chkEl.checked = Boolean(item.modalAdjusted);
+
+            window.onKoreksiModeChange();
+            window.onKoreksiSaldoFormChange();
+
+            const modalEl = document.getElementById('modalKoreksiSaldoOverlay');
+            if (modalEl) modalEl.classList.add('show');
+        };
+
+        window.batalRiwayatKoreksiSaldo = function(id) {
+            if (!window.verifyOwnerAccessForKoreksi('Batalkan / Hapus Koreksi Saldo')) return;
+            const st = window.getKoreksiSaldoState();
+            const idx = (st.riwayatKoreksi || []).findIndex(x => x.id === id);
+            if (idx === -1) return;
+            const item = st.riwayatKoreksi[idx];
+            const sel = Number(item.selisih || 0);
+            const selStr = (sel >= 0 ? '+' : '-') + window.formatRp(Math.abs(sel));
+
+            if (!confirm(
+                `↩️ BATALKAN KOREKSI SALDO [${item.akun}]?\n\n` +
+                `• Tanggal: ${item.isoDate} (${item.waktu})\n` +
+                `• Selisih Koreksi: ${selStr}\n` +
+                `• Catatan: ${item.catatan || '-'}\n\n` +
+                `Saldo ${item.akun} akan dikembalikan otomatis seperti semula.`
+            )) return;
+
+            window.masterSaldoAwal[item.akun] = Number(window.masterSaldoAwal[item.akun] || 0) - sel;
+            if (item.modalAdjusted && Number(window.pengaturanToko?.targetModalBerputar || 0) > 0) {
+                window.pengaturanToko.targetModalBerputar = Math.max(0, Number(window.pengaturanToko.targetModalBerputar || 0) - sel);
+            }
+
+            st.riwayatKoreksi.splice(idx, 1);
+            window.catatLogAktivitas('BATAL KOREKSI SALDO', `Membatalkan koreksi saldo ${item.akun} sebesar ${selStr} (${item.catatan || '-'})`);
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([item.akun], 8000);
+            window.saveMultipleFirebaseNodes({
+                saldoAwal: window.masterSaldoAwal,
+                pengaturan: window.pengaturanToko
+            }, false);
+            window.renderAll();
+            window.showToast(`↩️ Koreksi saldo ${item.akun} (${selStr}) dibatalkan & saldo dikembalikan!`, "warn");
         };
 
         window._rightSectorMode = 'TODAY';
