@@ -4999,7 +4999,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, update, get, off } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getAuth, initializeAuth, signInAnonymously, onAuthStateChanged, signOut, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
         function cekStatusKoneksiOnline() {
             const isOnline = navigator.onLine;
@@ -5078,8 +5078,13 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const isEmbeddedIframe = (function() {
+            try { return window.self !== window.top; } catch (e) { return true; }
+        })();
+        const auth = isEmbeddedIframe
+            ? initializeAuth(app, { persistence: inMemoryPersistence })
+            : getAuth(app);
         const db = getDatabase(app);
-        const auth = getAuth(app);
         window._firebaseAuth = auth;
         window._firebaseAuthState = 'INIT';
         window._firebaseAuthUid = null;
@@ -5094,6 +5099,16 @@
         window.katAtm = ['TOPUP', 'TRANSFER', 'TARIK TUNAI', 'EDC'];
         window.katKonter = ['VOUCHER', 'KUOTA', 'PPOB', 'PULSA', 'ACC', 'SP', 'GAME', 'GADAI'];
         window.katService = ['SERVICE'];
+
+        window.isTransaksiPindahSaldo = function(t) {
+            if (!t) return false;
+            return Boolean(t.isPindahSaldo || t.kat === 'PINDAH_SALDO' || (t.ket && String(t.ket).toUpperCase().includes('[PINDAH SALDO]')));
+        };
+
+        window.isTransaksiPelunasanPiutang = function(t) {
+            if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return false;
+            return Boolean(t.kat === 'PIUTANG' || t.idPiutangRef || t.piutangGroupNama || t.akunKeluar1 === 'PIUTANG' || (t.ket && String(t.ket).toUpperCase().includes('[PELUNASAN UTANG]')));
+        };
 
         window.saldoList = [
             'LACI', 'SEA ECA', 'DANA ECA', 'DANA SRI', 'DANA FINA', 'OVO', 'GOPAY', 'O KUOTA', 
@@ -5860,11 +5875,14 @@
             }
         };
 
+        window._rtdbPermRetryCount = 0;
+
         window.startRealtimeDatabaseListener = function() {
             if (window._rtdbListenerAttached) return;
             window._rtdbListenerAttached = true;
             const zencellRef = ref(db, 'zencellNodes');
             window._rtdbUnsubscribe = onValue(zencellRef, (snapshot) => {
+                window._rtdbPermRetryCount = 0;
                 if (window._firebaseAuthState === 'PERMISSION_DENIED') {
                     window._firebaseAuthState = auth.currentUser ? 'AUTHENTICATED' : 'CONSOLE_NOT_ENABLED';
                 }
@@ -5884,22 +5902,34 @@
                     if (statusEl) {
                         statusEl.innerHTML = '<span style="display:inline-block; width:7px; height:7px; background-color:#F59E0B; border-radius:50%; margin-right:5px; box-shadow:0 0 6px #F59E0B;"></span>AUTH LOCKED';
                     }
-                    // Coba login anonymous ulang sekali jika token belum siap
-                    if (!auth.currentUser && !window._retryingAnonAuth) {
+                    // Otomatis minta ulang / segarkan token Auth dan sambungkan kembali listener (termasuk di dalam iframe preview)
+                    if (!window._retryingAnonAuth && (window._rtdbPermRetryCount || 0) < 4) {
                         window._retryingAnonAuth = true;
+                        window._rtdbPermRetryCount = (window._rtdbPermRetryCount || 0) + 1;
                         try {
-                            const cred = await signInAnonymously(auth);
-                            if (cred && cred.user) {
-                                window._firebaseAuthUid = cred.user.uid;
+                            if (!auth.currentUser) {
+                                try {
+                                    await signInAnonymously(auth);
+                                } catch (eStorage) {
+                                    await setPersistence(auth, inMemoryPersistence);
+                                    await signInAnonymously(auth);
+                                }
+                            }
+                            if (auth.currentUser) {
+                                await auth.currentUser.getIdToken(true);
+                                window._firebaseAuthUid = auth.currentUser.uid;
                                 window._firebaseAuthState = 'AUTHENTICATED';
-                                window._retryingAnonAuth = false;
                                 window.updateFirebaseSecurityStatusUI();
-                                window.startRealtimeDatabaseListener();
+                                setTimeout(() => {
+                                    window._retryingAnonAuth = false;
+                                    window.startRealtimeDatabaseListener();
+                                }, 500);
                                 return;
                             }
                         } catch (retryErr) {
                             window._retryingAnonAuth = false;
                         }
+                        window._retryingAnonAuth = false;
                     }
                 } else {
                     if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:7px; height:7px; background-color:#EF4444; border-radius:50%; margin-right:5px; box-shadow:0 0 6px #EF4444;"></span>OFFLINE';
@@ -5920,34 +5950,51 @@
         };
 
         window.ensureFirebaseAuthAndSync = async function(forceRetry = false) {
-            try {
-                if (auth.currentUser && !forceRetry) {
-                    window._firebaseAuthUid = auth.currentUser.uid;
-                    window._firebaseAuthState = 'AUTHENTICATED';
+            if (window._authInitInFlight && !forceRetry) {
+                return window._authInitInFlight;
+            }
+            window._authInitInFlight = (async () => {
+                try {
+                    if (auth.currentUser && !forceRetry) {
+                        await auth.currentUser.getIdToken();
+                        window._firebaseAuthUid = auth.currentUser.uid;
+                        window._firebaseAuthState = 'AUTHENTICATED';
+                        window.updateFirebaseSecurityStatusUI();
+                        window.startRealtimeDatabaseListener();
+                        return true;
+                    }
+                    let cred = null;
+                    try {
+                        cred = await signInAnonymously(auth);
+                    } catch (storageErr) {
+                        // Fallback untuk iframe preview browser yang membatasi IndexedDB pihak ketiga
+                        await setPersistence(auth, inMemoryPersistence);
+                        cred = await signInAnonymously(auth);
+                    }
+                    if (cred && cred.user) {
+                        await cred.user.getIdToken();
+                        window._firebaseAuthUid = cred.user.uid;
+                        window._firebaseAuthState = 'AUTHENTICATED';
+                        window._firebaseAuthErrorMsg = '';
+                        window.updateFirebaseSecurityStatusUI();
+                        await new Promise(r => setTimeout(r, 150));
+                        window.startRealtimeDatabaseListener();
+                        return true;
+                    }
+                } catch (err) {
+                    const code = (err && err.code) ? String(err.code) : '';
+                    window._firebaseAuthErrorMsg = code || (err && err.message) || 'Auth Error';
+                    window._firebaseAuthState = 'CONSOLE_NOT_ENABLED';
                     window.updateFirebaseSecurityStatusUI();
                     window.startRealtimeDatabaseListener();
-                    return true;
+                    return false;
+                } finally {
+                    window._authInitInFlight = null;
                 }
-                const cred = await signInAnonymously(auth);
-                if (cred && cred.user) {
-                    window._firebaseAuthUid = cred.user.uid;
-                    window._firebaseAuthState = 'AUTHENTICATED';
-                    window._firebaseAuthErrorMsg = '';
-                    window.updateFirebaseSecurityStatusUI();
-                    window.startRealtimeDatabaseListener();
-                    return true;
-                }
-            } catch (err) {
-                const code = (err && err.code) ? String(err.code) : '';
-                window._firebaseAuthErrorMsg = code || (err && err.message) || 'Auth Error';
-                // Jika user belum klik Enable Anonymous di Firebase Console, tetap jalankan listener agar tidak macet
-                window._firebaseAuthState = 'CONSOLE_NOT_ENABLED';
-                window.updateFirebaseSecurityStatusUI();
                 window.startRealtimeDatabaseListener();
                 return false;
-            }
-            window.startRealtimeDatabaseListener();
-            return false;
+            })();
+            return window._authInitInFlight;
         };
 
         window.verifyPinFromCloudIfNeeded = async function(user, pass) {
@@ -5969,11 +6016,12 @@
             return false;
         };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window._firebaseAuthUid = user.uid;
                 window._firebaseAuthState = 'AUTHENTICATED';
                 window.updateFirebaseSecurityStatusUI();
+                try { await user.getIdToken(); } catch (e) {}
                 if (sessionStorage.getItem('zencell_user')) {
                     window.startRealtimeDatabaseListener();
                 }
@@ -5983,7 +6031,7 @@
             }
         });
 
-        // Inisialisasi awal: jika sesi kasir/owner sudah aktif, langsung minta token Auth & nyalakan sinkronisasi
+        // Inisialisasi awal: langsung siapkan token Auth & nyalakan sinkronisasi
         window.ensureFirebaseAuthAndSync();
 
         window.catatLogAktivitas = function(tipe, deskripsi) {
@@ -8825,8 +8873,8 @@
                         document.getElementById('hargaModalDisplay').value = Number(totalSisaPokok).toLocaleString('id-ID');
 
                         window._pendingPiutangGroupNama = custName;
-                        window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
-            window._pendingSparepartIdToLunas = null;
+                        window._pendingPiutangIdToLunas = null;
+                        window._pendingSparepartIdToLunas = null;
                         window._pendingTiketIdToLunas = null;
 
                         window.hitungCuan();
@@ -9104,6 +9152,10 @@
                 if (pKat) pKat.innerHTML += `<option value="${k}">${k}</option>`;
                 fKat.innerHTML += `<option value="${k}">${k}</option>`;
             });
+            if (!window.kategoriList.includes('PIUTANG')) {
+                kSel.innerHTML += `<option value="PIUTANG">PIUTANG</option>`;
+                fKat.innerHTML += `<option value="PIUTANG">PIUTANG</option>`;
+            }
 
             window.AKUN_DATA_OTOMATIS = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
 
@@ -10037,7 +10089,7 @@
             });
 
             window._pendingPiutangGroupNama = namaKey;
-            window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
+            window._pendingPiutangIdToLunas = null;
             window._pendingSparepartIdToLunas = null;
             window._pendingTiketIdToLunas = null;
 
@@ -10084,12 +10136,12 @@
 
             window.transaksiJurnal.forEach(t => {
                 if (t.isoDate !== shiftDate) return;
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
-                if (t.kat === 'PIUTANG') {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
+                if (window.isTransaksiPelunasanPiutang(t)) {
                     const cuanPiutang = Number(t.cuan || 0);
                     if (cuanPiutang > 0) {
                         const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                        const katAsli = (pRef && pRef.kategori) ? pRef.kategori : 'TOPUP';
+                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori) ? pRef.kategori : 'TOPUP');
                         cuanTotal += cuanPiutang;
                         if (window.katAtm.includes(katAsli)) cuanAtm += cuanPiutang;
                         else if (window.katKonter.includes(katAsli)) cuanKonter += cuanPiutang;
@@ -10250,18 +10302,18 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let rekapMap = {};
-            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'GADAI').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'PINDAH_SALDO').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
 
             let totalOmset = 0, totalModal = 0, totalCuan = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
-                    if (t.kat === 'PIUTANG') {
+                    if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
                             const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
                             if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                             rekapMap[katAsli].cuan += cuanPiutang;
                             totalCuan += cuanPiutang;
@@ -10310,18 +10362,18 @@
             const targetMonth = document.getElementById('rekapMonthPicker').value;
 
             let rekapMap = {};
-            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'GADAI').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'PINDAH_SALDO').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
 
             let totalOmset = 0, totalModal = 0, totalCuan = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
-                    if (t.kat === 'PIUTANG') {
+                    if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
                             const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
                             if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                             rekapMap[katAsli].cuan += cuanPiutang;
                             totalCuan += cuanPiutang;
@@ -10451,7 +10503,7 @@
                 const nodesToSave = { transaksi: null };
 
                 // PEMULIHAN PIUTANG JIKA TRANSAKSI PELUNASAN / CICILAN DIHAPUS (SATUAN MAUPUN AKUMULASI GRUP)
-                if (t.idPiutangRef || t.piutangGroupNama || t.kat === 'PIUTANG' || (t.ket && t.ket.includes('[PELUNASAN UTANG]'))) {
+                if (t.idPiutangRef || t.piutangGroupNama || t.kat === 'PIUTANG' || t.akunKeluar1 === 'PIUTANG' || (t.ket && t.ket.includes('[PELUNASAN UTANG]'))) {
                     const cleanGroupName = (t.piutangGroupNama || (t.ket || '').replace(/^\[PELUNASAN UTANG\]\s*/i, '').replace(/\s*\(AKUMULASI.*\)$/i, '').replace(/\s*\(.*\)$/, '')).trim().toUpperCase();
                     const affectedList = window.piutangList.filter(x => {
                         if (t.idPiutangRef && x.id == t.idPiutangRef) return true;
@@ -10573,7 +10625,7 @@
                 id: editId ? editId : 'trx_tf_' + nowTs,
                 waktu: existingTf ? (existingTf.waktu || new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })) : new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
                 isoDate: existingTf ? (existingTf.isoDate || window.getTodayIso()) : window.getTodayIso(),
-                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'GADAI', isNewCustomer: false,
+                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'PINDAH_SALDO', isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true,
                 updatedAt: nowTs
             };
@@ -10828,7 +10880,7 @@
                 id: editId ? editId : 'trx_tf_' + nowTs,
                 waktu: existingTf ? (existingTf.waktu || new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })) : new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
                 isoDate: existingTf ? (existingTf.isoDate || window.getTodayIso()) : window.getTodayIso(),
-                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'GADAI', isNewCustomer: false,
+                ket: `[PINDAH SALDO] ${sumber} ➔ ${tujuan}`, qty: 1, kat: 'PINDAH_SALDO', isNewCustomer: false,
                 hargaJual: nom, akunMasuk1: tujuan, jualSplit1: nom, hargaModal: nom + admin, akunKeluar1: sumber, modalSplit1: nom + admin, cuan: -admin, isSplit: false, isPindahSaldo: true,
                 updatedAt: nowTs
             };
@@ -11688,7 +11740,7 @@
                     }
                 }
 
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
 
                 let match = true;
                 if (fMode === 'DAILY' && t.isoDate !== fDate) match = false;
@@ -13001,7 +13053,7 @@
             let topCuanTotal = 0, topCuanAtm = 0, topCuanKonter = 0, topCuanService = 0, topTotalTrx = 0, topCustCount = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
 
                 let matchTop = true;
                 if (jMode === 'DAILY' && t.isoDate !== jDate) matchTop = false;
@@ -13009,11 +13061,11 @@
                 // Jika jMode === 'ALL', semua tanggal dihitung
 
                 if (matchTop) {
-                    if (t.kat === 'PIUTANG') {
+                    if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
                             const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
                             topCuanTotal += cuanPiutang;
                             if (window.katAtm.includes(katAsli)) topCuanAtm += cuanPiutang;
                             else if (window.katKonter.includes(katAsli)) topCuanKonter += cuanPiutang;
@@ -13071,18 +13123,18 @@
             const rMonth = document.getElementById('rekapMonthPicker')?.value || window.getCurrentMonthIso();
 
             let rekapMap = {};
-            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'GADAI').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'PINDAH_SALDO').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
 
             let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0;
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 if ((rMode === 'DAILY' && t.isoDate === rDate) || (rMode === 'MONTHLY' && t.isoDate?.startsWith(rMonth))) {
-                    if (t.kat === 'PIUTANG') {
+                    if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
                             const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
                             if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                             rekapMap[katAsli].cuan += cuanPiutang;
                             rCuanTotal += cuanPiutang;
@@ -13141,13 +13193,13 @@
             }
 
             window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 if (t.isoDate?.startsWith(targetMonth)) {
-                    if (t.kat === 'PIUTANG') {
+                    if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
                             const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
                             if (window.katAtm.includes(katAsli)) profitAtm += cuanPiutang;
                             else if (window.katKonter.includes(katAsli)) profitKonter += cuanPiutang;
                             else if (window.katService.includes(katAsli)) profitService += cuanPiutang;
@@ -13447,7 +13499,7 @@
             const todayIso = window.getTodayIso();
             let cuanHariIni = 0, cuanAllTime = 0;
             (window.transaksiJurnal || []).forEach(t => {
-                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 const c = Number(t.cuan || 0);
                 cuanAllTime += c;
                 if (t.isoDate === todayIso) cuanHariIni += c;
@@ -14182,17 +14234,18 @@
             }
 
             (window.transaksiJurnal || []).forEach(t => {
-                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
+                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 const dIso = t.isoDate || '';
                 const j = Number(t.hargaJual || 0);
                 const m = Number(t.hargaModal || 0);
                 const c = Number(t.cuan || 0);
 
                 // Resolusi kategori asli untuk pelunasan piutang
+                const isPelunasan = window.isTransaksiPelunasanPiutang(t);
                 let katEfektif = t.kat || 'LAINNYA';
-                if (t.kat === 'PIUTANG') {
+                if (isPelunasan) {
                     const pRef = (window.piutangList || []).find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                    katEfektif = (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP';
+                    katEfektif = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
                 }
 
                 const isAtm = (window.katAtm || []).includes(katEfektif);
@@ -14200,7 +14253,7 @@
                 const isService = (window.katService || []).includes(katEfektif);
 
                 if (map7Days[dIso]) {
-                    if (t.kat !== 'PIUTANG') {
+                    if (!isPelunasan) {
                         map7Days[dIso].omset += j;
                         map7Days[dIso].trx += 1;
                     }
@@ -15898,12 +15951,12 @@
 
             window.transaksiJurnal.forEach(t => {
                 if (t.isoDate !== shiftDate) return;
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || t.kat === 'GADAI' || t.isPindahSaldo) return;
-                if (t.kat === 'PIUTANG') {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
+                if (window.isTransaksiPelunasanPiutang(t)) {
                     const cuanPiutang = Number(t.cuan || 0);
                     if (cuanPiutang > 0) {
                         const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                        const katAsli = (pRef && pRef.kategori) ? pRef.kategori : 'TOPUP';
+                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori) ? pRef.kategori : 'TOPUP');
                         cuanTotal += cuanPiutang;
                         if (window.katAtm.includes(katAsli)) cuanAtm += cuanPiutang;
                         else if (window.katKonter.includes(katAsli)) cuanKonter += cuanPiutang;
@@ -16127,7 +16180,7 @@
         window.populateDropdownTrxStrukTransfer = function(selectedId = '') {
             const sel = document.getElementById('stf_selectTrxJurnal');
             if (!sel) return;
-            const list = (window.transaksiJurnal || []).filter(t => !t.isPencatatanUtangAwal && !t.isPindahSaldo && t.kat !== 'GADAI');
+            const list = (window.transaksiJurnal || []).filter(t => !t.isPencatatanUtangAwal && !window.isTransaksiPindahSaldo(t));
             // Urutkan transaksi terbaru di atas, prioritaskan transaksi transfer/ATM
             const sorted = [...list].sort((a, b) => Number(b.id || 0) - Number(a.id || 0)).slice(0, 80);
 
