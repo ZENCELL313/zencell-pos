@@ -2914,6 +2914,48 @@
                     <button type="button" class="btn" style="background:#0284C7; font-size:11.5px;" onclick="window.saveAllToFirebase(); window.showToast('✅ Seluruh data berhasil disinkronkan ke Firebase Cloud!', 'success');">☁️ Backup / Sinkronkan ke Cloud Sekarang</button>
                 </div>
 
+                <!-- PANEL OPTIMASI & ARSIP TRANSAKSI LAMA (PERCEPAT LOADING TANPA UBAH SALDO) -->
+                <div class="settings-card-box" style="border:1.5px solid #BAE6FD; background:linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 100%);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                        <h4 style="font-size:12px; font-weight:800; color:#0369A1; margin:0; display:flex; align-items:center; gap:6px;">
+                            <span>📦</span> OPTIMASI &amp; ARSIP TRANSAKSI LAMA (PERCEPAT APLIKASI)
+                        </h4>
+                        <span id="badgeArsipTrxStatus" style="font-size:10px; font-weight:800; padding:2.5px 8px; border-radius:999px; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC;">⚡ RINGAN &amp; CEPAT</span>
+                    </div>
+                    <p style="font-size:11px; color:#475569; margin-bottom:10px; line-height:1.45;">
+                        Menggabungkan ribuan baris transaksi reguler dari bulan-bulan lalu menjadi baris ringkasan bulanan agar loading harian tetap instan, <b>tanpa mengubah Rp 1 pun Saldo Akun, Stok Opname, Piutang, maupun Laporan Profit Bulanan</b>. Detail asli otomatis diunduh &amp; disimpan di Arsip.
+                    </p>
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:10px; text-align:center;">
+                        <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:7px;">
+                            <div style="font-size:9.5px; color:#64748B; font-weight:700;">BARIS JURNAL AKTIF</div>
+                            <div id="valArsipTotalJurnal" style="font-size:13.5px; font-weight:900; color:#0F172A; margin-top:2px;">0 Baris</div>
+                        </div>
+                        <div style="background:#FFF; border:1px solid #BAE6FD; border-radius:8px; padding:7px;">
+                            <div style="font-size:9.5px; color:#0369A1; font-weight:700;">SIAP DIKOMPRES</div>
+                            <div id="valArsipKandidatLama" style="font-size:13.5px; font-weight:900; color:#0284C7; margin-top:2px;">0 Trx Lama</div>
+                        </div>
+                        <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:7px;">
+                            <div style="font-size:9.5px; color:#64748B; font-weight:700;">DETAIL DI ARSIP</div>
+                            <div id="valArsipTersimpanCount" style="font-size:13.5px; font-weight:900; color:#059669; margin-top:2px;">0 Data</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
+                        <select id="selectBatasArsipTrx" class="form-control" style="flex:1; min-width:180px; font-size:11px; font-weight:700; height:34px;" onchange="if(window.updateInfoArsipTransaksiUI) window.updateInfoArsipTransaksiUI()">
+                            <option value="PREV_MONTH">🗓️ Arsipkan Transaksi Sebelum Bulan Ini</option>
+                            <option value="OLDER_30D">📆 Arsipkan Transaksi Lebih dari 30 Hari Lalu</option>
+                            <option value="OLDER_60D">📆 Arsipkan Transaksi Lebih dari 60 Hari Lalu</option>
+                        </select>
+                        <button type="button" class="btn" style="width:auto; flex:1; min-width:190px; background:#0284C7; font-size:11px; padding:8px 12px; margin:0;" onclick="window.prosesKompresArsipTransaksiLama()">
+                            ⚡ Kompres &amp; Arsipkan Sekarang
+                        </button>
+                    </div>
+                    <div id="boxRestoreArsipTrxBtn" style="display:none; text-align:right; margin-top:4px;">
+                        <button type="button" class="btn" style="width:auto; background:#64748B; font-size:10.5px; padding:5px 10px; margin:0;" onclick="window.pulihkanDetailArsipTransaksi()">
+                            ♻️ Kembalikan Rincian Arsip ke Jurnal Utama
+                        </button>
+                    </div>
+                </div>
+
                 <div class="settings-card-box">
                     <h4 style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
                         <span>💾</span> PENYIMPANAN LOKAL (PC / LAPTOP / HP)
@@ -3666,6 +3708,11 @@
                 <select id="jurnalFilterKeluar" class="date-picker-input" onchange="renderAll()">
                     <option value="">-- All Akun Keluar --</option>
                 </select>
+
+                <div style="position:relative; display:flex; align-items:center; flex:1; min-width:175px; max-width:260px;">
+                    <input type="text" id="jurnalSearchInput" class="date-picker-input" placeholder="🔍 Cari ket / nama / nominal..." oninput="renderAll()" style="width:100%; padding-right:24px;">
+                    <button type="button" id="btnClearJurnalSearch" onclick="document.getElementById('jurnalSearchInput').value=''; renderAll();" style="display:none; position:absolute; right:5px; background:none; border:none; color:#EF4444; font-weight:800; font-size:11px; cursor:pointer;" title="Bersihkan Pencarian">✕</button>
+                </div>
             </div>
 
             <div class="table-responsive">
@@ -3938,9 +3985,16 @@
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <span>🤝 REKAP PIUTANG KONSUMEN (BELUM LUNAS & LUNAS HARI INI)</span>
                     <span id="badgeCountPiutangAktif" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Belum Lunas</span>
+                    <span id="badgeCountPiutangOverdue" onclick="const el=document.getElementById('piutangFilterUmur'); if(el){el.value = el.value === 'OVERDUE_3' ? 'ALL' : 'OVERDUE_3'; renderAll();}" title="Klik untuk memfilter khusus piutang yang sudah lewat ≥ 3 hari" style="background:#FFFBEB; color:#B45309; border:1px solid #F59E0B; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; cursor:pointer; display:none;">⚠️ 0 Lewat ≥3 Hari</span>
                     <span id="badgeCountPiutangLunasToday" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; display:none;">0 Lunas Hari Ini</span>
                 </div>
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <select id="piutangFilterUmur" class="date-picker-input" onchange="renderAll()" style="height:28px; font-size:10.5px; padding:2px 7px;">
+                        <option value="ALL">📅 Semua Umur Utang</option>
+                        <option value="OVERDUE_3">⚠️ Lewat ≥ 3 Hari</option>
+                        <option value="OVERDUE_7">🔥 Lewat ≥ 7 Hari (Lama)</option>
+                        <option value="TODAY">🆕 Utang Hari Ini</option>
+                    </select>
                     <input type="text" id="piutangAktifSearchInput" class="form-control" placeholder="🔍 Cari nama / ket..." oninput="renderAll()" style="width:165px; padding:4px 9px; font-size:11px; height:28px;">
                     <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
                 </div>
@@ -4883,6 +4937,7 @@
                     <datalist id="listVlookup"></datalist>
                     <div id="vlookupNotice" class="badge-vlookup">⚡ Auto-Fill Terdeteksi!</div>
                     <div id="stokWarningBadge" class="badge-warn-stok">⚠️ Stok Tinggal Sedikit!</div>
+                    <div id="manualStokMismatchBadge" style="display:none; background:#FEF2F2; color:#B91C1C; border:1.5px solid #EF4444; border-radius:8px; padding:7px 10px; font-size:10.5px; font-weight:800; margin-top:5px; line-height:1.35;"></div>
                 </div>
 
                 <div class="row-2">
@@ -4915,7 +4970,7 @@
                     <div class="row-2">
                         <div class="form-group">
                             <label>Modal Keluar Dari (Akun 1)</label>
-                            <select id="akunKeluar1" class="form-control"></select>
+                            <select id="akunKeluar1" class="form-control" onchange="if(window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual()"></select>
                         </div>
                         <div class="form-group">
                             <label>Harga Modal / HPP (Rp)</label>
@@ -4962,7 +5017,7 @@
                     <div class="row-2">
                         <div class="form-group">
                             <label>Akun Keluar 1</label>
-                            <select id="splitAkunKeluar1" class="form-control"></select>
+                            <select id="splitAkunKeluar1" class="form-control" onchange="if(window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual()"></select>
                         </div>
                         <div class="form-group">
                             <label>Nominal Modal 1 (Rp)</label>
@@ -4973,7 +5028,7 @@
                     <div class="row-2">
                         <div class="form-group">
                             <label>Akun Keluar 2</label>
-                            <select id="akunKeluar2" class="form-control"></select>
+                            <select id="akunKeluar2" class="form-control" onchange="if(window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual()"></select>
                         </div>
                         <div class="form-group">
                             <label>Nominal Modal 2 (Rp)</label>
@@ -5233,9 +5288,36 @@
             return `<div class="waktu-seragam-wrap"><span class="waktu-seragam-top">${topLine}</span><span class="waktu-seragam-bottom">${yyddmmTxt}</span></div>`;
         };
 
-        window.formatKolomKeteranganJurnal = function(ketRaw) {
+        window.hitungUmurHariPiutang = function(isoDateStr) {
+            if (!isoDateStr) return 0;
+            const parts = String(isoDateStr).split('-');
+            if (parts.length !== 3) return 0;
+            const dUtang = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            const tParts = window.getTodayIso().split('-');
+            const dToday = new Date(Number(tParts[0]), Number(tParts[1]) - 1, Number(tParts[2]));
+            const diffMs = dToday.getTime() - dUtang.getTime();
+            return Math.max(0, Math.floor(diffMs / 86400000));
+        };
+
+        window.renderBadgeUmurPiutang = function(umurHari, isLunas) {
+            if (isLunas) return '';
+            if (umurHari >= 7) {
+                return `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #EF4444; padding:1px 5px; border-radius:4px; font-size:8.5px; font-weight:800; margin-top:2px;" title="Piutang sudah lewat ${umurHari} hari — Prioritas ditagih!">🔥 Lewat ${umurHari} Hr</span>`;
+            }
+            if (umurHari >= 3) {
+                return `<span style="display:inline-block; background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; padding:1px 5px; border-radius:4px; font-size:8.5px; font-weight:800; margin-top:2px;" title="Piutang sudah lewat ${umurHari} hari">⚠️ Lewat ${umurHari} Hr</span>`;
+            }
+            if (umurHari >= 1) {
+                return `<span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:1px 5px; border-radius:4px; font-size:8.5px; font-weight:700; margin-top:2px;">🕒 ${umurHari} Hari</span>`;
+            }
+            return `<span style="display:inline-block; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:1px 5px; border-radius:4px; font-size:8.5px; font-weight:700; margin-top:2px;">🆕 Hari Ini</span>`;
+        };
+
+        window.formatKolomKeteranganJurnal = function(ketRaw, trxObj = null) {
             if (!ketRaw) return '<span style="color:#94A3B8;">-</span>';
             const ketStr = String(ketRaw).trim();
+            const isPelunasan = trxObj ? window.isTransaksiPelunasanPiutang(trxObj) : false;
+            const isArsipRekap = Boolean(trxObj && trxObj.isRekapArsipBulanan);
             // Cek apakah ada awalan tag kurung siku seperti [UTANG BARU], [PINDAH SALDO], [SETORAN PROFIT], [RETUR], dsb
             const tagMatch = ketStr.match(/^(\[[^\]]+\])\s*(.*)$/s);
             if (tagMatch) {
@@ -5245,7 +5327,15 @@
                 let colorTag = '#0284C7';
                 let borderTag = 'rgba(2, 132, 199, 0.25)';
 
-                if (tag.includes('UTANG')) {
+                if (tag.includes('PELUNASAN')) {
+                    bgTag = 'rgba(79, 70, 229, 0.12)';
+                    colorTag = '#4F46E5';
+                    borderTag = 'rgba(79, 70, 229, 0.3)';
+                } else if (tag.includes('ARSIP')) {
+                    bgTag = 'rgba(3, 105, 161, 0.12)';
+                    colorTag = '#0369A1';
+                    borderTag = 'rgba(3, 105, 161, 0.3)';
+                } else if (tag.includes('UTANG')) {
                     bgTag = 'rgba(217, 119, 6, 0.12)';
                     colorTag = '#D97706';
                     borderTag = 'rgba(217, 119, 6, 0.28)';
@@ -5271,6 +5361,23 @@
                     <div class="jurnal-ket-cell">
                         <span class="jurnal-ket-tag" style="background:${bgTag}; color:${colorTag}; border:1px solid ${borderTag};">${tag}</span>
                         ${restText ? `<span class="jurnal-ket-desc">${restText}</span>` : ''}
+                    </div>
+                `;
+            }
+
+            if (isPelunasan) {
+                return `
+                    <div class="jurnal-ket-cell">
+                        <span class="jurnal-ket-tag" style="background:rgba(79, 70, 229, 0.12); color:#4F46E5; border:1px solid rgba(79, 70, 229, 0.3);">[PELUNASAN UTANG]</span>
+                        <span class="jurnal-ket-desc">${ketStr}</span>
+                    </div>
+                `;
+            }
+            if (isArsipRekap) {
+                return `
+                    <div class="jurnal-ket-cell">
+                        <span class="jurnal-ket-tag" style="background:rgba(3, 105, 161, 0.12); color:#0369A1; border:1px solid rgba(3, 105, 161, 0.3);">[RINGKASAN ARSIP]</span>
+                        <span class="jurnal-ket-desc">${ketStr}</span>
                     </div>
                 `;
             }
@@ -8574,6 +8681,8 @@
             document.getElementById('cuanDisplay').value = 'Rp0';
             document.getElementById('vlookupNotice').style.display = 'none';
             document.getElementById('stokWarningBadge').style.display = 'none';
+            const mismatchEl = document.getElementById('manualStokMismatchBadge');
+            if (mismatchEl) mismatchEl.style.display = 'none';
             window._pendingTiketIdToLunas = null;
             window._pendingSparepartIdToLunas = null;
             window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
@@ -8788,6 +8897,45 @@
             window.renderAll();
         });
 
+        window.cekValidasiAkunStokManual = function() {
+            const badge = document.getElementById('manualStokMismatchBadge');
+            if (!badge) return { valid: true };
+            const ketRaw = (document.getElementById('keterangan')?.value || '').toUpperCase().trim();
+            const isSplit = Boolean(document.getElementById('chkSplit')?.checked);
+            const ak1 = isSplit ? (document.getElementById('splitAkunKeluar1')?.value || '') : (document.getElementById('akunKeluar1')?.value || '');
+            const ak2 = isSplit ? (document.getElementById('akunKeluar2')?.value || '') : '';
+            const akunStokSet = ['VOUCHER', 'SP', 'ACC'];
+            const chosenStokAkuns = [ak1, ak2].filter(a => akunStokSet.includes(a));
+
+            const isPelunasan = Boolean(window._pendingPiutangIdToLunas || window._pendingPiutangGroupNama || document.getElementById('kategori')?.value === 'PIUTANG' || ak1 === 'PIUTANG' || ketRaw.includes('[PELUNASAN UTANG]'));
+            if (chosenStokAkuns.length === 0 || isPelunasan) {
+                badge.style.display = 'none';
+                return { valid: true };
+            }
+
+            const ketSlash = ketRaw.replace(/[\/-]/g, '/');
+            const missingAkuns = [];
+            chosenStokAkuns.forEach(ak => {
+                const match = (window.stokOpnameItems || []).find(s => {
+                    if (s.kat !== ak) return false;
+                    const nm = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
+                    const nmSlash = nm.replace(/[\/-]/g, '/');
+                    return nm && (ketRaw === nm || ketRaw.includes(nm) || ketSlash === nmSlash || ketSlash.includes(nmSlash));
+                });
+                if (!match) missingAkuns.push(ak);
+            });
+
+            if (missingAkuns.length > 0) {
+                const akStr = missingAkuns.join(' / ');
+                badge.style.display = 'block';
+                badge.innerHTML = `⚠️ <b>PERINGATAN INPUT MANUAL STOK [${akStr}]:</b> Teks Keterangan <b>"${ketRaw || '(Kosong)'}"</b> tidak cocok dengan nama barang di Stok Opname <b>${akStr}</b>! Pilih dari daftar <i>Auto-Fill</i> agar stok fisik otomatis terpotong.`;
+                return { valid: false, missingAkuns, ketRaw };
+            }
+
+            badge.style.display = 'none';
+            return { valid: true };
+        };
+
         window.initVlookupAutoFill = function() {
             const inputKet = document.getElementById('keterangan');
             const notice = document.getElementById('vlookupNotice');
@@ -8797,7 +8945,12 @@
             inputKet.addEventListener('input', function() {
                 const val = this.value.toUpperCase().trim();
                 const qtyVal = parseFloat(document.getElementById('trxQty').value) || 1;
-                if (!val) { notice.style.display = 'none'; warnStok.style.display = 'none'; return; }
+                if (!val) {
+                    notice.style.display = 'none';
+                    warnStok.style.display = 'none';
+                    if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
+                    return;
+                }
 
                 const matchTiket = window.tiketServisList.find(t => t.status !== 'LUNAS' && (t.nama.toUpperCase() === val || val.includes(t.nama.toUpperCase()) || t.noServis.toUpperCase() === val || (t.tipeHp && val.includes(t.tipeHp.toUpperCase()))));
                 if (matchTiket) {
@@ -8964,6 +9117,7 @@
                     notice.innerText = Number(matchStok.jual || 0) > 0
                         ? `⚡ Auto-Fill Stok & Modal (${matchStok.kat})`
                         : `⚡ Auto-Fill HPP (${matchStok.kat}: ${window.formatRp(mStok)}) — Silakan isi Harga Jual`;
+                    if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
                     return;
                 } else if (!matchStok) { warnStok.style.display = 'none'; }
 
@@ -9039,10 +9193,12 @@
                         window.hitungCuan();
                         notice.style.display = 'block';
                         notice.innerText = `⚡ VLOOKUP Ditemukan!`;
+                        if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
                         return;
                     }
                 }
                 notice.style.display = 'none';
+                if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
             });
         }
 
@@ -10978,6 +11134,19 @@
 
             if (!akunMasuk1) return alert("Pilih Akun Masuk!");
 
+            if (window.cekValidasiAkunStokManual) {
+                const stokCheck = window.cekValidasiAkunStokManual();
+                if (!stokCheck.valid) {
+                    const okForce = confirm(
+                        `⚠️ PERINGATAN STOK OPNAME [${stokCheck.missingAkuns.join(' / ')}]:\n` +
+                        `Anda memilih Akun Keluar dari Stok Fisik (${stokCheck.missingAkuns.join(', ')}), tetapi keterangan "${stokCheck.ketRaw}" TIDAK DITEMUKAN pada daftar Stok Opname.\n\n` +
+                        `Akibatnya stok fisik barang TIDAK akan terpotong otomatis.\n` +
+                        `Tetap lanjutkan simpan transaksi manual ini?`
+                    );
+                    if (!okForce) return;
+                }
+            }
+
             const nowMs = window.getNextUniqueTs();
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
@@ -11536,6 +11705,10 @@
             const fKat = document.getElementById('jurnalFilterKat').value;
             const fMasuk = document.getElementById('jurnalFilterMasuk').value;
             const fKeluar = document.getElementById('jurnalFilterKeluar').value;
+            const fSearchRaw = (document.getElementById('jurnalSearchInput')?.value || '').trim().toUpperCase();
+            const fSearchDigits = fSearchRaw.replace(/\./g, '');
+            const btnClearJurnal = document.getElementById('btnClearJurnalSearch');
+            if (btnClearJurnal) btnClearJurnal.style.display = fSearchRaw ? 'block' : 'none';
 
             window.sparepartList.forEach(sp => {
                 const spName = (sp.namaUnit || '').trim().toUpperCase();
@@ -11748,6 +11921,13 @@
                 if (fKat && t.kat !== fKat) match = false;
                 if (fMasuk && (t.akunMasuk1 !== fMasuk && t.akunMasuk2 !== fMasuk)) match = false;
                 if (fKeluar && (t.akunKeluar1 !== fKeluar && t.akunKeluar2 !== fKeluar)) match = false;
+                if (match && fSearchRaw) {
+                    const hayText = `${t.ket || ''} ${t.kat || ''} ${t.akunMasuk1 || ''} ${t.akunMasuk2 || ''} ${t.akunKeluar1 || ''} ${t.akunKeluar2 || ''} ${t.waktu || ''} ${t.isoDate || ''}`.toUpperCase();
+                    const hayNum = `${t.hargaJual || 0} ${t.hargaModal || 0} ${t.cuan || 0}`;
+                    const textMatch = hayText.includes(fSearchRaw);
+                    const numMatch = fSearchDigits && hayNum.includes(fSearchDigits);
+                    if (!textMatch && !numMatch) match = false;
+                }
                 if (match) filteredTrx.push({ data: t });
             });
 
@@ -11766,6 +11946,9 @@
 
             document.getElementById('bodyJurnal').innerHTML = filteredTrx.map((item, idx) => {
                 const t = item.data;
+                const isSplitActive = Boolean(t.isSplit && (t.akunMasuk2 || t.akunKeluar2));
+                const isPelunasanTrx = window.isTransaksiPelunasanPiutang(t);
+                const isArsipRekap = Boolean(t.isRekapArsipBulanan);
                 const txtMasuk = (t.isSplit && t.akunMasuk2)
                     ? `<div class="split-akun-stack">
                          <div><b>${t.akunMasuk1}</b> <span class="split-nom-masuk">(${window.formatRp(t.jualSplit1)})</span></div>
@@ -11783,13 +11966,32 @@
                 const isTfAtmTrx = window.isTransaksiTransferAtm ? window.isTransaksiTransferAtm(t) : (['TRANSFER', 'TOPUP', 'TARIK TUNAI', 'EDC'].includes(t.kat));
                 const printTitle = isServiceTrx ? 'Cetak Nota Lunas Service' : (isTfAtmTrx ? 'Cetak Struk Bukti Transfer / Mini-ATM' : 'Cetak Struk Transaksi');
 
+                let extraKatBadges = '';
+                if (isPelunasanTrx) {
+                    const pRef = (window.piutangList || []).find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                    const katAsliInfo = (t.kat === 'PIUTANG' && pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? ` • ${pRef.kategori}` : '';
+                    extraKatBadges += `<div><span style="display:inline-block; background:#EEF2FF; color:#4F46E5; border:1px solid #C7D2FE; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">🤝 PELUNASAN${katAsliInfo}</span></div>`;
+                }
+                if (isSplitActive) {
+                    extraKatBadges += `<div><span style="display:inline-block; background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">🔀 SPLIT 2 AKUN</span></div>`;
+                }
+                if (isArsipRekap) {
+                    extraKatBadges += `<div><span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">📦 REKAP ARSIP</span></div>`;
+                }
+                const rowLeftBorder = isPelunasanTrx
+                    ? 'border-left:3.5px solid #4F46E5; background:rgba(238,242,255,0.28);'
+                    : (isSplitActive ? 'border-left:3.5px solid #F59E0B;' : '');
+
                 return `
-                    <tr id="row-trx-${t.id}">
+                    <tr id="row-trx-${t.id}" style="${rowLeftBorder}">
                         <td>${idx + 1}</td>
                         <td>${window.formatKolomWaktuSeragam(t.isoDate, t.waktu, t.tgl)}</td>
-                        <td>${window.formatKolomKeteranganJurnal(t.ket)}</td>
+                        <td>${window.formatKolomKeteranganJurnal(t.ket, t)}</td>
                         <td>${t.qty}</td>
-                        <td><span style="color:var(--primary); font-weight:bold;">${t.kat}</span></td>
+                        <td>
+                            <span style="color:var(--primary); font-weight:bold;">${t.kat}</span>
+                            ${extraKatBadges}
+                        </td>
                         <td>${txtMasuk}</td>
                         <td class="text-kredit">${window.formatRp(t.hargaJual)}</td>
                         <td>${txtKeluar}</td>
@@ -12037,6 +12239,8 @@
             let listPiutangArsipLunas = [];
             let countBelumLunas = 0;
             let countLunasHariIni = 0;
+            let countOverdue3Days = 0;
+            const filterUmurPiutang = document.getElementById('piutangFilterUmur')?.value || 'ALL';
 
             window.piutangList.forEach(p => {
                 const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
@@ -12045,6 +12249,10 @@
                 totalPiutang += activeSisa;
                 totalPokokPiutangAll += pokokAwalP;
                 totalTerbayarPiutangAll += Math.max(0, pokokAwalP - activeSisa);
+
+                const umurHariP = window.hitungUmurHariPiutang(p.isoDate);
+                p._umurHari = umurHariP;
+                if (!isLunas && umurHariP >= 3) countOverdue3Days++;
 
                 const tglLunasP = p.tglLunas || p.isoDate || '';
                 const isLunasLewatHari = isLunas && (tglLunasP !== todayIsoPiutang);
@@ -12076,6 +12284,11 @@
 
             const badgeAktifEl = document.getElementById('badgeCountPiutangAktif');
             if (badgeAktifEl) badgeAktifEl.innerText = `${countBelumLunas} Belum Lunas (${window.formatRp(totalPiutang)})`;
+            const badgeOverdueEl = document.getElementById('badgeCountPiutangOverdue');
+            if (badgeOverdueEl) {
+                badgeOverdueEl.style.display = countOverdue3Days > 0 ? 'inline-block' : 'none';
+                badgeOverdueEl.innerText = `⚠️ ${countOverdue3Days} Lewat ≥3 Hari`;
+            }
             const badgeTodayEl = document.getElementById('badgeCountPiutangLunasToday');
             if (badgeTodayEl) {
                 badgeTodayEl.style.display = countLunasHariIni > 0 ? 'inline-block' : 'none';
@@ -12087,6 +12300,11 @@
             const bPiutang = document.getElementById('bodyPiutang');
             if (bPiutang) {
                 const filteredUtama = listPiutangUtama.filter(p => {
+                    const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
+                    const umur = Number(p._umurHari || 0);
+                    if (filterUmurPiutang === 'OVERDUE_3' && (isLunas || umur < 3)) return false;
+                    if (filterUmurPiutang === 'OVERDUE_7' && (isLunas || umur < 7)) return false;
+                    if (filterUmurPiutang === 'TODAY' && (isLunas || umur !== 0)) return false;
                     if (!qPiutangAktif) return true;
                     const hay = `${p.nama || ''} ${p.catatan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''}`.toLowerCase();
                     return hay.includes(qPiutangAktif);
@@ -12098,13 +12316,15 @@
                     const tagihanJualP = Math.max(pokokAwalP, Number(p.tagihanJual || 0));
                     const activeTagihanJual = isLunas ? 0 : Number(p.sisaTagihanJual !== undefined ? p.sisaTagihanJual : tagihanJualP);
                     const waktuPiutangHtml = window.formatKolomWaktuSeragam(p.isoDate, p.waktu, p.tglDisplay);
+                    const umurHari = Number(p._umurHari !== undefined ? p._umurHari : window.hitungUmurHariPiutang(p.isoDate));
+                    const badgeUmurHtml = window.renderBadgeUmurPiutang(umurHari, isLunas);
                     const isChild = typeof childIndex === 'number';
                     const encNama = encodeURIComponent((p.nama || '').trim());
                     const encHp = encodeURIComponent((p.noHp || '').trim());
                     const sumberLabel = (!p.sumber || p.sumber === 'TIDAK POTONG SALDO') ? 'TANPA POTONG' : p.sumber;
                     const rowStyle = isChild
                         ? 'background:rgba(254, 243, 199, 0.25); border-left:4px solid #F59E0B;'
-                        : '';
+                        : (!isLunas && umurHari >= 7 ? 'background:rgba(254, 226, 226, 0.28); border-left:3.5px solid #EF4444;' : (!isLunas && umurHari >= 3 ? 'background:rgba(254, 243, 199, 0.22); border-left:3.5px solid #F59E0B;' : ''));
                     const subInfoUtangHtml = (!isLunas && activeTagihanJual > activeSisa)
                         ? `<div style="font-size:9.5px; color:#B45309; font-weight:800; line-height:1.15;" title="Modal Pokok: ${window.formatRp(pokokAwalP)} • Harga Jual Ditagih: ${window.formatRp(activeTagihanJual)}">Tagih: ${window.formatRp(activeTagihanJual)}</div>`
                         : (pokokAwalP > 0 && pokokAwalP !== activeSisa ? `<div style="color:#64748B; font-size:9.5px; line-height:1.15;">Awal: ${window.formatRp(pokokAwalP)}</div>` : '');
@@ -12132,7 +12352,7 @@
                             <td>
                                 ${isLunas
                                     ? `<span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">✅ LUNAS</span>`
-                                    : `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">⏳ BELUM</span>`
+                                    : `<span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">⏳ BELUM</span><br>${badgeUmurHtml}`
                                 }
                             </td>
                             <td>
@@ -12282,7 +12502,8 @@
                             <td><span style="font-size:9.5px; font-weight:700; padding:1.5px 4.5px; border-radius:4px; background:var(--primary-light); color:var(--primary); display:inline-block;">${Array.from(katSet).join(', ') || 'GABUNGAN'}</span></td>
                             <td><span style="font-size:9.5px; font-weight:700; color:var(--text);">${Array.from(sumberSet).join(', ') || '-'}</span></td>
                             <td>
-                                <span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">⏳ ${sortedChildren.length} NOTA</span>
+                                <span style="display:inline-block; background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:1.5px 5px; border-radius:999px; font-size:9px; font-weight:800;">⏳ ${sortedChildren.length} NOTA</span><br>
+                                ${window.renderBadgeUmurPiutang(window.hitungUmurHariPiutang(oldestItem.isoDate), false)}
                             </td>
                             <td>
                                 <div class="aksi-icon-group">
@@ -13490,8 +13711,236 @@
             if (window.updateUserAvatarUI) window.updateUserAvatarUI();
             if (window.updatePreviewModalBerputarSettings) window.updatePreviewModalBerputarSettings();
             if (window.updateFirebaseSecurityStatusUI) window.updateFirebaseSecurityStatusUI();
+            if (window.updateInfoArsipTransaksiUI) window.updateInfoArsipTransaksiUI();
             window.switchSettingsTab(tabName);
             document.getElementById('modalSettingOverlay').classList.add('show');
+        };
+
+        window.getCutoffIsoDateForArsip = function() {
+            const mode = document.getElementById('selectBatasArsipTrx')?.value || 'PREV_MONTH';
+            const today = new Date();
+            if (mode === 'OLDER_30D') {
+                const d = new Date(today.getTime() - (30 * 86400000));
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+            if (mode === 'OLDER_60D') {
+                const d = new Date(today.getTime() - (60 * 86400000));
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+        };
+
+        window.isTrxEligibleForMonthlyCompression = function(t, cutoffIso) {
+            if (!t || !t.isoDate || t.isoDate >= cutoffIso) return false;
+            if (t.isRekapArsipBulanan || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t) || window.isTransaksiPelunasanPiutang(t)) return false;
+            if (t.idTiketRef || t.idSparepartRef || t.idPiutangRef || t.piutangGroupNama) return false;
+            const autoAkuns = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            if (autoAkuns.includes(t.akunMasuk1) || autoAkuns.includes(t.akunMasuk2) || autoAkuns.includes(t.akunKeluar1) || autoAkuns.includes(t.akunKeluar2)) return false;
+            // Jangan kompres transaksi yang cocok dengan nama barang Stok Opname agar perhitungan stok terjual tidak berubah
+            const ketU = (t.ket || '').toUpperCase().trim();
+            const matchesStok = (window.stokOpnameItems || []).some(s => {
+                const nm = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
+                return nm && (ketU === nm || ketU.includes(nm));
+            });
+            if (matchesStok) return false;
+            return true;
+        };
+
+        window.updateInfoArsipTransaksiUI = function() {
+            const totalJurnal = (window.transaksiJurnal || []).length;
+            const cutoffIso = window.getCutoffIsoDateForArsip();
+            const kandidat = (window.transaksiJurnal || []).filter(t => window.isTrxEligibleForMonthlyCompression(t, cutoffIso));
+            let savedArchive = [];
+            try {
+                savedArchive = JSON.parse(localStorage.getItem('zencell_arsip_transaksi_detail') || '[]');
+            } catch (e) { savedArchive = []; }
+
+            const elTot = document.getElementById('valArsipTotalJurnal');
+            if (elTot) elTot.innerText = `${totalJurnal.toLocaleString('id-ID')} Baris`;
+            const elKand = document.getElementById('valArsipKandidatLama');
+            if (elKand) elKand.innerText = `${kandidat.length.toLocaleString('id-ID')} Trx Lama`;
+            const elSaved = document.getElementById('valArsipTersimpanCount');
+            if (elSaved) elSaved.innerText = `${savedArchive.length.toLocaleString('id-ID')} Data`;
+            const boxRestore = document.getElementById('boxRestoreArsipTrxBtn');
+            if (boxRestore) boxRestore.style.display = savedArchive.length > 0 ? 'block' : 'none';
+            const badge = document.getElementById('badgeArsipTrxStatus');
+            if (badge) {
+                if (totalJurnal > 3000) {
+                    badge.style.background = '#FEF3C7';
+                    badge.style.color = '#B45309';
+                    badge.style.borderColor = '#F59E0B';
+                    badge.innerText = `⚠️ ${totalJurnal} BARIS (SARAN KOMPRES)`;
+                } else {
+                    badge.style.background = '#DCFCE7';
+                    badge.style.color = '#15803D';
+                    badge.style.borderColor = '#86EFAC';
+                    badge.innerText = '⚡ RINGAN & CEPAT';
+                }
+            }
+        };
+
+        window.prosesKompresArsipTransaksiLama = function() {
+            const cutoffIso = window.getCutoffIsoDateForArsip();
+            const allTrx = window.transaksiJurnal || [];
+            const toCompress = [];
+            const toKeep = [];
+
+            allTrx.forEach(t => {
+                if (window.isTrxEligibleForMonthlyCompression(t, cutoffIso)) {
+                    toCompress.push(t);
+                } else {
+                    toKeep.push(t);
+                }
+            });
+
+            if (toCompress.length < 5) {
+                window.showToast(`ℹ️ Belum ada cukup transaksi lama sebelum ${cutoffIso} yang perlu dikompres (${toCompress.length} transaksi).`, "info");
+                return;
+            }
+
+            if (!confirm(
+                `📦 KOMPRES & ARSIPKAN TRANSAKSI LAMA (SEBELUM ${cutoffIso}):\n\n` +
+                `• Ditemukan ${toCompress.length} transaksi reguler lama yang akan diringkas per Bulan, Kategori, dan Akun.\n` +
+                `• Saldo Kas/Bank/Server, Stok Opname, Piutang, Service, dan Laporan Profit Bulanan DIJAMIN 100% TETAP SAMA (Rp 0 selisih).\n` +
+                `• File cadangan detail transaksi asli (.JSON) juga akan otomatis terunduh.\n\n` +
+                `Lanjutkan optimasi sekarang?`
+            )) return;
+
+            // 1. Simpan detail asli ke localStorage & unduh file JSON cadangan arsip
+            let existingArchive = [];
+            try {
+                existingArchive = JSON.parse(localStorage.getItem('zencell_arsip_transaksi_detail') || '[]');
+            } catch (e) { existingArchive = []; }
+            const existingIds = new Set(existingArchive.map(x => x.id));
+            toCompress.forEach(t => {
+                if (!existingIds.has(t.id)) existingArchive.push(t);
+            });
+            try {
+                localStorage.setItem('zencell_arsip_transaksi_detail', JSON.stringify(existingArchive));
+            } catch (e) {}
+
+            try {
+                const blob = new Blob([JSON.stringify({ archivedAt: new Date().toISOString(), cutoffIso, count: toCompress.length, items: toCompress }, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `ARSIP_TRX_ZENCELL_SEBELUM_${cutoffIso}.json`;
+                a.click();
+            } catch (e) {}
+
+            // 2. Kelompokkan transaksi berdasarkan (bulan, kategori, akunMasuk1, akunMasuk2, akunKeluar1, akunKeluar2, isSplit)
+            const summaryGroups = new Map();
+            const nowTs = window.getNextUniqueTs();
+            toCompress.forEach(t => {
+                const monthKey = (t.isoDate || '').slice(0, 7) || '2026-01';
+                const key = `${monthKey}|${t.kat || 'LAIN LAIN'}|${t.akunMasuk1 || ''}|${t.akunMasuk2 || ''}|${t.akunKeluar1 || ''}|${t.akunKeluar2 || ''}|${t.isSplit ? '1' : '0'}`;
+                if (!summaryGroups.has(key)) {
+                    summaryGroups.set(key, {
+                        monthKey,
+                        isoDate: `${monthKey}-01`,
+                        kat: t.kat || 'LAIN LAIN',
+                        akunMasuk1: t.akunMasuk1 || '',
+                        akunMasuk2: t.akunMasuk2 || '',
+                        akunKeluar1: t.akunKeluar1 || '',
+                        akunKeluar2: t.akunKeluar2 || '',
+                        isSplit: Boolean(t.isSplit),
+                        hargaJual: 0,
+                        jualSplit1: 0,
+                        jualSplit2: 0,
+                        hargaModal: 0,
+                        modalSplit1: 0,
+                        modalSplit2: 0,
+                        cuan: 0,
+                        qty: 0,
+                        countTrx: 0
+                    });
+                }
+                const g = summaryGroups.get(key);
+                g.hargaJual += Number(t.hargaJual || 0);
+                g.jualSplit1 += Number(t.jualSplit1 !== undefined ? t.jualSplit1 : (t.hargaJual || 0));
+                g.jualSplit2 += Number(t.jualSplit2 || 0);
+                g.hargaModal += Number(t.hargaModal || 0);
+                g.modalSplit1 += Number(t.modalSplit1 !== undefined ? t.modalSplit1 : (t.hargaModal || 0));
+                g.modalSplit2 += Number(t.modalSplit2 || 0);
+                g.cuan += Number(t.cuan || 0);
+                g.qty += Number(t.qty || 1);
+                g.countTrx += 1;
+            });
+
+            const summaryRecords = [];
+            let idxCounter = 1;
+            summaryGroups.forEach(g => {
+                const rec = {
+                    id: `trx_arsip_${g.monthKey.replace('-', '')}_${nowTs}_${idxCounter++}`,
+                    waktu: '00:00',
+                    isoDate: g.isoDate,
+                    ket: `[RINGKASAN ARSIP] ${g.monthKey} • ${g.kat} (${g.countTrx} Trx: ${g.akunKeluar1 || '-'} ➔ ${g.akunMasuk1 || '-'})`,
+                    qty: g.qty,
+                    kat: g.kat,
+                    isNewCustomer: true,
+                    hargaJual: g.hargaJual,
+                    akunMasuk1: g.akunMasuk1,
+                    jualSplit1: g.jualSplit1,
+                    akunMasuk2: g.akunMasuk2,
+                    jualSplit2: g.jualSplit2,
+                    hargaModal: g.hargaModal,
+                    akunKeluar1: g.akunKeluar1,
+                    modalSplit1: g.modalSplit1,
+                    akunKeluar2: g.akunKeluar2,
+                    modalSplit2: g.modalSplit2,
+                    cuan: g.cuan,
+                    isSplit: g.isSplit,
+                    isRekapArsipBulanan: true,
+                    archivedCount: g.countTrx,
+                    updatedAt: nowTs
+                };
+                window.markLocalTrxEdited(rec);
+                summaryRecords.push(rec);
+            });
+
+            toCompress.forEach(oldT => window.markLocalTrxDeleted(oldT.id));
+
+            window.transaksiJurnal = [...toKeep, ...summaryRecords];
+            window.catatLogAktivitas('ARSIP TRANSAKSI', `Mengompres ${toCompress.length} transaksi sebelum ${cutoffIso} menjadi ${summaryRecords.length} baris ringkasan arsip`);
+            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+            window.renderAll();
+            window.updateInfoArsipTransaksiUI();
+            window.showToast(`✅ Berhasil! ${toCompress.length} transaksi lama diringkas menjadi ${summaryRecords.length} baris tanpa mengubah saldo Rp 1 pun!`, "success");
+        };
+
+        window.pulihkanDetailArsipTransaksi = function() {
+            let savedArchive = [];
+            try {
+                savedArchive = JSON.parse(localStorage.getItem('zencell_arsip_transaksi_detail') || '[]');
+            } catch (e) { savedArchive = []; }
+            if (savedArchive.length === 0) {
+                window.showToast("Tidak ada data detail arsip lokal yang tersimpan.", "warn");
+                return;
+            }
+            if (!confirm(`♻️ Kembalikan ${savedArchive.length} rincian transaksi asli dari Arsip ke Jurnal Utama?`)) return;
+
+            const currentWithoutSummary = (window.transaksiJurnal || []).filter(t => {
+                if (t && t.isRekapArsipBulanan) {
+                    window.markLocalTrxDeleted(t.id);
+                    return false;
+                }
+                return true;
+            });
+            const existingIds = new Set(currentWithoutSummary.map(t => t.id));
+            const nowTs = window.getNextUniqueTs();
+            savedArchive.forEach(t => {
+                if (!existingIds.has(t.id)) {
+                    t.updatedAt = nowTs;
+                    window.markLocalTrxEdited(t);
+                    currentWithoutSummary.push(t);
+                }
+            });
+
+            window.transaksiJurnal = currentWithoutSummary;
+            localStorage.removeItem('zencell_arsip_transaksi_detail');
+            window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
+            window.renderAll();
+            window.updateInfoArsipTransaksiUI();
+            window.showToast(`✅ ${savedArchive.length} rincian transaksi arsip berhasil dikembalikan ke Jurnal Utama!`, "success");
         };
 
         // --- SISTEM KONTROL & AUDIT MODAL BERPUTAR TETAP ---
