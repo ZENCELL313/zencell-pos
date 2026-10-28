@@ -1069,15 +1069,31 @@
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 
-        .sticky-subnav { position: sticky; top: 110px; z-index: 8900; background: var(--bg); padding: 4px 0 8px 0; }
+        .sticky-subnav { position: sticky; top: 110px; z-index: 8900; background: var(--bg); padding: 4px 0 8px 0; transition: all 0.22s ease; }
+        body.laporan-fullscreen-mode .sticky-top-container { display: none !important; }
+        body.laporan-fullscreen-mode .sticky-subnav {
+            top: 0 !important;
+            z-index: 9100 !important;
+            padding: 8px 0 10px 0;
+            background: var(--bg);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+        body.kpi-collapsed-mode .dashboard-grid { display: none !important; }
+        body.kpi-collapsed-mode .sticky-subnav { top: 68px; }
+
+        .sub-nav-bar-wrap {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            padding: 6px 8px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.35);
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
+            flex-wrap: wrap;
+        }
         .sub-nav-tabs {
-            display: flex; gap: 6px; background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-            padding: 6px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3); overflow-x: auto;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
+            display: flex; gap: 6px; flex: 1; min-width: 280px; overflow-x: auto;
         }
         .sub-tab-btn {
-            flex: 1; padding: 8px 10px; border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.05); font-size: 10px; font-weight: 800;
+            flex: 1; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05); font-size: 10.5px; font-weight: 800;
             color: #CBD5E1; border-radius: 8px; cursor: pointer; text-transform: uppercase;
             white-space: nowrap; transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
             letter-spacing: 0.3px;
@@ -1087,7 +1103,27 @@
             background: linear-gradient(135deg, #059669 0%, #0284C7 100%);
             color: #FFFFFF; border-color: rgba(255, 255, 255, 0.65);
             box-shadow: 0 4px 12px rgba(2, 132, 199, 0.45);
-            transform: translateY(-1.5px) scale(1.02);
+            transform: translateY(-1px);
+        }
+        .sub-nav-quick-actions {
+            display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+            border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 8px;
+        }
+        .sub-quick-btn {
+            padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.09); color: #F8FAFC; font-size: 10px; font-weight: 800;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+            transition: all 0.18s ease;
+        }
+        .sub-quick-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-1px); }
+
+        .laporan-two-col-grid {
+            display: grid; grid-template-columns: 1fr; gap: 12px; align-items: start;
+        }
+        @media (min-width: 960px) {
+            .laporan-two-col-grid {
+                grid-template-columns: 350px 1fr;
+            }
         }
 
         .tab-content, .sub-tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
@@ -3211,10 +3247,15 @@
                     </div>
                 </div>
             </div>
-            <button type="button" class="saldo-banner-btn radar-btn" onclick="toggleRightInsightSidebar()" title="Buka Panel Grafik Omset, Porsi Profit & Radar Peringatan Konter">
-                <span>📊 RADAR & GRAFIK</span>
-                <span id="badgeRadarAlertCount" class="radar-notif-badge" style="display:none;">0</span>
-            </button>
+            <div style="display:flex; align-items:center; gap:5px;">
+                <button type="button" id="btnToggleKpiCollapse" class="saldo-banner-btn" onclick="toggleKpiCardsCollapse()" style="background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; padding:5px 9px; font-size:10px;" title="Sembunyikan / Tampilkan 8 Kotak Kartu KPI di atas agar tabel lebih lega">
+                    <span id="lblToggleKpiCollapse">🔼 LIPAT KPI</span>
+                </button>
+                <button type="button" class="saldo-banner-btn radar-btn" onclick="toggleRightInsightSidebar()" title="Buka Panel Grafik Omset, Porsi Profit & Radar Peringatan Konter">
+                    <span>📊 RADAR & GRAFIK</span>
+                    <span id="badgeRadarAlertCount" class="radar-notif-badge" style="display:none;">0</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -3336,13 +3377,14 @@
                 <div class="row-2">
                     <div class="form-group">
                         <label>Kata Kunci Transaksi / Barang *</label>
-                        <input type="text" id="v_ket_fast" class="form-control" placeholder="CTH: TOKEN 20K / DANA 50K..." required style="font-weight:700;">
+                        <input type="text" id="v_ket_fast" class="form-control" placeholder="CTH: TOKEN 20K / DANA 50K..." required style="font-weight:700;" oninput="cekKonflikKataKunciVlookup(this.value, 'FAST')">
                     </div>
                     <div class="form-group">
                         <label>Kategori Transaksi *</label>
                         <select id="v_kat_fast" class="form-control" style="font-weight:700;"></select>
                     </div>
                 </div>
+                <div id="vlookupFastConflictBox" style="display:none; margin-bottom:10px;"></div>
 
                 <div class="row-2">
                     <div class="form-group">
@@ -4126,33 +4168,36 @@
 
     <div id="tab-laporan" class="tab-content">
         <div class="sticky-subnav">
-            <div class="sub-nav-tabs">
-                <button class="sub-tab-btn active" onclick="switchSubTab(event, 'sub-pembukuan-saldo')">📊 Pembukuan</button>
-                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-harian')">🗓️ Omset & Profit</button>
-                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-saldo')">💰 Saldo</button>
-                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-vlookup')">⚙️ Vlookup</button>
+            <div class="sub-nav-bar-wrap">
+                <div class="sub-nav-tabs">
+                    <button class="sub-tab-btn active" onclick="switchSubTab(event, 'sub-pembukuan-saldo')">📊 Pembukuan</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-harian')">🗓️ Omset &amp; Profit</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-saldo')">💰 Saldo</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-vlookup')">⚙️ Vlookup</button>
+                </div>
+                <div class="sub-nav-quick-actions">
+                    <button type="button" class="sub-quick-btn" onclick="toggleSaldoSidebar()" title="Lihat Rincian Saldo Kas, Bank &amp; Aset">💰 Saldo</button>
+                    <button type="button" class="sub-quick-btn" onclick="toggleRightInsightSidebar()" title="Buka Radar &amp; Grafik">📊 Radar</button>
+                    <button type="button" class="sub-quick-btn" onclick="bukaModalGlobalFind()" title="Pencarian Cepat (Ctrl+F)">🔍 Cari</button>
+                    <button type="button" class="sub-quick-btn" onclick="bukaMenuSettingJSON()" title="Pengaturan Toko &amp; Backup">⚙️</button>
+                </div>
             </div>
         </div>
 
         <div id="sub-pembukuan-saldo" class="sub-tab-content active">
             <div class="card">
-                <div class="card-header">📊 Pembukuan Kategori & Transaksi</div>
-                
-                <div class="filter-container" style="justify-content: space-between;">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <span>📊 Pembukuan Kategori &amp; Transaksi</span>
                     <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <span style="font-size:11px; font-weight:700; opacity:0.8;">Mode Rekap:</span>
-                        <select id="rekapModeSelect" class="date-picker-input" onchange="toggleRekapMode(this.value)">
+                        <span style="font-size:10.5px; font-weight:700; opacity:0.85;">Mode Rekap:</span>
+                        <select id="rekapModeSelect" class="date-picker-input" onchange="toggleRekapMode(this.value)" style="padding:4px 8px; font-size:11px;">
                             <option value="DAILY" selected>📅 Per Hari (Harian)</option>
                             <option value="MONTHLY">📆 Per Bulan (Bulanan)</option>
                         </select>
-
-                        <input type="date" id="rekapDatePicker" class="date-picker-input" onchange="renderAll()">
-                        <input type="month" id="rekapMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
-                    </div>
-
-                    <div style="display:flex; gap:6px; margin-top:4px;">
-                        <button type="button" class="btn" onclick="exportLaporanExcel()" style="background:#16A34A; padding:6px 10px; font-size:11px; width:auto;">📊 Download Excel</button>
-                        <button type="button" class="btn" onclick="exportLaporanPDF()" style="background:#0284C7; padding:6px 10px; font-size:11px; width:auto;">📄 Cetak PDF Laporan</button>
+                        <input type="date" id="rekapDatePicker" class="date-picker-input" onchange="renderAll()" style="padding:4px 8px; font-size:11px;">
+                        <input type="month" id="rekapMonthPicker" class="date-picker-input" style="display:none; padding:4px 8px; font-size:11px;" onchange="renderAll()">
+                        <button type="button" class="btn" onclick="exportLaporanExcel()" style="background:#16A34A; padding:5px 10px; font-size:10.5px; width:auto;">📊 Download Excel</button>
+                        <button type="button" class="btn" onclick="exportLaporanPDF()" style="background:#0284C7; padding:5px 10px; font-size:10.5px; width:auto;">📄 Cetak PDF Laporan</button>
                     </div>
                 </div>
 
@@ -4269,42 +4314,46 @@
         </div>
 
         <div id="sub-rekap-harian" class="sub-tab-content">
-            <div class="card">
-                <div class="card-header">📊 REKAP PROFIT / KATEGORI (BULANAN)</div>
-                <div class="filter-container">
-                    <span style="font-size:11px; font-weight:bold; color:var(--primary);">🗓️ PILIH BULAN:</span>
-                    <input type="month" id="rekapSektorMonthPicker" class="date-picker-input" onchange="renderAll()">
+            <div class="laporan-two-col-grid">
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>📊 REKAP PROFIT / SEKTOR</span>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <span style="font-size:10px; font-weight:800; color:var(--primary);">🗓️ BULAN:</span>
+                            <input type="month" id="rekapSektorMonthPicker" class="date-picker-input" onchange="renderAll()" style="padding:3px 7px; font-size:10.5px;">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">SEKTOR BISNIS</th>
+                                    <th style="text-align:right;">PROFIT</th>
+                                    <th style="text-align:center;">PORSI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyRekapProfitKelompok"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="text-align:left;">REKAP PROFIT / KATEGORI</th>
-                                <th style="text-align:right;">PROFIT</th>
-                                <th style="text-align:center;">PERSENTASE</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bodyRekapProfitKelompok"></tbody>
-                    </table>
-                </div>
-            </div>
 
-            <div class="card mt-4">
-                <div class="card-header">📅 REKAPAN BULANAN PER HARI (OMSET, PROFIT, CUST, TRX)</div>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="text-align:left;">TANGGAL</th>
-                                <th style="text-align:right;">OMSET</th>
-                                <th style="text-align:right;">PROFIT</th>
-                                <th style="text-align:center;">CUST</th>
-                                <th style="text-align:center;">TRX</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bodyRekapBulananPerHari"></tbody>
-                        <tfoot id="footRekapBulananPerHari"></tfoot>
-                    </table>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-header">📅 REKAPAN BULANAN PER HARI (OMSET, PROFIT, CUST, TRX)</div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">TANGGAL</th>
+                                    <th style="text-align:right;">OMSET</th>
+                                    <th style="text-align:right;">PROFIT</th>
+                                    <th style="text-align:center;">CUST</th>
+                                    <th style="text-align:center;">TRX</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyRekapBulananPerHari"></tbody>
+                            <tfoot id="footRekapBulananPerHari"></tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -4471,13 +4520,14 @@
                     <div class="row-2">
                         <div class="form-group">
                             <label>Kata Kunci</label>
-                            <input type="text" id="v_ket" class="form-control" placeholder="CONTOH: V TRI 5/3" required>
+                            <input type="text" id="v_ket" class="form-control" placeholder="CONTOH: V TRI 5/3" required oninput="cekKonflikKataKunciVlookup(this.value, 'MAIN')">
                         </div>
                         <div class="form-group">
                             <label>Kategori</label>
                             <select id="v_kat" class="form-control"></select>
                         </div>
                     </div>
+                    <div id="vlookupMainConflictBox" style="display:none; margin-bottom:10px;"></div>
 
                     <div class="row-2">
                         <div class="form-group">
@@ -4558,10 +4608,13 @@
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                     <span>📖 Database Master VLOOKUP (Khusus Input Manual)</span>
-                    <span id="badgeCountMasterVlookup" style="font-size:10px; background:var(--primary); color:#FFF; padding:2px 8px; border-radius:999px; font-weight:800;">0 Kata Kunci</span>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <input type="text" id="vlookupSearchInput" class="date-picker-input" placeholder="🔍 CARI KATA KUNCI / KATEGORI..." oninput="renderAll()" style="min-width:190px; padding:4px 8px; font-size:10.5px;">
+                        <span id="badgeCountMasterVlookup" style="font-size:10px; background:var(--primary); color:#FFF; padding:3px 8px; border-radius:999px; font-weight:800;">0 Kata Kunci</span>
+                    </div>
                 </div>
                 <div style="font-size:10.5px; color:#047857; background:#ECFDF5; border:1px dashed #6EE7B7; padding:6px 10px; border-radius:8px; margin-bottom:8px; font-weight:600;">
-                    💡 <b>Info Rapi:</b> Data dari <b>Stok Opname, Service & Piutang</b> disembunyikan dari daftar tabel ini agar tidak penuh, namun <b>tetap aktif 100% untuk Auto-Fill</b> otomatis saat input di Kasir.
+                    💡 <b>Info Rapi:</b> Data dari <b>Stok Opname, Service &amp; Piutang</b> disembunyikan dari daftar tabel ini agar tidak penuh, namun <b>tetap aktif 100% untuk Auto-Fill</b> otomatis saat input di Kasir.
                 </div>
                 <div class="table-responsive">
                     <table>
@@ -6467,6 +6520,8 @@
             if (f) f.reset();
             if (document.getElementById('v_jual_fast')) document.getElementById('v_jual_fast').value = '0';
             if (document.getElementById('v_modal_fast')) document.getElementById('v_modal_fast').value = '0';
+            const cBox = document.getElementById('vlookupFastConflictBox');
+            if (cBox) { cBox.style.display = 'none'; cBox.innerHTML = ''; }
             if (window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();
             const ov = document.getElementById('modalVlookupFastOverlay');
             if (ov) ov.classList.add('show');
@@ -8854,11 +8909,21 @@
             window.toggleSplitMode(false);
         }
 
+        window.toggleKpiCardsCollapse = function() {
+            const isCollapsed = document.body.classList.toggle('kpi-collapsed-mode');
+            const lbl = document.getElementById('lblToggleKpiCollapse');
+            if (lbl) lbl.innerText = isCollapsed ? '🔽 BUKA KPI' : '🔼 LIPAT KPI';
+        };
+
         window.switchMainTab = function(evt, tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             if (evt) evt.currentTarget.classList.add('active');
+            document.body.classList.toggle('laporan-fullscreen-mode', tabId === 'tab-laporan');
+            if (tabId === 'tab-laporan') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         window.switchSubTab = function(evt, subTabId) {
@@ -11395,6 +11460,93 @@
             }
         };
 
+        window.cariKonflikKataKunciVlookup = function(rawKet, ignoreEditKey) {
+            const ket = (rawKet || '').toUpperCase().trim();
+            if (!ket) return null;
+
+            const stokMatch = (window.stokOpnameItems || []).find(s => ((s.nama || s.namaBarang || '').toUpperCase().trim() === ket));
+            const existingManualKey = Object.keys(window.masterVlookup || {}).find(k => {
+                if (ignoreEditKey && k.toUpperCase().trim() === ignoreEditKey.toUpperCase().trim()) return false;
+                return k.toUpperCase().trim() === ket && window.isManualVlookupEntry(k, window.masterVlookup[k]);
+            });
+            const existingRule = existingManualKey ? window.masterVlookup[existingManualKey] : null;
+
+            if (!stokMatch && !existingRule) return null;
+            return {
+                ket,
+                stokMatch,
+                existingManualKey,
+                existingRule
+            };
+        };
+
+        window.muatVlookupLamaKeForm = function(key, mode) {
+            const rule = (window.masterVlookup || {})[key];
+            if (!rule) return;
+            if (mode === 'FAST') {
+                document.getElementById('v_ket_fast').value = key;
+                document.getElementById('v_kat_fast').value = rule.kat || 'VOUCHER';
+                document.getElementById('v_akunMasuk_fast').value = rule.akunMasuk || 'LACI';
+                document.getElementById('v_akunKeluar_fast').value = rule.akunKeluar || 'LACI';
+                const j = Number(rule.defJual || 0);
+                const m = Number(rule.defModal || 0);
+                document.getElementById('v_jual_fast').value = j;
+                document.getElementById('v_jual_fastDisplay').value = j ? j.toLocaleString('id-ID') : '';
+                document.getElementById('v_modal_fast').value = m;
+                document.getElementById('v_modal_fastDisplay').value = m ? m.toLocaleString('id-ID') : '';
+                if (window.hitungPreviewPopupsFast) window.hitungPreviewPopupsFast();
+                window.showToast(`✏️ Data VLOOKUP lama "${key}" dimuat ke form untuk diedit.`, "info");
+            } else {
+                window.editVlookup(key);
+                window.showToast(`✏️ Mode Edit diaktifkan untuk "${key}".`, "info");
+            }
+        };
+
+        window.cekKonflikKataKunciVlookup = function(rawVal, mode) {
+            const boxId = mode === 'FAST' ? 'vlookupFastConflictBox' : 'vlookupMainConflictBox';
+            const boxEl = document.getElementById(boxId);
+            if (!boxEl) return;
+
+            const editKey = mode === 'MAIN' ? (document.getElementById('editVlookupKey')?.value || '') : '';
+            const conflict = window.cariKonflikKataKunciVlookup(rawVal, editKey);
+            if (!conflict) {
+                boxEl.style.display = 'none';
+                boxEl.innerHTML = '';
+                return;
+            }
+
+            let htmlParts = [];
+            if (conflict.stokMatch) {
+                const s = conflict.stokMatch;
+                const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
+                htmlParts.push(`
+                    <div style="background:#FEF2F2; border:1.5px solid #F87171; border-radius:8px; padding:8px 10px; font-size:11px; color:#991B1B; margin-bottom:6px;">
+                        <div style="font-weight:800; margin-bottom:3px;">⛔ PERINGATAN BENTROK DENGAN STOK OPNAME!</div>
+                        <div>Nama <b>"${conflict.ket}"</b> sudah terdaftar di <b>Tabel Stok Opname (${s.kat})</b> — Sisa: <b>${sisa} Pcs</b> | Modal HPP: <b>${window.formatRp(s.modal || 0)}</b> | Jual: <b>${window.formatRp(s.jual || 0)}</b>.</div>
+                        <div style="margin-top:3px; font-size:10px; color:#B91C1C;">💡 Barang Stok Opname sudah otomatis 100% Auto-Fill di Kasir. Membuat VLOOKUP manual dengan nama yang sama berisiko menimpa/mengacaukan pemotongan stok fisik!</div>
+                    </div>
+                `);
+            }
+
+            if (conflict.existingRule) {
+                const r = conflict.existingRule;
+                const safeKey = String(conflict.existingManualKey).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                htmlParts.push(`
+                    <div style="background:#FFFBEB; border:1.5px solid #F59E0B; border-radius:8px; padding:8px 10px; font-size:11px; color:#92400E;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
+                            <span style="font-weight:800;">⚠️ KATA KUNCI SUDAH ADA DI DATABASE VLOOKUP!</span>
+                            <button type="button" onclick="muatVlookupLamaKeForm('${safeKey}', '${mode}')" style="background:#D97706; color:#FFF; border:none; border-radius:6px; padding:3px 8px; font-size:10px; font-weight:800; cursor:pointer;">✏️ Muat Data Lama ke Form</button>
+                        </div>
+                        <div>Data saat ini: Kategori <b>${r.kat || '-'}</b> | Masuk: <b>${r.akunMasuk || '-'}</b> (<b style="color:#15803D;">${window.formatRp(r.defJual || 0)}</b>) | Keluar: <b>${r.akunKeluar || '-'}</b> (<b style="color:#B91C1C;">${window.formatRp(r.defModal || 0)}</b>)</div>
+                        <div style="margin-top:2px; font-size:10px; color:#B45309;">Jika Anda klik Simpan, sistem akan meminta konfirmasi sebelum menimpa aturan lama di atas.</div>
+                    </div>
+                `);
+            }
+
+            boxEl.innerHTML = htmlParts.join('');
+            boxEl.style.display = 'block';
+        };
+
         window.simpanVlookupCepat = function(e) {
             e.preventDefault();
             const ket = document.getElementById('v_ket_fast').value.toUpperCase().trim();
@@ -11402,18 +11554,60 @@
                 window.showToast("⚠️ Kata kunci VLOOKUP tidak boleh kosong!", "error");
                 return;
             }
+
+            const newKat = document.getElementById('v_kat_fast').value;
+            const newMasuk = document.getElementById('v_akunMasuk_fast').value;
+            const newKeluar = document.getElementById('v_akunKeluar_fast').value || 'LACI';
+            const newJual = parseFloat(document.getElementById('v_jual_fast').value) || 0;
+            const newModal = parseFloat(document.getElementById('v_modal_fast').value) || 0;
+
+            const conflict = window.cariKonflikKataKunciVlookup(ket, '');
+            if (conflict && conflict.stokMatch) {
+                const s = conflict.stokMatch;
+                const okStok = confirm(
+                    `⛔ PERINGATAN BENTROK STOK OPNAME!\n\n` +
+                    `Kata kunci "${ket}" sudah ada di Tabel Stok Opname (${s.kat}):\n` +
+                    `• Harga Jual Stok: ${window.formatRp(s.jual || 0)}\n` +
+                    `• Harga Modal HPP: ${window.formatRp(s.modal || 0)}\n\n` +
+                    `Barang Stok Opname sebenarnya sudah otomatis Auto-Fill tanpa perlu VLOOKUP manual.\n` +
+                    `Apakah Anda yakin tetap ingin menyimpan aturan VLOOKUP manual ini?`
+                );
+                if (!okStok) return;
+            }
+
+            if (conflict && conflict.existingRule) {
+                const r = conflict.existingRule;
+                const okOverwrite = confirm(
+                    `⚠️ PERINGATAN DUPLIKAT KATA KUNCI VLOOKUP!\n\n` +
+                    `Kata kunci "${ket}" sudah terdaftar di Master VLOOKUP.\n\n` +
+                    `📌 DATA LAMA:\n` +
+                    `• Kategori: ${r.kat || '-'}\n` +
+                    `• Alur Akun: Masuk ${r.akunMasuk || '-'} ➔ Keluar ${r.akunKeluar || '-'}\n` +
+                    `• Harga Jual: ${window.formatRp(r.defJual || 0)} | Modal: ${window.formatRp(r.defModal || 0)}\n\n` +
+                    `✨ DATA BARU YANG AKAN MENIMPA:\n` +
+                    `• Kategori: ${newKat}\n` +
+                    `• Alur Akun: Masuk ${newMasuk} ➔ Keluar ${newKeluar}\n` +
+                    `• Harga Jual: ${window.formatRp(newJual)} | Modal: ${window.formatRp(newModal)}\n\n` +
+                    `Lanjutkan timpa / perbarui data VLOOKUP "${ket}"?`
+                );
+                if (!okOverwrite) return;
+                if (conflict.existingManualKey && conflict.existingManualKey !== ket) {
+                    delete window.masterVlookup[conflict.existingManualKey];
+                }
+            }
+
             window.masterVlookup[ket] = {
                 origKey: ket,
                 isManual: true,
-                kat: document.getElementById('v_kat_fast').value,
-                akunMasuk: document.getElementById('v_akunMasuk_fast').value,
-                akunKeluar: document.getElementById('v_akunKeluar_fast').value || 'LACI',
-                defJual: parseFloat(document.getElementById('v_jual_fast').value) || 0,
-                defModal: parseFloat(document.getElementById('v_modal_fast').value) || 0
+                kat: newKat,
+                akunMasuk: newMasuk,
+                akunKeluar: newKeluar,
+                defJual: newJual,
+                defModal: newModal
             };
             window.saveLocalBackup();
             if (window.closeModalVlookupFast) window.closeModalVlookupFast();
-            window.catatLogAktivitas('TAMBAH VLOOKUP', `Menambah master auto-fill cepat "${ket}"`);
+            window.catatLogAktivitas('TAMBAH VLOOKUP', `Menambah/memperbarui master auto-fill cepat "${ket}"`);
             let cleanVlookup = {};
             for (let k in window.masterVlookup) {
                 cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k, isManual: true }, window.masterVlookup[k]);
@@ -11511,6 +11705,8 @@
             if (document.getElementById('v_modal2')) document.getElementById('v_modal2').value = '0';
             if (document.getElementById('v_chkSplit')) document.getElementById('v_chkSplit').checked = false;
             window.toggleVlookupSplitForm(false);
+            const cBox = document.getElementById('vlookupMainConflictBox');
+            if (cBox) { cBox.style.display = 'none'; cBox.innerHTML = ''; }
             const titleEl = document.getElementById('formVlookupTitle');
             if (titleEl) titleEl.innerText = '+ Aturan Auto-Fill VLOOKUP (Standar & Split Saldo)';
             const btnCancel = document.getElementById('btnCancelEditVlookup');
@@ -11522,7 +11718,6 @@
             const editKey = document.getElementById('editVlookupKey').value;
             const ket = document.getElementById('v_ket').value.toUpperCase().trim();
             if (!ket) return;
-            if (editKey && editKey !== ket) delete window.masterVlookup[editKey];
 
             const isSplitChecked = document.getElementById('v_chkSplit')?.checked;
             const akunMasuk1 = document.getElementById('v_akunMasuk').value;
@@ -11536,15 +11731,55 @@
             const m2 = isSplitChecked ? (parseFloat(document.getElementById('v_modal2')?.value) || 0) : 0;
 
             const hasValidSplit = Boolean(isSplitChecked && ((akunMasuk2 && j2 > 0) || (akunKeluar2 && m2 > 0)));
+            const totalJualBaru = hasValidSplit ? (j1 + j2) : j1;
+            const totalModalBaru = hasValidSplit ? (m1 + m2) : m1;
+            const newKat = document.getElementById('v_kat').value;
+
+            const conflict = window.cariKonflikKataKunciVlookup(ket, editKey);
+            if (conflict && conflict.stokMatch) {
+                const s = conflict.stokMatch;
+                const okStok = confirm(
+                    `⛔ PERINGATAN BENTROK STOK OPNAME!\n\n` +
+                    `Kata kunci "${ket}" sudah terdaftar di Tabel Stok Opname (${s.kat}):\n` +
+                    `• Harga Jual Stok: ${window.formatRp(s.jual || 0)}\n` +
+                    `• Harga Modal HPP: ${window.formatRp(s.modal || 0)}\n\n` +
+                    `Barang Stok Opname sudah otomatis Auto-Fill di Kasir.\n` +
+                    `Apakah Anda yakin tetap ingin menyimpan aturan VLOOKUP manual ini?`
+                );
+                if (!okStok) return;
+            }
+
+            if (conflict && conflict.existingRule) {
+                const r = conflict.existingRule;
+                const okOverwrite = confirm(
+                    `⚠️ PERINGATAN DUPLIKAT KATA KUNCI VLOOKUP!\n\n` +
+                    `Kata kunci "${ket}" sudah ada di Database Master VLOOKUP.\n\n` +
+                    `📌 DATA LAMA:\n` +
+                    `• Kategori: ${r.kat || '-'}\n` +
+                    `• Alur Akun: Masuk ${r.akunMasuk || '-'} ➔ Keluar ${r.akunKeluar || '-'}\n` +
+                    `• Harga Jual: ${window.formatRp(r.defJual || 0)} | Modal: ${window.formatRp(r.defModal || 0)}\n\n` +
+                    `✨ DATA BARU YANG AKAN MENIMPA:\n` +
+                    `• Kategori: ${newKat}\n` +
+                    `• Alur Akun: Masuk ${akunMasuk1} ➔ Keluar ${akunKeluar1}\n` +
+                    `• Harga Jual: ${window.formatRp(totalJualBaru)} | Modal: ${window.formatRp(totalModalBaru)}\n\n` +
+                    `Lanjutkan timpa / perbarui data VLOOKUP "${ket}"?`
+                );
+                if (!okOverwrite) return;
+                if (conflict.existingManualKey && conflict.existingManualKey !== ket) {
+                    delete window.masterVlookup[conflict.existingManualKey];
+                }
+            }
+
+            if (editKey && editKey !== ket) delete window.masterVlookup[editKey];
 
             window.masterVlookup[ket] = {
                 origKey: ket,
                 isManual: true,
-                kat: document.getElementById('v_kat').value,
+                kat: newKat,
                 akunMasuk: akunMasuk1,
                 akunKeluar: akunKeluar1,
-                defJual: hasValidSplit ? (j1 + j2) : j1,
-                defModal: hasValidSplit ? (m1 + m2) : m1,
+                defJual: totalJualBaru,
+                defModal: totalModalBaru,
                 isSplit: hasValidSplit,
                 jualSplit1: j1,
                 akunMasuk2: hasValidSplit ? akunMasuk2 : '',
@@ -11571,6 +11806,8 @@
             if (!rule) return;
             document.getElementById('editVlookupKey').value = key;
             document.getElementById('v_ket').value = key;
+            const cBox = document.getElementById('vlookupMainConflictBox');
+            if (cBox) { cBox.style.display = 'none'; cBox.innerHTML = ''; }
             document.getElementById('v_kat').value = rule.kat || 'VOUCHER';
             document.getElementById('v_akunMasuk').value = rule.akunMasuk || '';
             document.getElementById('v_akunKeluar').value = rule.akunKeluar || '';
@@ -13893,9 +14130,18 @@
             // Render Tabel Master VLOOKUP di Tab Laporan -> VLOOKUP (Hanya Menampilkan Inputan Manual)
             const bVlookup = document.getElementById('bodyMasterVlookup');
             if (bVlookup) {
-                const vKeys = Object.keys(window.masterVlookup || {}).filter(k => window.isManualVlookupEntry(k, window.masterVlookup[k]));
+                const allManualKeys = Object.keys(window.masterVlookup || {}).filter(k => window.isManualVlookupEntry(k, window.masterVlookup[k]));
+                const qSearchV = (document.getElementById('vlookupSearchInput')?.value || '').toUpperCase().trim();
+                const vKeys = allManualKeys.filter(k => {
+                    if (!qSearchV) return true;
+                    const r = window.masterVlookup[k] || {};
+                    return k.toUpperCase().includes(qSearchV) ||
+                        (r.kat || '').toUpperCase().includes(qSearchV) ||
+                        (r.akunMasuk || '').toUpperCase().includes(qSearchV) ||
+                        (r.akunKeluar || '').toUpperCase().includes(qSearchV);
+                });
                 const badgeCnt = document.getElementById('badgeCountMasterVlookup');
-                if (badgeCnt) badgeCnt.innerText = `${vKeys.length} Kata Kunci Manual`;
+                if (badgeCnt) badgeCnt.innerText = qSearchV ? `${vKeys.length} / ${allManualKeys.length} Kata Kunci` : `${allManualKeys.length} Kata Kunci Manual`;
                 bVlookup.innerHTML = vKeys.map(k => {
                     const r = window.masterVlookup[k] || {};
                     const isSp = Boolean(r.isSplit);
@@ -13922,7 +14168,7 @@
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada kata kunci VLOOKUP manual.</td></tr>`;
+                }).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">${qSearchV ? `Tidak ada kata kunci VLOOKUP yang cocok dengan "${qSearchV}".` : 'Belum ada kata kunci VLOOKUP manual.'}</td></tr>`;
             }
 
             window.renderRekapKategoriTab();
@@ -18109,6 +18355,7 @@
             document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
             const target = document.getElementById(tabId);
             if (target) target.classList.add('active');
+            document.body.classList.toggle('laporan-fullscreen-mode', tabId === 'tab-laporan');
             const navMap = {
                 'tab-kasir': 0,
                 'tab-service': 1,
@@ -18198,7 +18445,12 @@
                 const vSub = document.getElementById('sub-vlookup');
                 if (vSub) vSub.classList.add('active');
                 const subBtns = document.querySelectorAll('.sub-tab-btn');
-                if (subBtns[4]) subBtns[4].classList.add('active');
+                if (subBtns[3]) subBtns[3].classList.add('active');
+                const vSearch = document.getElementById('vlookupSearchInput');
+                if (vSearch && id) {
+                    vSearch.value = id;
+                    window.renderAll();
+                }
             }
         };
 
