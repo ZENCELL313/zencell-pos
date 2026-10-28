@@ -4847,6 +4847,33 @@
                         <select id="pSumber" class="form-control" required onchange="onPiutangSumberChange(this.value)"></select>
                     </div>
                 </div>
+
+                <!-- Kotak Khusus Kategori GADAI (Muncul Otomatis Saat Pilih Kategori GADAI) -->
+                <div id="boxInputGadaiPiutang" style="display:none; background:linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); border:1.5px solid #0284C7; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:8px; border-bottom:1px dashed #7DD3FC; padding-bottom:5px;">
+                        <span style="font-size:11.5px; font-weight:800; color:#0369A1;">🔒 DATA BARANG JAMINAN &amp; TAKSIRAN GADAI</span>
+                        <span style="font-size:9.5px; font-weight:700; background:#0284C7; color:#FFF; padding:1.5px 7px; border-radius:999px;">Wajib Diisi Saat Gadai</span>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group" style="margin-bottom:6px;">
+                            <label style="color:#0369A1; font-weight:800;">📱 Nama / Tipe Barang Jaminan *</label>
+                            <input type="text" id="pGadaiBarang" class="form-control" placeholder="Cth: HP VIVO Y12 3/32 BIRU" autocomplete="off" oninput="onGadaiInputUpdate()">
+                        </div>
+                        <div class="form-group" style="margin-bottom:6px;">
+                            <label style="color:#0369A1; font-weight:800;">💎 Nilai Taksiran Pasar / Second (Rp) *</label>
+                            <input type="text" id="pGadaiTaksiranDisplay" class="form-control" placeholder="Cth: 800.000" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'pGadaiTaksiran'); onGadaiInputUpdate();">
+                            <input type="hidden" id="pGadaiTaksiran" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:6px;">
+                        <label style="color:#0369A1; font-weight:700;">🔑 Kondisi / Kelengkapan / PIN Kunci Layar (Opsional)</label>
+                        <input type="text" id="pGadaiKelengkapan" class="form-control" placeholder="Cth: BATANGAN TANPA DUS, KONDISI MULUS, PIN 123456 / POLA L" autocomplete="off" oninput="onGadaiInputUpdate()">
+                    </div>
+                    <div id="pGadaiRasioBar" style="background:#FFFFFF; border:1px solid #BAE6FD; border-radius:7px; padding:6px 9px; font-size:10.5px; line-height:1.4; color:#0F172A;">
+                        💡 Isi <b>Nilai Taksiran Barang</b> &amp; <b>Pokok Pinjaman</b> untuk melihat batas aman gadai (Rekomendasi maksimal pinjaman ≤ 70% dari nilai taksiran).
+                    </div>
+                </div>
+
                 <div class="row-2" style="grid-template-columns: 3fr 1fr;">
                     <div class="form-group">
                         <label id="lblPiutangKet">Keterangan / Nama Barang Stok (Auto-Fill)</label>
@@ -4863,14 +4890,14 @@
 
                 <div class="row-2">
                     <div class="form-group">
-                        <label style="color:#B91C1C; font-weight:700;">Pokok Modal Utang (Rp) *</label>
-                        <input type="text" id="pNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'pNom'); updatePiutangEstimasiCuan();">
+                        <label id="lblPiutangPokokModal" style="color:#B91C1C; font-weight:700;">Pokok Modal Utang (Rp) *</label>
+                        <input type="text" id="pNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'pNom'); updatePiutangEstimasiCuan(); onGadaiInputUpdate();">
                         <input type="hidden" id="pNom" value="0">
                         <small style="font-size:9.5px; color:#64748B; display:block; margin-top:2px;">Modal yang pindah ke Saldo PIUTANG</small>
                     </div>
                     <div class="form-group">
-                        <label style="color:#047857; font-weight:700;">Tagihan Harga Jual (Rp)</label>
-                        <input type="text" id="pTagihanJualDisplay" class="form-control" placeholder="Opsional (Harga Jual)" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'pTagihanJual'); updatePiutangEstimasiCuan();">
+                        <label id="lblPiutangTagihanJual" style="color:#047857; font-weight:700;">Tagihan Harga Jual (Rp)</label>
+                        <input type="text" id="pTagihanJualDisplay" class="form-control" placeholder="Opsional (Harga Jual)" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'pTagihanJual'); updatePiutangEstimasiCuan(); onGadaiInputUpdate();">
                         <input type="hidden" id="pTagihanJual" value="0">
                         <small style="font-size:9.5px; color:#059669; display:block; margin-top:2px;">Tagihan ke konsumen (Cuan masuk saat Lunas)</small>
                     </div>
@@ -5311,6 +5338,31 @@
                 return `<span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:1px 5px; border-radius:4px; font-size:8.5px; font-weight:700; margin-top:2px;">🕒 ${umurHari} Hari</span>`;
             }
             return `<span style="display:inline-block; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:1px 5px; border-radius:4px; font-size:8.5px; font-weight:700; margin-top:2px;">🆕 Hari Ini</span>`;
+        };
+
+        window.renderBadgeInfoGadaiPiutang = function(p) {
+            if (!p || p.kategori !== 'GADAI') return '';
+            const brg = (p.gadaiBarang || '').trim();
+            const taksiran = Number(p.gadaiTaksiran || 0);
+            const kelengkapan = (p.gadaiKelengkapan || '').trim();
+            if (!brg && taksiran <= 0) return '';
+            const pokok = Number(p.pokokAwal || p.sisa || 0);
+            const rasio = taksiran > 0 ? Math.round((pokok / taksiran) * 100) : 0;
+            let badgeStyle = 'background:#ECFDF5; color:#047857; border:1px solid #6EE7B7;';
+            let statusTxt = 'Aman';
+            if (rasio > 85) {
+                badgeStyle = 'background:#FEF2F2; color:#B91C1C; border:1px solid #FCA5A5;';
+                statusTxt = 'Rawan';
+            } else if (rasio > 70) {
+                badgeStyle = 'background:#FFFBEB; color:#B45309; border:1px solid #FCD34D;';
+                statusTxt = 'Waspada';
+            }
+            return `
+                <div style="margin-top:3px; padding:2.5px 6px; border-radius:5px; font-size:9.5px; line-height:1.25; ${badgeStyle}">
+                    🔒 <b>Jaminan:</b> ${brg || '-'} ${kelengkapan ? `<span style="opacity:0.85;">(${kelengkapan})</span>` : ''}
+                    ${taksiran > 0 ? `<br>💎 <b>Taksiran:</b> ${window.formatRp(taksiran)} <span style="font-weight:800;">(${rasio}% • ${statusTxt})</span>` : ''}
+                </div>
+            `;
         };
 
         window.formatKolomKeteranganJurnal = function(ketRaw, trxObj = null) {
@@ -7629,6 +7681,11 @@
                 document.getElementById('pSopWarningBox').style.display = 'none';
                 document.getElementById('pSopWarningBox').innerHTML = '';
             }
+            if (document.getElementById('pGadaiBarang')) document.getElementById('pGadaiBarang').value = '';
+            if (document.getElementById('pGadaiTaksiran')) document.getElementById('pGadaiTaksiran').value = '0';
+            if (document.getElementById('pGadaiTaksiranDisplay')) document.getElementById('pGadaiTaksiranDisplay').value = '';
+            if (document.getElementById('pGadaiKelengkapan')) document.getElementById('pGadaiKelengkapan').value = '';
+            if (window.toggleBoxInputGadaiPiutang) window.toggleBoxInputGadaiPiutang(false);
             const pTglEl = document.getElementById('pTanggal');
             if (pTglEl) pTglEl.value = window.getTodayIso();
             const pWaktuEl = document.getElementById('pWaktu');
@@ -7643,6 +7700,7 @@
         window.closeModalInputPiutang = function() {
             if (document.getElementById('editPiutangId')) document.getElementById('editPiutangId').value = '';
             if (document.getElementById('pSopWarningBox')) document.getElementById('pSopWarningBox').style.display = 'none';
+            if (window.toggleBoxInputGadaiPiutang) window.toggleBoxInputGadaiPiutang(false);
             document.getElementById('modalInputPiutangOverlay').classList.remove('show');
         }
 
@@ -7784,6 +7842,12 @@
             if (document.getElementById('pQty')) document.getElementById('pQty').value = Number(p.qty || 1);
             if (document.getElementById('pStokIdRef')) document.getElementById('pStokIdRef').value = p.idStokRef || '';
 
+            if (document.getElementById('pGadaiBarang')) document.getElementById('pGadaiBarang').value = p.gadaiBarang || '';
+            const taksiranVal = Number(p.gadaiTaksiran || 0);
+            if (document.getElementById('pGadaiTaksiran')) document.getElementById('pGadaiTaksiran').value = taksiranVal;
+            if (document.getElementById('pGadaiTaksiranDisplay')) document.getElementById('pGadaiTaksiranDisplay').value = taksiranVal > 0 ? taksiranVal.toLocaleString('id-ID') : '';
+            if (document.getElementById('pGadaiKelengkapan')) document.getElementById('pGadaiKelengkapan').value = p.gadaiKelengkapan || '';
+
             const pokokModal = Number(p.pokokAwal || p.sisa || 0);
             const tagihanJual = Math.max(pokokModal, Number(p.tagihanJual || pokokModal));
             document.getElementById('pNom').value = pokokModal;
@@ -7793,9 +7857,11 @@
 
             if (document.getElementById('pStokAutoNotice')) document.getElementById('pStokAutoNotice').style.display = 'none';
             if (document.getElementById('pStokWarnBadge')) document.getElementById('pStokWarnBadge').style.display = 'none';
+            if (window.toggleBoxInputGadaiPiutang) window.toggleBoxInputGadaiPiutang(katVal === 'GADAI');
             if (window.updateDatalistNamaPengutang) window.updateDatalistNamaPengutang();
             if (window.cekSopPiutangGanda) window.cekSopPiutangGanda(p.nama || '');
             window.updatePiutangEstimasiCuan();
+            if (window.onGadaiInputUpdate) window.onGadaiInputUpdate();
             document.getElementById('modalInputPiutangOverlay').classList.add('show');
         };
 
@@ -7833,14 +7899,87 @@
             dList.innerHTML = opts.join('');
         };
 
+        window.toggleBoxInputGadaiPiutang = function(isGadai) {
+            const box = document.getElementById('boxInputGadaiPiutang');
+            const lblKet = document.getElementById('lblPiutangKet');
+            const pKetEl = document.getElementById('pKet');
+            const lblPokok = document.getElementById('lblPiutangPokokModal');
+            const lblTagih = document.getElementById('lblPiutangTagihanJual');
+            if (box) box.style.display = isGadai ? 'block' : 'none';
+            if (isGadai) {
+                if (lblKet) lblKet.innerHTML = '📝 Catatan Tambahan / Kesepakatan Jatuh Tempo (Opsional)';
+                if (pKetEl) pKetEl.placeholder = 'Cth: JANJI TEBUS 7 HARI / TIDAK BOLEH TELAT...';
+                if (lblPokok) lblPokok.innerHTML = '💵 Uang Pinjaman Gadai Diberikan (Rp) *';
+                if (lblTagih) lblTagih.innerHTML = '💰 Total Tebusan + Jasa Gadai (Rp)';
+            } else {
+                if (lblPokok) lblPokok.innerHTML = 'Pokok Modal Utang (Rp) *';
+                if (lblTagih) lblTagih.innerHTML = 'Tagihan Harga Jual (Rp)';
+            }
+        };
+
+        window.onGadaiInputUpdate = function() {
+            const kat = document.getElementById('pKat')?.value || '';
+            const bar = document.getElementById('pGadaiRasioBar');
+            if (!bar || kat !== 'GADAI') return;
+            const brg = (document.getElementById('pGadaiBarang')?.value || '').trim().toUpperCase();
+            const taksiran = parseFloat(document.getElementById('pGadaiTaksiran')?.value) || 0;
+            const pinjaman = parseFloat(document.getElementById('pNom')?.value) || 0;
+            const tebusanRaw = parseFloat(document.getElementById('pTagihanJual')?.value) || 0;
+            const tebusan = tebusanRaw > 0 ? tebusanRaw : pinjaman;
+
+            if (taksiran <= 0) {
+                bar.style.background = '#FFFFFF';
+                bar.style.borderColor = '#BAE6FD';
+                bar.style.color = '#0F172A';
+                bar.innerHTML = `💡 Isi <b>Nilai Taksiran Barang</b> &amp; <b>Uang Pinjaman</b> untuk melihat persentase keamanan gadai (Batas aman pinjaman ≤ 70% dari nilai taksiran).`;
+                return;
+            }
+
+            const maxAman70 = Math.floor((taksiran * 0.7) / 5000) * 5000;
+            const rasio = pinjaman > 0 ? Math.round((pinjaman / taksiran) * 100) : 0;
+            const selisihSafety = taksiran - pinjaman;
+            const jasaGadai = Math.max(0, tebusan - pinjaman);
+
+            if (pinjaman <= 0) {
+                bar.style.background = '#F0FDF4';
+                bar.style.borderColor = '#86EFAC';
+                bar.style.color = '#065F46';
+                bar.innerHTML = `💎 Nilai Taksiran <b>${brg || 'Barang'}</b>: <b>${window.formatRp(taksiran)}</b> • Rekomendasi Maksimal Pinjaman Aman (70%): <b style="color:#047857;">${window.formatRp(maxAman70)}</b>`;
+                return;
+            }
+
+            if (rasio <= 70) {
+                bar.style.background = '#ECFDF5';
+                bar.style.borderColor = '#10B981';
+                bar.style.color = '#065F46';
+                bar.innerHTML = `🟢 <b>GADAI AMAN (${rasio}% dari Taksiran):</b> Pinjaman <b>${window.formatRp(pinjaman)}</b> masih di bawah batas aman 70% (${window.formatRp(maxAman70)}). Cadangan nilai barang: <b>+${window.formatRp(selisihSafety)}</b>${jasaGadai > 0 ? ` • Jasa Gadai: <b>+${window.formatRp(jasaGadai)}</b>` : ''}.`;
+            } else if (rasio <= 85) {
+                bar.style.background = '#FFFBEB';
+                bar.style.borderColor = '#F59E0B';
+                bar.style.color = '#92400E';
+                bar.innerHTML = `🟡 <b>WASPADA (${rasio}% dari Taksiran):</b> Pinjaman <b>${window.formatRp(pinjaman)}</b> cukup mepet dengan harga taksiran second (<b>${window.formatRp(taksiran)}</b>). Rekomendasi aman ≤ <b>${window.formatRp(maxAman70)}</b>.`;
+            } else {
+                bar.style.background = '#FEF2F2';
+                bar.style.borderColor = '#EF4444';
+                bar.style.color = '#991B1B';
+                bar.innerHTML = `🔴 <b>RAWAN RUGI (${rasio}% dari Taksiran):</b> Pinjaman <b>${window.formatRp(pinjaman)}</b> terlalu tinggi dibanding taksiran barang (<b>${window.formatRp(taksiran)}</b>)! Risiko rugi jika barang tidak ditebus.`;
+            }
+        };
+
         window.onPiutangKatChange = function(kat) {
             const pSumberEl = document.getElementById('pSumber');
             const lblKet = document.getElementById('lblPiutangKet');
             const pKetEl = document.getElementById('pKet');
+            window.toggleBoxInputGadaiPiutang(kat === 'GADAI');
             if (['VOUCHER', 'SP', 'ACC'].includes(kat)) {
                 if (pSumberEl) pSumberEl.value = kat;
                 if (lblKet) lblKet.innerHTML = `📦 Pilih Barang Stok <b>${kat}</b> yang Diutang *`;
                 if (pKetEl) pKetEl.placeholder = `KETIK / PILIH NAMA BARANG STOK ${kat}...`;
+            } else if (kat === 'GADAI') {
+                if (pSumberEl && (['VOUCHER', 'SP', 'ACC', 'TIDAK POTONG SALDO'].includes(pSumberEl.value) || !pSumberEl.value)) {
+                    pSumberEl.value = 'LACI';
+                }
+                window.onGadaiInputUpdate();
             } else {
                 if (pSumberEl && ['VOUCHER', 'SP', 'ACC'].includes(pSumberEl.value)) {
                     pSumberEl.value = 'TIDAK POTONG SALDO';
@@ -9039,6 +9178,9 @@
                     const matchPiutang = matchPiutangGroup[0];
                     const sisaUtang = Number(matchPiutang.sisa !== undefined ? matchPiutang.sisa : (matchPiutang.pokokAwal || 0));
                     const tagihanUtang = Number(matchPiutang.sisaTagihanJual !== undefined ? matchPiutang.sisaTagihanJual : Math.max(sisaUtang, Number(matchPiutang.tagihanJual || 0)));
+                    if (matchPiutang.kategori === 'GADAI') {
+                        document.getElementById('kategori').value = 'GADAI';
+                    }
                     document.getElementById('hargaJual').value = tagihanUtang;
                     document.getElementById('hargaJualDisplay').value = Number(tagihanUtang).toLocaleString('id-ID');
                     
@@ -9052,7 +9194,7 @@
 
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = `⚡ Auto-Fill Pelunasan Piutang [${matchPiutang.nama}${matchPiutang.catatan && matchPiutang.catatan !== '-' ? ' (' + matchPiutang.catatan + ')' : ''}] Tagihan: ${window.formatRp(tagihanUtang)} | Pokok: ${window.formatRp(sisaUtang)}`;
+                    notice.innerText = `⚡ Auto-Fill Pelunasan ${matchPiutang.kategori === 'GADAI' ? 'GADAI' : 'Piutang'} [${matchPiutang.nama}${matchPiutang.catatan && matchPiutang.catatan !== '-' ? ' (' + matchPiutang.catatan + ')' : ''}] Tagihan: ${window.formatRp(tagihanUtang)} | Pokok: ${window.formatRp(sisaUtang)}`;
                     return;
                 }
 
@@ -9916,8 +10058,22 @@
             let sumber = document.getElementById('pSumber').value;
             let ket = document.getElementById('pKet').value.trim().toUpperCase();
             const stokIdRefInput = document.getElementById('pStokIdRef')?.value || '';
+            const gadaiBarangInput = (document.getElementById('pGadaiBarang')?.value || '').trim().toUpperCase();
+            const gadaiTaksiranInput = parseFloat(document.getElementById('pGadaiTaksiran')?.value) || 0;
+            const gadaiKelengkapanInput = (document.getElementById('pGadaiKelengkapan')?.value || '').trim().toUpperCase();
 
             if (!rawNama || !sumber) return window.showToast("Lengkapi nama pengutang dan sumber akun/stok!", "error");
+
+            if (kat === 'GADAI') {
+                if (!gadaiBarangInput) {
+                    document.getElementById('pGadaiBarang')?.focus();
+                    return window.showToast("⚠️ Untuk kategori GADAI, wajib mengisi Nama / Tipe Barang Jaminan!", "error");
+                }
+                if (gadaiTaksiranInput <= 0) {
+                    document.getElementById('pGadaiTaksiranDisplay')?.focus();
+                    return window.showToast("⚠️ Untuk kategori GADAI, wajib mengisi Nilai Taksiran Harga Barang (Rp)!", "error");
+                }
+            }
 
             // Jika di kolom Nama ada teks di dalam kurung (...), pisahkan otomatis ke Keterangan
             let nama = rawNama;
@@ -9967,6 +10123,22 @@
             }
 
             if (nom <= 0) return window.showToast("Nominal Pokok Modal Utang harus lebih dari Rp 0!", "error");
+
+            if (kat === 'GADAI') {
+                if (nom > gadaiTaksiranInput) {
+                    const lanjutOver = confirm(
+                        `⚠️ PERINGATAN GADAI RAWAN RUGI:\nUang Pinjaman (${window.formatRp(nom)}) MELEBIHI Nilai Taksiran Barang "${gadaiBarangInput}" (${window.formatRp(gadaiTaksiranInput)})!\n\nApakah Anda yakin tetap ingin menyimpan gadai ini?`
+                    );
+                    if (!lanjutOver) return;
+                }
+                const infoBrgGadai = `GADAI: ${gadaiBarangInput}`;
+                if (!ket || ket === '-') {
+                    ket = gadaiKelengkapanInput ? `${infoBrgGadai} (${gadaiKelengkapanInput})` : infoBrgGadai;
+                } else if (!ket.includes(gadaiBarangInput)) {
+                    ket = `${infoBrgGadai} - ${ket}`;
+                }
+            }
+
             if (!ket) ket = '-';
 
             const tagihanJual = rawTagihanJual >= nom
@@ -10007,6 +10179,9 @@
                 p.kategori = kat;
                 p.sumber = sumber;
                 p.catatan = ket;
+                p.gadaiBarang = kat === 'GADAI' ? gadaiBarangInput : '';
+                p.gadaiTaksiran = kat === 'GADAI' ? gadaiTaksiranInput : 0;
+                p.gadaiKelengkapan = kat === 'GADAI' ? gadaiKelengkapanInput : '';
                 p.updatedAt = nowTs;
                 window.markLocalEntityEdited('piutang', p);
 
@@ -10098,6 +10273,9 @@
                 kategori: kat,
                 sumber,
                 catatan: ket,
+                gadaiBarang: kat === 'GADAI' ? gadaiBarangInput : '',
+                gadaiTaksiran: kat === 'GADAI' ? gadaiTaksiranInput : 0,
+                gadaiKelengkapan: kat === 'GADAI' ? gadaiKelengkapanInput : '',
                 status: 'BELUM LUNAS',
                 riwayatCicilan: [],
                 updatedAt: idUnik
@@ -10188,10 +10366,13 @@
             document.getElementById('editTrxId').value = '';
             document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
             window.updateTrxDateNoticeBadge();
-            const ketSuffix = (p.catatan && p.catatan !== '-') ? ` (${p.catatan})` : '';
+            let ketSuffix = (p.catatan && p.catatan !== '-') ? ` (${p.catatan})` : '';
+            if (p.kategori === 'GADAI' && p.gadaiTaksiran && !ketSuffix.includes('Taksiran')) {
+                ketSuffix = ` (${p.catatan && p.catatan !== '-' ? p.catatan : ('GADAI: ' + (p.gadaiBarang || '-'))} • Taksiran ${window.formatRp(p.gadaiTaksiran)})`;
+            }
             document.getElementById('keterangan').value = `[PELUNASAN UTANG] ${p.nama}${ketSuffix}`;
             document.getElementById('trxQty').value = Number(p.qty || 1);
-            document.getElementById('kategori').value = 'PIUTANG';
+            document.getElementById('kategori').value = p.kategori === 'GADAI' ? 'GADAI' : 'PIUTANG';
 
             document.getElementById('hargaJual').value = tagihanJualSisa;
             document.getElementById('hargaJualDisplay').value = Number(tagihanJualSisa).toLocaleString('id-ID');
@@ -12306,7 +12487,7 @@
                     if (filterUmurPiutang === 'OVERDUE_7' && (isLunas || umur < 7)) return false;
                     if (filterUmurPiutang === 'TODAY' && (isLunas || umur !== 0)) return false;
                     if (!qPiutangAktif) return true;
-                    const hay = `${p.nama || ''} ${p.catatan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''}`.toLowerCase();
+                    const hay = `${p.nama || ''} ${p.catatan || ''} ${p.gadaiBarang || ''} ${p.gadaiKelengkapan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''}`.toLowerCase();
                     return hay.includes(qPiutangAktif);
                 });
                 const renderSinglePiutangRow = (p, childIndex, totalInGroup) => {
@@ -12328,6 +12509,7 @@
                     const subInfoUtangHtml = (!isLunas && activeTagihanJual > activeSisa)
                         ? `<div style="font-size:9.5px; color:#B45309; font-weight:800; line-height:1.15;" title="Modal Pokok: ${window.formatRp(pokokAwalP)} • Harga Jual Ditagih: ${window.formatRp(activeTagihanJual)}">Tagih: ${window.formatRp(activeTagihanJual)}</div>`
                         : (pokokAwalP > 0 && pokokAwalP !== activeSisa ? `<div style="color:#64748B; font-size:9.5px; line-height:1.15;">Awal: ${window.formatRp(pokokAwalP)}</div>` : '');
+                    const badgeGadaiHtml = window.renderBadgeInfoGadaiPiutang ? window.renderBadgeInfoGadaiPiutang(p) : '';
                     return `
                         <tr id="row-piutang-${p.id}" class="${isLunas ? 'row-piutang-lunas-today' : ''}" style="${rowStyle}">
                             <td>
@@ -12341,6 +12523,7 @@
                             <td>
                                 <span style="font-weight:600; font-size:11px; line-height:1.2; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span>
                                 ${Number(p.qty || 1) > 1 ? ` <span style="font-size:9px; background:#E0F2FE; color:#0369A1; padding:0.5px 4px; border-radius:3px; font-weight:700; white-space:nowrap;">${p.qty} Pcs</span>` : ''}
+                                ${badgeGadaiHtml}
                             </td>
                             <td class="${isLunas ? 'text-kredit' : 'text-debit'}">
                                 <b style="font-size:11.5px; line-height:1.2; display:block;">${window.formatRp(activeSisa)}</b>
@@ -12543,7 +12726,7 @@
             if (bPiutangArsip) {
                 const filteredArsip = listPiutangArsipLunas.filter(p => {
                     if (!qPiutangArsip) return true;
-                    const hay = `${p.nama || ''} ${p.catatan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''} ${p.tglLunas || ''}`.toLowerCase();
+                    const hay = `${p.nama || ''} ${p.catatan || ''} ${p.gadaiBarang || ''} ${p.gadaiKelengkapan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''} ${p.tglLunas || ''}`.toLowerCase();
                     return hay.includes(qPiutangArsip);
                 });
                 bPiutangArsip.innerHTML = filteredArsip.map(p => {
@@ -12551,11 +12734,12 @@
                     const tagihanJualP = Math.max(pokokAwalP, Number(p.tagihanJual || 0));
                     const waktuPiutangHtml = window.formatKolomWaktuSeragam(p.isoDate, p.waktu, p.tglDisplay);
                     const sumberLabel = (!p.sumber || p.sumber === 'TIDAK POTONG SALDO') ? 'TANPA POTONG' : p.sumber;
+                    const badgeGadaiArsipHtml = window.renderBadgeInfoGadaiPiutang ? window.renderBadgeInfoGadaiPiutang(p) : '';
                     return `
                         <tr id="row-piutang-${p.id}">
                             <td>${waktuPiutangHtml}</td>
                             <td><b style="font-size:11.5px; line-height:1.2; display:block;">${p.nama}</b><small style="color:#0284C7; font-weight:600; font-size:9.5px; line-height:1.15;">${p.noHp ? `📱 ${p.noHp}` : '<span style="color:#94A3B8;">-</span>'}</small></td>
-                            <td><span style="font-weight:600; font-size:11px; line-height:1.2; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span></td>
+                            <td><span style="font-weight:600; font-size:11px; line-height:1.2; color:${p.catatan && p.catatan !== '-' ? 'var(--text)' : '#94A3B8'};">${p.catatan || '-'}</span>${badgeGadaiArsipHtml}</td>
                             <td class="text-kredit">
                                 <b style="font-size:11.5px; line-height:1.2; display:block;">${window.formatRp(pokokAwalP)}</b>
                                 ${tagihanJualP > pokokAwalP ? `<div style="color:#047857; font-size:9.5px; font-weight:700; line-height:1.15;">Jual: ${window.formatRp(tagihanJualP)}</div>` : ''}
