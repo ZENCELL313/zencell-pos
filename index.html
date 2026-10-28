@@ -9020,6 +9020,8 @@
             if (!document.getElementById('editTrxId').value) {
                 document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
                 document.getElementById('chkSplit').checked = false;
+                const chkCust = document.getElementById('chkIsNewCustomer');
+                if (chkCust) chkCust.checked = true;
                 window.toggleSplitMode(false);
             }
             window.updateTrxDateNoticeBadge();
@@ -11079,7 +11081,10 @@
                 if (window.isTransaksiPelunasanPiutang(t)) {
                     const cuanPiutang = Number(t.cuan || 0);
                     const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                    const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori) ? pRef.kategori : 'TOPUP');
+                    const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
+                    trxCount += 1;
+                    if (t.isNewCustomer !== false) custCount += 1;
+                    if (katRekap[katAsli]) katRekap[katAsli].count += 1;
                     if (cuanPiutang > 0) {
                         cuanTotal += cuanPiutang;
                         if (window.katAtm.includes(katAsli)) cuanAtm += cuanPiutang;
@@ -11344,7 +11349,7 @@
                             <tbody>
                                 ${rowsRincianHtml}
                                 <tr style="background:#FEF3C7; font-weight:bold; page-break-inside:avoid; break-inside:avoid;">
-                                    <td colspan="5" style="padding:4px 6px; border:1px solid #CBD5E1; text-align:right;">TOTAL REKAPAN TRANSAKSI (${trxCount} TRX PENJUALAN)</td>
+                                    <td colspan="5" style="padding:4px 6px; border:1px solid #CBD5E1; text-align:right;">TOTAL REKAPAN TRANSAKSI (${trxCount} TRANSAKSI)</td>
                                     <td style="padding:4px 6px; border:1px solid #CBD5E1; text-align:right; color:#16A34A;">${window.formatRp(omsetTotal)}</td>
                                     <td style="padding:4px 6px; border:1px solid #CBD5E1; text-align:right; color:#EF4444;">${window.formatRp(modalTotal)}</td>
                                     <td style="padding:4px 6px; border:1px solid #CBD5E1; text-align:right; color:#D97706;">${window.formatRp(cuanTotal)}</td>
@@ -11375,10 +11380,11 @@
                 if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
                     if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
+                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
+                        if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                        rekapMap[katAsli].count += Number(t.archivedCount || 1);
                         if (cuanPiutang > 0) {
-                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
-                            if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                             rekapMap[katAsli].cuan += cuanPiutang;
                             totalCuan += cuanPiutang;
                         }
@@ -11435,10 +11441,11 @@
                 if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
                     if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
+                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
+                        if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                        rekapMap[katAsli].count += Number(t.archivedCount || 1);
                         if (cuanPiutang > 0) {
-                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
-                            if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                             rekapMap[katAsli].cuan += cuanPiutang;
                             totalCuan += cuanPiutang;
                         }
@@ -13058,6 +13065,9 @@
                 if (isArsipRekap) {
                     extraKatBadges += `<div><span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">📦 REKAP ARSIP</span></div>`;
                 }
+                if (t.isNewCustomer === false) {
+                    extraKatBadges += `<div><span style="display:inline-block; background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1; font-size:8px; font-weight:700; padding:1px 4px; border-radius:4px; margin-top:2px;" title="Transaksi Repeat Order (Tidak menambah hitungan Pelanggan Baru)">👤 REPEAT (0 ORG)</span></div>`;
+                }
                 const rowLeftBorder = isPelunasanTrx
                     ? 'border-left:3.5px solid #4F46E5; background:rgba(238,242,255,0.28);'
                     : (isSplitActive ? 'border-left:3.5px solid #F59E0B;' : '');
@@ -14548,6 +14558,7 @@
                 // Jika jMode === 'ALL', semua tanggal dihitung
 
                 if (matchTop) {
+                    const countWeight = Number(t.archivedCount || 1);
                     if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
@@ -14558,6 +14569,8 @@
                             else if (window.katKonter.includes(katAsli)) topCuanKonter += cuanPiutang;
                             else if (window.katService.includes(katAsli)) topCuanService += cuanPiutang;
                         }
+                        topTotalTrx += countWeight;
+                        if (t.isNewCustomer !== false) topCustCount += countWeight;
                         return;
                     }
 
@@ -14567,8 +14580,8 @@
                     if (window.katKonter.includes(t.kat)) topCuanKonter += cuanVal;
                     if (window.katService.includes(t.kat)) topCuanService += cuanVal;
 
-                    topTotalTrx += 1;
-                    if (t.isNewCustomer !== false) topCustCount += 1;
+                    topTotalTrx += countWeight;
+                    if (t.isNewCustomer !== false) topCustCount += countWeight;
                 }
             });
 
@@ -14617,12 +14630,14 @@
             window.transaksiJurnal.forEach(t => {
                 if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 if ((rMode === 'DAILY' && t.isoDate === rDate) || (rMode === 'MONTHLY' && t.isoDate?.startsWith(rMonth))) {
+                    const countWeight = Number(t.archivedCount || 1);
                     if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
+                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
+                        if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                        rekapMap[katAsli].count += countWeight;
                         if (cuanPiutang > 0) {
-                            const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                            const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
-                            if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
                             rekapMap[katAsli].cuan += cuanPiutang;
                             rCuanTotal += cuanPiutang;
                             if (window.katAtm.includes(katAsli)) rCuanAtm += cuanPiutang;
@@ -14641,7 +14656,7 @@
                     if (window.katKonter.includes(t.kat)) rCuanKonter += Number(t.cuan || 0);
                     if (window.katService.includes(t.kat)) rCuanService += Number(t.cuan || 0);
 
-                    rekapMap[t.kat].count += 1;
+                    rekapMap[t.kat].count += countWeight;
                 }
             });
 
@@ -14682,6 +14697,7 @@
             window.transaksiJurnal.forEach(t => {
                 if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
                 if (t.isoDate?.startsWith(targetMonth)) {
+                    const countWeight = Number(t.archivedCount || 1);
                     if (window.isTransaksiPelunasanPiutang(t)) {
                         const cuanPiutang = Number(t.cuan || 0);
                         if (cuanPiutang > 0) {
@@ -14692,6 +14708,10 @@
                             else if (window.katService.includes(katAsli)) profitService += cuanPiutang;
                             if (dailyMap[t.isoDate]) dailyMap[t.isoDate].profit += cuanPiutang;
                         }
+                        if (dailyMap[t.isoDate]) {
+                            dailyMap[t.isoDate].trx += countWeight;
+                            if (t.isNewCustomer !== false) dailyMap[t.isoDate].cust += countWeight;
+                        }
                         return;
                     }
                     const cuan = Number(t.cuan || 0);
@@ -14701,8 +14721,8 @@
                     if (dailyMap[t.isoDate]) {
                         dailyMap[t.isoDate].omset += Number(t.hargaJual || 0);
                         dailyMap[t.isoDate].profit += cuan;
-                        dailyMap[t.isoDate].trx += 1;
-                        if (t.isNewCustomer !== false) dailyMap[t.isoDate].cust += 1;
+                        dailyMap[t.isoDate].trx += countWeight;
+                        if (t.isNewCustomer !== false) dailyMap[t.isoDate].cust += countWeight;
                     }
                 }
             });
@@ -16328,16 +16348,16 @@
                 if (map7Days[dIso]) {
                     if (!isPelunasan) {
                         map7Days[dIso].omset += j;
-                        map7Days[dIso].trx += 1;
                     }
+                    map7Days[dIso].trx += Number(t.archivedCount || 1);
                     map7Days[dIso].cuan += c;
                 }
 
                 if (dIso === todayIso) {
-                    if (t.kat !== 'PIUTANG') {
+                    trxToday += Number(t.archivedCount || 1);
+                    if (!isPelunasan && t.kat !== 'PIUTANG') {
                         omsetToday += j;
                         modalToday += m;
-                        trxToday += 1;
 
                         const keyItem = (t.ket || katEfektif).trim().toUpperCase();
                         if (!topItemsMap[keyItem]) {
@@ -16354,10 +16374,10 @@
                 }
 
                 if (dIso.startsWith(currMonthIso)) {
-                    if (t.kat !== 'PIUTANG') {
+                    trxMonth += Number(t.archivedCount || 1);
+                    if (!isPelunasan && t.kat !== 'PIUTANG') {
                         omsetMonth += j;
                         modalMonth += m;
-                        trxMonth += 1;
                     }
                     cuanMonth += c;
                     if (isAtm) secMonth.ATM += c;
@@ -18029,12 +18049,13 @@
                     const cuanPiutang = Number(t.cuan || 0);
                     if (cuanPiutang > 0) {
                         const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori) ? pRef.kategori : 'TOPUP');
+                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
                         cuanTotal += cuanPiutang;
                         if (window.katAtm.includes(katAsli)) cuanAtm += cuanPiutang;
                         else if (window.katKonter.includes(katAsli)) cuanKonter += cuanPiutang;
                         else if (window.katService.includes(katAsli)) cuanService += cuanPiutang;
                     }
+                    trxCount += 1;
                     return;
                 }
                 omsetTotal += Number(t.hargaJual || 0);
