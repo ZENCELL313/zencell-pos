@@ -3174,8 +3174,6 @@
                 <span id="badgeRadarAlertCount" class="radar-notif-badge" style="display:none;">0</span>
             </button>
         </div>
-        <!-- BANNER KONFIRMASI 1-KLIK BUNGA HARIAN SEABANK (MUNCUL OTOMATIS LEWAT JAM 06:00 PAGI JIKA BELUM DICAIRKAN) -->
-        <div id="topSeaBankBungaBanner" style="display:none; margin-top:6px;"></div>
     </div>
 
     <div class="fab-container" id="fabContainer">
@@ -3193,10 +3191,76 @@
                 <span>Catat Utang Baru</span>
                 <span class="icon-badge" style="background:#D97706;">🤝</span>
             </div>
-            <div class="fab-item" onclick="closeFabMenu(); openModalStrukTransfer();">
-                <span>Cetak Struk Transfer / Scan SS</span>
-                <span class="icon-badge" style="background:#4F46E5;">🧾</span>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: LAPORAN AKHIR SHIFT / AUDIT LACI KASIR -->
+    <div id="modalLaporanShiftOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 520px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <div>
+                    <h3 style="font-size:15px; color:#0D9488; margin:0; display:flex; align-items:center; gap:6px;">📑 Laporan Akhir Shift &amp; Audit Fisik Laci</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Cetak PDF laporan rekap shift atau kirim langsung ke WhatsApp Owner</small>
+                </div>
+                <button type="button" onclick="closeModalLaporanShift()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
             </div>
+
+            <div class="row-2">
+                <div class="form-group">
+                    <label>Pilih Tanggal Laporan Shift</label>
+                    <input type="date" id="shiftReportDate" class="form-control" style="font-weight:bold;">
+                </div>
+                <div class="form-group">
+                    <label>Nama Kasir / Petugas Shift</label>
+                    <input type="text" id="shiftKasirName" class="form-control" value="FINA" placeholder="NAMA KASIR...">
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div class="form-group">
+                    <label>Shift Jaga</label>
+                    <select id="shiftJagaOption" class="form-control">
+                        <option value="Shift 1 (Pagi)">Shift 1 (Pagi)</option>
+                        <option value="Shift 2 (Siang/Sore)">Shift 2 (Siang/Sore)</option>
+                        <option value="Shift 3 (Malam)">Shift 3 (Malam)</option>
+                        <option value="Full Day (Owner)">Full Day (Owner)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Hitung Fisik Uang Tunai Laci (Rp)</label>
+                    <input type="text" id="shiftFisikLaciDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'shiftFisikLaci')">
+                    <input type="hidden" id="shiftFisikLaci" value="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Catatan / Kendala Shift (Opsional)</label>
+                <textarea id="shiftCatatanText" class="form-control" rows="2" placeholder="CONTOH: KONEKSI ATM SEMPAT GANGGUAN 10 MENIT..."></textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
+                <button type="button" class="btn" onclick="cetakLaporanShiftPDF()" style="background:#0284C7; font-weight:800;">🖨️ Cetak PDF Laporan</button>
+                <button type="button" class="btn" onclick="kirimLaporanShiftWA()" style="background:#16A34A; font-weight:800;">📲 Kirim Rekap ke WA Owner</button>
+            </div>
+            <button type="button" class="btn" onclick="closeModalLaporanShift()" style="background:#64748B; margin-top:8px; padding:8px; font-size:11.5px;">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: PENCAIRAN BUNGA HARIAN SEABANK (JAM 06:00 PAGI) -->
+    <div id="modalSeaBankBungaOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 540px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #BAE6FD; padding-bottom:8px;">
+                <div>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <h3 style="font-size:15px; color:#0284C7; margin:0;">🌅 Pencairan Bunga Harian SeaBank</h3>
+                        <span style="background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:999px;">Cair Jam 06:00 Pagi • Non-Transaksi</span>
+                    </div>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Otomatis menambah Saldo SeaBank tanpa masuk ke Jurnal Transaksi Kasir</small>
+                </div>
+                <button type="button" onclick="closeModalSeaBankBunga(true)" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <div id="modalSeaBankBungaBody"></div>
         </div>
     </div>
 
@@ -3571,6 +3635,7 @@
                 <span>📖 Jurnal Transaksi Harian</span>
                 <div class="jurnal-header-actions">
                     <button type="button" class="btn-jurnal-hdr" style="background:#0F172A;" onclick="openModalStrukTransfer()" title="Cetak Struk Bukti Transfer / Scan Screenshot BRImo, myBCA, Livin, DANA">🧾 Struk TF / Scan SS</button>
+                    <button type="button" class="btn-jurnal-hdr" style="background:#0D9488;" onclick="openModalLaporanShift()" title="Buka Popup Laporan Akhir Shift & Audit Uang Fisik Laci">📑 Laporan Shift</button>
                     <button type="button" class="btn-jurnal-hdr" style="background:#0284C7;" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
                     <button type="button" class="btn-jurnal-hdr" style="background:#4F46E5;" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
                     <button type="button" class="btn-jurnal-hdr" style="background:#DC2626;" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
@@ -3993,7 +4058,6 @@
                 <button class="sub-tab-btn active" onclick="switchSubTab(event, 'sub-pembukuan-saldo')">📊 Pembukuan</button>
                 <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-harian')">🗓️ Omset & Profit</button>
                 <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-rekap-saldo')">💰 Saldo</button>
-                <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-laporan-shift')">📑 Laporan Shift</button>
                 <button class="sub-tab-btn" onclick="switchSubTab(event, 'sub-vlookup')">⚙️ Vlookup</button>
             </div>
         </div>
@@ -4174,55 +4238,6 @@
         </div>
 
         <div id="sub-rekap-saldo" class="sub-tab-content">
-            <!-- KARTU KONTROL & AUDIT MODAL BERPUTAR TETAP -->
-            <div class="card" id="cardAuditModalBerputar" style="border:2px solid #059669; background:linear-gradient(180deg, #F0FDF4 0%, var(--card) 100%);">
-                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #BBF7D0; padding-bottom:8px;">
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <span>🎯 KONTROL & AUDIT MODAL BERPUTAR KONTER</span>
-                        <span id="badgeModeAuditModal" style="font-size:9.5px; background:#DCFCE7; color:#166534; border:1px solid #86EFAC; padding:2px 8px; border-radius:999px; font-weight:800;">Mode Profit Harian</span>
-                    </div>
-                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                        <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#0F172A;" onclick="bukaPengaturan('modal')">⚙️ Atur Target Modal Berputar</button>
-                    </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; margin-top:10px; margin-bottom:10px;">
-                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1px solid var(--border);">
-                        <span style="font-size:10px; color:#64748B; font-weight:800; display:block;">🎯 TARGET MODAL POKOK</span>
-                        <b id="lblAuditTargetModal" style="font-size:14px; color:var(--text);">Rp0</b>
-                        <small style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Patokan uang berputar konter</small>
-                    </div>
-                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1px solid var(--border);">
-                        <span style="font-size:10px; color:#B45309; font-weight:800; display:block;" id="lblJudulProfitTambah">🔥 SISA PROFIT HARI INI</span>
-                        <b id="lblAuditProfitTambah" style="font-size:14px; color:#D97706;">+Rp0</b>
-                        <small id="lblSubProfitTambah" style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Cuan: Rp0 • Disetor: Rp0</small>
-                    </div>
-                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1px solid var(--border);">
-                        <span style="font-size:10px; color:#0369A1; font-weight:800; display:block;">🧮 SEHARUSNYA TOTAL HARTA</span>
-                        <b id="lblAuditSeharusnyaHarta" style="font-size:14px; color:#0284C7;">Rp0</b>
-                        <small style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Target Modal + Sisa Profit</small>
-                    </div>
-                    <div style="background:var(--card); padding:9px 10px; border-radius:9px; border:1.5px solid #10B981;">
-                        <span style="font-size:10px; color:#065F46; font-weight:800; display:block;">🏆 TOTAL HARTA AKTUAL</span>
-                        <b id="lblAuditHartaAktual" style="font-size:14px; color:#059669;">Rp0</b>
-                        <small style="display:block; font-size:9.5px; color:#64748B; margin-top:2px;">Cair + Stok + Part + Piutang</small>
-                    </div>
-                </div>
-
-                <div id="boxAuditStatusBanner" style="padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:#DCFCE7; border:1.5px solid #86EFAC; color:#166534;">
-                    <div>
-                        <div id="txtAuditStatusMain" style="font-size:12.5px; font-weight:900;">🟢 PAS / BENAR SESUAI PROFIT (SELISIH Rp 0)</div>
-                        <div id="txtAuditStatusDesc" style="font-size:10.5px; font-weight:600; margin-top:2px;">Total harta konter saat ini cocok 100% dengan Target Modal Pokok ditambah penambahan profit.</div>
-                    </div>
-                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                        <button type="button" class="btn" style="width:auto; padding:6px 11px; font-size:10.5px; background:#DC2626;" onclick="tarikProfitKeKasirDariAudit()" title="Buka form Setoran Profit di Kasir dengan nominal otomatis agar saldo kembali ke Target Modal Pokok">💸 Setor Profit (<span id="lblBtnTarikProfitNom">Rp0</span>)</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- KARTU BUNGA HARIAN SEABANK (OPSI 2: KONFIRMASI 1-KLIK & EDITABLE NOMINAL MULAI JAM 06:00 PAGI, NON-TRANSAKSI) -->
-            <div class="card" id="cardSeaBankBungaSaldo" style="border:1.5px solid #0284C7; background:linear-gradient(180deg, #F0F9FF 0%, var(--card) 100%);"></div>
-
             <div class="card">
                 <div class="card-header" id="formTransferSaldoTitle">🔀 Transfer Antar Akun (Khusus Kas / Bank / E-Wallet Cair)</div>
                 <p style="font-size:10.5px; color:#64748B; margin-bottom:10px; line-height:1.4;">*Akun berbasis data (<b>VOUCHER, SP, ACC, SPAREPART, PIUTANG</b>) dikunci otomatis dan tidak dapat dipindah-saldokan secara manual agar selalu sinkron 100% dengan Stok Opname, Service, & Piutang.</p>
@@ -4288,7 +4303,8 @@
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                     <span>💰 Rekap Saldo Realtime</span>
-                    <div style="display:flex; gap:6px; align-items:center;">
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <button type="button" onclick="openModalSeaBankBunga(true)" style="background:#0284C7; color:#FFF; border:none; border-radius:6px; padding:4px 9px; font-size:10px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Lihat / Konfirmasi Bunga Harian SeaBank">🌅 Bunga SeaBank</button>
                         <select id="saldoFilterMode" class="date-picker-input" onchange="toggleFilterSaldoDate(this.value)" style="padding:4px 6px; font-size:10px;">
                             <option value="ALL">📅 Semua Tanggal</option>
                             <option value="DAILY">📆 Per Hari</option>
@@ -4371,51 +4387,6 @@
                             <tfoot id="footHistoriPindahSaldo"></tfoot>
                         </table>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="sub-laporan-shift" class="sub-tab-content">
-            <div class="card" style="border-color:var(--primary);">
-                <div class="card-header">📑 Cetak Laporan Akhir Shift / Rekap Owner (PDF)</div>
-                <p style="font-size:11.5px; opacity:0.85; margin-bottom:12px; line-height:1.5;">Gunakan form di bawah ini untuk mencetak laporan rekap shift lengkap beserta audit fisik uang kas (pencatatan selisih) untuk diserahkan kepada Owner atau arsip shift.</p>
-                
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Pilih Tanggal Laporan Shift</label>
-                        <input type="date" id="shiftReportDate" class="form-control" style="font-weight:bold;">
-                    </div>
-                    <div class="form-group">
-                        <label>Nama Kasir / Petugas Shift</label>
-                        <input type="text" id="shiftKasirName" class="form-control" value="FINA" placeholder="NAMA KASIR...">
-                    </div>
-                </div>
-
-                <div class="row-2">
-                    <div class="form-group">
-                        <label>Shift Jaga</label>
-                        <select id="shiftJagaOption" class="form-control">
-                            <option value="Shift 1 (Pagi)">Shift 1 (Pagi)</option>
-                            <option value="Shift 2 (Siang/Sore)">Shift 2 (Siang/Sore)</option>
-                            <option value="Shift 3 (Malam)">Shift 3 (Malam)</option>
-                            <option value="Full Day (Owner)">Full Day (Owner)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Hitung Fisik Uang Tunai Laci (Rp)</label>
-                        <input type="text" id="shiftFisikLaciDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'shiftFisikLaci')">
-                        <input type="hidden" id="shiftFisikLaci" value="0">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Catatan / Kendala Shift (Opsional)</label>
-                    <textarea id="shiftCatatanText" class="form-control" rows="2" placeholder="CONTOH: KONEKSI ATM SEPATU GANGGUAN 10 MENIT..."></textarea>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
-                    <button type="button" class="btn" onclick="cetakLaporanShiftPDF()" style="background:#0284C7; font-weight:700;">🖨️ Cetak PDF Laporan</button>
-                    <button type="button" class="btn" onclick="kirimLaporanShiftWA()" style="background:#16A34A; font-weight:700;">📲 Kirim Rekap ke WA Owner</button>
                 </div>
             </div>
         </div>
@@ -13873,31 +13844,85 @@
             window.showToast(`🌅 Bunga harian ${akun} (+${window.formatRp(nominalCair)}) berhasil ditambahkan ke Saldo & Modal Berputar!`, 'success');
         };
 
-        window.cairkanSemuaBungaSeaBank = function(prefixInputId) {
+        window.openModalLaporanShift = function() {
+            const modal = document.getElementById('modalLaporanShiftOverlay');
+            if (!modal) return;
+            const dateInput = document.getElementById('shiftReportDate');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = window.getTodayIso();
+            }
+            const kasirInput = document.getElementById('shiftKasirName');
+            const activeUser = (sessionStorage.getItem('zencell_user') || '').toUpperCase();
+            if (kasirInput && activeUser && activeUser !== 'TAMU') {
+                kasirInput.value = activeUser;
+            }
+            modal.classList.add('show');
+        };
+
+        window.closeModalLaporanShift = function() {
+            const modal = document.getElementById('modalLaporanShiftOverlay');
+            if (modal) modal.classList.remove('show');
+        };
+
+        window.cairkanSemuaBungaSeaBank = function(prefixInputId, closePopupAfter) {
             const seaAccounts = window.getSeaBankAccountsList();
             const todayIso = window.getTodayIso();
             const st = window.getSeaBankBungaState();
             const unclaimed = seaAccounts.filter(akun => {
                 const saldo = Number((window._latestActualSaldoPerAkun && window._latestActualSaldoPerAkun[akun]) || 0);
-                return saldo > 0 && st.lastClaimedByAccount[akun] !== todayIso;
+                const calc = window.hitungBungaHarianSeaBank(saldo);
+                return saldo > 0 && calc.nominalBulat > 0 && st.lastClaimedByAccount[akun] !== todayIso;
             });
             if (unclaimed.length === 0) {
-                window.showToast('ℹ️ Semua akun SeaBank sudah dicairkan bunganya hari ini!', 'warn');
+                window.showToast('ℹ️ Semua akun SeaBank yang memiliki bunga sudah dicairkan hari ini!', 'warn');
                 return;
             }
-            unclaimed.forEach((akun, idx) => {
+            unclaimed.forEach((akun) => {
                 const safeKey = String(akun).replace(/[^A-Za-z0-9]/g, '_');
-                const inpId = prefixInputId ? `${prefixInputId}_${safeKey}` : `inpBungaSeaCard_${safeKey}`;
+                const inpId = prefixInputId ? `${prefixInputId}_${safeKey}` : `inpBungaSeaPopup_${safeKey}`;
                 window.cairkanBungaSeaBank(akun, inpId);
             });
+            if (closePopupAfter) {
+                window.closeModalSeaBankBunga(false);
+            }
         };
 
         window.lewatiReminderBungaSeaBankHariIni = function() {
+            window._seaBankPopupDismissedSession = true;
             const st = window.getSeaBankBungaState();
             st.lastSkippedDate = window.getTodayIso();
             window.saveToFirebaseNode('pengaturan', window.pengaturanToko, true);
+            window.closeModalSeaBankBunga(false);
+            window.showToast('👍 Popup bunga SeaBank ditutup untuk sementara. Anda bisa membukanya lagi kapan saja lewat tombol "🌅 Bunga SeaBank" di menu Saldo.', 'info');
+        };
+
+        window.openModalSeaBankBunga = function(manualOpen) {
+            const modal = document.getElementById('modalSeaBankBungaOverlay');
+            if (!modal) return;
+            if (manualOpen) {
+                window._seaBankPopupManualOpen = true;
+            }
             window.renderSeaBankBungaUI();
-            window.showToast('👍 Pengingat bunga SeaBank bagian atas disembunyikan untuk hari ini. Anda tetap bisa mencairkannya lewat menu Laporan ➔ Saldo.', 'success');
+            modal.classList.add('show');
+        };
+
+        window.closeModalSeaBankBunga = function(markDismissed) {
+            const modal = document.getElementById('modalSeaBankBungaOverlay');
+            if (modal) modal.classList.remove('show');
+            window._seaBankPopupManualOpen = false;
+            if (markDismissed) {
+                window._seaBankPopupDismissedSession = true;
+            }
+        };
+
+        window.updateTotalBaruSeaBankPopup = function(safeKey, saldoSaatIni) {
+            const inpEl = document.getElementById(`inpBungaSeaPopup_${safeKey}`);
+            const lblTotalEl = document.getElementById(`lblTotalBaruSeaPopup_${safeKey}`);
+            if (!inpEl || !lblTotalEl) return;
+            const rawVal = String(inpEl.value || '').replace(/[^0-9]/g, '');
+            const bungaNominal = Math.max(0, parseInt(rawVal, 10) || 0);
+            const totalBaru = Number(saldoSaatIni || 0) + bungaNominal;
+            lblTotalEl.innerText = window.formatRp(totalBaru);
         };
 
         window.batalRiwayatBungaSeaBank = function(logId) {
@@ -13934,14 +13959,12 @@
         };
 
         window.renderSeaBankBungaUI = function() {
-            const topBannerEl = document.getElementById('topSeaBankBungaBanner');
-            const cardSaldoEl = document.getElementById('cardSeaBankBungaSaldo');
+            const modalOverlayEl = document.getElementById('modalSeaBankBungaOverlay');
+            const modalBodyEl = document.getElementById('modalSeaBankBungaBody');
             const sidebarBoxEl = document.getElementById('sidebarSeaBankBungaBox');
 
             const seaAccounts = window.getSeaBankAccountsList();
             if (seaAccounts.length === 0) {
-                if (topBannerEl) topBannerEl.style.display = 'none';
-                if (cardSaldoEl) cardSaldoEl.style.display = 'none';
                 if (sidebarBoxEl) sidebarBoxEl.innerHTML = '';
                 return;
             }
@@ -13970,116 +13993,92 @@
 
             const pendingAccounts = accountDetails.filter(d => !d.isClaimedToday && d.saldoAktual > 0 && d.calc.nominalBulat > 0);
 
-            // 1. RENDER TOP BANNER (Muncul otomatis jika sudah lewat jam 06:00 pagi & ada akun SEA yang belum klaim hari ini & belum di-skip)
-            if (topBannerEl) {
-                if (isPastSixAm && pendingAccounts.length > 0 && st.lastSkippedDate !== todayIso) {
-                    const itemsBannerHtml = pendingAccounts.map(d => `
-                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; background:rgba(255,255,255,0.92); border:1px solid #BAE6FD; padding:6px 9px; border-radius:8px; flex:1 1 280px;">
-                            <div style="line-height:1.25;">
-                                <div style="font-size:11px; font-weight:900; color:#0369A1;">
-                                    🏦 ${d.akun} <span style="font-weight:700; color:#475569;">(Saldo: ${window.formatRp(d.saldoAktual)})</span>
-                                </div>
-                                <div style="font-size:9.5px; color:#334155; font-weight:600;">
-                                    Bunga ${d.calc.sukuBungaPersenText}: <b>${window.formatRpDesimal2(d.calc.bungaKotor)}</b>
-                                    ${d.calc.kenaPajak
-                                        ? `• <span style="color:#DC2626;">PPh 20%: -${window.formatRpDesimal2(d.calc.pajak)}</span> ➔ Bersih: <b style="color:#047857;">${window.formatRpDesimal2(d.calc.bungaBersih)}</b>`
-                                        : `• <span style="color:#059669; font-weight:800;">Bebas Pajak (≤Rp7,5Jt)</span>`
-                                    }
-                                </div>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:5px;">
-                                <div style="display:flex; align-items:center; background:#FFF; border:1.5px solid #0284C7; border-radius:6px; padding:2px 6px;">
-                                    <span style="font-size:10px; font-weight:800; color:#0284C7; margin-right:3px;">+Rp</span>
-                                    <input type="number" id="inpBungaSeaTop_${d.safeKey}" value="${d.calc.nominalBulat}" min="1" step="1" style="width:68px; border:none; outline:none; font-size:11.5px; font-weight:900; color:#0F172A; background:transparent; text-align:right;" title="Nominal bunga bersih yang cair di aplikasi SeaBank (bisa disesuaikan 1-2 rupiah jika pembulatan bank berbeda)">
-                                </div>
-                                <button type="button" onclick="cairkanBungaSeaBank('${d.akun}', 'inpBungaSeaTop_${d.safeKey}')" style="background:#0284C7; color:#FFF; border:none; border-radius:6px; padding:5px 10px; font-size:10.5px; font-weight:800; cursor:pointer; white-space:nowrap; box-shadow:0 1px 3px rgba(2,132,199,0.25);">
-                                    ✅ Tambah ke ${d.akun}
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-
-                    topBannerEl.style.display = 'block';
-                    topBannerEl.innerHTML = `
-                        <div style="background:linear-gradient(90deg, #E0F2FE 0%, #F0F9FF 100%); border:1.5px solid #38BDF8; border-radius:10px; padding:8px 11px; box-shadow:0 2px 8px rgba(2,132,199,0.10);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                    <span style="background:#0284C7; color:#FFF; font-size:9.5px; font-weight:900; padding:2px 7px; border-radius:999px;">🌅 JAM 06:00+ WIB</span>
-                                    <b style="font-size:11.5px; color:#0C4A6E;">Bunga Harian SeaBank Hari Ini (${todayIso}) Siap Dicairkan ke Pembukuan!</b>
-                                    <small style="font-size:9.5px; color:#0369A1; font-weight:700;">(Non-Transaksi • Otomatis Sesuaikan Target Modal Berputar)</small>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:5px;">
-                                    ${pendingAccounts.length > 1 ? `<button type="button" onclick="cairkanSemuaBungaSeaBank('inpBungaSeaTop')" style="background:#059669; color:#FFF; border:none; border-radius:6px; padding:4px 9px; font-size:10px; font-weight:800; cursor:pointer;">⚡ Cairkan Semua (${pendingAccounts.length} Akun)</button>` : ''}
-                                    <button type="button" onclick="lewatiReminderBungaSeaBankHariIni()" style="background:rgba(15,23,42,0.08); color:#334155; border:none; border-radius:6px; padding:4px 8px; font-size:10px; font-weight:700; cursor:pointer;" title="Sembunyikan banner ini untuk hari ini">Nanti ✕</button>
-                                </div>
-                            </div>
-                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                                ${itemsBannerHtml}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    topBannerEl.style.display = 'none';
-                    topBannerEl.innerHTML = '';
-                }
-            }
-
-            // 2. RENDER KARTU PERMANEN DI TAB LAPORAN -> SALDO (#cardSeaBankBungaSaldo)
-            if (cardSaldoEl) {
-                cardSaldoEl.style.display = 'block';
-                const rowsCardHtml = accountDetails.map(d => {
+            // 1. RENDER ISI POPUP MODAL BUNGA HARIAN SEABANK (#modalSeaBankBungaBody)
+            if (modalBodyEl) {
+                const cardsHtml = accountDetails.map(d => {
                     const pajakBadge = d.calc.kenaPajak
-                        ? `<span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:1px 6px; border-radius:999px; font-size:9px; font-weight:800;">PPh 20% (&gt;Rp7,5Jt): -${window.formatRpDesimal2(d.calc.pajak)}</span>`
-                        : `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1px 6px; border-radius:999px; font-size:9px; font-weight:800;">Bebas Pajak (≤Rp7,5Jt)</span>`;
+                        ? `<span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:1.5px 6px; border-radius:999px; font-size:9px; font-weight:800;">PPh 20% (&gt;Rp7,5Jt): -${window.formatRpDesimal2(d.calc.pajak)}</span>`
+                        : `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1.5px 6px; border-radius:999px; font-size:9px; font-weight:800;">Bebas Pajak (≤Rp7,5Jt)</span>`;
 
-                    const statusRightHtml = d.isClaimedToday
-                        ? `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                <span style="background:#DCFCE7; color:#166534; border:1px solid #86EFAC; padding:4px 9px; border-radius:7px; font-size:10.5px; font-weight:800;">
-                                    ✅ Sudah Cair Hari Ini: +${window.formatRp(d.todayLog ? d.todayLog.nominalCair : d.calc.nominalBulat)} ${d.todayLog ? `(${d.todayLog.waktu})` : ''}
-                                </span>
-                                ${d.todayLog ? `<button type="button" onclick="batalRiwayatBungaSeaBank('${d.todayLog.id}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:6px; padding:4px 8px; font-size:10px; font-weight:800; cursor:pointer;" title="Batalkan pencairan bunga hari ini">↩️ Batal</button>` : ''}
-                           </div>`
-                        : `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                <div style="display:flex; align-items:center; background:var(--card); border:1.5px solid #0284C7; border-radius:7px; padding:3px 7px;">
-                                    <span style="font-size:10.5px; font-weight:800; color:#0284C7; margin-right:3px;">+Rp</span>
-                                    <input type="number" id="inpBungaSeaCard_${d.safeKey}" value="${d.calc.nominalBulat}" min="1" step="1" style="width:76px; border:none; outline:none; font-size:12px; font-weight:900; color:var(--text); background:transparent; text-align:right;">
-                                </div>
-                                <button type="button" class="btn" style="width:auto; padding:6px 12px; font-size:10.5px; background:#0284C7;" onclick="cairkanBungaSeaBank('${d.akun}', 'inpBungaSeaCard_${d.safeKey}')">
-                                    🌅 Cairkan Bunga ke Saldo ${d.akun}
-                                </button>
-                           </div>`;
+                    const bungaCairNominal = d.isClaimedToday
+                        ? Number(d.todayLog ? d.todayLog.nominalCair : d.calc.nominalBulat)
+                        : Number(d.calc.nominalBulat);
+                    const saldoAwalSebelumCair = d.isClaimedToday
+                        ? Number(d.todayLog && d.todayLog.saldoDasar !== undefined ? d.todayLog.saldoDasar : Math.max(0, d.saldoAktual - bungaCairNominal))
+                        : d.saldoAktual;
+                    const totalSaldoSetelahCair = d.isClaimedToday
+                        ? d.saldoAktual
+                        : (d.saldoAktual + bungaCairNominal);
 
                     return `
-                        <div style="background:var(--card); border:1px solid var(--border); border-left:4px solid ${d.isClaimedToday ? '#10B981' : '#0284C7'}; border-radius:9px; padding:9px 11px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                            <div style="line-height:1.35;">
+                        <div style="background:var(--card); border:1.5px solid ${d.isClaimedToday ? '#86EFAC' : '#7DD3FC'}; border-left:4px solid ${d.isClaimedToday ? '#10B981' : '#0284C7'}; border-radius:11px; padding:10px 12px; margin-bottom:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
                                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                    <b style="font-size:12px; color:var(--text);">🏦 Akun ${d.akun}</b>
-                                    <span style="font-size:11px; font-weight:800; color:#0284C7;">Saldo Saat Ini: ${window.formatRp(d.saldoAktual)}</span>
-                                    <span style="background:#E0F2FE; color:#0369A1; padding:1px 6px; border-radius:999px; font-size:9px; font-weight:800;">Bunga ${d.calc.sukuBungaPersenText}</span>
+                                    <b style="font-size:12.5px; color:var(--text);">🏦 Akun ${d.akun}</b>
+                                    <span style="background:#E0F2FE; color:#0369A1; padding:1.5px 6px; border-radius:999px; font-size:9px; font-weight:800;">Bunga ${d.calc.sukuBungaPersenText}</span>
                                     ${pajakBadge}
                                 </div>
-                                <div style="font-size:10px; color:#475569; margin-top:2px;">
-                                    Rumus: (${window.formatRp(d.saldoAktual)} × ${d.calc.sukuBungaPersenText.split(' ')[0]} ÷ 365) = Kotor <b>${window.formatRpDesimal2(d.calc.bungaKotor)}</b>/hari
-                                    ${d.calc.kenaPajak ? ` − Pajak 20% (<b>${window.formatRpDesimal2(d.calc.pajak)}</b>)` : ''}
-                                    ➔ Bersih: <b style="color:#047857;">${window.formatRpDesimal2(d.calc.bungaBersih)}/hari</b> (Dibulatkan: <b>${window.formatRp(d.calc.nominalBulat)}</b>)
+                                ${d.isClaimedToday
+                                    ? `<div style="display:flex; align-items:center; gap:5px;">
+                                            <span style="background:#DCFCE7; color:#166534; border:1px solid #86EFAC; padding:2px 8px; border-radius:999px; font-size:9.5px; font-weight:800;">✅ Sudah Cair Hari Ini ${d.todayLog && d.todayLog.waktu ? `(${d.todayLog.waktu})` : ''}</span>
+                                            ${d.todayLog ? `<button type="button" onclick="batalRiwayatBungaSeaBank('${d.todayLog.id}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:6px; padding:2px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">↩️ Batal</button>` : ''}
+                                       </div>`
+                                    : (d.calc.nominalBulat <= 0
+                                        ? `<span style="font-size:9.5px; color:#64748B; font-weight:700;">Bunga Rp0 (Saldo terlalu kecil)</span>`
+                                        : `<span style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; padding:2px 8px; border-radius:999px; font-size:9.5px; font-weight:800;">⏳ Belum Dicairkan Hari Ini</span>`)
+                                }
+                            </div>
+
+                            <!-- 3 KOTAK UTAMA: SALDO SAAT INI + BUNGA CAIR = TOTAL SALDO BARU -->
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; align-items:stretch;">
+                                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:7px 8px;">
+                                    <span style="font-size:9px; font-weight:800; color:#64748B; display:block;">${d.isClaimedToday ? 'SALDO SEBELUM CAIR' : 'SALDO SAAT INI'}</span>
+                                    <b style="font-size:12px; color:#0F172A; display:block; margin-top:2px;">${window.formatRp(saldoAwalSebelumCair)}</b>
+                                </div>
+
+                                <div style="background:${d.isClaimedToday ? '#F0FDF4' : '#EFF6FF'}; border:1.5px solid ${d.isClaimedToday ? '#86EFAC' : '#38BDF8'}; border-radius:8px; padding:7px 8px;">
+                                    <span style="font-size:9px; font-weight:800; color:${d.isClaimedToday ? '#15803D' : '#0369A1'}; display:block;">BUNGA HARIAN (+)</span>
+                                    ${d.isClaimedToday
+                                        ? `<b style="font-size:12px; color:#16A34A; display:block; margin-top:2px;">+${window.formatRp(bungaCairNominal)}</b>`
+                                        : `<div style="display:flex; align-items:center; margin-top:2px;">
+                                                <span style="font-size:11px; font-weight:900; color:#0284C7; margin-right:2px;">+Rp</span>
+                                                <input type="number" id="inpBungaSeaPopup_${d.safeKey}" value="${d.calc.nominalBulat}" min="0" step="1" oninput="window.updateTotalBaruSeaBankPopup('${d.safeKey}', ${d.saldoAktual})" style="width:100%; border:none; border-bottom:1.5px dashed #0284C7; outline:none; font-size:12px; font-weight:900; color:#0F172A; background:transparent;">
+                                           </div>`
+                                    }
+                                </div>
+
+                                <div style="background:#ECFDF5; border:1.5px solid #10B981; border-radius:8px; padding:7px 8px;">
+                                    <span style="font-size:9px; font-weight:800; color:#065F46; display:block;">${d.isClaimedToday ? 'TOTAL SALDO SEKARANG' : 'AKAN JADI TOTAL (=)'}</span>
+                                    <b id="lblTotalBaruSeaPopup_${d.safeKey}" style="font-size:12.5px; color:#047857; display:block; margin-top:2px;">${window.formatRp(totalSaldoSetelahCair)}</b>
                                 </div>
                             </div>
-                            ${statusRightHtml}
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-top:7px;">
+                                <div style="font-size:9.5px; color:#64748B;">
+                                    Hitungan murni: Kotor <b>${window.formatRpDesimal2(d.calc.bungaKotor)}</b>${d.calc.kenaPajak ? ` − Pajak 20% (<b>${window.formatRpDesimal2(d.calc.pajak)}</b>)` : ''} ➔ Bersih: <b style="color:#047857;">${window.formatRpDesimal2(d.calc.bungaBersih)}/hari</b>
+                                </div>
+                                ${(!d.isClaimedToday && d.calc.nominalBulat > 0)
+                                    ? `<button type="button" onclick="cairkanBungaSeaBank('${d.akun}', 'inpBungaSeaPopup_${d.safeKey}')" style="background:#0284C7; color:#FFF; border:none; border-radius:7px; padding:5px 11px; font-size:10.5px; font-weight:800; cursor:pointer; box-shadow:0 2px 5px rgba(2,132,199,0.25);">
+                                            ✅ Tambah ke ${d.akun}
+                                       </button>`
+                                    : ''
+                                }
+                            </div>
                         </div>
                     `;
                 }).join('');
 
-                const recentLogs = (st.riwayatBunga || []).slice(0, 5);
+                const recentLogs = (st.riwayatBunga || []).slice(0, 4);
                 const riwayatHtml = recentLogs.length > 0 ? `
-                    <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #BAE6FD;">
-                        <div style="font-size:10px; font-weight:800; color:#0369A1; margin-bottom:4px;">📜 RIWAYAT PENCAIRAN BUNGA SEABANK TERAKHIR (NON-TRANSAKSI):</div>
+                    <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #CBD5E1;">
+                        <div style="font-size:9.5px; font-weight:800; color:#475569; margin-bottom:4px;">📜 RIWAYAT PENCAIRAN BUNGA TERAKHIR:</div>
                         <div style="display:flex; flex-direction:column; gap:3px;">
                             ${recentLogs.map(r => `
-                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; font-size:10px; background:rgba(255,255,255,0.65); padding:3.5px 7px; border-radius:6px; border:1px solid #E0F2FE;">
-                                    <span>📅 <b>${r.isoDate}</b> (${r.waktu || '-'}) • <b>${r.akun}</b> (Saldo Dasar: ${window.formatRp(r.saldoDasar)}) • ${r.kenaPajak ? 'Kena Pajak 20%' : 'Bebas Pajak'}</span>
+                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; font-size:9.5px; background:#F8FAFC; padding:3.5px 7px; border-radius:6px; border:1px solid #E2E8F0;">
+                                    <span>📅 <b>${r.isoDate}</b> (${r.waktu || '-'}) • <b>${r.akun}</b> (Awal: ${window.formatRp(r.saldoDasar)})</span>
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <b style="color:#059669;">+${window.formatRp(r.nominalCair)}</b>
-                                        <button type="button" onclick="batalRiwayatBungaSeaBank('${r.id}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:4px; padding:1px 6px; font-size:9px; font-weight:800; cursor:pointer;" title="Batalkan pencairan bunga ini">↩️ Batal</button>
+                                        <button type="button" onclick="batalRiwayatBungaSeaBank('${r.id}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:4px; padding:1px 6px; font-size:9px; font-weight:800; cursor:pointer;">↩️ Batal</button>
                                     </div>
                                 </div>
                             `).join('')}
@@ -14087,49 +14086,54 @@
                     </div>
                 ` : '';
 
-                cardSaldoEl.innerHTML = `
-                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; border-bottom:1px solid #BAE6FD; padding-bottom:7px; color:#0369A1;">
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                            <span>🌅 KALKULATOR & KONFIRMASI BUNGA HARIAN SEABANK (CAIR JAM 06:00 PAGI)</span>
-                            <span style="font-size:9px; background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; padding:2px 7px; border-radius:999px; font-weight:800;">Opsi 2 • Non-Transaksi</span>
-                        </div>
-                        <span style="font-size:10px; color:#0284C7; font-weight:700;">2,50% (&lt;150Jt) • 3,50% (≥150Jt) • PPh 20% jika &gt;Rp7,5Jt</span>
+                const actionFooterHtml = pendingAccounts.length > 0
+                    ? `<div style="display:flex; gap:8px; margin-top:10px;">
+                            <button type="button" class="btn" style="flex:1; background:linear-gradient(135deg, #059669, #047857); font-size:12px; font-weight:900; padding:10px;" onclick="cairkanSemuaBungaSeaBank('inpBungaSeaPopup', true)">
+                                ⚡ Konfirmasi &amp; Cairkan Semua (${pendingAccounts.length} Akun)
+                            </button>
+                            <button type="button" class="btn" style="width:auto; background:#64748B; font-size:11px; padding:10px 14px;" onclick="lewatiReminderBungaSeaBankHariIni()">
+                                Nanti Saja
+                            </button>
+                       </div>`
+                    : `<div style="margin-top:10px;">
+                            <button type="button" class="btn" style="background:#059669; font-size:11.5px; padding:9px;" onclick="closeModalSeaBankBunga(false)">
+                                ✅ Selesai / Tutup Popup
+                            </button>
+                       </div>`;
+
+                modalBodyEl.innerHTML = `
+                    <div style="background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px; padding:7px 10px; font-size:10px; color:#0369A1; margin-bottom:9px; line-height:1.35;">
+                        💡 <b>Cek Saldo SeaBank Pagi Ini (${todayIso}):</b> Rincian di bawah menampilkan saldo saat ini, bunga harian bersih (otomatis dipotong PPh 20% jika saldo &gt; Rp7,5 Juta), dan total saldo baru setelah bunga masuk.
                     </div>
-                    <div style="font-size:10px; color:#475569; margin-top:6px; margin-bottom:8px; line-height:1.35;">
-                        💡 Bunga cair otomatis menambah <b>Saldo ${seaAccounts.join(' / ')}</b> &amp; <b>Target Modal Berputar</b> secara bersamaan (tidak masuk ke Jurnal Transaksi Kasir agar tidak mengubah jumlah Pelanggan / Omset Penjualan). Nominal dapat diedit jika ada selisih pembulatan 1–2 rupiah di aplikasi SeaBank.
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:6px;">
-                        ${rowsCardHtml}
-                    </div>
+                    ${cardsHtml}
                     ${riwayatHtml}
+                    ${actionFooterHtml}
                 `;
             }
 
-            // 3. RENDER BOX RINGKAS DI SIDEBAR KIRI CEK SALDO (#sidebarSeaBankBungaBox)
-            if (sidebarBoxEl) {
-                const sbRowsHtml = accountDetails.map(d => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; margin-top:4px; padding-top:4px; border-top:1px dashed #BAE6FD;">
-                        <div style="line-height:1.2;">
-                            <b style="font-size:10.5px; color:#0C4A6E;">🏦 ${d.akun}</b>
-                            <span style="font-size:9.5px; color:#0369A1; display:block;">Hitungan: <b>${window.formatRpDesimal2(d.calc.bungaBersih)}</b>/hr (${d.calc.kenaPajak ? 'Pajak 20%' : 'Bebas Pajak'})</span>
-                        </div>
-                        ${d.isClaimedToday
-                            ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:5px; font-size:9.5px; font-weight:800;">✅ +${window.formatRp(d.todayLog ? d.todayLog.nominalCair : d.calc.nominalBulat)}</span>`
-                            : `<div style="display:flex; align-items:center; gap:3px;">
-                                    <input type="number" id="inpBungaSeaSb_${d.safeKey}" value="${d.calc.nominalBulat}" min="1" step="1" style="width:54px; padding:2px 4px; font-size:10.5px; font-weight:800; border:1px solid #0284C7; border-radius:4px; text-align:right; background:#FFF; color:#0F172A;">
-                                    <button type="button" onclick="cairkanBungaSeaBank('${d.akun}', 'inpBungaSeaSb_${d.safeKey}')" style="background:#0284C7; color:#FFF; border:none; border-radius:4px; padding:3px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">+Cairkan</button>
-                               </div>`
-                        }
-                    </div>
-                `).join('');
+            // 2. AUTO-POPUP SETELAH JAM 06:00 PAGI (Hanya jika user sudah login PIN, sinkronisasi Firebase awal selesai, ada bunga yang belum diklaim hari ini, dan belum ditutup)
+            const loginHidden = document.getElementById('loginOverlay')?.style.display === 'none';
+            if (
+                modalOverlayEl &&
+                loginHidden &&
+                !isFirebaseSyncing &&
+                isPastSixAm &&
+                pendingAccounts.length > 0 &&
+                st.lastSkippedDate !== todayIso &&
+                !window._seaBankPopupDismissedSession
+            ) {
+                modalOverlayEl.classList.add('show');
+            }
 
+            // 3. RENDER TOMBOL RINGKAS DI SIDEBAR KIRI CEK SALDO (#sidebarSeaBankBungaBox)
+            if (sidebarBoxEl) {
+                const pendingCount = pendingAccounts.length;
                 sidebarBoxEl.innerHTML = `
-                    <div style="margin-top:8px; padding:7px 9px; border-radius:8px; background:#F0F9FF; border:1.5px solid #7DD3FC; color:#0C4A6E; font-size:10.5px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <b style="font-size:10.5px;">🌅 BUNGA HARIAN SEABANK (06:00)</b>
-                            <span style="font-size:9px; font-weight:800; color:#0284C7;">Non-Trx</span>
-                        </div>
-                        ${sbRowsHtml}
+                    <div onclick="openModalSeaBankBunga(true)" style="margin-top:8px; padding:7px 9px; border-radius:8px; background:${pendingCount > 0 ? '#FEF3C7' : '#F0F9FF'}; border:1.5px solid ${pendingCount > 0 ? '#F59E0B' : '#7DD3FC'}; color:${pendingCount > 0 ? '#92400E' : '#0C4A6E'}; font-size:10.5px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                        <b style="font-size:10.5px;">🌅 Bunga Harian SeaBank</b>
+                        <span style="font-size:9.5px; font-weight:800; background:${pendingCount > 0 ? '#D97706' : '#0284C7'}; color:#FFF; padding:2px 7px; border-radius:999px;">
+                            ${pendingCount > 0 ? `${pendingCount} Belum Cair` : 'Lihat Rincian'}
+                        </span>
                     </div>
                 `;
             }
