@@ -2152,6 +2152,428 @@
             animation: excelRowFlash 2.6s ease-in-out;
             outline: 2px solid #EAB308;
         }
+
+        /* ==========================================================================
+           PANEL KANAN: SUB-TAB RADAR, AI AUDIT & WA CEPAT
+           ========================================================================== */
+        .right-sidebar {
+            max-width: 430px;
+        }
+        .right-sidebar-subtabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            padding: 7px 10px;
+            background: #0F172A;
+            border-bottom: 1px solid #1E293B;
+            flex-shrink: 0;
+        }
+        .right-subtab-btn {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.06);
+            color: #CBD5E1;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 7px 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+        .right-subtab-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: #FFFFFF;
+        }
+        .right-subtab-btn.active {
+            background: linear-gradient(135deg, #059669 0%, #0284C7 100%);
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.75);
+            box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4);
+        }
+        .right-pane-section {
+            display: none;
+        }
+        .right-pane-section.active {
+            display: block;
+            animation: settingsFadeIn 0.2s ease-out;
+        }
+
+        /* AI Audit & Tanya Bos Styling */
+        .ai-hero-card {
+            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+            color: #F8FAFC;
+            border-radius: 12px;
+            padding: 11px 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+        }
+        .ai-action-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .ai-action-btn {
+            width: 100%;
+            text-align: left;
+            padding: 8px 10px;
+            border-radius: 9px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.08);
+            color: #FFFFFF;
+            font-size: 10.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: all 0.18s ease;
+        }
+        .ai-action-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: #38BDF8;
+            transform: translateY(-1px);
+        }
+        .ai-chat-response-box {
+            background: var(--card);
+            border: 1.5px solid #C7D2FE;
+            border-radius: 11px;
+            padding: 11px 12px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            line-height: 1.5;
+            color: var(--text);
+            max-height: 360px;
+            overflow-y: auto;
+            box-shadow: 0 3px 10px rgba(79, 70, 229, 0.08);
+        }
+        body.theme-dark .ai-chat-response-box {
+            border-color: #4338CA;
+            background: #0F172A;
+        }
+        .ai-chip-row {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 7px;
+        }
+        .ai-prompt-chip {
+            background: #EEF2FF;
+            color: #4338CA;
+            border: 1px solid #C7D2FE;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 9.5px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        body.theme-dark .ai-prompt-chip {
+            background: #1E1B4B;
+            color: #A5B4FC;
+            border-color: #3730A3;
+        }
+
+        /* Popover Pengatur Skala / DPI Layar HP */
+        .dpi-scale-popover {
+            position: fixed;
+            top: 52px;
+            right: 12px;
+            width: 285px;
+            background: var(--card);
+            color: var(--text);
+            border: 1.5px solid var(--primary);
+            border-radius: 14px;
+            padding: 12px;
+            z-index: 99999;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.32);
+            display: none;
+            animation: settingsFadeIn 0.16s ease-out;
+        }
+        .dpi-scale-popover.show {
+            display: block;
+        }
+        .dpi-scale-opt-btn {
+            width: 100%;
+            text-align: left;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 10.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            transition: all 0.15s ease;
+        }
+        .dpi-scale-opt-btn.active {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #FFFFFF;
+            border-color: #065F46;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+        }
+
+        /* ==========================================================================
+           OVERHAUL PRESISI TAMPILAN MOBILE (INFINIX NOTE EDGE & POCO F4 GT)
+           Anti-Menumpuk, Proporsional, Tanpa Terpotong di Layar Standar 360px-440px
+           ========================================================================== */
+        @media (max-width: 640px) {
+            body {
+                padding-bottom: 68px !important;
+            }
+            header {
+                padding: 6px 8px !important;
+                border-radius: 0 0 12px 12px !important;
+            }
+            .header-top {
+                margin-bottom: 4px !important;
+                gap: 4px !important;
+            }
+            .header-title {
+                gap: 6px !important;
+                min-width: 0;
+            }
+            .header-logo-svg {
+                width: 28px !important;
+                height: 28px !important;
+                padding: 3px !important;
+                flex-shrink: 0;
+            }
+            header h1 {
+                font-size: 13.5px !important;
+                letter-spacing: 0.2px !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .header-actions {
+                gap: 3.5px !important;
+                flex-shrink: 0;
+            }
+            .btn-icon-hdr {
+                padding: 4px 6.5px !important;
+                font-size: 11px !important;
+                border-radius: 7px !important;
+                min-height: 27px;
+            }
+            #btnHeaderGlobalFind {
+                padding: 4px 7px !important;
+            }
+            #btnHeaderGlobalFind .find-btn-label,
+            #btnHeaderGlobalFind .kbd-shortcut {
+                display: none !important;
+            }
+            .header-status-bar {
+                padding: 3px 6px !important;
+                gap: 4px !important;
+                font-size: 9.5px !important;
+                flex-wrap: nowrap !important;
+            }
+            #hdrUserAvatarContainer {
+                padding: 1.5px 7px 1.5px 3px !important;
+                gap: 4px !important;
+            }
+            #hdrUserAvatarBox {
+                width: 18px !important;
+                height: 18px !important;
+            }
+            #hdrUserActive {
+                font-size: 9.5px !important;
+            }
+            #cloudStatus {
+                font-size: 8.5px !important;
+                padding: 1.5px 6px !important;
+            }
+            .status-marquee-box {
+                height: 18px !important;
+                padding: 0 6px !important;
+                min-width: 50px !important;
+            }
+            .status-marquee-track {
+                font-size: 9px !important;
+            }
+            .hdr-clock-stacked {
+                padding: 1px 6px !important;
+            }
+            .hdr-clock-date {
+                font-size: 7.5px !important;
+            }
+            .hdr-clock-time {
+                font-size: 9px !important;
+            }
+
+            /* 8 Kartu KPI Presisi Ramping di HP (4 Kolom Rapi Tanpa Menumpuk) */
+            .top-kpi-wrapper {
+                padding: 4px 6px 0 6px !important;
+            }
+            .summary-grid {
+                gap: 4px !important;
+                margin-bottom: 4px !important;
+            }
+            .top-kpi-wrapper.kpi-mode-modern .summary-card {
+                padding: 5px 5px !important;
+                gap: 4px !important;
+                border-radius: 9px !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            .top-kpi-wrapper.kpi-mode-modern .kpi-icon-box {
+                width: 20px !important;
+                height: 20px !important;
+                border-radius: 6px !important;
+                position: absolute;
+                top: 4px;
+                right: 4px;
+                opacity: 0.88;
+            }
+            .top-kpi-wrapper.kpi-mode-modern .kpi-icon-box svg {
+                width: 11px !important;
+                height: 11px !important;
+            }
+            .top-kpi-wrapper.kpi-mode-modern .kpi-content-box {
+                width: 100% !important;
+                text-align: left !important;
+            }
+            .top-kpi-wrapper.kpi-mode-modern .summary-card .lbl {
+                font-size: 7.5px !important;
+                letter-spacing: 0px !important;
+                padding-right: 18px;
+                line-height: 1.15 !important;
+                margin-bottom: 2px !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .top-kpi-wrapper.kpi-mode-modern .summary-card .val {
+                font-size: 10.5px !important;
+                letter-spacing: -0.35px !important;
+                line-height: 1.15 !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                width: 100%;
+            }
+
+            /* Saldo Banner Bar: Tata Letak 2 Baris Presisi di HP agar Total Saldo Konter TIDAK TERPOTONG */
+            .saldo-banner-bar {
+                margin: 2px 6px 4px 6px !important;
+                padding: 6px 8px !important;
+                border-radius: 10px !important;
+                flex-wrap: wrap !important;
+                gap: 5px !important;
+            }
+            .saldo-banner-center {
+                order: -1;
+                width: 100% !important;
+                flex: 0 0 100% !important;
+                justify-content: space-between !important;
+                padding: 2px 4px 5px 4px !important;
+                border-bottom: 1px dashed rgba(16, 185, 129, 0.35);
+            }
+            .saldo-banner-info {
+                align-items: flex-end !important;
+                flex: 1;
+            }
+            .saldo-banner-title {
+                font-size: 8px !important;
+            }
+            .saldo-banner-sub {
+                font-size: 9.5px !important;
+            }
+            .saldo-banner-val {
+                font-size: 13.5px !important;
+            }
+            .saldo-banner-btn {
+                flex: 1 !important;
+                justify-content: center !important;
+                padding: 5px 6px !important;
+                font-size: 9.5px !important;
+                border-radius: 7px !important;
+            }
+            .saldo-banner-actions-right {
+                display: flex !important;
+                flex: 2 !important;
+                gap: 5px !important;
+            }
+
+            /* Tombol Header Jurnal Transaksi Harian: Grid 3x2 Rapi di HP */
+            .tab-content {
+                padding: 0 6px !important;
+            }
+            .card {
+                padding: 8px !important;
+                border-radius: 11px !important;
+            }
+            .card-header {
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+            }
+            .jurnal-header-actions {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 4px !important;
+                width: 100% !important;
+            }
+            .btn-jurnal-hdr {
+                width: 100% !important;
+                justify-content: center !important;
+                text-align: center !important;
+                padding: 6px 4px !important;
+                font-size: 9.2px !important;
+                border-radius: 7px !important;
+                white-space: nowrap !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* Filter Bar Rapi 2 Kolom di HP */
+            .filter-container {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 5px !important;
+                padding: 6px !important;
+            }
+            .filter-container > span:first-child {
+                grid-column: 1 / -1;
+                font-size: 9.5px !important;
+                margin-bottom: -2px;
+            }
+            .filter-container .date-picker-input {
+                width: 100% !important;
+                font-size: 10.5px !important;
+                padding: 5px 6px !important;
+            }
+            .filter-container > div:last-child {
+                grid-column: 1 / -1 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            /* Tabel Jurnal & Piutang Lebih Presisi di HP */
+            .table-jurnal th, .table-jurnal td {
+                padding: 5px 4px !important;
+                font-size: 10px !important;
+            }
+            .bottom-nav {
+                width: calc(100% - 12px) !important;
+                bottom: 4px !important;
+                padding: 3px 4px !important;
+                gap: 4px !important;
+                border-radius: 12px !important;
+            }
+        }
     </style>
 <script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
 <body>
@@ -2173,11 +2595,29 @@
 
     <div id="rightSidebarOverlay" class="sidebar-overlay" onclick="toggleRightInsightSidebar()"></div>
     <div id="rightInsightSidebar" class="right-sidebar">
-        <div class="sidebar-header">
-            <span>📊 RADAR & GRAFIK KONTER</span>
-            <button onclick="toggleRightInsightSidebar()" style="background:none; border:none; color:white; font-size:18px; font-weight:bold; cursor:pointer;">✕</button>
+        <div class="sidebar-header" style="padding: 10px 12px;">
+            <div style="display:flex; flex-direction:column; gap:1px;">
+                <span style="font-size:13px; font-weight:900; letter-spacing:0.3px;">🤖 RADAR, AI AUDIT &amp; WA CEPAT</span>
+                <span style="font-size:9.5px; font-weight:600; opacity:0.9;">Grafik Cuan • Asisten Bos AI • Kirim WA 1-Klik</span>
+            </div>
+            <button onclick="toggleRightInsightSidebar()" style="background:rgba(239,68,68,0.9); border:1px solid rgba(255,255,255,0.45); color:white; font-size:11px; font-weight:900; padding:4px 9px; border-radius:7px; cursor:pointer;">✕ TUTUP</button>
         </div>
-        <div class="sidebar-content" id="rightInsightSidebarContent"></div>
+        <div class="right-sidebar-subtabs">
+            <button type="button" class="right-subtab-btn active" id="btnRightTab-RADAR" onclick="switchRightSidebarTab('RADAR')">📊 Radar &amp; Grafik</button>
+            <button type="button" class="right-subtab-btn" id="btnRightTab-AI" onclick="switchRightSidebarTab('AI')">🤖 AI Audit &amp; Bos</button>
+            <button type="button" class="right-subtab-btn" id="btnRightTab-WA" onclick="switchRightSidebarTab('WA')">💬 WA Cepat</button>
+        </div>
+        <div class="sidebar-content" style="padding: 10px;">
+            <div id="rightPane-RADAR" class="right-pane-section active">
+                <div id="rightInsightSidebarContent"></div>
+            </div>
+            <div id="rightPane-AI" class="right-pane-section">
+                <div id="rightAiAssistantContent"></div>
+            </div>
+            <div id="rightPane-WA" class="right-pane-section">
+                <div id="rightWaQuickContent"></div>
+            </div>
+        </div>
     </div>
 
     <input type="file" id="fileRestoreJson" accept=".json" style="display:none;" onchange="restoreJSON(event)">
@@ -3110,14 +3550,18 @@
                 </div>
                 <div class="header-actions">
                     <button class="btn-icon-hdr" id="btnHeaderGlobalFind" onclick="bukaModalGlobalFind()" title="Cari Data Cepat Ala Excel (Shortcut: Ctrl+F atau Ctrl+K)">
-                        <span>🔍</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         <span class="find-btn-label">CARI</span>
                         <span class="kbd-shortcut">Ctrl+F</span>
                     </button>
                     <button class="btn-icon-hdr" id="btnUndo" onclick="doUndo()" title="Undo (Batal Langkah)" disabled>↩️</button>
                     <button class="btn-icon-hdr" id="btnRedo" onclick="doRedo()" title="Redo (Ulang Langkah)" disabled>↪️</button>
+                    <button class="btn-icon-hdr" id="btnHeaderDpiScale" onclick="toggleDpiScalePopover(event)" title="Atur Skala / Presisi Tampilan HP (Infinix Note Edge & Poco F4 GT)" style="background:rgba(15,23,42,0.32); border:1px solid rgba(254,240,138,0.65); color:#FEF08A; font-weight:800; font-size:10.5px; display:inline-flex; align-items:center; gap:3px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                        <span id="lblHeaderDpiScale">AUTO</span>
+                    </button>
                     <button class="btn-icon-hdr" onclick="bukaModalLogAktivitas()" title="Log Aktivitas Sistem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;">
                             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                             <path d="M3 3v5h5"></path>
                             <path d="M12 7v5l4 2"></path>
@@ -3126,9 +3570,40 @@
                     <button class="btn-icon-hdr" onclick="switchTheme()" title="Ganti Tema">🎨</button>
                     <button class="btn-icon-hdr" id="btnHeaderSetting" onclick="bukaMenuSettingJSON()" title="Pengaturan Toko (Khusus Owner)">⚙️</button>
                     <button class="btn-icon-hdr" onclick="prosesLogout()" title="Logout Akun" style="background:linear-gradient(135deg, #38BDF8, #A855F7); border:1px solid #E9D5FF; box-shadow:0 2px 6px rgba(168,85,247,0.4);" aria-label="Logout Akun">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
                     </button>
                 </div>
+            </div>
+
+            <!-- Popover Pengatur Skala / DPI Presisi Layar HP -->
+            <div id="dpiScalePopover" class="dpi-scale-popover" onclick="event.stopPropagation()">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid var(--border); padding-bottom:6px;">
+                    <div>
+                        <div style="font-size:11.5px; font-weight:900; color:var(--primary);">📱 Skala &amp; Presisi Layar HP</div>
+                        <div style="font-size:9.5px; color:#64748B;">Sesuaikan kepadatan tampilan (Infinix / Poco / PC)</div>
+                    </div>
+                    <button type="button" onclick="closeDpiScalePopover()" style="background:none; border:none; font-size:15px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+                </div>
+                <button type="button" class="dpi-scale-opt-btn" data-scale="AUTO" onclick="setUiScaleMode('AUTO')">
+                    <span>⚡ Otomatis Pintar (Rekomendasi)</span>
+                    <span style="font-size:9px; opacity:0.85;">Auto HP/PC</span>
+                </button>
+                <button type="button" class="dpi-scale-opt-btn" data-scale="0.82" onclick="setUiScaleMode('0.82')">
+                    <span>🎯 82% — Mode Ultra Rapat</span>
+                    <span style="font-size:9px; opacity:0.85;">Ala Poco DPI Kecil</span>
+                </button>
+                <button type="button" class="dpi-scale-opt-btn" data-scale="0.86" onclick="setUiScaleMode('0.86')">
+                    <span>📱 86% — Mode Presisi Infinix</span>
+                    <span style="font-size:9px; opacity:0.85;">Pas Tanpa Geser</span>
+                </button>
+                <button type="button" class="dpi-scale-opt-btn" data-scale="0.92" onclick="setUiScaleMode('0.92')">
+                    <span>✨ 92% — Mode Rapi Proporsional</span>
+                    <span style="font-size:9px; opacity:0.85;">Sedang</span>
+                </button>
+                <button type="button" class="dpi-scale-opt-btn" data-scale="1" onclick="setUiScaleMode('1')">
+                    <span>🖥️ 100% — Ukuran Standar Default</span>
+                    <span style="font-size:9px; opacity:0.85;">Normal</span>
+                </button>
             </div>
             <div class="header-status-bar">
                 <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
@@ -3249,12 +3724,12 @@
                     </div>
                 </div>
             </div>
-            <div style="display:flex; align-items:center; gap:5px;">
+            <div class="saldo-banner-actions-right" style="display:flex; align-items:center; gap:5px;">
                 <button type="button" id="btnToggleKpiCollapse" class="saldo-banner-btn" onclick="toggleKpiCardsCollapse()" style="background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; padding:5px 9px; font-size:10px;" title="Sembunyikan / Tampilkan 8 Kotak Kartu KPI di atas agar tabel lebih lega">
                     <span id="lblToggleKpiCollapse">🔼 LIPAT KPI</span>
                 </button>
-                <button type="button" class="saldo-banner-btn radar-btn" onclick="toggleRightInsightSidebar()" title="Buka Panel Grafik Omset, Porsi Profit & Radar Peringatan Konter">
-                    <span>📊 RADAR & GRAFIK</span>
+                <button type="button" class="saldo-banner-btn radar-btn" onclick="toggleRightInsightSidebar()" title="Buka Panel Radar Grafik, Bos AI Audit & WA Cepat">
+                    <span>🤖 RADAR &amp; AI</span>
                     <span id="badgeRadarAlertCount" class="radar-notif-badge" style="display:none;">0</span>
                 </button>
             </div>
@@ -17022,6 +17497,9 @@
                     ${top5Html}
                 </div>
             `;
+
+            if (window.renderRightAiPanel) window.renderRightAiPanel();
+            if (window.renderRightWaPanel) window.renderRightWaPanel();
         };
 
         window.switchSettingsTab = function(tabName) {
@@ -19788,8 +20266,559 @@
                 if (findModal && findModal.classList.contains('show')) {
                     window.closeModalGlobalFind();
                 }
+                if (window.closeDpiScalePopover) window.closeDpiScalePopover();
             }
         });
+
+        // =========================================================================
+        // 1. FITUR SKALA & PRESISI LAYAR HP (INFINIX NOTE EDGE vs POCO F4 GT)
+        // =========================================================================
+        window.getUiScaleMode = function() {
+            return localStorage.getItem('zencell_ui_scale_mode') || 'AUTO';
+        };
+
+        window.applyUiScaleMode = function(modeOverride) {
+            const mode = modeOverride || window.getUiScaleMode();
+            localStorage.setItem('zencell_ui_scale_mode', mode);
+
+            let effectiveZoom = 1;
+            const screenW = window.innerWidth || document.documentElement.clientWidth || 390;
+            if (mode === 'AUTO') {
+                // Jika dibuka di HP dengan DPI standar pabrik (seperti Infinix Note Edge: lebar viewport <= 435px),
+                // otomatis perkecil skala ke 88% agar presisi & tidak menumpuk seperti Poco F4 GT
+                if (screenW <= 385) {
+                    effectiveZoom = 0.85;
+                } else if (screenW <= 435) {
+                    effectiveZoom = 0.88;
+                } else {
+                    effectiveZoom = 1;
+                }
+            } else {
+                const parsed = parseFloat(mode);
+                effectiveZoom = (!isNaN(parsed) && parsed >= 0.75 && parsed <= 1.15) ? parsed : 1;
+            }
+
+            document.documentElement.style.zoom = effectiveZoom === 1 ? '' : String(effectiveZoom);
+
+            const lblEl = document.getElementById('lblHeaderDpiScale');
+            if (lblEl) {
+                lblEl.innerText = mode === 'AUTO' ? 'AUTO' : `${Math.round(effectiveZoom * 100)}%`;
+            }
+
+            document.querySelectorAll('#dpiScalePopover .dpi-scale-opt-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-scale') === mode);
+            });
+        };
+
+        window.toggleDpiScalePopover = function(e) {
+            if (e) e.stopPropagation();
+            const pop = document.getElementById('dpiScalePopover');
+            if (!pop) return;
+            pop.classList.toggle('show');
+        };
+
+        window.closeDpiScalePopover = function() {
+            const pop = document.getElementById('dpiScalePopover');
+            if (pop) pop.classList.remove('show');
+        };
+
+        window.setUiScaleMode = function(mode) {
+            window.applyUiScaleMode(mode);
+            window.closeDpiScalePopover();
+            const labelMap = {
+                'AUTO': 'Otomatis Pintar (Sesuai Layar HP)',
+                '0.82': '82% (Mode Ultra Rapat ala Poco F4 GT)',
+                '0.86': '86% (Mode Presisi Infinix Note Edge)',
+                '0.92': '92% (Mode Rapi Proporsional)',
+                '1': '100% (Ukuran Standar Default)'
+            };
+            if (window.showToast) {
+                window.showToast(`📱 Skala tampilan diatur ke: ${labelMap[mode] || mode}`, 'info');
+            }
+        };
+
+        document.addEventListener('click', function() {
+            window.closeDpiScalePopover();
+        });
+        window.applyUiScaleMode();
+
+        // =========================================================================
+        // 2. SUB-TAB PANEL KANAN: RADAR | AI AUDIT & TANYA BOS | WA CEPAT
+        // =========================================================================
+        window._activeRightSidebarTab = 'RADAR';
+        window._lastAiAuditResponseHtml = '';
+        window._lastAiAuditRawText = '';
+        window._isAiLoading = false;
+
+        window.switchRightSidebarTab = function(tabName) {
+            const validTabs = ['RADAR', 'AI', 'WA'];
+            const target = validTabs.includes(tabName) ? tabName : 'RADAR';
+            window._activeRightSidebarTab = target;
+
+            validTabs.forEach(t => {
+                const btn = document.getElementById('btnRightTab-' + t);
+                const pane = document.getElementById('rightPane-' + t);
+                if (btn) btn.classList.toggle('active', t === target);
+                if (pane) pane.classList.toggle('active', t === target);
+            });
+
+            if (target === 'AI' && window.renderRightAiPanel) {
+                window.renderRightAiPanel();
+            } else if (target === 'WA' && window.renderRightWaPanel) {
+                window.renderRightWaPanel();
+            }
+        };
+
+        // Deteksi Otomatis Anomali Pembukuan (Lokal & Instan)
+        window.scanLocalAnomaliesKonter = function() {
+            const filterMode = document.getElementById('jurnalFilterMode')?.value || 'DAILY';
+            const selectedDate = (filterMode === 'DAILY' && document.getElementById('jurnalDatePicker')?.value)
+                ? document.getElementById('jurnalDatePicker').value
+                : window.getTodayIso();
+
+            const anomalies = [];
+            const dayTrx = (window.transaksiJurnal || []).filter(t =>
+                t && !t.isPencatatanUtangAwal && t.kat !== 'PIUTANG_INIT' && !window.isTransaksiPindahSaldo(t) && t.isoDate === selectedDate
+            );
+
+            // 1. Cek indikasi transaksi dobel (Ket & Harga Jual sama persis di hari yang sama)
+            const seenMap = {};
+            dayTrx.forEach(t => {
+                const key = `${(t.ket || '').trim().toUpperCase()}_${Number(t.hargaJual || 0)}_${t.akunMasuk1 || ''}`;
+                if (!seenMap[key]) seenMap[key] = [];
+                seenMap[key].push(t);
+            });
+            Object.values(seenMap).forEach(group => {
+                if (group.length >= 2) {
+                    const first = group[0];
+                    anomalies.push({
+                        level: 'WARN',
+                        title: `Indikasi Input Dobel (${group.length}x)`,
+                        desc: `"${first.ket}" senilai ${window.formatRp(first.hargaJual)} tercatat ${group.length} kali pada tanggal ${selectedDate}.`,
+                        trxId: first.id,
+                        isoDate: selectedDate
+                    });
+                }
+            });
+
+            // 2. Cek transaksi Cuan Minus atau Rp 0 atau Margin Janggal
+            dayTrx.forEach(t => {
+                const jual = Number(t.hargaJual || 0);
+                const modal = Number(t.hargaModal || 0);
+                const cuan = Number(t.cuan || 0);
+                if (cuan < 0) {
+                    anomalies.push({
+                        level: 'DANGER',
+                        title: `Transaksi Rugi / Cuan Minus (${window.formatRp(cuan)})`,
+                        desc: `"${t.ket}" [${t.kat}] • Jual: ${window.formatRp(jual)} vs Modal: ${window.formatRp(modal)}.`,
+                        trxId: t.id,
+                        isoDate: selectedDate
+                    });
+                } else if (cuan === 0 && jual > 0 && !window.isTransaksiPelunasanPiutang(t)) {
+                    anomalies.push({
+                        level: 'WARN',
+                        title: `Transaksi Cuan Rp 0 (Belum Ada Untung)`,
+                        desc: `"${t.ket}" [${t.kat}] • Jual & Modal sama-sama ${window.formatRp(jual)}.`,
+                        trxId: t.id,
+                        isoDate: selectedDate
+                    });
+                } else if (modal > 0 && cuan > 100000 && cuan > modal * 0.6 && t.kat !== 'SERVICE') {
+                    anomalies.push({
+                        level: 'INFO',
+                        title: `Cuan Sangat Besar (+${window.formatRp(cuan)}) — Cek Nominal Modal`,
+                        desc: `"${t.ket}" [${t.kat}] • Jual: ${window.formatRp(jual)}, Modal: ${window.formatRp(modal)}. Pastikan modal tidak kurang ketik 0.`,
+                        trxId: t.id,
+                        isoDate: selectedDate
+                    });
+                }
+            });
+
+            // 3. Cek Status Audit Modal Berputar
+            const auditInfo = window.hitungRingkasanProfitDanHarta ? window.hitungRingkasanProfitDanHarta() : null;
+            if (auditInfo && Math.abs(Number(auditInfo.selisihAuditModal || 0)) >= 1000) {
+                const sel = Number(auditInfo.selisihAuditModal || 0);
+                anomalies.push({
+                    level: sel < 0 ? 'DANGER' : 'WARN',
+                    title: `Selisih Audit Modal Berputar: ${sel >= 0 ? '+' : '-'}${window.formatRp(Math.abs(sel))}`,
+                    desc: sel < 0
+                        ? `Total harta aktual kurang ${window.formatRp(Math.abs(sel))} dari seharusnya. Cek apakah ada pengeluaran kas/utang yang belum dicatat.`
+                        : `Total harta aktual lebih ${window.formatRp(sel)} dari target modal + profit. Cek jika ada pemasukan/koreksi saldo.`
+                });
+            }
+
+            return { selectedDate, dayTrxCount: dayTrx.length, anomalies, auditInfo };
+        };
+
+        // Bangun Payload Data Konter untuk Dikirim ke Gemini 3.8 Flash
+        window.buildStoreAiContextPayload = function() {
+            const scan = window.scanLocalAnomaliesKonter();
+            const todayIso = window.getTodayIso();
+            const currMonth = window.getCurrentMonthIso();
+
+            let cuanHariIni = 0, omsetHariIni = 0, trxHariIni = 0;
+            let cuanBulanIni = 0, omsetBulanIni = 0, trxBulanIni = 0;
+            const secHariIni = { ATM: 0, KONTER: 0, SERVICE: 0 };
+
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
+                const c = Number(t.cuan || 0);
+                const j = Number(t.hargaJual || 0);
+                const isPelunasan = window.isTransaksiPelunasanPiutang(t);
+                const katEfektif = isPelunasan ? window.resolveKategoriAsliPelunasan(t) : (t.kat || 'LAINNYA');
+
+                if (t.isoDate === scan.selectedDate) {
+                    trxHariIni += Number(t.archivedCount || 1);
+                    cuanHariIni += c;
+                    if (!isPelunasan) omsetHariIni += j;
+                    if ((window.katAtm || []).includes(katEfektif)) secHariIni.ATM += c;
+                    else if ((window.katKonter || []).includes(katEfektif)) secHariIni.KONTER += c;
+                    else if ((window.katService || []).includes(katEfektif)) secHariIni.SERVICE += c;
+                }
+                if ((t.isoDate || '').startsWith(currMonth)) {
+                    trxBulanIni += Number(t.archivedCount || 1);
+                    cuanBulanIni += c;
+                    if (!isPelunasan) omsetBulanIni += j;
+                }
+            });
+
+            const activePiutang = (window.piutangList || [])
+                .filter(p => p && p.status !== 'LUNAS' && Number(p.sisa || 0) > 0)
+                .map(p => ({
+                    nama: p.nama,
+                    kategori: p.kategori,
+                    catatan: p.catatan,
+                    sisaPokok: Number(p.sisa || 0),
+                    tagihanJual: Number(p.sisaTagihanJual || p.tagihanJual || p.sisa || 0),
+                    umurHari: window.hitungUmurHariPiutang ? window.hitungUmurHariPiutang(p.isoDate) : 0
+                }))
+                .sort((a, b) => b.sisaPokok - a.sisaPokok);
+
+            const lowStok = (window.stokOpnameItems || [])
+                .map(s => ({ nama: s.nama || s.namaBarang, kat: s.kat, sisa: Number(s.awal || 0) - Number(s.terjual || 0) }))
+                .filter(s => s.sisa <= 3)
+                .slice(0, 12);
+
+            const sampleTrxTanggal = (window.transaksiJurnal || [])
+                .filter(t => t && !t.isPencatatanUtangAwal && t.isoDate === scan.selectedDate)
+                .slice(0, 30)
+                .map(t => ({
+                    waktu: t.waktu,
+                    ket: t.ket,
+                    kat: t.kat,
+                    masuk: t.akunMasuk1,
+                    keluar: t.akunKeluar1,
+                    jual: t.hargaJual,
+                    modal: t.hargaModal,
+                    cuan: t.cuan
+                }));
+
+            return {
+                namaToko: window.pengaturanToko?.namaToko || 'POS ZENCELL 1',
+                tanggalAnalisis: scan.selectedDate,
+                hariIniIso: todayIso,
+                ringkasanTanggal: {
+                    totalTransaksi: trxHariIni,
+                    omset: omsetHariIni,
+                    cuanBersih: cuanHariIni,
+                    cuanPerSektor: secHariIni
+                },
+                ringkasanBulanIni: {
+                    bulan: currMonth,
+                    totalTransaksi: trxBulanIni,
+                    omset: omsetBulanIni,
+                    cuanBersih: cuanBulanIni
+                },
+                auditModalBerputar: scan.auditInfo ? {
+                    targetModalPokok: scan.auditInfo.targetModal,
+                    totalSaldoKasCair: scan.auditInfo.totalKasCair,
+                    totalHartaAktual: scan.auditInfo.totalHartaAktual,
+                    jatahProfitSiapSetor: scan.auditInfo.jatahProfitSiapSetor,
+                    selisihAuditModal: scan.auditInfo.selisihAuditModal
+                } : null,
+                temuanAnomaliOtomatis: scan.anomalies,
+                piutangBelumLunas: {
+                    jumlahOrang: activePiutang.length,
+                    totalSisaPiutang: activePiutang.reduce((a, b) => a + b.sisaPokok, 0),
+                    daftarTopPiutang: activePiutang.slice(0, 10)
+                },
+                stokMenipis: lowStok,
+                sampelTransaksiTanggalIni: sampleTrxTanggal
+            };
+        };
+
+        window.formatAiMarkdownToHtml = function(rawText) {
+            if (!rawText) return '';
+            let safe = String(rawText)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            safe = safe.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+            safe = safe.replace(/^###\s+(.+)$/gm, '<div style="font-weight:900; color:var(--primary); font-size:11.5px; margin-top:8px; margin-bottom:3px;">$1</div>');
+            safe = safe.replace(/^##\s+(.+)$/gm, '<div style="font-weight:900; color:var(--primary); font-size:12px; margin-top:8px; margin-bottom:3px;">$1</div>');
+            safe = safe.replace(/^\*\s+(.+)$/gm, '• $1');
+            safe = safe.replace(/^-\s+(.+)$/gm, '• $1');
+            return safe.replace(/\n/g, '<br>');
+        };
+
+        window.runAiAssistantQuery = async function(mode = 'audit', customQuestion = '') {
+            if (window._isAiLoading) return;
+            const qInput = document.getElementById('aiCustomQuestionInput');
+            const questionText = customQuestion || (qInput ? qInput.value.trim() : '');
+            if (mode === 'chat' && !questionText) {
+                window.showToast('⚠️ Ketik pertanyaan untuk Bos AI terlebih dahulu!', 'warn');
+                return;
+            }
+
+            window._isAiLoading = true;
+            window.renderRightAiPanel();
+
+            try {
+                const contextPayload = window.buildStoreAiContextPayload();
+                const response = await fetch('/api/ai/assistant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode,
+                        question: questionText,
+                        context: contextPayload
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.error || 'Gagal memuat respons AI');
+                }
+                window._lastAiAuditRawText = data.reply || '';
+                window._lastAiAuditResponseHtml = window.formatAiMarkdownToHtml(data.reply || '');
+            } catch (err) {
+                console.warn('AI fallback local summary:', err);
+                const ctx = window.buildStoreAiContextPayload();
+                const anomCount = (ctx.temuanAnomaliOtomatis || []).length;
+                const fallbackText =
+                    `**📊 RINGKASAN AUDIT KONTER (${ctx.tanggalAnalisis})**\n\n` +
+                    `• **Cuan Bersih (${ctx.tanggalAnalisis}):** +${window.formatRp(ctx.ringkasanTanggal.cuanBersih)} (${ctx.ringkasanTanggal.totalTransaksi} TRX)\n` +
+                    `• **Porsi Sektor:** ATM ${window.formatRp(ctx.ringkasanTanggal.cuanPerSektor.ATM)} | Konter ${window.formatRp(ctx.ringkasanTanggal.cuanPerSektor.KONTER)} | Service ${window.formatRp(ctx.ringkasanTanggal.cuanPerSektor.SERVICE)}\n` +
+                    `• **Status Modal Berputar:** ${ctx.auditModalBerputar ? (Math.abs(ctx.auditModalBerputar.selisihAuditModal) < 1000 ? '✅ PAS / BALANCE' : `⚠️ Selisih ${window.formatRp(ctx.auditModalBerputar.selisihAuditModal)}`) : '-'}\n` +
+                    `• **Piutang Aktif:** ${ctx.piutangBelumLunas.jumlahOrang} orang (${window.formatRp(ctx.piutangBelumLunas.totalSisaPiutang)})\n` +
+                    `• **Deteksi Anomali:** ${anomCount > 0 ? `Ditemukan ${anomCount} catatan yang perlu dicek pada daftar di bawah.` : '✅ Tidak ditemukan transaksi rugi atau input dobel.'}`;
+                window._lastAiAuditRawText = fallbackText;
+                window._lastAiAuditResponseHtml = window.formatAiMarkdownToHtml(fallbackText);
+            } finally {
+                window._isAiLoading = false;
+                window.renderRightAiPanel();
+            }
+        };
+
+        window.kirimHasilAuditAiKeWaOwner = function() {
+            const p = window.pengaturanToko || {};
+            let noWa = String(p.waOwner || p.kontakToko || '').replace(/\D/g, '');
+            if (noWa.startsWith('0')) noWa = '62' + noWa.slice(1);
+            const textRaw = window._lastAiAuditRawText || 'Belum ada hasil audit AI.';
+            const header = `*🤖 LAPORAN AI AUDIT ${p.namaToko || 'POS ZENCELL 1'}*\nTanggal: ${window.getTodayIso()}\n\n`;
+            const url = noWa
+                ? `https://wa.me/${noWa}?text=${encodeURIComponent(header + textRaw)}`
+                : `https://wa.me/?text=${encodeURIComponent(header + textRaw)}`;
+            window.open(url, '_blank');
+        };
+
+        window.renderRightAiPanel = function() {
+            const box = document.getElementById('rightAiAssistantContent');
+            if (!box) return;
+
+            const scan = window.scanLocalAnomaliesKonter();
+            const anomHtml = scan.anomalies.length > 0
+                ? scan.anomalies.map(a => {
+                    const bg = a.level === 'DANGER' ? '#FEF2F2' : (a.level === 'WARN' ? '#FFFBEB' : '#F0F9FF');
+                    const brd = a.level === 'DANGER' ? '#FCA5A5' : (a.level === 'WARN' ? '#FDE68A' : '#BAE6FD');
+                    const clr = a.level === 'DANGER' ? '#991B1B' : (a.level === 'WARN' ? '#92400E' : '#0369A1');
+                    return `
+                        <div class="radar-alert-item" style="background:${bg}; border-color:${brd}; align-items:flex-start; flex-direction:column; gap:4px;">
+                            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; gap:6px;">
+                                <b style="color:${clr}; font-size:10.5px;">${a.level === 'DANGER' ? '🚨' : '⚠️'} ${a.title}</b>
+                                ${a.trxId ? `<button type="button" onclick="toggleRightInsightSidebar(); lompatKeHasilFind('TRX', '${a.trxId}', '${a.isoDate}')" style="background:#0F172A; color:#FFF; border:none; border-radius:5px; padding:2px 7px; font-size:9px; font-weight:800; cursor:pointer; flex-shrink:0;">👁️ Cek Trx</button>` : ''}
+                            </div>
+                            <div style="font-size:9.8px; color:#334155; line-height:1.35;">${a.desc}</div>
+                        </div>
+                    `;
+                }).join('')
+                : `<div style="background:#ECFDF5; border:1px solid #86EFAC; color:#065F46; border-radius:8px; padding:8px 10px; font-size:10.5px; font-weight:700; text-align:center;">✅ Semua ${scan.dayTrxCount} transaksi pada ${scan.selectedDate} terlihat wajar (Tidak ada cuan minus / dobel input).</div>`;
+
+            box.innerHTML = `
+                <div class="ai-hero-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                        <div>
+                            <div style="font-size:11.5px; font-weight:900; color:#38BDF8; display:flex; align-items:center; gap:5px;">
+                                <span>🤖</span> <span>ASISTEN BOS AI &amp; AUDITOR</span>
+                            </div>
+                            <div style="font-size:9.5px; color:#CBD5E1; margin-top:1px;">Analisis otomatis Jurnal, Saldo, Stok &amp; Piutang (${scan.selectedDate})</div>
+                        </div>
+                        <span style="background:rgba(56,189,248,0.18); color:#38BDF8; border:1px solid rgba(56,189,248,0.4); font-size:9px; font-weight:800; padding:2px 7px; border-radius:999px;">Gemini AI</span>
+                    </div>
+
+                    <div class="ai-action-grid">
+                        <button type="button" class="ai-action-btn" onclick="runAiAssistantQuery('audit')" ${window._isAiLoading ? 'disabled' : ''}>
+                            <span>🕵️‍♂️ 1. Audit Pembukuan &amp; Cek Salah Input</span>
+                            <span style="color:#34D399;">➔</span>
+                        </button>
+                        <button type="button" class="ai-action-btn" onclick="runAiAssistantQuery('performance')" ${window._isAiLoading ? 'disabled' : ''}>
+                            <span>📈 2. Analisa Performa &amp; Strategi Cuan</span>
+                            <span style="color:#38BDF8;">➔</span>
+                        </button>
+                        <button type="button" class="ai-action-btn" onclick="runAiAssistantQuery('piutang')" ${window._isAiLoading ? 'disabled' : ''}>
+                            <span>🤝 3. Cek Risiko Piutang &amp; Prioritas Tagih</span>
+                            <span style="color:#FBBF24;">➔</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tanya Bos AI (Natural Language Q&A) -->
+                <div class="insight-box" style="margin-bottom:10px;">
+                    <div class="insight-box-title">
+                        <span>💬 Tanya Bos AI (Bebas Tanya Data Konter)</span>
+                    </div>
+                    <div class="ai-chip-row">
+                        <button type="button" class="ai-prompt-chip" onclick="runAiAssistantQuery('chat', 'Siapa 3 pengutang terbesar yang harus ditagih?')">Siapa pengutang terbesar?</button>
+                        <button type="button" class="ai-prompt-chip" onclick="runAiAssistantQuery('chat', 'Bandingkan cuan ATM vs Konter hari ini dan beri saran')">ATM vs Konter hari ini?</button>
+                        <button type="button" class="ai-prompt-chip" onclick="runAiAssistantQuery('chat', 'Apakah ada transaksi hari ini yang janggal atau salah akun?')">Cek transaksi janggal</button>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="aiCustomQuestionInput" class="form-control" placeholder="Tanya apa saja ke Bos AI..." style="font-size:11px; padding:7px 9px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); runAiAssistantQuery('chat');}">
+                        <button type="button" onclick="runAiAssistantQuery('chat')" ${window._isAiLoading ? 'disabled' : ''} style="background:linear-gradient(135deg, #4F46E5, #0284C7); color:#FFF; border:none; border-radius:8px; padding:0 12px; font-size:11px; font-weight:800; cursor:pointer; flex-shrink:0;">
+                            ${window._isAiLoading ? '⏳' : 'Kirim'}
+                        </button>
+                    </div>
+                </div>
+
+                ${window._isAiLoading ? `
+                    <div class="ai-chat-response-box" style="text-align:center; padding:18px 12px;">
+                        <div style="font-size:20px; margin-bottom:6px;">🤖⏳</div>
+                        <div style="font-weight:800; color:var(--primary); font-size:11px;">Bos AI sedang memeriksa pembukuan &amp; menghitung data...</div>
+                    </div>
+                ` : (window._lastAiAuditResponseHtml ? `
+                    <div class="ai-chat-response-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--border); padding-bottom:6px; margin-bottom:7px;">
+                            <span style="font-weight:900; font-size:10.5px; color:#4F46E5;">🤖 HASIL ANALISIS BOS AI:</span>
+                            <button type="button" onclick="kirimHasilAuditAiKeWaOwner()" style="background:#16A34A; color:#FFF; border:none; border-radius:6px; padding:3px 8px; font-size:9.5px; font-weight:800; cursor:pointer;">📲 Kirim ke WA</button>
+                        </div>
+                        <div>${window._lastAiAuditResponseHtml}</div>
+                    </div>
+                ` : '')}
+
+                <!-- Deteksi Otomatis Lokal (Realtime Tanpa Tunggu) -->
+                <div class="insight-box">
+                    <div class="insight-box-title">
+                        <span>🔍 Deteksi Otomatis Transaksi (${scan.selectedDate})</span>
+                        <span style="font-size:9px; background:#E2E8F0; color:#0F172A; padding:1px 6px; border-radius:999px;">${scan.anomalies.length} Temuan</span>
+                    </div>
+                    ${anomHtml}
+                </div>
+            `;
+        };
+
+        // =========================================================================
+        // 3. PUSAT WA CEPAT (1-KLIK LAPORAN OWNER, TAGIH PIUTANG & KABARI SERVIS)
+        // =========================================================================
+        window.kirimWaCepatTagihPiutang = function(idPiutang) {
+            const p = (window.piutangList || []).find(x => x.id == idPiutang);
+            if (!p) return;
+            const storeName = window.pengaturanToko?.namaToko || 'ZENCELL 1';
+            const sisa = Number(p.sisaTagihanJual !== undefined ? p.sisaTagihanJual : Math.max(Number(p.sisa || 0), Number(p.tagihanJual || 0)));
+            let hp = String(p.noHp || '').replace(/\D/g, '');
+            if (hp.startsWith('0')) hp = '62' + hp.slice(1);
+
+            const msg =
+                `Halo Kak *${p.nama}* 🙏,\n` +
+                `Kami dari *${storeName}* ingin mengingatkan dengan hormat mengenai catatan transaksi/kasbon:\n\n` +
+                `• Tanggal: ${p.isoDate || '-'}\n` +
+                `• Kategori/Ket: ${p.kategori || '-'} (${p.catatan || '-'})\n` +
+                `• Sisa Tagihan: *${window.formatRp(sisa)}*\n\n` +
+                `Apabila berkenan, pembayaran dapat dilakukan tunai di konter atau transfer. Terima kasih banyak atas kerja samanya Kak 🙏😊`;
+
+            const url = hp ? `https://wa.me/${hp}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        };
+
+        window.kirimWaCepatServis = function(idTiket) {
+            const t = (window.tiketServisList || []).find(x => x.id == idTiket);
+            if (!t) return;
+            const storeName = window.pengaturanToko?.namaToko || 'ZENCELL 1';
+            let hp = String(t.noHp || '').replace(/\D/g, '');
+            if (hp.startsWith('0')) hp = '62' + hp.slice(1);
+            const sisaBayar = Math.max(0, Number(t.estBiaya || 0) - Number(t.dpNom || 0));
+
+            const msg =
+                `Halo Kak *${t.nama}* 🙏,\n` +
+                `Informasi dari *${storeName}* mengenai unit servis Anda:\n\n` +
+                `• No. Tiket: *${t.noServis}*\n` +
+                `• Perangkat: *${t.tipeHp}*\n` +
+                `• Keluhan: ${t.keluhan || '-'}\n` +
+                `• Status Saat Ini: *${t.status}*\n` +
+                `• Estimasi Biaya: *${window.formatRp(t.estBiaya || 0)}*${Number(t.dpNom || 0) > 0 ? ` (DP: ${window.formatRp(t.dpNom)}, Sisa: ${window.formatRp(sisaBayar)})` : ''}\n\n` +
+                `${t.status === 'SIAP DIAMBIL' ? '✅ Unit sudah selesai diperbaiki dan *SIAP DIAMBIL* di konter. Jangan lupa membawa nota tanda terima ya Kak.' : 'Kami akan segera mengabari kembali perkembangan berikutnya.'}\nTerima kasih 🙏`;
+
+            const url = hp ? `https://wa.me/${hp}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        };
+
+        window.renderRightWaPanel = function() {
+            const box = document.getElementById('rightWaQuickContent');
+            if (!box) return;
+
+            const activePiutang = (window.piutangList || [])
+                .filter(p => p && p.status !== 'LUNAS' && Number(p.sisa || 0) > 0)
+                .sort((a, b) => Number(b.sisa || 0) - Number(a.sisa || 0));
+
+            const activeServis = (window.tiketServisList || [])
+                .filter(t => t && !t.isSettledInKasir && t.status !== 'LUNAS' && t.status !== 'SELESAI & LUNAS' && t.status !== 'SELESAI' && t.status !== 'CANCEL');
+
+            const piutangRows = activePiutang.slice(0, 10).map(p => {
+                const umur = window.hitungUmurHariPiutang ? window.hitungUmurHariPiutang(p.isoDate) : 0;
+                const tagihan = Number(p.sisaTagihanJual !== undefined ? p.sisaTagihanJual : Math.max(Number(p.sisa || 0), Number(p.tagihanJual || 0)));
+                return `
+                    <div class="radar-alert-item" style="padding:6px 8px;">
+                        <div style="min-width:0; flex:1;">
+                            <div style="font-weight:800; font-size:10.5px; color:var(--text);">${p.nama} <span style="font-size:9px; color:#64748B;">(${umur} hr)</span></div>
+                            <div style="font-size:9.5px; color:#DC2626; font-weight:800;">Tagihan: ${window.formatRp(tagihan)} • <span style="color:#475569; font-weight:600;">${p.catatan || p.kategori || '-'}</span></div>
+                        </div>
+                        <button type="button" onclick="kirimWaCepatTagihPiutang('${p.id}')" style="background:#16A34A; color:#FFF; border:none; border-radius:6px; padding:4px 8px; font-size:9.5px; font-weight:800; cursor:pointer; white-space:nowrap;">💬 Tagih WA</button>
+                    </div>
+                `;
+            }).join('') || `<div style="text-align:center; color:#94A3B8; font-size:10.5px; padding:8px;">Tidak ada piutang aktif.</div>`;
+
+            const servisRows = activeServis.slice(0, 8).map(t => `
+                <div class="radar-alert-item" style="padding:6px 8px;">
+                    <div style="min-width:0; flex:1;">
+                        <div style="font-weight:800; font-size:10.5px; color:var(--text);">${t.nama} — ${t.tipeHp}</div>
+                        <div style="font-size:9.5px; color:#0284C7; font-weight:700;">${t.Status || t.status} • Biaya: ${window.formatRp(t.estBiaya || 0)}</div>
+                    </div>
+                    <button type="button" onclick="kirimWaCepatServis('${t.id}')" style="background:#0284C7; color:#FFF; border:none; border-radius:6px; padding:4px 8px; font-size:9.5px; font-weight:800; cursor:pointer; white-space:nowrap;">📲 Kabari WA</button>
+                </div>
+            `).join('') || `<div style="text-align:center; color:#94A3B8; font-size:10.5px; padding:8px;">Tidak ada antrean servis aktif.</div>`;
+
+            box.innerHTML = `
+                <div class="insight-box" style="background:linear-gradient(135deg, #065F46 0%, #047857 100%); color:#FFF; border:none;">
+                    <div style="font-size:11px; font-weight:900; margin-bottom:4px;">📲 1-KLIK LAPORAN WA KE OWNER</div>
+                    <div style="font-size:9.5px; opacity:0.9; margin-bottom:8px; line-height:1.35;">Kirim rekapitulasi Cuan Harian, Saldo Kas/Bank Cair, dan Status Audit Laci langsung ke WhatsApp Owner.</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <button type="button" onclick="toggleRightInsightSidebar(); openModalLaporanShift();" style="background:#FFFFFF; color:#065F46; border:none; border-radius:7px; padding:7px 8px; font-size:10px; font-weight:900; cursor:pointer;">📑 Buka Rekap Shift</button>
+                        <button type="button" onclick="kirimLaporanShiftWA()" style="background:#25D366; color:#FFFFFF; border:1px solid rgba(255,255,255,0.6); border-radius:7px; padding:7px 8px; font-size:10px; font-weight:900; cursor:pointer;">💬 Kirim WA Sekarang</button>
+                    </div>
+                </div>
+
+                <div class="insight-box">
+                    <div class="insight-box-title">
+                        <span>🤝 Tagih Cepat Piutang (${activePiutang.length} Orang)</span>
+                    </div>
+                    ${piutangRows}
+                </div>
+
+                <div class="insight-box">
+                    <div class="insight-box-title">
+                        <span>🛠️ Kabari Konsumen Servis (${activeServis.length} Unit)</span>
+                    </div>
+                    ${servisRows}
+                </div>
+            `;
+        };
     </script>
 </body>
 </html>
