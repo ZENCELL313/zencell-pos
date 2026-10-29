@@ -5407,7 +5407,32 @@
 
         window.isTransaksiPelunasanPiutang = function(t) {
             if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return false;
-            return Boolean(t.kat === 'PIUTANG' || t.idPiutangRef || t.piutangGroupNama || t.akunKeluar1 === 'PIUTANG' || (t.ket && String(t.ket).toUpperCase().includes('[PELUNASAN UTANG]')));
+            return Boolean(t.kat === 'PIUTANG' || t.idPiutangRef || t.piutangGroupNama || t.akunKeluar1 === 'PIUTANG' || t.akunKeluar2 === 'PIUTANG' || (t.ket && String(t.ket).toUpperCase().includes('[PELUNASAN UTANG]')));
+        };
+
+        window.resolveKategoriAsliPelunasan = function(t) {
+            if (!t) return 'TOPUP';
+            if (t.kat && t.kat !== 'PIUTANG' && t.kat !== 'PIUTANG_INIT' && (window.kategoriList || []).includes(t.kat)) {
+                return t.kat;
+            }
+            const ketUp = String(t.ket || '').toUpperCase();
+            const cleanNm = (t.piutangGroupNama || ketUp.replace(/^\[PELUNASAN UTANG\]\s*/i, '').replace(/\s*\(AKUMULASI.*\)$/i, '').replace(/\s*\(.*\)$/, '')).trim();
+            const pRef = (window.piutangList || []).find(p =>
+                (t.idPiutangRef && p.id == t.idPiutangRef) ||
+                (cleanNm && (p.nama || '').trim().toUpperCase() === cleanNm) ||
+                (p.nama && ketUp.includes((p.nama || '').trim().toUpperCase()))
+            );
+            if (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG' && (window.kategoriList || []).includes(pRef.kategori)) {
+                return pRef.kategori;
+            }
+            if (ketUp.includes('TARIK TUNAI') || ketUp.includes('T DANA') || ketUp.includes('T QRIS') || ketUp.includes('T BCA') || ketUp.includes('T BRI')) return 'TARIK TUNAI';
+            if (ketUp.includes('TF ') || ketUp.includes('TRANSFER')) return 'TRANSFER';
+            if (ketUp.includes('GADAI')) return 'GADAI';
+            if (ketUp.includes('VCR') || ketUp.includes('VOUCHER')) return 'VOUCHER';
+            if (ketUp.includes('KUOTA')) return 'KUOTA';
+            if (ketUp.includes('PULSA')) return 'PULSA';
+            if (ketUp.includes('TOKEN') || ketUp.includes('PPOB') || ketUp.includes('LISTRIK')) return 'PPOB';
+            return 'TOPUP';
         };
 
         window.saldoList = [
@@ -9409,7 +9434,8 @@
                     return pNm && (val === pNm || val === `[PELUNASAN UTANG] ${pNm}` || cleanValPiutangName === pNm);
                 });
                 if (matchPiutangGroup.length > 0) {
-                    document.getElementById('kategori').value = 'PIUTANG';
+                    const katGrupAsli = (matchPiutangGroup.find(it => it.kategori && it.kategori !== 'PIUTANG' && window.kategoriList.includes(it.kategori))?.kategori) || 'TOPUP';
+                    document.getElementById('kategori').value = katGrupAsli;
                     document.getElementById('akunMasuk1').value = 'LACI';
                     document.getElementById('splitAkunMasuk1').value = 'LACI';
                     document.getElementById('akunKeluar1').value = 'PIUTANG';
@@ -9437,16 +9463,15 @@
 
                         window.hitungCuan();
                         notice.style.display = 'block';
-                        notice.innerText = `⚡ Auto-Fill Pelunasan Akumulasi [${custName} • ${matchPiutangGroup.length} Nota Utang] Total Tagihan: ${window.formatRp(totalTagihan)} | Total Pokok: ${window.formatRp(totalSisaPokok)}`;
+                        notice.innerText = `⚡ Auto-Fill Pelunasan Akumulasi [${custName} • ${matchPiutangGroup.length} Nota Utang • Kategori: ${katGrupAsli}] Total Tagihan: ${window.formatRp(totalTagihan)} | Total Pokok: ${window.formatRp(totalSisaPokok)}`;
                         return;
                     }
 
                     const matchPiutang = matchPiutangGroup[0];
                     const sisaUtang = Number(matchPiutang.sisa !== undefined ? matchPiutang.sisa : (matchPiutang.pokokAwal || 0));
                     const tagihanUtang = Number(matchPiutang.sisaTagihanJual !== undefined ? matchPiutang.sisaTagihanJual : Math.max(sisaUtang, Number(matchPiutang.tagihanJual || 0)));
-                    if (matchPiutang.kategori === 'GADAI') {
-                        document.getElementById('kategori').value = 'GADAI';
-                    }
+                    const katSingleAsli = (matchPiutang.kategori && matchPiutang.kategori !== 'PIUTANG' && window.kategoriList.includes(matchPiutang.kategori)) ? matchPiutang.kategori : 'TOPUP';
+                    document.getElementById('kategori').value = katSingleAsli;
                     document.getElementById('hargaJual').value = tagihanUtang;
                     document.getElementById('hargaJualDisplay').value = Number(tagihanUtang).toLocaleString('id-ID');
                     
@@ -9460,7 +9485,7 @@
 
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = `⚡ Auto-Fill Pelunasan ${matchPiutang.kategori === 'GADAI' ? 'GADAI' : 'Piutang'} [${matchPiutang.nama}${matchPiutang.catatan && matchPiutang.catatan !== '-' ? ' (' + matchPiutang.catatan + ')' : ''}] Tagihan: ${window.formatRp(tagihanUtang)} | Pokok: ${window.formatRp(sisaUtang)}`;
+                    notice.innerText = `⚡ Auto-Fill Pelunasan ${katSingleAsli} [${matchPiutang.nama}${matchPiutang.catatan && matchPiutang.catatan !== '-' ? ' (' + matchPiutang.catatan + ')' : ''}] Tagihan: ${window.formatRp(tagihanUtang)} | Pokok: ${window.formatRp(sisaUtang)}`;
                     return;
                 }
 
@@ -9716,10 +9741,6 @@
                 if (pKat) pKat.innerHTML += `<option value="${k}">${k}</option>`;
                 fKat.innerHTML += `<option value="${k}">${k}</option>`;
             });
-            if (!window.kategoriList.includes('PIUTANG')) {
-                kSel.innerHTML += `<option value="PIUTANG">PIUTANG</option>`;
-                fKat.innerHTML += `<option value="PIUTANG">PIUTANG</option>`;
-            }
 
             window.AKUN_DATA_OTOMATIS = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
 
@@ -10858,7 +10879,8 @@
             }
             document.getElementById('keterangan').value = `[PELUNASAN UTANG] ${p.nama}${ketSuffix}`;
             document.getElementById('trxQty').value = Number(p.qty || 1);
-            document.getElementById('kategori').value = p.kategori === 'GADAI' ? 'GADAI' : 'PIUTANG';
+            const katPiutangAsli = (p.kategori && p.kategori !== 'PIUTANG' && window.kategoriList.includes(p.kategori)) ? p.kategori : 'TOPUP';
+            document.getElementById('kategori').value = katPiutangAsli;
 
             document.getElementById('hargaJual').value = tagihanJualSisa;
             document.getElementById('hargaJualDisplay').value = Number(tagihanJualSisa).toLocaleString('id-ID');
@@ -10922,7 +10944,8 @@
             window.updateTrxDateNoticeBadge();
             document.getElementById('keterangan').value = `[PELUNASAN UTANG] ${namaKey} (AKUMULASI ${activeItems.length} NOTA)`;
             document.getElementById('trxQty').value = Math.max(1, totalQty);
-            document.getElementById('kategori').value = 'PIUTANG';
+            const katGrupAsli = (activeItems.find(it => it.kategori && it.kategori !== 'PIUTANG' && window.kategoriList.includes(it.kategori))?.kategori) || 'TOPUP';
+            document.getElementById('kategori').value = katGrupAsli;
 
             document.getElementById('hargaJual').value = totalTagihanJual;
             document.getElementById('hargaJualDisplay').value = Number(totalTagihanJual).toLocaleString('id-ID');
@@ -12461,7 +12484,10 @@
             document.getElementById('trxDateInput').value = t.isoDate || window.getTodayIso();
             document.getElementById('keterangan').value = t.ket || '';
             document.getElementById('trxQty').value = t.qty || 1;
-            document.getElementById('kategori').value = t.kat || 'VOUCHER';
+            const editKatVal = (window.isTransaksiPelunasanPiutang && window.isTransaksiPelunasanPiutang(t))
+                ? window.resolveKategoriAsliPelunasan(t)
+                : ((t.kat && t.kat !== 'PIUTANG') ? t.kat : 'VOUCHER');
+            document.getElementById('kategori').value = editKatVal;
             document.getElementById('chkIsNewCustomer').checked = (t.isNewCustomer !== false);
 
             const isSplit = Boolean(t.isSplit);
@@ -12818,9 +12844,19 @@
             // ENGINE SINKRONISASI PIUTANG 2-TAHAP (MENDUKUNG PELUNASAN SATUAN & AKUMULASI MULTI-NOTA FIFO)
             window.piutangList.forEach(p => {
                 if (!p.pokokAwal) p.pokokAwal = Number(p.sisa || 0);
+                if (!p.kategori || p.kategori === 'PIUTANG') {
+                    p.kategori = window.resolveKategoriAsliPelunasan({ ket: p.catatan || p.nama || '', idPiutangRef: p.id });
+                }
                 p._terbayarPokok = 0;
                 p._terbayarJual = 0;
                 p.riwayatCicilan = [];
+            });
+
+            // Normalisasi kategori pada transaksi pelunasan piutang yang sebelumnya tercatat sebagai 'PIUTANG' agar kembali ke kategori utang awalnya (TOPUP / TARIK TUNAI / TRANSFER, dsb)
+            window.transaksiJurnal.forEach(t => {
+                if (t && window.isTransaksiPelunasanPiutang(t) && (!t.kat || t.kat === 'PIUTANG')) {
+                    t.kat = window.resolveKategoriAsliPelunasan(t);
+                }
             });
 
             const piutangPaymentTrxs = window.transaksiJurnal.filter(t => {
