@@ -49,6 +49,314 @@
             --border: #334155;
         }
 
+        /* ==========================================================================
+           TEMA SOFT TEDUH (RAMAH MATA / ANTI-SILAU ALA EXCEL MODERN)
+           - Latar Halaman Teduh Anti-Silau (#ECF1EF) & Kartu Putih Susu (#FAFBF9 / #FFFFFF)
+           - Header & Judul Kolom Soft Sage-Slate (#2C4C43 & #E2ECE8)
+           - Baris Tabel Selang-Seling Lembut (#FFFFFF & #F4F8F6)
+           ========================================================================== */
+        body.theme-cream {
+            --primary: #2C4C43;
+            --primary-dark: #1E3630;
+            --primary-light: #E2ECE8;
+            --accent: #3B6358;
+            --bg: #ECF1EF;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --debit: #B91C1C;
+            --kredit: #15803D;
+            --border: #CBD5D0;
+            background-color: #ECF1EF !important;
+        }
+
+        body.theme-cream header {
+            background: linear-gradient(135deg, #2C4C43 0%, #3B6358 100%) !important;
+            color: #F8FAFC !important;
+            border-bottom: 1.5px solid #1E3630 !important;
+            box-shadow: 0 2px 8px rgba(30, 54, 48, 0.12) !important;
+        }
+        body.theme-cream .header-title h1 {
+            color: #F8FAFC !important;
+            font-weight: 800 !important;
+        }
+        body.theme-cream .header-logo-svg {
+            border-color: rgba(255, 255, 255, 0.45) !important;
+            background: #FFFFFF !important;
+        }
+        body.theme-cream .btn-icon-hdr,
+        body.theme-cream #btnHeaderGlobalFind,
+        body.theme-cream #btnHeaderDpiScale,
+        body.theme-cream #btnHeaderBranchSwitch {
+            background: rgba(255, 255, 255, 0.16) !important;
+            color: #F8FAFC !important;
+            border: 1px solid rgba(255, 255, 255, 0.32) !important;
+            box-shadow: none !important;
+        }
+        body.theme-cream .btn-icon-hdr:hover,
+        body.theme-cream #btnHeaderGlobalFind:hover,
+        body.theme-cream #btnHeaderDpiScale:hover,
+        body.theme-cream #btnHeaderBranchSwitch:hover {
+            background: rgba(255, 255, 255, 0.26) !important;
+        }
+        body.theme-cream .btn-icon-hdr svg {
+            color: #F8FAFC !important;
+            stroke: #F8FAFC !important;
+        }
+        body.theme-cream .header-status-bar {
+            background: rgba(15, 23, 42, 0.18) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            color: #F8FAFC !important;
+        }
+        body.theme-cream .status-marquee-box {
+            background: rgba(15, 23, 42, 0.22) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        }
+        body.theme-cream .status-marquee-track {
+            color: #FDE68A !important;
+            font-weight: 700 !important;
+        }
+
+        /* 8 Kartu KPI: Seragam Soft Matte Teduh (Tidak Warna-Warni Ngejreng & Tidak Silau) */
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c1,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c2,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c3,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c4,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c5,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c6,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c7,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c8 {
+            background: #F8FAF9 !important;
+            border: 1px solid #C6D4CE !important;
+            border-left: 3.5px solid #3B6358 !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .kpi-icon-box {
+            background: #DFECE6 !important;
+            border: 1px solid #B8CCC3 !important;
+            color: #2C4C43 !important;
+            box-shadow: none !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .lbl {
+            color: #475569 !important;
+            font-size: 9.5px !important;
+            font-weight: 700 !important;
+            text-shadow: none !important;
+            letter-spacing: 0.2px !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .val {
+            color: #0F172A !important;
+            font-size: 13px !important;
+            font-weight: 800 !important;
+            text-shadow: none !important;
+            font-variant-numeric: tabular-nums !important;
+        }
+
+        /* Banner Total Saldo Konter Teduh */
+        body.theme-cream .saldo-banner-bar {
+            background: #F8FAF9 !important;
+            border: 1.5px solid #C6D4CE !important;
+            border-left: 4px solid #2C4C43 !important;
+            border-right: 4px solid #2C4C43 !important;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+        }
+        body.theme-cream .saldo-banner-btn,
+        body.theme-cream .saldo-banner-btn.radar-btn,
+        body.theme-cream #btnToggleKpiCollapse {
+            background: #E6F0EC !important;
+            color: #1E3630 !important;
+            border: 1px solid #B8CCC3 !important;
+            box-shadow: none !important;
+            font-size: 10.5px !important;
+            font-weight: 700 !important;
+        }
+        body.theme-cream .saldo-banner-btn:hover {
+            background: #D6E6DF !important;
+        }
+        body.theme-cream .saldo-banner-center {
+            background: #FFFFFF !important;
+            border: 1px solid #C6D4CE !important;
+            box-shadow: none !important;
+        }
+        body.theme-cream .saldo-banner-icon {
+            background: #DFECE6 !important;
+            border-color: #B8CCC3 !important;
+        }
+        body.theme-cream .saldo-banner-title {
+            color: #475569 !important;
+        }
+        body.theme-cream .saldo-banner-val {
+            color: #0F172A !important;
+        }
+
+        /* Kartu & Header Bagian */
+        body.theme-cream .card {
+            background: #FFFFFF !important;
+            border: 1px solid #CBD5D0 !important;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+        }
+        body.theme-cream .card-header,
+        body.theme-cream .sidebar-section-hdr {
+            background: #E2ECE8 !important;
+            color: #1E3630 !important;
+            border: 1px solid #C5D3CD !important;
+            font-size: 12px !important;
+            font-weight: 800 !important;
+        }
+        body.theme-cream .filter-container,
+        body.theme-cream .stok-filter-bar {
+            background: #F2F6F4 !important;
+            border: 1px solid #CBD5D0 !important;
+        }
+        body.theme-cream .date-picker-input,
+        body.theme-cream .form-control,
+        body.theme-cream select,
+        body.theme-cream input[type="text"],
+        body.theme-cream input[type="number"],
+        body.theme-cream input[type="date"],
+        body.theme-cream input[type="month"] {
+            background: #FFFFFF !important;
+            color: #1E293B !important;
+            border: 1px solid #BCC9C3 !important;
+        }
+
+        /* Tabel Teduh & Mudah Dibaca seperti Lembar Kerja Excel */
+        body.theme-cream .table-responsive {
+            background: #FFFFFF !important;
+            border: 1px solid #CBD5D0 !important;
+            border-radius: 8px !important;
+        }
+        body.theme-cream table,
+        body.theme-cream .table-jurnal,
+        body.theme-cream .table-service,
+        body.theme-cream .table-piutang,
+        body.theme-cream .sidebar-mutasi-table {
+            background: #FFFFFF !important;
+            font-size: 11.5px !important;
+            font-variant-numeric: tabular-nums !important;
+        }
+        body.theme-cream th,
+        body.theme-cream thead th,
+        body.theme-cream .table-jurnal th,
+        body.theme-cream .sidebar-mutasi-table th {
+            background: #DFECE6 !important;
+            color: #1E3630 !important;
+            border-color: #B8CCC3 !important;
+            border-bottom: 2px solid #9FB8AD !important;
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.2px !important;
+        }
+        body.theme-cream tbody tr:nth-child(odd) td {
+            background-color: #FFFFFF !important;
+        }
+        body.theme-cream tbody tr:nth-child(even) td {
+            background-color: #F5F9F7 !important;
+        }
+        body.theme-cream td,
+        body.theme-cream tbody td,
+        body.theme-cream .table-jurnal td,
+        body.theme-cream .sidebar-mutasi-table td {
+            border-color: #DAE3DF !important;
+            color: #1E293B !important;
+            font-size: 11.5px !important;
+            font-weight: 600 !important;
+        }
+        body.theme-cream tbody tr:hover td,
+        body.theme-cream .table-jurnal tbody tr:hover td {
+            background-color: #E6F0EC !important;
+        }
+        body.theme-cream tfoot tr,
+        body.theme-cream tfoot td {
+            background-color: #DFECE6 !important;
+            color: #1E3630 !important;
+            border-color: #B8CCC3 !important;
+            font-weight: 800 !important;
+        }
+        body.theme-cream .jurnal-ket-cell,
+        body.theme-cream .jurnal-ket-desc,
+        body.theme-cream .waktu-seragam-top {
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            color: #1E293B !important;
+        }
+        body.theme-cream .waktu-seragam-bottom {
+            font-size: 10px !important;
+            font-weight: 600 !important;
+            color: #64748B !important;
+        }
+        body.theme-cream .text-kredit,
+        body.theme-cream .split-nom-masuk,
+        body.theme-cream .text-cuan {
+            color: #15803D !important;
+            font-weight: 700 !important;
+        }
+        body.theme-cream .text-debit,
+        body.theme-cream .split-nom-keluar {
+            color: #B91C1C !important;
+            font-weight: 700 !important;
+        }
+        body.theme-cream .bottom-nav {
+            background: rgba(248, 250, 249, 0.96) !important;
+            border: 1.5px solid #C6D4CE !important;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
+        }
+        body.theme-cream .nav-item {
+            background: #FFFFFF !important;
+            border: 1px solid #D5E0DB !important;
+            color: #334155 !important;
+            font-size: 8.5px !important;
+        }
+        body.theme-cream .nav-item .icon {
+            background: #E6F0EC !important;
+            border: 1px solid #C6D4CE !important;
+            color: #2C4C43 !important;
+            animation: none !important;
+        }
+        body.theme-cream .nav-item.active {
+            background: #2C4C43 !important;
+            border: 1.5px solid #1E3630 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 2px 8px rgba(44, 76, 67, 0.2) !important;
+            transform: none !important;
+        }
+        body.theme-cream .nav-item.active .nav-lbl-wrap {
+            color: #FFFFFF !important;
+        }
+        body.theme-cream .nav-item.active::after {
+            background: #A7F3D0 !important;
+            box-shadow: none !important;
+        }
+        body.theme-cream .nav-item.active .icon {
+            background: #FFFFFF !important;
+            color: #2C4C43 !important;
+            border-color: #A7F3D0 !important;
+            transform: none !important;
+            animation: none !important;
+            margin-bottom: 2px !important;
+            box-shadow: none !important;
+        }
+        body.theme-cream .sub-nav-bar-wrap {
+            background: #E2ECE8 !important;
+            border: 1px solid #C5D3CD !important;
+        }
+        body.theme-cream .sub-tab-btn,
+        body.theme-cream .sub-quick-btn {
+            background: #FFFFFF !important;
+            color: #1E3630 !important;
+            border: 1px solid #C5D3CD !important;
+        }
+        body.theme-cream .sub-tab-btn.active {
+            background: #2C4C43 !important;
+            color: #FFFFFF !important;
+            border-color: #1E3630 !important;
+        }
+        body.theme-cream .sidebar-header,
+        body.theme-cream .right-sidebar .sidebar-header {
+            background: linear-gradient(135deg, #2C4C43 0%, #3B6358 100%) !important;
+            color: #FFFFFF !important;
+        }
+
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { 
@@ -631,25 +939,26 @@
             line-height: 1.1; box-shadow: 0 1px 4px rgba(239, 68, 68, 0.5);
         }
         .saldo-banner-center {
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            flex: 1; cursor: pointer; padding: 2px 6px; border-radius: 8px;
-            transition: background-color 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            flex: 1; cursor: pointer; padding: 4px 14px; border-radius: 9px;
+            background: rgba(255, 255, 255, 0.65); border: 1px solid var(--border);
+            transition: background-color 0.15s, border-color 0.15s;
         }
         .saldo-banner-center:hover { background: rgba(15, 23, 42, 0.04); }
-        body.theme-dark .saldo-banner-center:hover { background: rgba(255, 255, 255, 0.04); }
+        body.theme-dark .saldo-banner-center { background: rgba(15, 23, 42, 0.45); }
+        body.theme-dark .saldo-banner-center:hover { background: rgba(255, 255, 255, 0.06); }
         .saldo-banner-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right; }
-        .saldo-banner-info { display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .saldo-banner-title { font-size: 9px; font-weight: 800; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase; }
+        .saldo-banner-info { display: flex; flex-direction: column; align-items: flex-start; text-align: left; line-height: 1.15; }
+        .saldo-banner-title { font-size: 9.5px; font-weight: 800; color: #64748B; letter-spacing: 0.6px; text-transform: uppercase; }
         body.theme-dark .saldo-banner-title { color: #94A3B8; }
-        .saldo-banner-val-wrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; }
-        .saldo-banner-val { font-size: 14px; font-weight: 900; color: #000000; letter-spacing: 0.2px; }
+        .saldo-banner-val-wrap { display: flex; align-items: baseline; justify-content: flex-start; gap: 6px; }
+        .saldo-banner-val { font-size: 15.5px; font-weight: 900; color: #0F172A; letter-spacing: 0.2px; font-variant-numeric: tabular-nums; }
         body.theme-dark .saldo-banner-val { color: #F8FAFC; }
-        .saldo-banner-sub { font-size: 9.5px; color: #64748B; font-weight: 700; }
-        body.theme-dark .saldo-banner-sub { color: #CBD5E1; }
+        .saldo-banner-sub { display: none !important; }
         .saldo-banner-icon {
-            width: 30px; height: 30px; border-radius: 8px; background: var(--card);
+            width: 32px; height: 32px; border-radius: 8px; background: var(--card);
             border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
-            font-size: 15px; flex-shrink: 0;
+            font-size: 16px; flex-shrink: 0;
         }
 
         .left-sidebar {
@@ -901,15 +1210,45 @@
         .radar-alert-item:last-child { margin-bottom: 0; }
 
         .jurnal-header-actions {
-            display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;
+            display: flex; align-items: center; gap: 7px; flex-wrap: wrap; justify-content: flex-end;
         }
+        /* Tombol Header Jurnal: Lebih Tinggi (Lebar Atas-Bawah Lega), Tulisan Jelas, & Seragam Warna Pindah Saldo (#4F46E5) */
         .btn-jurnal-hdr {
-            width: auto; padding: 5px 10px; font-size: 10.5px; font-weight: 800; border-radius: 7px;
-            border: none; color: #FFFFFF; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
-            white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.15s, filter 0.15s;
+            width: auto;
+            padding: 8.5px 13px !important;
+            min-height: 36px;
+            font-size: 11.5px !important;
+            font-weight: 800;
+            line-height: 1.25;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.24) !important;
+            background: #4F46E5 !important;
+            color: #FFFFFF !important;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25) !important;
+            transition: transform 0.15s, filter 0.15s, background 0.15s;
         }
-        .btn-jurnal-hdr:hover { filter: brightness(1.07); transform: translateY(-1px); }
+        .btn-jurnal-hdr:hover {
+            background: #4338CA !important;
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+        }
         .btn-jurnal-hdr:active { transform: scale(0.97); }
+        /* Khusus Tema Hitam / Mode Gelap: Warna Menyesuaikan agar Tidak Silau di Mata */
+        body.theme-dark .btn-jurnal-hdr {
+            background: #312E81 !important;
+            color: #E0E7FF !important;
+            border: 1px solid #6366F1 !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+        }
+        body.theme-dark .btn-jurnal-hdr:hover {
+            background: #3730A3 !important;
+        }
 
         .sidebar-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white;
@@ -2478,22 +2817,21 @@
                 order: -1;
                 width: 100% !important;
                 flex: 0 0 100% !important;
-                justify-content: space-between !important;
-                padding: 2px 4px 5px 4px !important;
-                border-bottom: 1px dashed rgba(16, 185, 129, 0.35);
+                justify-content: center !important;
+                padding: 5px 10px !important;
+                border-bottom: 1px solid var(--border);
             }
             .saldo-banner-info {
-                align-items: flex-end !important;
-                flex: 1;
+                align-items: center !important;
+                text-align: center !important;
+                flex: 0 1 auto;
             }
             .saldo-banner-title {
-                font-size: 8px !important;
-            }
-            .saldo-banner-sub {
-                font-size: 9.5px !important;
+                font-size: 8.5px !important;
+                letter-spacing: 0.5px !important;
             }
             .saldo-banner-val {
-                font-size: 13.5px !important;
+                font-size: 14.5px !important;
             }
             .saldo-banner-btn {
                 flex: 1 !important;
@@ -2523,15 +2861,16 @@
             .jurnal-header-actions {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
-                gap: 4px !important;
+                gap: 5px !important;
                 width: 100% !important;
             }
             .btn-jurnal-hdr {
                 width: 100% !important;
                 justify-content: center !important;
                 text-align: center !important;
-                padding: 6px 4px !important;
-                font-size: 9.2px !important;
+                padding: 8px 6px !important;
+                min-height: 34px !important;
+                font-size: 10px !important;
                 border-radius: 7px !important;
                 white-space: nowrap !important;
                 overflow: hidden;
@@ -2836,6 +3175,15 @@
                         <label>📢 Teks Berjalan Status Bar (Pemberitahuan / SOP Kasir)</label>
                         <input type="text" id="setTeksBerjalan" class="form-control" placeholder="Cth: HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER">
                         <small style="color:#64748B; font-size:10px; display:block; margin-top:3px;">Teks ini berjalan dari kanan ke kiri di area tengah status bar atas sebagai pengingat SOP harian.</small>
+                    </div>
+                    <div class="form-group" style="background:var(--bg); border:1px solid var(--border); padding:10px 12px; border-radius:10px; margin-top:8px;">
+                        <label style="font-size:11px; font-weight:800; margin-bottom:6px; display:block;">🎨 Pilih Tema Warna Pembukuan (Bisa Diganti Kapan Saja)</label>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:6px;">
+                            <button type="button" class="btn" onclick="window.setAppTheme('theme-cream')" style="background:#DFECE6; color:#1E3630; border:1.5px solid #9FB8AD; font-size:11px; padding:8px; font-weight:800;">🌿 Soft Teduh (Ramah Mata)</button>
+                            <button type="button" class="btn" onclick="window.setAppTheme('default')" style="background:#059669; color:#FFFFFF; font-size:11px; padding:8px; font-weight:800;">🌿 Hijau Emerald</button>
+                            <button type="button" class="btn" onclick="window.setAppTheme('theme-blue')" style="background:#0284C7; color:#FFFFFF; font-size:11px; padding:8px; font-weight:800;">💎 Biru Langit</button>
+                            <button type="button" class="btn" onclick="window.setAppTheme('theme-dark')" style="background:#1E293B; color:#F8FAFC; font-size:11px; padding:8px; font-weight:800;">🌙 Mode Gelap</button>
+                        </div>
                     </div>
                     <div style="display:flex; gap:8px; margin-top:12px;">
                         <button type="submit" id="btnSimpanIdentitas" class="btn" style="background:#0F172A; font-weight:700; flex:1; transition:all 0.25s ease;">💾 SIMPAN PERUBAHAN</button>
@@ -3759,7 +4107,6 @@
                 <div class="saldo-banner-info">
                     <span class="saldo-banner-title">TOTAL SALDO KONTER</span>
                     <div class="saldo-banner-val-wrap">
-                        <span class="saldo-banner-sub" id="topTotalSaldoSub">Cair: Rp0</span>
                         <span class="saldo-banner-val" id="topTotalSaldoRiil">Rp0</span>
                     </div>
                 </div>
@@ -4350,12 +4697,11 @@
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <span>📖 Jurnal Transaksi Harian</span>
                 <div class="jurnal-header-actions">
-                    <button type="button" class="btn-jurnal-hdr" style="background:#0F172A;" onclick="openModalStrukTransfer()" title="Cetak Struk Bukti Transfer / Scan Screenshot BRImo, myBCA, Livin, DANA">🧾 Struk TF / Scan SS</button>
-                    <button type="button" class="btn-jurnal-hdr" style="background:#0D9488;" onclick="openModalLaporanShift()" title="Buka Popup Laporan Akhir Shift & Audit Uang Fisik Laci">📑 Laporan Shift</button>
-                    <button type="button" class="btn-jurnal-hdr" style="background:#0284C7;" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
-                    <button type="button" class="btn-jurnal-hdr" style="background:#4F46E5;" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
-                    <button type="button" class="btn-jurnal-hdr" style="background:#DC2626;" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
-                    <button type="button" class="btn-jurnal-hdr" style="background:linear-gradient(135deg, #059669, #047857); padding:6px 13px; font-size:11px; box-shadow:0 3px 8px rgba(5,150,105,0.3);" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
+                    <button type="button" class="btn-jurnal-hdr" onclick="openModalLaporanShift()" title="Buka Popup Laporan Akhir Shift & Audit Uang Fisik Laci">📑 Laporan Shift</button>
+                    <button type="button" class="btn-jurnal-hdr" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
+                    <button type="button" class="btn-jurnal-hdr" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
+                    <button type="button" class="btn-jurnal-hdr" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
+                    <button type="button" class="btn-jurnal-hdr" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
                 </div>
             </div>
 
@@ -4684,9 +5030,26 @@
                     <thead>
                         <tr>
                             <th>TGL & WAKTU</th>
-                            <th>NAMA PELANGGAN</th>
+                            <th style="min-width:142px;">
+                                <div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
+                                    <span>NAMA PELANGGAN</span>
+                                    <select id="piutangSortNama" onchange="window.onChangeSortPiutang('NAMA', this.value)" style="width:100%; font-size:9.5px; font-weight:800; padding:2px 4px; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer;">
+                                        <option value="DEFAULT">Urutan: Default</option>
+                                        <option value="AZ">Abjad A s/d Z</option>
+                                    </select>
+                                </div>
+                            </th>
                             <th>KETERANGAN</th>
-                            <th>SISA UTANG</th>
+                            <th style="min-width:138px;">
+                                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+                                    <span>SISA UTANG</span>
+                                    <select id="piutangSortNominal" onchange="window.onChangeSortPiutang('NOMINAL', this.value)" style="width:100%; font-size:9.5px; font-weight:800; padding:2px 4px; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer;">
+                                        <option value="DEFAULT">Nominal: Default</option>
+                                        <option value="DESC">Terbesar ➔ Kecil</option>
+                                        <option value="ASC">Terkecil ➔ Besar</option>
+                                    </select>
+                                </div>
+                            </th>
                             <th>HISTORI CICILAN</th>
                             <th>KATEGORI</th>
                             <th>KELUAR DR</th>
@@ -4714,9 +5077,26 @@
                     <thead>
                         <tr>
                             <th>TGL & WAKTU UTANG</th>
-                            <th>NAMA PELANGGAN</th>
+                            <th style="min-width:142px;">
+                                <div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
+                                    <span>NAMA PELANGGAN</span>
+                                    <select id="piutangArsipSortNama" onchange="window.onChangeSortPiutangArsip('NAMA', this.value)" style="width:100%; font-size:9.5px; font-weight:800; padding:2px 4px; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer;">
+                                        <option value="DEFAULT">Urutan: Default</option>
+                                        <option value="AZ">Abjad A s/d Z</option>
+                                    </select>
+                                </div>
+                            </th>
                             <th>KETERANGAN</th>
-                            <th>TOTAL LUNAS</th>
+                            <th style="min-width:138px;">
+                                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+                                    <span>TOTAL LUNAS</span>
+                                    <select id="piutangArsipSortNominal" onchange="window.onChangeSortPiutangArsip('NOMINAL', this.value)" style="width:100%; font-size:9.5px; font-weight:800; padding:2px 4px; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer;">
+                                        <option value="DEFAULT">Nominal: Default</option>
+                                        <option value="DESC">Terbesar ➔ Kecil</option>
+                                        <option value="ASC">Terkecil ➔ Besar</option>
+                                    </select>
+                                </div>
+                            </th>
                             <th>HISTORI PELUNASAN</th>
                             <th>KATEGORI</th>
                             <th>KELUAR DR</th>
@@ -9179,20 +9559,67 @@
             }
         };
 
-        const themes = ['default', 'theme-blue', 'theme-dark'];
+        const themes = ['theme-cream', 'default', 'theme-blue', 'theme-dark'];
+        const themeLabels = {
+            'theme-cream': 'Soft Teduh (Ramah Mata)',
+            'default': 'Hijau Emerald',
+            'theme-blue': 'Biru Langit',
+            'theme-dark': 'Mode Gelap'
+        };
         let currentThemeIdx = 0;
         window.initTheme = function() {
-            const savedTheme = localStorage.getItem('zencell_theme') || 'default';
-            document.body.className = savedTheme;
+            // Default langsung ke tema Putih & Cream (Soft Excel) jika belum pernah memilih di versi v2
+            let savedTheme = localStorage.getItem('zencell_theme_v2');
+            if (!savedTheme) {
+                savedTheme = 'theme-cream';
+                localStorage.setItem('zencell_theme_v2', savedTheme);
+            }
+            document.body.classList.remove('theme-cream', 'theme-blue', 'theme-dark');
+            if (savedTheme && savedTheme !== 'default') {
+                document.body.classList.add(savedTheme);
+            }
             currentThemeIdx = themes.indexOf(savedTheme) !== -1 ? themes.indexOf(savedTheme) : 0;
-        }
+        };
+        window.setAppTheme = function(themeKey) {
+            const target = themes.includes(themeKey) ? themeKey : 'theme-cream';
+            currentThemeIdx = themes.indexOf(target);
+            document.body.classList.remove('theme-cream', 'theme-blue', 'theme-dark');
+            if (target !== 'default') {
+                document.body.classList.add(target);
+            }
+            localStorage.setItem('zencell_theme_v2', target);
+            localStorage.setItem('zencell_theme', target === 'default' ? '' : target);
+            const label = themeLabels[target] || target;
+            if (window.showToast) window.showToast(`🎨 Tema Aktif: ${label}`, 'success');
+            window.catatLogAktivitas('GANTI TEMA', `Mengubah tema tampilan ke ${label}`);
+        };
         window.switchTheme = function() {
             currentThemeIdx = (currentThemeIdx + 1) % themes.length;
             const newTheme = themes[currentThemeIdx];
-            document.body.className = newTheme === 'default' ? '' : newTheme;
-            localStorage.setItem('zencell_theme', document.body.className);
-            window.catatLogAktivitas('GANTI TEMA', `Mengubah tema tampilan ke ${newTheme || 'Default'}`);
-        }
+            window.setAppTheme(newTheme);
+        };
+
+        window.onChangeSortPiutang = function(type, val) {
+            if (type === 'NAMA' && val !== 'DEFAULT') {
+                const elNom = document.getElementById('piutangSortNominal');
+                if (elNom) elNom.value = 'DEFAULT';
+            } else if (type === 'NOMINAL' && val !== 'DEFAULT') {
+                const elNama = document.getElementById('piutangSortNama');
+                if (elNama) elNama.value = 'DEFAULT';
+            }
+            if (typeof window.renderAll === 'function') window.renderAll();
+        };
+
+        window.onChangeSortPiutangArsip = function(type, val) {
+            if (type === 'NAMA' && val !== 'DEFAULT') {
+                const elNom = document.getElementById('piutangArsipSortNominal');
+                if (elNom) elNom.value = 'DEFAULT';
+            } else if (type === 'NOMINAL' && val !== 'DEFAULT') {
+                const elNama = document.getElementById('piutangArsipSortNama');
+                if (elNama) elNama.value = 'DEFAULT';
+            }
+            if (typeof window.renderAll === 'function') window.renderAll();
+        };
 
         window.updateHeaderAndLoginClock = function() {
             const now = new Date();
@@ -14916,6 +15343,25 @@
                     activeGroupsMap.get(nmKey).items.push(p);
                 });
 
+                // Hitung total sisa per grup untuk sortir kolom Nama & Nominal
+                displayEntries.forEach(g => {
+                    g._totalSisaSort = g.items.reduce((acc, it) => acc + Number(it.sisa || 0), 0);
+                });
+
+                const sortNamaPiutang = document.getElementById('piutangSortNama')?.value || 'DEFAULT';
+                const sortNominalPiutang = document.getElementById('piutangSortNominal')?.value || 'DEFAULT';
+
+                if (sortNominalPiutang === 'DESC') {
+                    displayEntries.sort((a, b) => (b._totalSisaSort - a._totalSisaSort) || (a.namaDisplay || '').localeCompare(b.namaDisplay || '', 'id'));
+                    lunasTodayItems.sort((a, b) => Number(b.pokokAwal || b.sisa || 0) - Number(a.pokokAwal || a.sisa || 0));
+                } else if (sortNominalPiutang === 'ASC') {
+                    displayEntries.sort((a, b) => (a._totalSisaSort - b._totalSisaSort) || (a.namaDisplay || '').localeCompare(b.namaDisplay || '', 'id'));
+                    lunasTodayItems.sort((a, b) => Number(a.pokokAwal || a.sisa || 0) - Number(b.pokokAwal || b.sisa || 0));
+                } else if (sortNamaPiutang === 'AZ') {
+                    displayEntries.sort((a, b) => (a.namaDisplay || '').localeCompare(b.namaDisplay || '', 'id', { sensitivity: 'base' }));
+                    lunasTodayItems.sort((a, b) => ((a.nama || '').trim()).localeCompare((b.nama || '').trim(), 'id', { sensitivity: 'base' }));
+                }
+
                 const rowsHtmlList = [];
                 displayEntries.forEach(group => {
                     if (group.items.length === 1) {
@@ -15053,6 +15499,15 @@
                     const hay = `${p.nama || ''} ${p.catatan || ''} ${p.gadaiBarang || ''} ${p.gadaiKelengkapan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''} ${p.tglLunas || ''}`.toLowerCase();
                     return hay.includes(qPiutangArsip);
                 });
+                const sortArsipNama = document.getElementById('piutangArsipSortNama')?.value || 'DEFAULT';
+                const sortArsipNominal = document.getElementById('piutangArsipSortNominal')?.value || 'DEFAULT';
+                if (sortArsipNominal === 'DESC') {
+                    filteredArsip.sort((a, b) => Number(b.pokokAwal || b.sisa || 0) - Number(a.pokokAwal || a.sisa || 0));
+                } else if (sortArsipNominal === 'ASC') {
+                    filteredArsip.sort((a, b) => Number(a.pokokAwal || a.sisa || 0) - Number(b.pokokAwal || b.sisa || 0));
+                } else if (sortArsipNama === 'AZ') {
+                    filteredArsip.sort((a, b) => ((a.nama || '').trim()).localeCompare((b.nama || '').trim(), 'id', { sensitivity: 'base' }));
+                }
                 bPiutangArsip.innerHTML = filteredArsip.map(p => {
                     const pokokAwalP = Number(p.pokokAwal || p.sisa || 0);
                     const tagihanJualP = Math.max(pokokAwalP, Number(p.tagihanJual || 0));
