@@ -6605,7 +6605,10 @@
                     const r = data.vlookup[k];
                     if (r && typeof r === 'object') {
                         const realKey = String(r.origKey || k).toUpperCase().trim();
-                        loadedVlookup[realKey] = Object.assign({ origKey: realKey, isManual: true }, r);
+                        const normRule = window.normalizeVlookupRuleObject
+                            ? window.normalizeVlookupRuleObject(r, realKey)
+                            : Object.assign({ origKey: realKey, isManual: true }, r);
+                        loadedVlookup[realKey] = normRule;
                     }
                 });
                 window.masterVlookup = loadedVlookup;
@@ -10154,12 +10157,132 @@
             });
         };
 
+        window.normalizeAkunVlookup = function(rawAkun) {
+            const ak = String(rawAkun || '').toUpperCase().trim();
+            if (!ak || ak === '-' || ak === 'KOSONG' || ak === 'TANPA MODAL' || ak === 'TIDAK ADA' || ak === 'NULL' || ak === 'UNDEFINED') {
+                return '';
+            }
+            if (ak === 'DANA NINING') return 'DANA ECA';
+            if (ak === 'AMARTHA') return 'KOMISI EDC';
+            if (ak === 'ORDER KUOTA') return 'O KUOTA';
+            if (ak === 'BRANGKAS') return 'BRANKAS';
+            return ak;
+        };
+
+        window.parseNominalVlookup = function(val) {
+            if (val === undefined || val === null || val === '') return 0;
+            if (typeof val === 'number') return isFinite(val) ? val : 0;
+            const str = String(val).trim();
+            if (!str) return 0;
+            const cleaned = str.replace(/[^0-9-]/g, '');
+            const num = parseFloat(cleaned);
+            return isFinite(num) ? num : 0;
+        };
+
+        window.normalizeVlookupRuleObject = function(r, keyFallback) {
+            if (!r || typeof r !== 'object') return null;
+            const realKey = String(r.origKey || keyFallback || '').toUpperCase().trim();
+            const kat = String(r.kat || r.kategori || 'VOUCHER').toUpperCase().trim();
+            const akunMasuk = window.normalizeAkunVlookup(r.akunMasuk !== undefined ? r.akunMasuk : (r.akunMasuk1 || ''));
+            const akunKeluar = window.normalizeAkunVlookup(r.akunKeluar !== undefined ? r.akunKeluar : (r.akunKeluar1 || ''));
+            const akunMasuk2 = window.normalizeAkunVlookup(r.akunMasuk2 || '');
+            const akunKeluar2 = window.normalizeAkunVlookup(r.akunKeluar2 || '');
+
+            const defJual = window.parseNominalVlookup(r.defJual !== undefined ? r.defJual : (r.hargaJual !== undefined ? r.hargaJual : r.jual));
+            const defModal = window.parseNominalVlookup(r.defModal !== undefined ? r.defModal : (r.hargaModal !== undefined ? r.hargaModal : r.modal));
+            const jualSplit1 = r.jualSplit1 !== undefined ? window.parseNominalVlookup(r.jualSplit1) : defJual;
+            const jualSplit2 = window.parseNominalVlookup(r.jualSplit2);
+            const modalSplit1 = r.modalSplit1 !== undefined ? window.parseNominalVlookup(r.modalSplit1) : defModal;
+            const modalSplit2 = window.parseNominalVlookup(r.modalSplit2);
+            const isSplit = Boolean(r.isSplit && (akunMasuk2 || akunKeluar2 || jualSplit2 > 0 || modalSplit2 > 0));
+
+            return Object.assign({}, r, {
+                origKey: realKey,
+                isManual: r.isManual !== undefined ? Boolean(r.isManual) : true,
+                kat,
+                akunMasuk,
+                akunKeluar,
+                akunMasuk2,
+                akunKeluar2,
+                defJual,
+                defModal,
+                jualSplit1,
+                jualSplit2,
+                modalSplit1,
+                modalSplit2,
+                isSplit
+            });
+        };
+
+        window.findMasterVlookupRule = function(rawKet) {
+            const val = String(rawKet || '').toUpperCase().trim();
+            if (!val || !window.masterVlookup) return null;
+            const valSlash = val.replace(/[\/-]/g, '/');
+            const valDash = val.replace(/\//g, '-');
+            const valSan = sanitizeKey(val);
+
+            let direct = window.masterVlookup[val]
+                || window.masterVlookup[valSan]
+                || window.masterVlookup[valSlash]
+                || window.masterVlookup[valDash];
+            if (direct) return window.normalizeVlookupRuleObject(direct, val);
+
+            const allKeys = Object.keys(window.masterVlookup);
+            for (let i = 0; i < allKeys.length; i++) {
+                const k = allKeys[i];
+                const item = window.masterVlookup[k];
+                if (!item) continue;
+                const kUp = String(k).toUpperCase().trim();
+                const origUp = String(item.origKey || '').toUpperCase().trim();
+                if (
+                    kUp === val ||
+                    origUp === val ||
+                    kUp.replace(/[\/-]/g, '/') === valSlash ||
+                    origUp.replace(/[\/-]/g, '/') === valSlash ||
+                    sanitizeKey(kUp) === valSan
+                ) {
+                    return window.normalizeVlookupRuleObject(item, origUp || kUp);
+                }
+            }
+            return null;
+        };
+
+        window.setKasirSelectAkunSafe = function(selectId, rawAkunVal) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            const ak = window.normalizeAkunVlookup(rawAkunVal);
+            if (!ak) {
+                sel.value = '';
+                return;
+            }
+            let opt = Array.from(sel.options).find(o => String(o.value).toUpperCase().trim() === ak);
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = ak;
+                opt.textContent = ak;
+                sel.appendChild(opt);
+            } else if (opt.disabled) {
+                opt.disabled = false;
+            }
+            sel.value = opt.value;
+        };
+
+        // Normalisasi masterVlookup yang sudah terlanjur dimuat dari localStorage saat inisialisasi awal
+        if (window.masterVlookup && typeof window.masterVlookup === 'object') {
+            Object.keys(window.masterVlookup).forEach(k => {
+                const norm = window.normalizeVlookupRuleObject(window.masterVlookup[k], k);
+                if (norm) window.masterVlookup[k] = norm;
+            });
+        }
+
         window.syncKasirAkunDropdownRestrictions = function() {
             const ketRaw = (document.getElementById('keterangan')?.value || '').toUpperCase().trim();
             const editId = document.getElementById('editTrxId')?.value || '';
             const editTrxObj = editId ? (window.transaksiJurnal || []).find(x => x.id == editId) : null;
+            const matchedVlookup = window.findMasterVlookupRule ? window.findMasterVlookupRule(ketRaw) : null;
+            const vlookupUsesTedc = Boolean(matchedVlookup && (matchedVlookup.akunMasuk === 'KOMISI EDC' || matchedVlookup.akunMasuk2 === 'KOMISI EDC'));
 
-            const allowTedc = window.isKeteranganT_EDC(ketRaw) || Boolean(editTrxObj && window.isKeteranganT_EDC(editTrxObj.ket || ''));
+            const allowTedc = window.isKeteranganT_EDC(ketRaw) || vlookupUsesTedc || Boolean(editTrxObj && window.isKeteranganT_EDC(editTrxObj.ket || ''));
             const allowPelunasan = window.hasValidReferensiPelunasanPiutang(ketRaw, editTrxObj);
 
             ['akunMasuk1', 'splitAkunMasuk1', 'akunMasuk2'].forEach(id => {
@@ -10214,6 +10337,8 @@
             const isVlookupForm = Boolean(opts?.isVlookupForm);
             const editTrxObj = opts?.editTrxObj || null;
             const rules = window.ATURAN_AKUN_KASIR;
+            const matchedVlookup = !isVlookupForm && window.findMasterVlookupRule ? window.findMasterVlookupRule(ketRaw) : null;
+            const vlookupUsesTedc = Boolean(matchedVlookup && (matchedVlookup.akunMasuk === 'KOMISI EDC' || matchedVlookup.akunMasuk2 === 'KOMISI EDC'));
             const errors = [];
 
             // 1. Cek Akun Masuk
@@ -10226,7 +10351,7 @@
                     errors.push(`Akun Stok/Part <b>${ak}</b> tidak bisa menerima uang masuk di Kasir (penambahan nilai stok hanya melalui <b>Belanja Stok Opname / Sparepart</b>).`);
                 } else if (rules.BLOKIR_MASUK_PIUTANG.includes(ak)) {
                     errors.push(`Akun <b>PIUTANG</b> tidak bisa menjadi Akun Masuk di Kasir (gunakan menu <b>Catat Piutang Baru</b> untuk mencatat orang berutang).`);
-                } else if (ak === rules.KHUSUS_MASUK_TEDC && !window.isKeteranganT_EDC(ketRaw)) {
+                } else if (ak === rules.KHUSUS_MASUK_TEDC && !window.isKeteranganT_EDC(ketRaw) && !vlookupUsesTedc) {
                     errors.push(`Akun Masuk <b>KOMISI EDC</b> hanya boleh digunakan khusus untuk transaksi <b>"T EDC"</b>.`);
                 }
             });
@@ -10288,14 +10413,17 @@
 
         // =========================================================================
         // VALIDASI PASANGAN MENGUNCI DUA ARAH: NOMINAL (RP) <-> AKUN SALDO KASIR
-        // - Jika Akun dipilih -> Wajib ada Nominal (> 0)
+        // - Jika Akun dipilih -> Wajib ada Nominal (> 0) saat disimpan
         // - Jika Nominal diisi (> 0) -> Wajib pilih Akun
-        // - Jika diubah kembali ke sama-sama kosong (Akun = "" dan Nominal = 0) -> Blokir & sorot merah langsung terbuka!
+        // - Jika VLOOKUP mengisi Akun dengan Nominal template Rp 0, akun tetap terisi
+        //   dan tidak memunculkan error merah saat mengetik keterangan.
         // =========================================================================
         window.validasiPasanganNominalAkunKasir = function(opts) {
             const isSubmit = Boolean(opts?.isSubmit);
             const isSplit = Boolean(document.getElementById('chkSplit')?.checked);
             const kat = (document.getElementById('kategori')?.value || '').toUpperCase().trim();
+            const ketRaw = (document.getElementById('keterangan')?.value || '').toUpperCase().trim();
+            const matchedVlookup = window.findMasterVlookupRule ? window.findMasterVlookupRule(ketRaw) : null;
             const errors = [];
             const invalidFieldIds = [];
 
@@ -10312,6 +10440,14 @@
                         ? ((parseFloat(document.getElementById('jualSplit1')?.value) || 0) + (parseFloat(document.getElementById('jualSplit2')?.value) || 0))
                         : (parseFloat(document.getElementById('hargaJual')?.value) || 0);
                     if (isAutoPokokPiutang && currentJual > 0) {
+                        return;
+                    }
+                    // Saat sedang mengetik (bukan klik Simpan), jika akun terisi otomatis dari template VLOOKUP (nominal 0),
+                    // jangan tampilkan error merah agar kasir nyaman mengetik nominalnya terlebih dahulu.
+                    if (!isSubmit && matchedVlookup) {
+                        return;
+                    }
+                    if (!isSubmit) {
                         return;
                     }
                     errors.push(`<b>${labelAkun} [${ak}]</b> sudah dipilih, tetapi <b>${labelNominal}</b> masih <b>Rp 0</b>! Isi nominalnya atau kembalikan pilihan akun ke <b>"-- Pilih Akun --" (Kosong)</b>.`);
@@ -10442,31 +10578,31 @@
                 const matchTiket = window.tiketServisList.find(t => t.status !== 'LUNAS' && (t.nama.toUpperCase() === val || val.includes(t.nama.toUpperCase()) || t.noServis.toUpperCase() === val || (t.tipeHp && val.includes(t.tipeHp.toUpperCase()))));
                 if (matchTiket) {
                     document.getElementById('kategori').value = 'SERVICE';
-                    document.getElementById('akunMasuk1').value = 'LACI';
-                    document.getElementById('splitAkunMasuk1').value = 'LACI';
+                    window.setKasirSelectAkunSafe('akunMasuk1', 'LACI');
+                    window.setKasirSelectAkunSafe('splitAkunMasuk1', 'LACI');
                     
                     const hargaJual = Number(matchTiket.estBiaya || 0);
                     document.getElementById('hargaJual').value = hargaJual;
-                    document.getElementById('hargaJualDisplay').value = Number(hargaJual).toLocaleString('id-ID');
+                    document.getElementById('hargaJualDisplay').value = hargaJual > 0 ? Number(hargaJual).toLocaleString('id-ID') : '';
 
                     const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == matchTiket.id);
                     if (matchTiket.perluSparepart && Number(matchTiket.modalPart || 0) > 0) {
                         const m = Number(matchTiket.modalPart || 0);
                         document.getElementById('hargaModal').value = m;
                         document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
-                        document.getElementById('akunKeluar1').value = 'SPAREPART';
-                        document.getElementById('splitAkunKeluar1').value = 'SPAREPART';
+                        window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
+                        window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
                     } else if (spLinked && Number(spLinked.modal || 0) > 0) {
                         const m = Number(spLinked.modal || 0);
                         document.getElementById('hargaModal').value = m;
                         document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
-                        document.getElementById('akunKeluar1').value = 'SPAREPART';
-                        document.getElementById('splitAkunKeluar1').value = 'SPAREPART';
+                        window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
+                        window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
                     } else {
                         document.getElementById('hargaModal').value = '0';
                         document.getElementById('hargaModalDisplay').value = '';
-                        document.getElementById('akunKeluar1').value = '';
-                        document.getElementById('splitAkunKeluar1').value = '';
+                        window.setKasirSelectAkunSafe('akunKeluar1', '');
+                        window.setKasirSelectAkunSafe('splitAkunKeluar1', '');
                     }
 
                     window.hitungCuan();
@@ -10506,10 +10642,10 @@
 
                     const katGrupAsli = (matchPiutangGroup.find(it => it.kategori && it.kategori !== 'PIUTANG' && window.kategoriList.includes(it.kategori))?.kategori) || 'TOPUP';
                     document.getElementById('kategori').value = katGrupAsli;
-                    document.getElementById('akunMasuk1').value = 'LACI';
-                    document.getElementById('splitAkunMasuk1').value = 'LACI';
-                    document.getElementById('akunKeluar1').value = 'PIUTANG';
-                    document.getElementById('splitAkunKeluar1').value = 'PIUTANG';
+                    window.setKasirSelectAkunSafe('akunMasuk1', 'LACI');
+                    window.setKasirSelectAkunSafe('splitAkunMasuk1', 'LACI');
+                    window.setKasirSelectAkunSafe('akunKeluar1', 'PIUTANG');
+                    window.setKasirSelectAkunSafe('splitAkunKeluar1', 'PIUTANG');
 
                     if (matchPiutangGroup.length > 1 && !matchPiutangSpecific) {
                         let totalSisaPokok = 0;
@@ -10554,15 +10690,17 @@
                 const matchSparepart = window.sparepartList.find(s => s.status !== 'LUNAS' && (s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase())));
                 if (matchSparepart) {
                     document.getElementById('kategori').value = 'SERVICE';
-                    document.getElementById('akunKeluar1').value = 'SPAREPART';
-                    document.getElementById('splitAkunKeluar1').value = 'SPAREPART';
-                    const m = matchSparepart.modal * qtyVal;
+                    window.setKasirSelectAkunSafe('akunMasuk1', document.getElementById('akunMasuk1').value || 'LACI');
+                    window.setKasirSelectAkunSafe('splitAkunMasuk1', document.getElementById('splitAkunMasuk1').value || 'LACI');
+                    window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
+                    window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
+                    const m = Number(matchSparepart.modal || 0) * qtyVal;
                     document.getElementById('hargaModal').value = m;
-                    document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                    document.getElementById('hargaModalDisplay').value = m > 0 ? Number(m).toLocaleString('id-ID') : '';
                     if (matchSparepart.estJual) {
-                        const j = matchSparepart.estJual * qtyVal;
+                        const j = Number(matchSparepart.estJual || 0) * qtyVal;
                         document.getElementById('hargaJual').value = j;
-                        document.getElementById('hargaJualDisplay').value = Number(j).toLocaleString('id-ID');
+                        document.getElementById('hargaJualDisplay').value = j > 0 ? Number(j).toLocaleString('id-ID') : '';
                     }
                     window._pendingSparepartIdToLunas = matchSparepart.id;
                     window._pendingTiketIdToLunas = matchSparepart.idTiketRef || null;
@@ -10575,32 +10713,52 @@
                 }
 
                 const valSlash = val.replace(/[\/-]/g, '/');
-                const matchStokCandidates = window.stokOpnameItems.filter(s => {
+                const vRuleMatch = window.findMasterVlookupRule(val);
+                const vRuleHasSplit = Boolean(vRuleMatch && vRuleMatch.isSplit && (vRuleMatch.akunMasuk2 || vRuleMatch.akunKeluar2 || Number(vRuleMatch.jualSplit2 || 0) > 0 || Number(vRuleMatch.modalSplit2 || 0) > 0));
+
+                const matchStokCandidates = (window.stokOpnameItems || []).filter(s => {
                     const nm = (s.nama || s.namaBarang || '').toUpperCase().trim();
                     const nmSlash = nm.replace(/[\/-]/g, '/');
-                    return nm && (nm === val || val.includes(nm) || nmSlash === valSlash || valSlash.includes(nmSlash));
+                    if (!nm) return false;
+                    // Jika ada VLOOKUP manual yang cocok persis, hanya cocokkan Stok Opname jika namanya sama persis
+                    if (vRuleMatch) {
+                        return nm === val || nmSlash === valSlash;
+                    }
+                    return nm === val || val.includes(nm) || nmSlash === valSlash || valSlash.includes(nmSlash);
                 }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
                 const matchStok = matchStokCandidates[0];
-                const vRuleMatch = window.masterVlookup[val] || window.masterVlookup[sanitizeKey(val)] || window.masterVlookup[valSlash] || window.masterVlookup[val.replace(/\//g, '-')];
-                const vRuleHasSplit = Boolean(vRuleMatch && vRuleMatch.isSplit && ((vRuleMatch.akunMasuk2 && Number(vRuleMatch.jualSplit2 || 0) > 0) || (vRuleMatch.akunKeluar2 && Number(vRuleMatch.modalSplit2 || 0) > 0)));
+                const isManualNonStokVlookup = Boolean(vRuleMatch && vRuleMatch.kat && !['VOUCHER', 'SP', 'ACC'].includes(vRuleMatch.kat));
 
-                if (matchStok && !vRuleHasSplit) {
+                if (matchStok && !vRuleHasSplit && !isManualNonStokVlookup) {
                     const sisa = Number(matchStok.awal || 0) - Number(matchStok.terjual || 0);
                     const namaStok = matchStok.nama || matchStok.namaBarang || '';
                     if (sisa <= 0) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Stok [${namaStok}] Habis!`; }
                     else if (sisa <= 3) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Sisa Stok [${namaStok}] Tinggal ${sisa}!`; }
                     else { warnStok.style.display = 'none'; }
 
-                    document.getElementById('kategori').value = matchStok.kat;
-                    document.getElementById('akunKeluar1').value = matchStok.kat;
-                    document.getElementById('splitAkunKeluar1').value = matchStok.kat;
-                    
-                    const mStok = Number(matchStok.modal || 0) * qtyVal;
-                    document.getElementById('hargaModal').value = mStok;
-                    document.getElementById('hargaModalDisplay').value = Number(mStok).toLocaleString('id-ID');
+                    const isEditingTrx = Boolean(document.getElementById('editTrxId')?.value);
+                    const chkSplitEl = document.getElementById('chkSplit');
+                    if (!isEditingTrx && chkSplitEl && chkSplitEl.checked) {
+                        chkSplitEl.checked = false;
+                        window.toggleSplitMode(false);
+                    }
 
-                    if (Number(matchStok.jual || 0) > 0) {
-                        const jStok = Number(matchStok.jual || 0) * qtyVal;
+                    const katStok = matchStok.kat || (vRuleMatch && vRuleMatch.kat) || 'VOUCHER';
+                    const akunMasukStok = (vRuleMatch && vRuleMatch.akunMasuk) ? vRuleMatch.akunMasuk : (document.getElementById('akunMasuk1').value || 'LACI');
+                    document.getElementById('kategori').value = katStok;
+                    window.setKasirSelectAkunSafe('akunMasuk1', akunMasukStok);
+                    window.setKasirSelectAkunSafe('splitAkunMasuk1', akunMasukStok);
+                    window.setKasirSelectAkunSafe('akunKeluar1', katStok);
+                    window.setKasirSelectAkunSafe('splitAkunKeluar1', katStok);
+                    
+                    const baseModalStok = Number(matchStok.modal || 0) > 0 ? Number(matchStok.modal) : Number((vRuleMatch && vRuleMatch.defModal) || 0);
+                    const mStok = baseModalStok * qtyVal;
+                    document.getElementById('hargaModal').value = mStok;
+                    document.getElementById('hargaModalDisplay').value = mStok > 0 ? Number(mStok).toLocaleString('id-ID') : '';
+
+                    const baseJualStok = Number(matchStok.jual || 0) > 0 ? Number(matchStok.jual) : Number((vRuleMatch && vRuleMatch.defJual) || 0);
+                    if (baseJualStok > 0) {
+                        const jStok = baseJualStok * qtyVal;
                         document.getElementById('hargaJual').value = jStok;
                         document.getElementById('hargaJualDisplay').value = Number(jStok).toLocaleString('id-ID');
                     } else {
@@ -10610,17 +10768,30 @@
 
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = Number(matchStok.jual || 0) > 0
-                        ? `⚡ Auto-Fill Stok & Modal (${matchStok.kat})`
-                        : `⚡ Auto-Fill HPP (${matchStok.kat}: ${window.formatRp(mStok)}) — Silakan isi Harga Jual`;
+                    notice.innerText = baseJualStok > 0
+                        ? `⚡ Auto-Fill Stok & Modal (${katStok} • Masuk: ${akunMasukStok} ${window.formatRp(baseJualStok * qtyVal)} | Modal: ${window.formatRp(mStok)})`
+                        : `⚡ Auto-Fill HPP (${katStok}: ${window.formatRp(mStok)} • Masuk: ${akunMasukStok}) — Silakan isi Harga Jual`;
                     if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
                     if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
                     return;
-                } else if (!matchStok) { warnStok.style.display = 'none'; }
+                } else if (!matchStok) {
+                    warnStok.style.display = 'none';
+                }
 
                 if (vRuleMatch) {
                     const rule = vRuleMatch;
-                    if (rule.kat) document.getElementById('kategori').value = rule.kat;
+                    if (rule.kat) {
+                        const katEl = document.getElementById('kategori');
+                        if (katEl) {
+                            if (!Array.from(katEl.options).some(o => o.value === rule.kat)) {
+                                const optK = document.createElement('option');
+                                optK.value = rule.kat;
+                                optK.textContent = rule.kat;
+                                katEl.appendChild(optK);
+                            }
+                            katEl.value = rule.kat;
+                        }
+                    }
                     if (window.syncKasirAkunDropdownRestrictions) window.syncKasirAkunDropdownRestrictions();
 
                     const hasSplitRule = vRuleHasSplit;
@@ -10636,74 +10807,72 @@
                         const totalJ = j1 + j2;
                         const totalM = m1 + m2;
 
-                        if (rule.akunMasuk && j1 > 0) {
-                            document.getElementById('akunMasuk1').value = rule.akunMasuk;
-                            document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
-                        } else if (j1 <= 0) {
-                            document.getElementById('akunMasuk1').value = '';
-                            document.getElementById('splitAkunMasuk1').value = '';
-                        }
-                        document.getElementById('akunMasuk2').value = j2 > 0 ? (rule.akunMasuk2 || '') : '';
+                        window.setKasirSelectAkunSafe('akunMasuk1', rule.akunMasuk || '');
+                        window.setKasirSelectAkunSafe('splitAkunMasuk1', rule.akunMasuk || '');
+                        window.setKasirSelectAkunSafe('akunMasuk2', rule.akunMasuk2 || '');
                         document.getElementById('jualSplit1').value = j1;
-                        document.getElementById('jualSplit1Display').value = j1 ? Number(j1).toLocaleString('id-ID') : '';
+                        document.getElementById('jualSplit1Display').value = j1 > 0 ? Number(j1).toLocaleString('id-ID') : '';
                         document.getElementById('jualSplit2').value = j2;
-                        document.getElementById('jualSplit2Display').value = j2 ? Number(j2).toLocaleString('id-ID') : '';
+                        document.getElementById('jualSplit2Display').value = j2 > 0 ? Number(j2).toLocaleString('id-ID') : '';
 
-                        if (rule.akunKeluar && m1 > 0) {
-                            document.getElementById('akunKeluar1').value = rule.akunKeluar;
-                            document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
-                        } else if (m1 <= 0) {
-                            document.getElementById('akunKeluar1').value = '';
-                            document.getElementById('splitAkunKeluar1').value = '';
-                        }
-                        document.getElementById('akunKeluar2').value = m2 > 0 ? (rule.akunKeluar2 || '') : '';
+                        window.setKasirSelectAkunSafe('akunKeluar1', rule.akunKeluar || '');
+                        window.setKasirSelectAkunSafe('splitAkunKeluar1', rule.akunKeluar || '');
+                        window.setKasirSelectAkunSafe('akunKeluar2', rule.akunKeluar2 || '');
                         document.getElementById('modalSplit1').value = m1;
-                        document.getElementById('modalSplit1Display').value = m1 ? Number(m1).toLocaleString('id-ID') : '';
+                        document.getElementById('modalSplit1Display').value = m1 > 0 ? Number(m1).toLocaleString('id-ID') : '';
                         document.getElementById('modalSplit2').value = m2;
-                        document.getElementById('modalSplit2Display').value = m2 ? Number(m2).toLocaleString('id-ID') : '';
+                        document.getElementById('modalSplit2Display').value = m2 > 0 ? Number(m2).toLocaleString('id-ID') : '';
 
                         document.getElementById('hargaJual').value = totalJ;
-                        document.getElementById('hargaJualDisplay').value = totalJ ? Number(totalJ).toLocaleString('id-ID') : '';
+                        document.getElementById('hargaJualDisplay').value = totalJ > 0 ? Number(totalJ).toLocaleString('id-ID') : '';
                         document.getElementById('hargaModal').value = totalM;
-                        document.getElementById('hargaModalDisplay').value = totalM ? Number(totalM).toLocaleString('id-ID') : '';
+                        document.getElementById('hargaModalDisplay').value = totalM > 0 ? Number(totalM).toLocaleString('id-ID') : '';
 
                         window.hitungCuan();
                         if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
                         notice.style.display = 'block';
-                        notice.innerText = `⚡ VLOOKUP Split Saldo Ditemukan!`;
+                        notice.innerText = `⚡ VLOOKUP Split Saldo Otomatis Terisi! [${rule.kat || '-'}]`;
                         return;
                     } else {
                         const isEditingTrx = Boolean(document.getElementById('editTrxId')?.value);
                         const chkSplitEl = document.getElementById('chkSplit');
-                        if (!isEditingTrx && !(chkSplitEl && chkSplitEl.checked)) {
-                            const j = (rule.defJual !== undefined ? rule.defJual : 0) * qtyVal;
-                            const m = (rule.defModal !== undefined ? rule.defModal : 0) * qtyVal;
-                            if (rule.defJual !== undefined) {
-                                document.getElementById('hargaJual').value = j;
-                                document.getElementById('hargaJualDisplay').value = j ? Number(j).toLocaleString('id-ID') : '';
+                        if (!isEditingTrx) {
+                            if (chkSplitEl && chkSplitEl.checked) {
+                                chkSplitEl.checked = false;
+                                window.toggleSplitMode(false);
                             }
-                            if (rule.defModal !== undefined) {
-                                document.getElementById('hargaModal').value = m;
-                                document.getElementById('hargaModalDisplay').value = m ? Number(m).toLocaleString('id-ID') : '';
-                            }
-                            if (rule.akunMasuk && j > 0) {
-                                document.getElementById('akunMasuk1').value = rule.akunMasuk;
-                                document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
-                            } else if (rule.defJual !== undefined && j <= 0) {
-                                document.getElementById('akunMasuk1').value = '';
-                                document.getElementById('splitAkunMasuk1').value = '';
-                            }
-                            if (rule.akunKeluar && m > 0) {
-                                document.getElementById('akunKeluar1').value = rule.akunKeluar;
-                                document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
-                            } else if (rule.defModal !== undefined && m <= 0) {
-                                document.getElementById('akunKeluar1').value = '';
-                                document.getElementById('splitAkunKeluar1').value = '';
-                            }
+                            const j = Number(rule.defJual || 0) * qtyVal;
+                            const m = Number(rule.defModal || 0) * qtyVal;
+
+                            document.getElementById('hargaJual').value = j;
+                            document.getElementById('hargaJualDisplay').value = j > 0 ? Number(j).toLocaleString('id-ID') : '';
+                            document.getElementById('jualSplit1').value = j;
+                            document.getElementById('jualSplit1Display').value = j > 0 ? Number(j).toLocaleString('id-ID') : '';
+                            document.getElementById('jualSplit2').value = 0;
+                            document.getElementById('jualSplit2Display').value = '';
+
+                            document.getElementById('hargaModal').value = m;
+                            document.getElementById('hargaModalDisplay').value = m > 0 ? Number(m).toLocaleString('id-ID') : '';
+                            document.getElementById('modalSplit1').value = m;
+                            document.getElementById('modalSplit1Display').value = m > 0 ? Number(m).toLocaleString('id-ID') : '';
+                            document.getElementById('modalSplit2').value = 0;
+                            document.getElementById('modalSplit2Display').value = '';
+
+                            // Selalu isi Akun Masuk & Akun Keluar sesuai database VLOOKUP (meskipun nominal default di VLOOKUP = 0)
+                            window.setKasirSelectAkunSafe('akunMasuk1', rule.akunMasuk || '');
+                            window.setKasirSelectAkunSafe('splitAkunMasuk1', rule.akunMasuk || '');
+                            window.setKasirSelectAkunSafe('akunMasuk2', '');
+
+                            window.setKasirSelectAkunSafe('akunKeluar1', rule.akunKeluar || '');
+                            window.setKasirSelectAkunSafe('splitAkunKeluar1', rule.akunKeluar || '');
+                            window.setKasirSelectAkunSafe('akunKeluar2', '');
                         }
                         window.hitungCuan();
+                        const infoMasuk = rule.akunMasuk ? `${rule.akunMasuk}${Number(rule.defJual || 0) > 0 ? ' (' + window.formatRp(Number(rule.defJual || 0) * qtyVal) + ')' : ''}` : 'Tanpa Akun Masuk';
+                        const infoKeluar = rule.akunKeluar ? `${rule.akunKeluar}${Number(rule.defModal || 0) > 0 ? ' (' + window.formatRp(Number(rule.defModal || 0) * qtyVal) + ')' : ''}` : 'Tanpa Modal';
+                        const needNominalHint = (rule.akunMasuk && Number(rule.defJual || 0) <= 0) || (rule.akunKeluar && Number(rule.defModal || 0) <= 0);
                         notice.style.display = 'block';
-                        notice.innerText = `⚡ VLOOKUP Ditemukan!`;
+                        notice.innerText = `⚡ VLOOKUP Otomatis Terisi: [${rule.kat || '-'}] Masuk: ${infoMasuk} ➔ Keluar: ${infoKeluar}${needNominalHint ? ' — Silakan isi Nominal Rp' : ''}`;
                         if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
                         if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
                         return;
@@ -11210,9 +11379,11 @@
             document.getElementById('hargaModal').value = modal;
             document.getElementById('hargaModalDisplay').value = Number(modal).toLocaleString('id-ID');
 
-            document.getElementById('akunKeluar1').value = 'SPAREPART';
-            if (document.getElementById('akunMasuk1').value === 'SPAREPART') {
-                document.getElementById('akunMasuk1').value = 'LACI';
+            window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
+            window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
+            if (!document.getElementById('akunMasuk1').value || document.getElementById('akunMasuk1').value === 'SPAREPART') {
+                window.setKasirSelectAkunSafe('akunMasuk1', 'LACI');
+                window.setKasirSelectAkunSafe('splitAkunMasuk1', 'LACI');
             }
 
             document.getElementById('chkSplit').checked = false;
@@ -12910,8 +13081,8 @@
             }
 
             const newKat = document.getElementById('v_kat_fast').value;
-            const newMasuk = document.getElementById('v_akunMasuk_fast').value;
-            const newKeluar = document.getElementById('v_akunKeluar_fast').value || 'LACI';
+            const newMasuk = document.getElementById('v_akunMasuk_fast').value || '';
+            const newKeluar = document.getElementById('v_akunKeluar_fast').value || '';
             const newJual = parseFloat(document.getElementById('v_jual_fast').value) || 0;
             const newModal = parseFloat(document.getElementById('v_modal_fast').value) || 0;
 
@@ -13100,7 +13271,7 @@
             const akunKeluar2 = isSplitChecked ? (document.getElementById('v_akunKeluar2')?.value || '') : '';
             const m2 = isSplitChecked ? (parseFloat(document.getElementById('v_modal2')?.value) || 0) : 0;
 
-            const hasValidSplit = Boolean(isSplitChecked && ((akunMasuk2 && j2 > 0) || (akunKeluar2 && m2 > 0)));
+            const hasValidSplit = Boolean(isSplitChecked && (akunMasuk2 || akunKeluar2 || j2 > 0 || m2 > 0));
             const totalJualBaru = hasValidSplit ? (j1 + j2) : j1;
             const totalModalBaru = hasValidSplit ? (m1 + m2) : m1;
             const newKat = document.getElementById('v_kat').value;
