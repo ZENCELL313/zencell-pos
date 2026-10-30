@@ -2648,6 +2648,15 @@
             <h2 id="loginShopNameTitle">POS ZENCELL 1</h2>
             <p class="login-sub" id="loginGreetingText">Sistem Kasir, Servis & Pembukuan Realtime</p>
 
+            <div style="display:flex; gap:6px; justify-content:center; margin: 6px 0 8px 0;">
+                <button type="button" id="btnLoginBranch1" onclick="window.switchCabangZencell('1')" style="flex:1; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; border:1.5px solid #10B981; background:rgba(16,185,129,0.22); color:#ECFDF5; transition:all 0.2s;">
+                    🏢 POS ZENCELL 1
+                </button>
+                <button type="button" id="btnLoginBranch2" onclick="window.switchCabangZencell('2')" style="flex:1; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; border:1.5px solid rgba(148,163,184,0.35); background:rgba(15,23,42,0.45); color:#94A3B8; transition:all 0.2s;">
+                    🏢 POS ZENCELL 2
+                </button>
+            </div>
+
             <div class="login-live-clock-bar">
                 <span class="login-live-dot"></span>
                 <span id="loginLiveClockText">MEMUAT WAKTU...</span>
@@ -3373,6 +3382,10 @@
       ".read": "auth != null",
       ".write": "auth != null"
     },
+    "zencell2Nodes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
     "keuanganData": {
       ".read": true,
       ".write": true
@@ -3384,9 +3397,32 @@
   }
 }</div>
                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                            <button type="button" class="btn" style="flex:1; min-width:160px; background:#0F172A; color:#F8FAFC; font-size:11px; padding:7px 10px; margin:0;" onclick="window.copyFirebaseSecureRules()">📋 Salin Kode Rules (Aman 2 Web)</button>
+                            <button type="button" class="btn" style="flex:1; min-width:160px; background:#0F172A; color:#F8FAFC; font-size:11px; padding:7px 10px; margin:0;" onclick="window.copyFirebaseSecureRules()">📋 Salin Kode Rules (Aman Zencell 1, Zencell 2 &amp; Keuangan)</button>
                             <button type="button" class="btn" style="flex:0 0 auto; width:auto; background:#E2E8F0; color:#0F172A; font-size:11px; padding:7px 12px; margin:0;" onclick="window.testUlangFirebaseAuth()">🔄 Cek / Tes Auth</button>
                         </div>
+                    </div>
+
+                    <!-- PANEL MULTI-CABANG (CLONING POS ZENCELL 1 & POS ZENCELL 2) -->
+                    <div style="background:linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%); border:1.5px solid #93C5FD; border-radius:8px; padding:10px 12px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                            <div style="font-size:11.5px; font-weight:900; color:#1E3A8A; display:flex; align-items:center; gap:5px;">
+                                <span>🏢</span> MANAJEMEN CABANG (POS ZENCELL 1 &amp; POS ZENCELL 2)
+                            </div>
+                            <span id="setActiveBranchBadge" style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px; background:#DCFCE7; color:#166534; border:1px solid #86EFAC;">AKTIF: ZENCELL 1</span>
+                        </div>
+                        <div style="font-size:10.5px; color:#334155; line-height:1.45; margin-bottom:8px;">
+                            <b>Zencell 1</b> (node: <code>zencellNodes</code>) dan <b>Zencell 2</b> (node: <code>zencell2Nodes</code>) memakai kamar database &amp; saldo akun yang <b>100% terpisah</b> di dalam 1 file aplikasi yang sama. Kasir bisa dikunci lewat link khusus:
+                            <div style="margin-top:4px; font-family:monospace; font-size:10px; background:#F8FAFC; padding:5px 8px; border-radius:6px; border:1px dashed #CBD5E1; color:#0F172A;">
+                                • Link Zencell 1: <b>?cabang=1</b> &nbsp;|&nbsp; • Link Zencell 2: <b>?cabang=2</b>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+                            <button type="button" id="btnSetSwitchBranch1" class="btn" style="margin:0; font-size:11px; padding:7px 10px; background:#059669;" onclick="window.switchCabangZencell('1')">🏢 Buka POS ZENCELL 1</button>
+                            <button type="button" id="btnSetSwitchBranch2" class="btn" style="margin:0; font-size:11px; padding:7px 10px; background:#0284C7;" onclick="window.switchCabangZencell('2')">🏢 Buka POS ZENCELL 2</button>
+                        </div>
+                        <button type="button" class="btn" style="margin:0; font-size:10.5px; padding:7px 10px; background:#4F46E5; color:#FFF;" onclick="window.salinVlookupZencell1KeZencell2()">
+                            ⚡ Salin Rumus Master VLOOKUP dari Zencell 1 ke Zencell 2 (Tanpa Ubah Transaksi/Saldo)
+                        </button>
                     </div>
 
                     <button type="button" class="btn" style="background:#0284C7; font-size:11.5px;" onclick="window.saveAllToFirebase(); window.showToast('✅ Seluruh data berhasil disinkronkan ke Firebase Cloud!', 'success');">☁️ Backup / Sinkronkan ke Cloud Sekarang</button>
@@ -3556,6 +3592,10 @@
                     </button>
                     <button class="btn-icon-hdr" id="btnUndo" onclick="doUndo()" title="Undo (Batal Langkah)" disabled>↩️</button>
                     <button class="btn-icon-hdr" id="btnRedo" onclick="doRedo()" title="Redo (Ulang Langkah)" disabled>↪️</button>
+                    <button class="btn-icon-hdr" id="btnHeaderBranchSwitch" onclick="window.toggleSwitchCabangCepat()" title="Saklar Pindah Cabang Cepat: POS ZENCELL 1 ⇄ POS ZENCELL 2 (Khusus Owner)" style="display:none; background:rgba(15,23,42,0.38); border:1px solid rgba(125,211,252,0.75); color:#E0F2FE; font-weight:900; font-size:10.5px; align-items:center; gap:3px; padding:0 7px;">
+                        <span>🏢</span>
+                        <span id="lblHeaderBranchSwitch">Z1</span>
+                    </button>
                     <button class="btn-icon-hdr" id="btnHeaderDpiScale" onclick="toggleDpiScalePopover(event)" title="Atur Skala / Presisi Tampilan HP (Infinix Note Edge & Poco F4 GT)" style="background:rgba(15,23,42,0.32); border:1px solid rgba(254,240,138,0.65); color:#FEF08A; font-weight:800; font-size:10.5px; display:inline-flex; align-items:center; gap:3px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
                         <span id="lblHeaderDpiScale">AUTO</span>
@@ -5779,6 +5819,70 @@
         import { getDatabase, ref, onValue, set, update, get, off } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
         import { getAuth, initializeAuth, signInAnonymously, onAuthStateChanged, signOut, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
+        // =========================================================================
+        // SISTEM MULTI-CABANG PINTAR: POS ZENCELL 1 (zencellNodes) & POS ZENCELL 2 (zencell2Nodes)
+        // - Data & Akun Saldo 100% Terpisah dalam 1 File HTML yang Sama
+        // - Mendukung parameter URL ?cabang=1 atau ?cabang=2
+        // =========================================================================
+        (function initMultiCabangEngine() {
+            const rawLsGet = Storage.prototype.getItem.bind(localStorage);
+            const rawLsSet = Storage.prototype.setItem.bind(localStorage);
+            const rawLsRemove = Storage.prototype.removeItem.bind(localStorage);
+
+            window._rawLsGet = rawLsGet;
+            window._rawLsSet = rawLsSet;
+            window._rawLsRemove = rawLsRemove;
+
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const qCabang = (urlParams.get('cabang') || urlParams.get('toko') || '').trim();
+                if (qCabang === '2' || qCabang.toUpperCase() === 'ZENCELL2') {
+                    rawLsSet('zencell_active_branch', '2');
+                } else if (qCabang === '1' || qCabang.toUpperCase() === 'ZENCELL1') {
+                    rawLsSet('zencell_active_branch', '1');
+                }
+            } catch (e) {}
+
+            const savedBranch = rawLsGet('zencell_active_branch') === '2' ? '2' : '1';
+            window.ACTIVE_CABANG = savedBranch;
+            window.FIREBASE_ROOT_NODE = savedBranch === '2' ? 'zencell2Nodes' : 'zencellNodes';
+            window.DEFAULT_SHOP_NAME_CABANG = savedBranch === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+
+            const GLOBAL_SHARED_KEYS = new Set([
+                'zencell_active_branch',
+                'zencell_ui_scale_mode',
+                'zencell_login_bg_mode',
+                'zencell_bt_printer_name'
+            ]);
+
+            const mapStorageKey = (key) => {
+                const k = String(key || '');
+                if (window.ACTIVE_CABANG === '2' && k.startsWith('zencell_') && !GLOBAL_SHARED_KEYS.has(k)) {
+                    return 'zencell2_' + k.slice('zencell_'.length);
+                }
+                return k;
+            };
+
+            Storage.prototype.getItem = function(key) {
+                if (this === localStorage) {
+                    return rawLsGet(mapStorageKey(key));
+                }
+                return rawLsGet.call(this, key);
+            };
+            Storage.prototype.setItem = function(key, val) {
+                if (this === localStorage) {
+                    return rawLsSet(mapStorageKey(key), val);
+                }
+                return rawLsSet.call(this, key, val);
+            };
+            Storage.prototype.removeItem = function(key) {
+                if (this === localStorage) {
+                    return rawLsRemove(mapStorageKey(key));
+                }
+                return rawLsRemove.call(this, key);
+            };
+        })();
+
         function cekStatusKoneksiOnline() {
             const isOnline = navigator.onLine;
             let overlayOffline = document.getElementById('strictOfflineOverlay');
@@ -5919,7 +6023,7 @@
             'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'KOMISI EDC', 'BRANKAS'
         ];
 
-        window.DEFAULT_SALDO_AWAL = {
+        window.DEFAULT_SALDO_AWAL_Z1 = {
             'LACI': 59924357,
             'SEA ECA': 9745056,
             'DANA ECA': 0,
@@ -5947,6 +6051,13 @@
             'KOMISI EDC': 205500,
             'BRANKAS': 15590750
         };
+
+        window.DEFAULT_SALDO_AWAL_Z2 = {};
+        window.saldoList.forEach(s => { window.DEFAULT_SALDO_AWAL_Z2[s] = 0; });
+
+        window.DEFAULT_SALDO_AWAL = window.ACTIVE_CABANG === '2'
+            ? Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2)
+            : Object.assign({}, window.DEFAULT_SALDO_AWAL_Z1);
 
         window.hasNonZeroSaldoAwal = function(obj) {
             if (!obj || typeof obj !== 'object') return false;
@@ -6231,14 +6342,14 @@
         window.tiketServisList = JSON.parse(localStorage.getItem('zencell_tiket_servis') || '[]');
 
         window.pengaturanToko = JSON.parse(localStorage.getItem('zencell_pengaturan') || 'null') || {
-            namaToko: 'POS ZENCELL 1',
+            namaToko: window.DEFAULT_SHOP_NAME_CABANG || (window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1'),
             alamatToko: 'Nanggerang, Jalaksana, Kuningan, Jabar',
             kontakToko: 'WA: 0812-3456-7890',
             logoUrl: '',
             printerUkuran: '58mm',
             teksStruk: 'Terima kasih telah berbelanja di ZENCELL!\nBarang yang sudah dibeli tidak dapat ditukar/dikembalikan.',
             teksBerjalan: 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER',
-            targetModalBerputar: 250000000,
+            targetModalBerputar: window.ACTIVE_CABANG === '2' ? 0 : 250000000,
             modeAuditModal: 'HARIAN',
             offsetCuanKalibrasi: 0
         };
@@ -6722,6 +6833,10 @@
                         ".read": "auth != null",
                         ".write": "auth != null"
                     },
+                    zencell2Nodes: {
+                        ".read": "auth != null",
+                        ".write": "auth != null"
+                    },
                     keuanganData: {
                         ".read": true,
                         ".write": true
@@ -6734,12 +6849,139 @@
             }, null, 2);
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(rulesJson).then(() => {
-                    window.showToast("📋 Kode Rules (Aman untuk Zencell POS & Keuangan Pribadi) berhasil disalin!", "success");
+                    window.showToast("📋 Kode Rules (Aman untuk Zencell 1, Zencell 2 & Keuangan Pribadi) berhasil disalin!", "success");
                 }).catch(() => {
                     window.showToast("⚠️ Gagal menyalin otomatis, silakan blok & salin teks pada kotak kode.", "warning");
                 });
             } else {
                 window.showToast("⚠️ Silakan blok & salin teks pada kotak kode Rules.", "info");
+            }
+        };
+
+        window.syncCabangUIElements = function() {
+            const isZ2 = window.ACTIVE_CABANG === '2';
+            const lblHdr = document.getElementById('lblHeaderBranchSwitch');
+            const btnHdr = document.getElementById('btnHeaderBranchSwitch');
+            if (lblHdr) lblHdr.innerText = isZ2 ? 'Z2' : 'Z1';
+            if (btnHdr) {
+                btnHdr.style.background = isZ2
+                    ? 'linear-gradient(135deg, #0284C7, #1D4ED8)'
+                    : 'rgba(15,23,42,0.38)';
+                btnHdr.style.borderColor = isZ2 ? '#7DD3FC' : 'rgba(125,211,252,0.75)';
+            }
+
+            const b1Login = document.getElementById('btnLoginBranch1');
+            const b2Login = document.getElementById('btnLoginBranch2');
+            if (b1Login && b2Login) {
+                if (isZ2) {
+                    b1Login.style.border = '1.5px solid rgba(148,163,184,0.35)';
+                    b1Login.style.background = 'rgba(15,23,42,0.45)';
+                    b1Login.style.color = '#94A3B8';
+                    b2Login.style.border = '1.5px solid #38BDF8';
+                    b2Login.style.background = 'rgba(2,132,199,0.28)';
+                    b2Login.style.color = '#E0F2FE';
+                } else {
+                    b1Login.style.border = '1.5px solid #10B981';
+                    b1Login.style.background = 'rgba(16,185,129,0.22)';
+                    b1Login.style.color = '#ECFDF5';
+                    b2Login.style.border = '1.5px solid rgba(148,163,184,0.35)';
+                    b2Login.style.background = 'rgba(15,23,42,0.45)';
+                    b2Login.style.color = '#94A3B8';
+                }
+            }
+
+            const setBadge = document.getElementById('setActiveBranchBadge');
+            if (setBadge) {
+                setBadge.innerText = isZ2 ? 'AKTIF: POS ZENCELL 2 (zencell2Nodes)' : 'AKTIF: POS ZENCELL 1 (zencellNodes)';
+                setBadge.style.background = isZ2 ? '#DBEAFE' : '#DCFCE7';
+                setBadge.style.color = isZ2 ? '#1E40AF' : '#166534';
+                setBadge.style.borderColor = isZ2 ? '#93C5FD' : '#86EFAC';
+            }
+
+            const btnSet1 = document.getElementById('btnSetSwitchBranch1');
+            const btnSet2 = document.getElementById('btnSetSwitchBranch2');
+            if (btnSet1 && btnSet2) {
+                btnSet1.style.opacity = isZ2 ? '0.75' : '1';
+                btnSet2.style.opacity = isZ2 ? '1' : '0.75';
+                btnSet1.innerText = isZ2 ? '🏢 Pindah ke POS ZENCELL 1' : '✅ Sedang di POS ZENCELL 1';
+                btnSet2.innerText = isZ2 ? '✅ Sedang di POS ZENCELL 2' : '🏢 Pindah ke POS ZENCELL 2';
+            }
+        };
+
+        window.switchCabangZencell = function(targetCabang) {
+            const nextBranch = String(targetCabang) === '2' ? '2' : '1';
+            if (window.ACTIVE_CABANG === nextBranch) {
+                if (window.showToast) window.showToast(`ℹ️ Anda sudah berada di POS ZENCELL ${nextBranch}.`, 'info');
+                return;
+            }
+            const activeUser = (sessionStorage.getItem('zencell_user') || '').toUpperCase();
+            const isLoginScreenVisible = document.getElementById('loginOverlay')?.style.display !== 'none';
+            if (!isLoginScreenVisible && activeUser && activeUser !== 'OWNER' && !(window.isUserOwner && window.isUserOwner())) {
+                if (window.showToast) window.showToast('⛔ Hanya akun OWNER yang dapat berpindah cabang secara langsung!', 'error');
+                return;
+            }
+            if (window._rawLsSet) {
+                window._rawLsSet('zencell_active_branch', nextBranch);
+            } else {
+                localStorage.setItem('zencell_active_branch', nextBranch);
+            }
+            try {
+                const url = new URL(window.location.href);
+                if (url.searchParams.has('cabang') || url.searchParams.has('toko')) {
+                    url.searchParams.set('cabang', nextBranch);
+                    window.location.href = url.toString();
+                    return;
+                }
+            } catch (e) {}
+            window.location.reload();
+        };
+
+        window.toggleSwitchCabangCepat = function() {
+            const nextBranch = window.ACTIVE_CABANG === '2' ? '1' : '2';
+            const nextName = nextBranch === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+            if (confirm(`🏢 Pindah tampilan pembukuan ke cabang ${nextName}?\n\n(Seluruh data Zencell 1 dan Zencell 2 tersimpan terpisah 100% dengan aman)`)) {
+                window.switchCabangZencell(nextBranch);
+            }
+        };
+
+        window.salinVlookupZencell1KeZencell2 = async function() {
+            if (window.isUserOwner && !window.isUserOwner()) {
+                window.showToast('⛔ Hanya OWNER yang dapat menyalin Master VLOOKUP antar cabang!', 'error');
+                return;
+            }
+            if (!confirm('⚡ Salin seluruh daftar rumus harga otomatis (Master VLOOKUP) dari POS ZENCELL 1 ke POS ZENCELL 2?\n\nCatatan: Transaksi, Saldo Akun, Stok, dan Piutang Zencell 2 TIDAK akan berubah.')) {
+                return;
+            }
+            try {
+                window.showToast('⏳ Mengambil Master VLOOKUP dari POS ZENCELL 1...', 'info');
+                await window.ensureFirebaseAuthAndSync();
+                const snapV1 = await get(ref(db, 'zencellNodes/vlookup'));
+                if (!snapV1 || !snapV1.exists()) {
+                    window.showToast('⚠️ Master VLOOKUP di POS ZENCELL 1 masih kosong.', 'warn');
+                    return;
+                }
+                const vlookupZ1 = snapV1.val();
+                const countRules = Object.keys(vlookupZ1 || {}).length;
+                await update(ref(db, 'zencell2Nodes'), { vlookup: vlookupZ1 });
+                if (window.ACTIVE_CABANG === '2') {
+                    let loadedVlookup = {};
+                    Object.keys(vlookupZ1).forEach(k => {
+                        const r = vlookupZ1[k];
+                        if (r && typeof r === 'object') {
+                            const realKey = String(r.origKey || k).toUpperCase().trim();
+                            loadedVlookup[realKey] = Object.assign({ origKey: realKey, isManual: true }, r);
+                        }
+                    });
+                    window.masterVlookup = loadedVlookup;
+                    localStorage.setItem('zencell_vlookup', JSON.stringify(window.masterVlookup));
+                    window.initDropdowns();
+                    window.renderAll();
+                }
+                window.catatLogAktivitas('SALIN VLOOKUP CABANG', `Menyalin ${countRules} aturan Master VLOOKUP dari Zencell 1 ke Zencell 2`);
+                window.showToast(`✅ Berhasil menyalin ${countRules} rumus Master VLOOKUP dari Zencell 1 ke Zencell 2!`, 'success');
+            } catch (err) {
+                console.error('Gagal salin VLOOKUP Z1 -> Z2:', err);
+                window.showToast('❌ Gagal menyalin VLOOKUP: ' + (err.message || 'Periksa koneksi / Rules Firebase zencell2Nodes'), 'error');
             }
         };
 
@@ -6760,7 +7002,8 @@
         window.startRealtimeDatabaseListener = function() {
             if (window._rtdbListenerAttached) return;
             window._rtdbListenerAttached = true;
-            const zencellRef = ref(db, 'zencellNodes');
+            const rootNode = window.FIREBASE_ROOT_NODE || 'zencellNodes';
+            const zencellRef = ref(db, rootNode);
             window._rtdbUnsubscribe = onValue(zencellRef, (snapshot) => {
                 window._rtdbPermRetryCount = 0;
                 if (window._firebaseAuthState === 'PERMISSION_DENIED') {
@@ -6823,7 +7066,7 @@
                     window._rtdbUnsubscribe();
                     window._rtdbUnsubscribe = null;
                 } else {
-                    off(ref(db, 'zencellNodes'));
+                    off(ref(db, window.FIREBASE_ROOT_NODE || 'zencellNodes'));
                 }
             } catch (e) {}
             window._rtdbListenerAttached = false;
@@ -6880,7 +7123,8 @@
         window.verifyPinFromCloudIfNeeded = async function(user, pass) {
             try {
                 await window.ensureFirebaseAuthAndSync();
-                const snap = await get(ref(db, 'zencellNodes/daftarKaryawan'));
+                const rootNode = window.FIREBASE_ROOT_NODE || 'zencellNodes';
+                const snap = await get(ref(db, `${rootNode}/daftarKaryawan`));
                 if (snap && snap.exists()) {
                     const cloudStaff = snap.val();
                     if (Array.isArray(cloudStaff) && cloudStaff.length > 0) {
@@ -7029,7 +7273,7 @@
                     payload.logAktivitas = cleanForFirebase(window.logAktivitasList);
                     window._logDirty = false;
                 }
-                update(ref(db, 'zencellNodes'), payload).then(() => {
+                update(ref(db, window.FIREBASE_ROOT_NODE || 'zencellNodes'), payload).then(() => {
                     onFirebaseWriteComplete();
                 }).catch((err) => {
                     console.error('Firebase saveMultipleFirebaseNodes error:', err);
@@ -7093,7 +7337,7 @@
                 }
                 const fullPayload = cleanForFirebase(fullPayloadObj);
 
-                update(ref(db, 'zencellNodes'), fullPayload).then(() => {
+                update(ref(db, window.FIREBASE_ROOT_NODE || 'zencellNodes'), fullPayload).then(() => {
                     onFirebaseWriteComplete();
                 }).catch((err) => {
                     console.error('Firebase saveAllToFirebase error:', err);
@@ -9276,7 +9520,9 @@
         window.checkSessionLogin = function() {
             const activeUser = sessionStorage.getItem('zencell_user');
             const btnSetting = document.getElementById('btnHeaderSetting');
+            const btnBranchHdr = document.getElementById('btnHeaderBranchSwitch');
             const shiftKasirInput = document.getElementById('shiftKasirName');
+            if (window.syncCabangUIElements) window.syncCabangUIElements();
             if (activeUser) {
                 document.getElementById('hdrUserActive').innerText = activeUser.toUpperCase();
                 document.getElementById('loginOverlay').style.display = 'none';
@@ -9289,9 +9535,12 @@
                 const userObj = staffList.find(k => k.username.toUpperCase() === activeUser.toUpperCase());
                 const isOwner = (userObj && userObj.role === 'OWNER') || activeUser.toUpperCase() === 'OWNER';
 
-                // Menu Pengaturan hanya untuk akun OWNER
+                // Menu Pengaturan & Saklar Cabang hanya untuk akun OWNER
                 if (btnSetting) {
                     btnSetting.style.display = isOwner ? 'flex' : 'none';
+                }
+                if (btnBranchHdr) {
+                    btnBranchHdr.style.display = isOwner ? 'inline-flex' : 'none';
                 }
 
                 if (shiftKasirInput && activeUser.toUpperCase() !== 'TAMU') {
@@ -9308,6 +9557,7 @@
             } else { 
                 document.getElementById('loginOverlay').style.display = 'flex';
                 if (btnSetting) btnSetting.style.display = 'none';
+                if (btnBranchHdr) btnBranchHdr.style.display = 'none';
                 window.renderLoginUserOptions();
                 window.initLoginLiveBackground();
             }
@@ -9439,13 +9689,18 @@
                 }
             }
 
-            localStorage.clear();
+            [
+                'zencell_transaksi', 'zencell_stok', 'zencell_piutang', 'zencell_setoran',
+                'zencell_sparepart', 'zencell_tiket_servis', 'zencell_riwayat_belanja',
+                'zencell_operasional', 'zencell_log_aktivitas', 'zencell_saldo_awal',
+                'zencell_arsip_transaksi_detail'
+            ].forEach(k => localStorage.removeItem(k));
             window.clearAllEntityProtection();
             isFirebaseSyncing = false;
             window.saveAllToFirebase(true, true);
             window.renderAll();
             window.closeModalResetData();
-            window.showToast(ikutResetSaldoAwal ? "✅ Seluruh data & Saldo Awal berhasil di-reset bersih ke Rp 0!" : "✅ Seluruh data transaksi berhasil di-reset bersih (Saldo Awal tetap dipertahankan)!", "warn");
+            window.showToast(ikutResetSaldoAwal ? "✅ Seluruh data & Saldo Awal cabang ini berhasil di-reset bersih ke Rp 0!" : "✅ Seluruh data transaksi cabang ini berhasil di-reset bersih (Saldo Awal tetap dipertahankan)!", "warn");
         };
 
         window.getDefaultKasirDate = function() {
