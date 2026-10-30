@@ -5759,6 +5759,8 @@
                     </div>
                 </div>
 
+                <div id="pasanganAkunNominalBadge" style="display:none; background:#FEF2F2; color:#991B1B; border:1.5px solid #EF4444; border-radius:8px; padding:8px 10px; font-size:10.5px; font-weight:800; margin-bottom:10px; line-height:1.45;"></div>
+
                 <div class="form-group">
                     <label>Keuntungan / Cuan (Otomatis)</label>
                     <input type="text" id="cuanDisplay" class="form-control text-cuan" placeholder="0" readonly style="font-weight:bold; background-color:#FEF3C7;">
@@ -7720,8 +7722,9 @@
                 document.getElementById('akunKeluar1').value = 'SPAREPART';
             } else {
                 document.getElementById('hargaModal').value = '0';
-                document.getElementById('hargaModalDisplay').value = '0';
-                document.getElementById('akunKeluar1').value = 'LACI';
+                document.getElementById('hargaModalDisplay').value = '';
+                document.getElementById('akunKeluar1').value = '';
+                if (document.getElementById('splitAkunKeluar1')) document.getElementById('splitAkunKeluar1').value = '';
             }
 
             window.hitungCuan();
@@ -9542,6 +9545,14 @@
             if (btnSubmitEl) btnSubmitEl.innerText = 'Simpan Transaksi';
             document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
             window.updateTrxDateNoticeBadge();
+            ['akunMasuk1', 'akunKeluar1', 'splitAkunMasuk1', 'akunMasuk2', 'splitAkunKeluar1', 'akunKeluar2'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            ['hargaJualDisplay', 'hargaModalDisplay', 'jualSplit1Display', 'jualSplit2Display', 'modalSplit1Display', 'modalSplit2Display'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
             document.getElementById('hargaJual').value = '0';
             document.getElementById('hargaModal').value = '0';
             document.getElementById('jualSplit1').value = '0';
@@ -9555,11 +9566,14 @@
             if (mismatchEl) mismatchEl.style.display = 'none';
             const ruleBadgeEl = document.getElementById('akunRuleViolationBadge');
             if (ruleBadgeEl) ruleBadgeEl.style.display = 'none';
+            const pairBadgeEl = document.getElementById('pasanganAkunNominalBadge');
+            if (pairBadgeEl) { pairBadgeEl.style.display = 'none'; pairBadgeEl.innerHTML = ''; }
             window._pendingTiketIdToLunas = null;
             window._pendingSparepartIdToLunas = null;
             window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
             if (window.syncKasirAkunDropdownRestrictions) window.syncKasirAkunDropdownRestrictions();
             window.toggleSplitMode(false);
+            if (window.cekValidasiPasanganNominalAkunUI) window.cekValidasiPasanganNominalAkunUI();
         }
 
         window.applyKpiCollapseUI = function(isCollapsed) {
@@ -10011,6 +10025,133 @@
                 badge.style.display = 'none';
                 badge.innerHTML = '';
             }
+            if (window.cekValidasiPasanganNominalAkunUI) window.cekValidasiPasanganNominalAkunUI();
+            return res;
+        };
+
+        // =========================================================================
+        // VALIDASI PASANGAN MENGUNCI DUA ARAH: NOMINAL (RP) <-> AKUN SALDO KASIR
+        // - Jika Akun dipilih -> Wajib ada Nominal (> 0)
+        // - Jika Nominal diisi (> 0) -> Wajib pilih Akun
+        // - Jika diubah kembali ke sama-sama kosong (Akun = "" dan Nominal = 0) -> Blokir & sorot merah langsung terbuka!
+        // =========================================================================
+        window.validasiPasanganNominalAkunKasir = function(opts) {
+            const isSubmit = Boolean(opts?.isSubmit);
+            const isSplit = Boolean(document.getElementById('chkSplit')?.checked);
+            const kat = (document.getElementById('kategori')?.value || '').toUpperCase().trim();
+            const errors = [];
+            const invalidFieldIds = [];
+
+            const checkPair = (akunVal, nomVal, labelAkun, labelNominal, akunInputId, nomDisplayId) => {
+                const ak = String(akunVal || '').trim();
+                const nom = parseFloat(nomVal) || 0;
+                if (nom > 0 && !ak) {
+                    errors.push(`<b>${labelNominal}</b> sudah diisi <b>${window.formatRp(nom)}</b>, tetapi <b>${labelAkun}</b> belum dipilih!`);
+                    if (akunInputId) invalidFieldIds.push(akunInputId);
+                } else if (ak && nom <= 0) {
+                    // Pengecualian khusus: Pelunasan Piutang di mana Harga Modal (Pokok) otomatis mengikuti Harga Jual saat disimpan jika masih 0
+                    const isAutoPokokPiutang = (ak === 'PIUTANG' || kat === 'PIUTANG') && labelAkun.toUpperCase().includes('KELUAR');
+                    const currentJual = isSplit
+                        ? ((parseFloat(document.getElementById('jualSplit1')?.value) || 0) + (parseFloat(document.getElementById('jualSplit2')?.value) || 0))
+                        : (parseFloat(document.getElementById('hargaJual')?.value) || 0);
+                    if (isAutoPokokPiutang && currentJual > 0) {
+                        return;
+                    }
+                    errors.push(`<b>${labelAkun} [${ak}]</b> sudah dipilih, tetapi <b>${labelNominal}</b> masih <b>Rp 0</b>! Isi nominalnya atau kembalikan pilihan akun ke <b>"-- Pilih Akun --" (Kosong)</b>.`);
+                    if (nomDisplayId) invalidFieldIds.push(nomDisplayId);
+                }
+            };
+
+            let totalJual = 0;
+            let totalModal = 0;
+
+            if (isSplit) {
+                const am1 = document.getElementById('splitAkunMasuk1')?.value || '';
+                const j1 = parseFloat(document.getElementById('jualSplit1')?.value) || 0;
+                const am2 = document.getElementById('akunMasuk2')?.value || '';
+                const j2 = parseFloat(document.getElementById('jualSplit2')?.value) || 0;
+
+                const ak1 = document.getElementById('splitAkunKeluar1')?.value || '';
+                const m1 = parseFloat(document.getElementById('modalSplit1')?.value) || 0;
+                const ak2 = document.getElementById('akunKeluar2')?.value || '';
+                const m2 = parseFloat(document.getElementById('modalSplit2')?.value) || 0;
+
+                checkPair(am1, j1, 'Akun Masuk 1', 'Nominal Masuk 1', 'splitAkunMasuk1', 'jualSplit1Display');
+                checkPair(am2, j2, 'Akun Masuk 2', 'Nominal Masuk 2', 'akunMasuk2', 'jualSplit2Display');
+                checkPair(ak1, m1, 'Akun Keluar 1', 'Nominal Modal 1', 'splitAkunKeluar1', 'modalSplit1Display');
+                checkPair(ak2, m2, 'Akun Keluar 2', 'Nominal Modal 2', 'akunKeluar2', 'modalSplit2Display');
+
+                totalJual = j1 + j2;
+                totalModal = m1 + m2;
+            } else {
+                const am1 = document.getElementById('akunMasuk1')?.value || '';
+                const j1 = parseFloat(document.getElementById('hargaJual')?.value) || 0;
+                const ak1 = document.getElementById('akunKeluar1')?.value || '';
+                const m1 = parseFloat(document.getElementById('hargaModal')?.value) || 0;
+
+                checkPair(am1, j1, 'Uang Masuk Ke (Akun 1)', 'Harga Jual Total', 'akunMasuk1', 'hargaJualDisplay');
+                checkPair(ak1, m1, 'Modal Keluar Dari (Akun 1)', 'Harga Modal / HPP', 'akunKeluar1', 'hargaModalDisplay');
+
+                totalJual = j1;
+                totalModal = m1;
+            }
+
+            if (isSubmit && errors.length === 0 && totalJual <= 0 && totalModal <= 0) {
+                errors.push(`Transaksi belum memiliki nominal! Harap isi minimal <b>Uang Masuk (Harga Jual)</b> atau <b>Modal Keluar (HPP)</b> beserta akun saldonya.`);
+                if (isSplit) {
+                    invalidFieldIds.push('splitAkunMasuk1', 'jualSplit1Display');
+                } else {
+                    invalidFieldIds.push('akunMasuk1', 'hargaJualDisplay');
+                }
+            }
+
+            return {
+                valid: errors.length === 0,
+                errors,
+                invalidFieldIds
+            };
+        };
+
+        window.cekValidasiPasanganNominalAkunUI = function() {
+            const allFieldIds = [
+                'akunMasuk1', 'hargaJualDisplay',
+                'akunKeluar1', 'hargaModalDisplay',
+                'splitAkunMasuk1', 'jualSplit1Display',
+                'akunMasuk2', 'jualSplit2Display',
+                'splitAkunKeluar1', 'modalSplit1Display',
+                'akunKeluar2', 'modalSplit2Display'
+            ];
+            allFieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.borderColor = '';
+                    el.style.backgroundColor = '';
+                    el.style.boxShadow = '';
+                }
+            });
+
+            const res = window.validasiPasanganNominalAkunKasir({ isSubmit: false });
+            const badge = document.getElementById('pasanganAkunNominalBadge');
+
+            if (!res.valid) {
+                res.invalidFieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.borderColor = '#EF4444';
+                        el.style.backgroundColor = '#FEF2F2';
+                        el.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.22)';
+                    }
+                });
+                if (badge) {
+                    badge.style.display = 'block';
+                    badge.innerHTML = `⚠️ <b>PASANGAN AKUN &amp; NOMINAL BELUM LENGKAP:</b><br>• ${res.errors.join('<br>• ')}`;
+                }
+            } else {
+                if (badge) {
+                    badge.style.display = 'none';
+                    badge.innerHTML = '';
+                }
+            }
             return res;
         };
 
@@ -10066,9 +10207,9 @@
                         document.getElementById('splitAkunKeluar1').value = 'SPAREPART';
                     } else {
                         document.getElementById('hargaModal').value = '0';
-                        document.getElementById('hargaModalDisplay').value = '0';
-                        document.getElementById('akunKeluar1').value = 'LACI';
-                        document.getElementById('splitAkunKeluar1').value = 'LACI';
+                        document.getElementById('hargaModalDisplay').value = '';
+                        document.getElementById('akunKeluar1').value = '';
+                        document.getElementById('splitAkunKeluar1').value = '';
                     }
 
                     window.hitungCuan();
@@ -10238,30 +10379,36 @@
                         const totalJ = j1 + j2;
                         const totalM = m1 + m2;
 
-                        if (rule.akunMasuk) {
+                        if (rule.akunMasuk && j1 > 0) {
                             document.getElementById('akunMasuk1').value = rule.akunMasuk;
                             document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
+                        } else if (j1 <= 0) {
+                            document.getElementById('akunMasuk1').value = '';
+                            document.getElementById('splitAkunMasuk1').value = '';
                         }
-                        document.getElementById('akunMasuk2').value = rule.akunMasuk2 || '';
+                        document.getElementById('akunMasuk2').value = j2 > 0 ? (rule.akunMasuk2 || '') : '';
                         document.getElementById('jualSplit1').value = j1;
-                        document.getElementById('jualSplit1Display').value = j1 ? Number(j1).toLocaleString('id-ID') : '0';
+                        document.getElementById('jualSplit1Display').value = j1 ? Number(j1).toLocaleString('id-ID') : '';
                         document.getElementById('jualSplit2').value = j2;
-                        document.getElementById('jualSplit2Display').value = j2 ? Number(j2).toLocaleString('id-ID') : '0';
+                        document.getElementById('jualSplit2Display').value = j2 ? Number(j2).toLocaleString('id-ID') : '';
 
-                        if (rule.akunKeluar) {
+                        if (rule.akunKeluar && m1 > 0) {
                             document.getElementById('akunKeluar1').value = rule.akunKeluar;
                             document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
+                        } else if (m1 <= 0) {
+                            document.getElementById('akunKeluar1').value = '';
+                            document.getElementById('splitAkunKeluar1').value = '';
                         }
-                        document.getElementById('akunKeluar2').value = rule.akunKeluar2 || '';
+                        document.getElementById('akunKeluar2').value = m2 > 0 ? (rule.akunKeluar2 || '') : '';
                         document.getElementById('modalSplit1').value = m1;
-                        document.getElementById('modalSplit1Display').value = m1 ? Number(m1).toLocaleString('id-ID') : '0';
+                        document.getElementById('modalSplit1Display').value = m1 ? Number(m1).toLocaleString('id-ID') : '';
                         document.getElementById('modalSplit2').value = m2;
-                        document.getElementById('modalSplit2Display').value = m2 ? Number(m2).toLocaleString('id-ID') : '0';
+                        document.getElementById('modalSplit2Display').value = m2 ? Number(m2).toLocaleString('id-ID') : '';
 
                         document.getElementById('hargaJual').value = totalJ;
-                        document.getElementById('hargaJualDisplay').value = Number(totalJ).toLocaleString('id-ID');
+                        document.getElementById('hargaJualDisplay').value = totalJ ? Number(totalJ).toLocaleString('id-ID') : '';
                         document.getElementById('hargaModal').value = totalM;
-                        document.getElementById('hargaModalDisplay').value = Number(totalM).toLocaleString('id-ID');
+                        document.getElementById('hargaModalDisplay').value = totalM ? Number(totalM).toLocaleString('id-ID') : '';
 
                         window.hitungCuan();
                         if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
@@ -10272,23 +10419,29 @@
                         const isEditingTrx = Boolean(document.getElementById('editTrxId')?.value);
                         const chkSplitEl = document.getElementById('chkSplit');
                         if (!isEditingTrx && !(chkSplitEl && chkSplitEl.checked)) {
-                            if (rule.akunMasuk) {
-                                document.getElementById('akunMasuk1').value = rule.akunMasuk;
-                                document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
-                            }
-                            if (rule.akunKeluar) {
-                                document.getElementById('akunKeluar1').value = rule.akunKeluar;
-                                document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
-                            }
+                            const j = (rule.defJual !== undefined ? rule.defJual : 0) * qtyVal;
+                            const m = (rule.defModal !== undefined ? rule.defModal : 0) * qtyVal;
                             if (rule.defJual !== undefined) {
-                                const j = rule.defJual * qtyVal;
                                 document.getElementById('hargaJual').value = j;
-                                document.getElementById('hargaJualDisplay').value = Number(j).toLocaleString('id-ID');
+                                document.getElementById('hargaJualDisplay').value = j ? Number(j).toLocaleString('id-ID') : '';
                             }
                             if (rule.defModal !== undefined) {
-                                const m = rule.defModal * qtyVal;
                                 document.getElementById('hargaModal').value = m;
-                                document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                                document.getElementById('hargaModalDisplay').value = m ? Number(m).toLocaleString('id-ID') : '';
+                            }
+                            if (rule.akunMasuk && j > 0) {
+                                document.getElementById('akunMasuk1').value = rule.akunMasuk;
+                                document.getElementById('splitAkunMasuk1').value = rule.akunMasuk;
+                            } else if (rule.defJual !== undefined && j <= 0) {
+                                document.getElementById('akunMasuk1').value = '';
+                                document.getElementById('splitAkunMasuk1').value = '';
+                            }
+                            if (rule.akunKeluar && m > 0) {
+                                document.getElementById('akunKeluar1').value = rule.akunKeluar;
+                                document.getElementById('splitAkunKeluar1').value = rule.akunKeluar;
+                            } else if (rule.defModal !== undefined && m <= 0) {
+                                document.getElementById('akunKeluar1').value = '';
+                                document.getElementById('splitAkunKeluar1').value = '';
                             }
                         }
                         window.hitungCuan();
@@ -10389,6 +10542,7 @@
             let j = isSplit ? (parseFloat(document.getElementById('jualSplit1').value)||0) + (parseFloat(document.getElementById('jualSplit2').value)||0) : parseFloat(document.getElementById('hargaJual').value)||0;
             let m = isSplit ? (parseFloat(document.getElementById('modalSplit1').value)||0) + (parseFloat(document.getElementById('modalSplit2').value)||0) : parseFloat(document.getElementById('hargaModal').value)||0;
             document.getElementById('cuanDisplay').value = window.formatRp(j - m);
+            if (window.cekValidasiPasanganNominalAkunUI) window.cekValidasiPasanganNominalAkunUI();
         }
 
         window.initDropdowns = function() {
@@ -12947,15 +13101,28 @@
             let akunMasuk1 = '', akunMasuk2 = '', jualSplit1 = 0, jualSplit2 = 0, hargaJualTotal = 0;
             let akunKeluar1 = '', akunKeluar2 = '', modalSplit1 = 0, modalSplit2 = 0, hargaModalTotal = 0;
 
+            // VALIDASI PASANGAN MENGUNCI DUA ARAH (NOMINAL <-> AKUN SALDO)
+            if (window.validasiPasanganNominalAkunKasir) {
+                const pairCheck = window.validasiPasanganNominalAkunKasir({ isSubmit: true });
+                if (!pairCheck.valid) {
+                    if (window.cekValidasiPasanganNominalAkunUI) window.cekValidasiPasanganNominalAkunUI();
+                    const firstInvalidId = pairCheck.invalidFieldIds[0];
+                    if (firstInvalidId && document.getElementById(firstInvalidId)) {
+                        document.getElementById(firstInvalidId).focus();
+                    }
+                    const plainMsg = pairCheck.errors.map(x => '• ' + x.replace(/<[^>]+>/g, '')).join('\n');
+                    if (window.showToast) window.showToast("⛔ Simpan ditolak: Pasangan Akun & Nominal belum lengkap!", "error");
+                    alert(`⛔ PROTEKSI PASANGAN AKUN & NOMINAL KASIR:\n\n${plainMsg}\n\nCatatan: Jika memang tidak ada transaksi pada bagian tersebut, pastikan Akun dikosongkan ("-- Pilih Akun --") dan Nominal Rp 0.`);
+                    return;
+                }
+            }
+
             if (isSplit) {
                 akunMasuk1 = document.getElementById('splitAkunMasuk1').value;
                 jualSplit1 = parseFloat(document.getElementById('jualSplit1').value) || 0;
                 akunMasuk2 = document.getElementById('akunMasuk2').value;
                 jualSplit2 = parseFloat(document.getElementById('jualSplit2').value) || 0;
 
-                if (jualSplit2 > 0 && !akunMasuk2) {
-                    return alert("Harap pilih Akun Masuk 2 untuk nominal pembayaran kedua!");
-                }
                 if (!akunMasuk2 || jualSplit2 <= 0) {
                     akunMasuk2 = '';
                     jualSplit2 = 0;
@@ -12973,9 +13140,6 @@
                 akunKeluar2 = document.getElementById('akunKeluar2').value;
                 modalSplit2 = parseFloat(document.getElementById('modalSplit2').value) || 0;
 
-                if (modalSplit2 > 0 && !akunKeluar2) {
-                    return alert("Harap pilih Akun Keluar 2 untuk nominal modal kedua!");
-                }
                 if (!akunKeluar2 || modalSplit2 <= 0) {
                     akunKeluar2 = '';
                     modalSplit2 = 0;
@@ -13008,8 +13172,6 @@
                 akunKeluar2 = '';
                 modalSplit2 = 0;
             }
-
-            if (!akunMasuk1) return alert("Pilih Akun Masuk!");
 
             const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
 
@@ -19872,8 +20034,6 @@
                 ketEl.value = (item.nama || item.namaBarang || '').toUpperCase();
                 ketEl.dispatchEvent(new Event('input'));
             }
-            const mMasuk = document.getElementById('akunMasuk1');
-            if (mMasuk && !mMasuk.value) mMasuk.value = 'LACI';
             window.hitungCuan();
         };
 
