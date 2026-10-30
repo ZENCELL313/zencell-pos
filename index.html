@@ -2645,7 +2645,7 @@
                 </div>
             </div>
 
-            <h2 id="loginShopNameTitle">POS ZENCELL 1</h2>
+            <h2 id="loginShopNameTitle">POS ZENCELL</h2>
             <p class="login-sub" id="loginGreetingText">Sistem Kasir, Servis & Pembukuan Realtime</p>
 
             <div style="display:flex; gap:6px; justify-content:center; margin: 6px 0 8px 0;">
@@ -6589,6 +6589,8 @@
             if (!data) {
                 isFirebaseSyncing = false;
                 window.hasInitialCloudLoaded = true;
+                if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
+                if (window.renderAll) window.renderAll();
                 return;
             }
             isFirebaseSyncing = true;
@@ -17931,7 +17933,8 @@
 
         window.applyPengaturanTokoKeUI = function() {
             const p = window.pengaturanToko || {};
-            const storeName = p.namaToko || 'POS ZENCELL 1';
+            const defaultBranchName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+            const storeName = p.namaToko || defaultBranchName;
 
             const headerTitle = document.getElementById('appHeaderShopName');
             if (headerTitle) {
@@ -17939,7 +17942,7 @@
             }
             const loginTitle = document.getElementById('loginShopNameTitle');
             if (loginTitle) {
-                loginTitle.innerText = storeName;
+                loginTitle.innerText = 'POS ZENCELL';
             }
             document.title = `${storeName} - Pembukuan & Kasir Konter`;
 
@@ -17979,6 +17982,7 @@
                 window.updateDynamicManifest();
             }
         };
+        window.applyPengaturanTokoKeUI();
 
         window.handleUploadLogo = function(e) {
             const file = e.target.files[0];
