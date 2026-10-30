@@ -50,73 +50,79 @@
         }
 
         /* ==========================================================================
-           TEMA SOFT TEDUH (RAMAH MATA / ANTI-SILAU ALA EXCEL MODERN)
-           - Latar Halaman Teduh Anti-Silau (#ECF1EF) & Kartu Putih Susu (#FAFBF9 / #FFFFFF)
-           - Header & Judul Kolom Soft Sage-Slate (#2C4C43 & #E2ECE8)
-           - Baris Tabel Selang-Seling Lembut (#FFFFFF & #F4F8F6)
+           TEMA NUANSA PUTIH BERSIH (MINIMALIS, SERAGAM & BERSIH ALA LEMBAR KERJA)
+           - Dominan Putih Asli (#FFFFFF) pada Header, Kartu, Tabel & Tombol
+           - Latar Belakang Abu-Putih Sangat Halus (#F8FAFC) & Garis Abu Tipis (#CBD5E1)
+           - Teks Kontras Gelap Seragam (#0F172A) Tanpa Warna-Warni Mencolok
            ========================================================================== */
         body.theme-cream {
-            --primary: #2C4C43;
-            --primary-dark: #1E3630;
-            --primary-light: #E2ECE8;
-            --accent: #3B6358;
-            --bg: #ECF1EF;
+            --primary: #1E293B;
+            --primary-dark: #0F172A;
+            --primary-light: #F1F5F9;
+            --accent: #334155;
+            --bg: #F8FAFC;
             --card: #FFFFFF;
-            --text: #1E293B;
+            --text: #0F172A;
             --debit: #B91C1C;
             --kredit: #15803D;
-            --border: #CBD5D0;
-            background-color: #ECF1EF !important;
+            --border: #CBD5E1;
+            background-color: #F8FAFC !important;
         }
 
         body.theme-cream header {
-            background: linear-gradient(135deg, #2C4C43 0%, #3B6358 100%) !important;
-            color: #F8FAFC !important;
-            border-bottom: 1.5px solid #1E3630 !important;
-            box-shadow: 0 2px 8px rgba(30, 54, 48, 0.12) !important;
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            border-bottom: 1.5px solid #CBD5E1 !important;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05) !important;
         }
         body.theme-cream .header-title h1 {
-            color: #F8FAFC !important;
+            color: #0F172A !important;
             font-weight: 800 !important;
         }
         body.theme-cream .header-logo-svg {
-            border-color: rgba(255, 255, 255, 0.45) !important;
-            background: #FFFFFF !important;
+            border-color: #CBD5E1 !important;
+            background: #F8FAFC !important;
         }
         body.theme-cream .btn-icon-hdr,
         body.theme-cream #btnHeaderGlobalFind,
         body.theme-cream #btnHeaderDpiScale,
         body.theme-cream #btnHeaderBranchSwitch {
-            background: rgba(255, 255, 255, 0.16) !important;
-            color: #F8FAFC !important;
-            border: 1px solid rgba(255, 255, 255, 0.32) !important;
+            background: #F8FAFC !important;
+            color: #0F172A !important;
+            border: 1px solid #CBD5E1 !important;
             box-shadow: none !important;
         }
         body.theme-cream .btn-icon-hdr:hover,
         body.theme-cream #btnHeaderGlobalFind:hover,
         body.theme-cream #btnHeaderDpiScale:hover,
         body.theme-cream #btnHeaderBranchSwitch:hover {
-            background: rgba(255, 255, 255, 0.26) !important;
+            background: #F1F5F9 !important;
         }
         body.theme-cream .btn-icon-hdr svg {
-            color: #F8FAFC !important;
-            stroke: #F8FAFC !important;
+            color: #0F172A !important;
+            stroke: #0F172A !important;
         }
         body.theme-cream .header-status-bar {
-            background: rgba(15, 23, 42, 0.18) !important;
-            border: 1px solid rgba(255, 255, 255, 0.22) !important;
-            color: #F8FAFC !important;
+            background: #F8FAFC !important;
+            border: 1px solid #CBD5E1 !important;
+            color: #0F172A !important;
+        }
+        body.theme-cream .header-status-bar span,
+        body.theme-cream #hdrRealtimeDateText,
+        body.theme-cream #hdrRealtimeTimeText,
+        body.theme-cream #hdrUserActive {
+            color: #0F172A !important;
         }
         body.theme-cream .status-marquee-box {
-            background: rgba(15, 23, 42, 0.22) !important;
-            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            background: #F8FAFC !important;
+            border: 1px solid #CBD5E1 !important;
         }
         body.theme-cream .status-marquee-track {
-            color: #FDE68A !important;
+            color: #334155 !important;
             font-weight: 700 !important;
         }
 
-        /* 8 Kartu KPI: Seragam Soft Matte Teduh (Tidak Warna-Warni Ngejreng & Tidak Silau) */
+        /* 8 Kartu KPI: Putih Bersih Seragam */
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card,
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c1,
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c2,
@@ -126,15 +132,15 @@
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c6,
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c7,
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c8 {
-            background: #F8FAF9 !important;
-            border: 1px solid #C6D4CE !important;
-            border-left: 3.5px solid #3B6358 !important;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+            background: #FFFFFF !important;
+            border: 1px solid #CBD5E1 !important;
+            border-left: 3.5px solid #475569 !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
         }
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .kpi-icon-box {
-            background: #DFECE6 !important;
-            border: 1px solid #B8CCC3 !important;
-            color: #2C4C43 !important;
+            background: #F8FAFC !important;
+            border: 1px solid #CBD5E1 !important;
+            color: #1E293B !important;
             box-shadow: none !important;
         }
         body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .lbl {
@@ -152,35 +158,35 @@
             font-variant-numeric: tabular-nums !important;
         }
 
-        /* Banner Total Saldo Konter Teduh */
+        /* Banner Total Saldo Konter Putih Bersih */
         body.theme-cream .saldo-banner-bar {
-            background: #F8FAF9 !important;
-            border: 1.5px solid #C6D4CE !important;
-            border-left: 4px solid #2C4C43 !important;
-            border-right: 4px solid #2C4C43 !important;
-            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+            background: #FFFFFF !important;
+            border: 1px solid #CBD5E1 !important;
+            border-left: 4px solid #334155 !important;
+            border-right: 4px solid #334155 !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
         }
         body.theme-cream .saldo-banner-btn,
         body.theme-cream .saldo-banner-btn.radar-btn,
         body.theme-cream #btnToggleKpiCollapse {
-            background: #E6F0EC !important;
-            color: #1E3630 !important;
-            border: 1px solid #B8CCC3 !important;
+            background: #F8FAFC !important;
+            color: #0F172A !important;
+            border: 1px solid #CBD5E1 !important;
             box-shadow: none !important;
             font-size: 10.5px !important;
             font-weight: 700 !important;
         }
         body.theme-cream .saldo-banner-btn:hover {
-            background: #D6E6DF !important;
+            background: #F1F5F9 !important;
         }
         body.theme-cream .saldo-banner-center {
             background: #FFFFFF !important;
-            border: 1px solid #C6D4CE !important;
+            border: 1px solid #CBD5E1 !important;
             box-shadow: none !important;
         }
         body.theme-cream .saldo-banner-icon {
-            background: #DFECE6 !important;
-            border-color: #B8CCC3 !important;
+            background: #F8FAFC !important;
+            border-color: #CBD5E1 !important;
         }
         body.theme-cream .saldo-banner-title {
             color: #475569 !important;
@@ -192,21 +198,21 @@
         /* Kartu & Header Bagian */
         body.theme-cream .card {
             background: #FFFFFF !important;
-            border: 1px solid #CBD5D0 !important;
-            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+            border: 1px solid #CBD5E1 !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
         }
         body.theme-cream .card-header,
         body.theme-cream .sidebar-section-hdr {
-            background: #E2ECE8 !important;
-            color: #1E3630 !important;
-            border: 1px solid #C5D3CD !important;
+            background: #F8FAFC !important;
+            color: #0F172A !important;
+            border: 1px solid #CBD5E1 !important;
             font-size: 12px !important;
             font-weight: 800 !important;
         }
         body.theme-cream .filter-container,
         body.theme-cream .stok-filter-bar {
-            background: #F2F6F4 !important;
-            border: 1px solid #CBD5D0 !important;
+            background: #FFFFFF !important;
+            border: 1px solid #CBD5E1 !important;
         }
         body.theme-cream .date-picker-input,
         body.theme-cream .form-control,
@@ -216,14 +222,14 @@
         body.theme-cream input[type="date"],
         body.theme-cream input[type="month"] {
             background: #FFFFFF !important;
-            color: #1E293B !important;
-            border: 1px solid #BCC9C3 !important;
+            color: #0F172A !important;
+            border: 1px solid #CBD5E1 !important;
         }
 
-        /* Tabel Teduh & Mudah Dibaca seperti Lembar Kerja Excel */
+        /* Tabel Putih Bersih & Mudah Dibaca */
         body.theme-cream .table-responsive {
             background: #FFFFFF !important;
-            border: 1px solid #CBD5D0 !important;
+            border: 1px solid #CBD5E1 !important;
             border-radius: 8px !important;
         }
         body.theme-cream table,
@@ -239,10 +245,10 @@
         body.theme-cream thead th,
         body.theme-cream .table-jurnal th,
         body.theme-cream .sidebar-mutasi-table th {
-            background: #DFECE6 !important;
-            color: #1E3630 !important;
-            border-color: #B8CCC3 !important;
-            border-bottom: 2px solid #9FB8AD !important;
+            background: #F1F5F9 !important;
+            color: #0F172A !important;
+            border-color: #CBD5E1 !important;
+            border-bottom: 2px solid #94A3B8 !important;
             font-size: 11px !important;
             font-weight: 800 !important;
             letter-spacing: 0.2px !important;
@@ -251,26 +257,26 @@
             background-color: #FFFFFF !important;
         }
         body.theme-cream tbody tr:nth-child(even) td {
-            background-color: #F5F9F7 !important;
+            background-color: #F8FAFC !important;
         }
         body.theme-cream td,
         body.theme-cream tbody td,
         body.theme-cream .table-jurnal td,
         body.theme-cream .sidebar-mutasi-table td {
-            border-color: #DAE3DF !important;
-            color: #1E293B !important;
+            border-color: #E2E8F0 !important;
+            color: #0F172A !important;
             font-size: 11.5px !important;
             font-weight: 600 !important;
         }
         body.theme-cream tbody tr:hover td,
         body.theme-cream .table-jurnal tbody tr:hover td {
-            background-color: #E6F0EC !important;
+            background-color: #F1F5F9 !important;
         }
         body.theme-cream tfoot tr,
         body.theme-cream tfoot td {
-            background-color: #DFECE6 !important;
-            color: #1E3630 !important;
-            border-color: #B8CCC3 !important;
+            background-color: #F1F5F9 !important;
+            color: #0F172A !important;
+            border-color: #CBD5E1 !important;
             font-weight: 800 !important;
         }
         body.theme-cream .jurnal-ket-cell,
@@ -278,7 +284,7 @@
         body.theme-cream .waktu-seragam-top {
             font-size: 11px !important;
             font-weight: 600 !important;
-            color: #1E293B !important;
+            color: #0F172A !important;
         }
         body.theme-cream .waktu-seragam-bottom {
             font-size: 10px !important;
@@ -297,64 +303,65 @@
             font-weight: 700 !important;
         }
         body.theme-cream .bottom-nav {
-            background: rgba(248, 250, 249, 0.96) !important;
-            border: 1.5px solid #C6D4CE !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1.5px solid #CBD5E1 !important;
             box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
         }
         body.theme-cream .nav-item {
             background: #FFFFFF !important;
-            border: 1px solid #D5E0DB !important;
+            border: 1px solid #E2E8F0 !important;
             color: #334155 !important;
             font-size: 8.5px !important;
         }
         body.theme-cream .nav-item .icon {
-            background: #E6F0EC !important;
-            border: 1px solid #C6D4CE !important;
-            color: #2C4C43 !important;
+            background: #F8FAFC !important;
+            border: 1px solid #CBD5E1 !important;
+            color: #1E293B !important;
             animation: none !important;
         }
         body.theme-cream .nav-item.active {
-            background: #2C4C43 !important;
-            border: 1.5px solid #1E3630 !important;
+            background: #1E293B !important;
+            border: 1.5px solid #0F172A !important;
             color: #FFFFFF !important;
-            box-shadow: 0 2px 8px rgba(44, 76, 67, 0.2) !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18) !important;
             transform: none !important;
         }
         body.theme-cream .nav-item.active .nav-lbl-wrap {
             color: #FFFFFF !important;
         }
         body.theme-cream .nav-item.active::after {
-            background: #A7F3D0 !important;
+            background: #CBD5E1 !important;
             box-shadow: none !important;
         }
         body.theme-cream .nav-item.active .icon {
             background: #FFFFFF !important;
-            color: #2C4C43 !important;
-            border-color: #A7F3D0 !important;
+            color: #0F172A !important;
+            border-color: #CBD5E1 !important;
             transform: none !important;
             animation: none !important;
             margin-bottom: 2px !important;
             box-shadow: none !important;
         }
         body.theme-cream .sub-nav-bar-wrap {
-            background: #E2ECE8 !important;
-            border: 1px solid #C5D3CD !important;
+            background: #F8FAFC !important;
+            border: 1px solid #CBD5E1 !important;
         }
         body.theme-cream .sub-tab-btn,
         body.theme-cream .sub-quick-btn {
             background: #FFFFFF !important;
-            color: #1E3630 !important;
-            border: 1px solid #C5D3CD !important;
+            color: #0F172A !important;
+            border: 1px solid #CBD5E1 !important;
         }
         body.theme-cream .sub-tab-btn.active {
-            background: #2C4C43 !important;
+            background: #1E293B !important;
             color: #FFFFFF !important;
-            border-color: #1E3630 !important;
+            border-color: #0F172A !important;
         }
         body.theme-cream .sidebar-header,
         body.theme-cream .right-sidebar .sidebar-header {
-            background: linear-gradient(135deg, #2C4C43 0%, #3B6358 100%) !important;
-            color: #FFFFFF !important;
+            background: #F8FAFC !important;
+            color: #0F172A !important;
+            border-bottom: 1.5px solid #CBD5E1 !important;
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -1212,7 +1219,7 @@
         .jurnal-header-actions {
             display: flex; align-items: center; gap: 7px; flex-wrap: wrap; justify-content: flex-end;
         }
-        /* Tombol Header Jurnal: Lebih Tinggi (Lebar Atas-Bawah Lega), Tulisan Jelas, & Seragam Warna Pindah Saldo (#4F46E5) */
+        /* Tombol Header Jurnal: Lebih Tinggi (Lebar Atas-Bawah Lega), Tulisan Jelas, & Seragam Warna Soft Indigo-Slate (#6875D8) */
         .btn-jurnal-hdr {
             width: auto;
             padding: 8.5px 13px !important;
@@ -1221,8 +1228,8 @@
             font-weight: 800;
             line-height: 1.25;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.24) !important;
-            background: #4F46E5 !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            background: #6875D8 !important;
             color: #FFFFFF !important;
             cursor: pointer;
             display: inline-flex;
@@ -1230,24 +1237,24 @@
             justify-content: center;
             gap: 5px;
             white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25) !important;
+            box-shadow: 0 2px 5px rgba(104, 117, 216, 0.22) !important;
             transition: transform 0.15s, filter 0.15s, background 0.15s;
         }
         .btn-jurnal-hdr:hover {
-            background: #4338CA !important;
-            filter: brightness(1.05);
+            background: #5865C8 !important;
+            filter: brightness(1.03);
             transform: translateY(-1px);
         }
         .btn-jurnal-hdr:active { transform: scale(0.97); }
         /* Khusus Tema Hitam / Mode Gelap: Warna Menyesuaikan agar Tidak Silau di Mata */
         body.theme-dark .btn-jurnal-hdr {
-            background: #312E81 !important;
+            background: #3730A3 !important;
             color: #E0E7FF !important;
             border: 1px solid #6366F1 !important;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
         }
         body.theme-dark .btn-jurnal-hdr:hover {
-            background: #3730A3 !important;
+            background: #4338CA !important;
         }
 
         .sidebar-header {
@@ -5069,7 +5076,13 @@
                     <span id="badgeCountPiutangArsip" style="background:#FFFFFF; color:#15803D; border:1px solid #86EFAC; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Data Lunas</span>
                 </div>
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <input type="text" id="piutangLunasSearchInput" class="form-control" placeholder="🔍 Cari arsip lunas..." oninput="renderAll()" style="width:175px; padding:4px 9px; font-size:11px; height:28px;">
+                    <select id="piutangArsipFilterMode" class="date-picker-input" onchange="window.toggleFilterPiutangArsipDate(this.value)" style="padding:4px 8px; font-size:10.5px; height:28px; font-weight:800;">
+                        <option value="3DAYS" selected>🗓️ 3 Hari Terakhir</option>
+                        <option value="MONTHLY">📆 Per Bulan</option>
+                        <option value="ALL">🌐 Semua Data</option>
+                    </select>
+                    <input type="month" id="piutangArsipMonthPicker" class="date-picker-input" style="display:none; padding:4px 8px; font-size:10.5px; height:28px;" onchange="renderAll()">
+                    <input type="text" id="piutangLunasSearchInput" class="form-control" placeholder="🔍 Cari arsip lunas..." oninput="renderAll()" style="width:165px; padding:4px 9px; font-size:11px; height:28px;">
                 </div>
             </div>
             <div class="table-responsive">
@@ -5234,14 +5247,20 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header flex justify-between items-center cursor-pointer" onclick="toggleCardCollapse('bodyStokOpnameCard', this)" style="background-color: var(--primary); color: white;">
+                <div class="card-header flex justify-between items-center cursor-pointer" onclick="toggleCardCollapse('bodyStokOpnameCard', this)" style="background-color: var(--primary); color: white; opacity: 0.7;">
                     <span>📦 Rekap & Histori Belanja Stok Opname</span>
-                    <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Sembunyikan / Munculkan ▼</span>
+                    <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Munculkan / Sembunyikan ▼</span>
                 </div>
-                <div id="bodyStokOpnameCard" class="p-3">
+                <div id="bodyStokOpnameCard" class="p-3" style="display:none;">
                     <div class="filter-container" style="margin-bottom:8px; justify-content:space-between;">
                         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                             <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER RIWAYAT STOK:</span>
+                            <select id="riwayatStokFilterPeriode" class="date-picker-input" onchange="window.toggleFilterRiwayatStokPeriode(this.value)">
+                                <option value="7DAYS" selected>🗓️ 7 Hari Terakhir</option>
+                                <option value="MONTHLY">📆 Per Bulan</option>
+                                <option value="ALL">🌐 Semua Tanggal</option>
+                            </select>
+                            <input type="month" id="riwayatStokMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
                             <select id="riwayatStokFilterKat" class="date-picker-input" onchange="renderAll()">
                                 <option value="ALL">🌐 Semua Kategori</option>
                                 <option value="ACC">🎧 ACC (Aksesoris)</option>
@@ -5471,11 +5490,11 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header flex justify-between items-center cursor-pointer" style="background-color: var(--primary); color: white;" onclick="toggleCardCollapse('bodyPindahSaldoCard', this)">
+                <div class="card-header flex justify-between items-center cursor-pointer" style="background-color: var(--primary); color: white; opacity: 0.7;" onclick="toggleCardCollapse('bodyPindahSaldoCard', this)">
                     <span>🔀 Histori Pindah Saldo (Transfer Balancing)</span>
-                    <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Sembunyikan / Munculkan ▼</span>
+                    <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.2);">Klik untuk Munculkan / Sembunyikan ▼</span>
                 </div>
-                <div id="bodyPindahSaldoCard" class="p-3">
+                <div id="bodyPindahSaldoCard" class="p-3" style="display:none;">
                     <div class="filter-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                             <span style="font-size:11px; font-weight:700; color:var(--primary);">🔍 FILTER PINDAH SALDO:</span>
@@ -6397,39 +6416,76 @@
             return 'TOPUP';
         };
 
-        window.saldoList = [
-            'LACI', 'SEA ECA', 'DANA ECA', 'DANA SRI', 'DANA FINA', 'OVO', 'GOPAY', 'O KUOTA', 
-            'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL', 'VOUCHER', 'SP', 'QRIS', 'BRI', 
-            'BCA', 'SEA FINA', 'DANA AA', 'PIUTANG', 'SPAREPART', 'ACC', 'NOBU', 'KOMISI EDC', 'BRANKAS'
+        window.STANDARD_SALDO_ORDER = [
+            'LACI', 'BRI', 'BCA', 'SEA FINA', 'SEA ECA', 'NOBU', 'PIUTANG',
+            'GOPAY', 'QRIS', 'DANA FINA', 'DANA AA', 'OVO',
+            'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
+            'SPAREPART', 'VOUCHER', 'SP', 'ACC', 'KOMISI EDC'
         ];
+        window.REMOVED_SALDO_ACCOUNTS = new Set(['DANA ECA', 'DANA SRI', 'DANA NINING', 'BRANKAS', 'BRANGKAS']);
+
+        window.normalizeSaldoListOrder = function(rawList) {
+            if (!Array.isArray(rawList) || rawList.length === 0) {
+                return window.STANDARD_SALDO_ORDER.slice();
+            }
+            const cleaned = rawList
+                .map(s => String(s || '').trim().toUpperCase())
+                .map(s => s === 'AMARTHA' ? 'KOMISI EDC' : s)
+                .filter(Boolean);
+
+            // Deteksi apakah ada akun custom hasil ganti nama (cth: DANA FINA diganti nama jadi DANA BARU)
+            const standardSet = new Set(window.STANDARD_SALDO_ORDER);
+            const customAccounts = cleaned.filter(s => !standardSet.has(s) && !window.REMOVED_SALDO_ACCOUNTS.has(s));
+
+            // Jika ada akun standar yang tidak ditemukan karena sudah di-rename oleh user di Pengaturan Akun,
+            // pasangkan akun custom penggantinya tepat di posisi urutan akun yang digantikan tersebut.
+            const presentStandard = new Set(cleaned.filter(s => standardSet.has(s)));
+            let customIdx = 0;
+            const result = [];
+            window.STANDARD_SALDO_ORDER.forEach(stdAcc => {
+                if (presentStandard.has(stdAcc)) {
+                    result.push(stdAcc);
+                } else if (customIdx < customAccounts.length) {
+                    result.push(customAccounts[customIdx++]);
+                } else {
+                    result.push(stdAcc);
+                }
+            });
+            while (customIdx < customAccounts.length) {
+                if (!result.includes(customAccounts[customIdx])) {
+                    result.push(customAccounts[customIdx]);
+                }
+                customIdx++;
+            }
+            return result;
+        };
+
+        window.saldoList = window.STANDARD_SALDO_ORDER.slice();
 
         window.DEFAULT_SALDO_AWAL_Z1 = {
             'LACI': 59924357,
+            'BRI': 14217909,
+            'BCA': 14004602,
+            'SEA FINA': 72463,
             'SEA ECA': 9745056,
-            'DANA ECA': 0,
-            'DANA SRI': 0,
-            'DANA FINA': 2292476,
-            'OVO': 1700130,
+            'NOBU': 18506000,
+            'PIUTANG': 0,
             'GOPAY': 681614,
+            'QRIS': 3662660,
+            'DANA FINA': 2292476,
+            'DANA AA': 1804938,
+            'OVO': 1700130,
             'O KUOTA': 502877,
             'PROPANA': 538192,
             'DIGIPOS': 807821,
             'RITA': 1052786,
             'SIDIVA': 789692,
             'SIMPEL': 584738,
+            'SPAREPART': 0,
             'VOUCHER': 0,
             'SP': 0,
-            'QRIS': 3662660,
-            'BRI': 14217909,
-            'BCA': 14004602,
-            'SEA FINA': 72463,
-            'DANA AA': 1804938,
-            'PIUTANG': 0,
-            'SPAREPART': 0,
             'ACC': 0,
-            'NOBU': 18506000,
-            'KOMISI EDC': 205500,
-            'BRANKAS': 15590750
+            'KOMISI EDC': 205500
         };
 
         window.DEFAULT_SALDO_AWAL_Z2 = {};
@@ -6999,7 +7055,9 @@
             }
 
             if (data.saldoListCustom) {
-                window.saldoList = data.saldoListCustom.map(s => s === 'DANA NINING' ? 'DANA ECA' : (s === 'AMARTHA' ? 'KOMISI EDC' : s));
+                window.saldoList = window.normalizeSaldoListOrder(data.saldoListCustom);
+            } else {
+                window.saldoList = window.STANDARD_SALDO_ORDER.slice();
             }
             if (data.saldoAwal) {
                 if (window.hasNonZeroSaldoAwal(data.saldoAwal) || data.isExplicitZeroSaldoAwal === true) {
@@ -9561,7 +9619,7 @@
 
         const themes = ['theme-cream', 'default', 'theme-blue', 'theme-dark'];
         const themeLabels = {
-            'theme-cream': 'Soft Teduh (Ramah Mata)',
+            'theme-cream': 'Putih Bersih (Minimalis)',
             'default': 'Hijau Emerald',
             'theme-blue': 'Biru Langit',
             'theme-dark': 'Mode Gelap'
@@ -10355,6 +10413,16 @@
             document.getElementById('saldoMonthPicker').style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
             window.renderAll();
         }
+        window.toggleFilterPiutangArsipDate = function(mode) {
+            const mEl = document.getElementById('piutangArsipMonthPicker');
+            if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            window.renderAll();
+        }
+        window.toggleFilterRiwayatStokPeriode = function(mode) {
+            const mEl = document.getElementById('riwayatStokMonthPicker');
+            if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            window.renderAll();
+        }
 
         window.saveStateSnapshot = function(forceBaseline = false) {
             if (window.isUndoRedoAction) return;
@@ -10388,20 +10456,24 @@
         window.doUndo = function() {
             if (!window.hasInitialCloudLoaded) return;
             if (window.undoStack.length > 1) {
+                if (!confirm("⚠️ KONFIRMASI UNDO:\nApakah Anda yakin ingin membatalkan langkah / transaksi terakhir (Undo)?")) return;
                 window.redoStack.push(window.undoStack.pop());
                 window.applyStateSnapshot(window.undoStack[window.undoStack.length - 1]);
                 window.updateUndoRedoBtnState();
                 window.catatLogAktivitas('UNDO', 'Membatalkan langkah terakhir (Undo)');
+                if (window.showToast) window.showToast("↩️ Langkah terakhir berhasil dibatalkan (Undo).", "warn");
             }
         }
         window.doRedo = function() {
             if (!window.hasInitialCloudLoaded) return;
             if (window.redoStack.length > 0) {
+                if (!confirm("⚠️ KONFIRMASI REDO:\nApakah Anda yakin ingin mengulangi kembali langkah yang baru dibatalkan (Redo)?")) return;
                 const nextSnap = window.redoStack.pop();
                 window.undoStack.push(nextSnap);
                 window.applyStateSnapshot(nextSnap);
                 window.updateUndoRedoBtnState();
                 window.catatLogAktivitas('REDO', 'Mengulang kembali langkah (Redo)');
+                if (window.showToast) window.showToast("↪️ Langkah berhasil dikembalikan (Redo).", "info");
             }
         }
         window.applyStateSnapshot = function(snapStr) {
@@ -10468,7 +10540,7 @@
             }
 
             if (Array.isArray(state.saldoList) && state.saldoList.length > 0) {
-                window.saldoList = state.saldoList;
+                window.saldoList = window.normalizeSaldoListOrder ? window.normalizeSaldoListOrder(state.saldoList) : state.saldoList;
             }
             if (state.masterBatasMinSaldo) {
                 window.masterBatasMinSaldo = state.masterBatasMinSaldo;
@@ -10497,7 +10569,7 @@
             ['trxDateInput', 'rekapDatePicker', 'jurnalDatePicker', 'tiketDatePicker', 'tiketArsipDatePicker', 'serviceDatePicker', 'opDatePicker', 'tfDatePicker', 'setorDatePicker', 'saldoDatePicker', 'logFilterDate', 'shiftReportDate', 'tglMasukServis'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = today;
             });
-            ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'tiketMonthPicker', 'tiketArsipMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker', 'saldoMonthPicker'].forEach(id => {
+            ['rekapMonthPicker', 'rekapSektorMonthPicker', 'jurnalMonthPicker', 'tiketMonthPicker', 'tiketArsipMonthPicker', 'serviceMonthPicker', 'opMonthPicker', 'tfMonthPicker', 'setorMonthPicker', 'saldoMonthPicker', 'piutangArsipMonthPicker', 'riwayatStokMonthPicker'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = currMonth;
             });
 
@@ -11572,29 +11644,138 @@
             }
 
             if (!window.masterBatasMinSaldo) window.masterBatasMinSaldo = {};
+            const nodesPayload = {};
+
             if (lama !== baru) {
                 if (window.saldoList.includes(baru)) {
-                    if (window.showToast) window.showToast("⚠️ Nama akun sudah ada!", "error");
+                    if (window.showToast) window.showToast("⚠️ Nama akun sudah ada di daftar aktif!", "error");
                     return;
                 }
-                window.saldoList[window.saldoList.indexOf(lama)] = baru;
-                if (window.masterSaldoAwal[lama] !== undefined) { window.masterSaldoAwal[baru] = awal; delete window.masterSaldoAwal[lama]; }
-                if (window.masterBatasMinSaldo[lama] !== undefined) { window.masterBatasMinSaldo[baru] = window.masterBatasMinSaldo[lama]; delete window.masterBatasMinSaldo[lama]; }
-            } else { window.masterSaldoAwal[lama] = awal; }
+                const idxLama = window.saldoList.indexOf(lama);
+                if (idxLama !== -1) window.saldoList[idxLama] = baru;
+                window.masterSaldoAwal[baru] = awal;
+                delete window.masterSaldoAwal[lama];
+                if (window.masterBatasMinSaldo[lama] !== undefined) {
+                    window.masterBatasMinSaldo[baru] = window.masterBatasMinSaldo[lama];
+                    delete window.masterBatasMinSaldo[lama];
+                }
+
+                // Migrasi otomatis seluruh riwayat transaksi, belanja stok, sparepart, piutang, operasional, setoran & VLOOKUP
+                // agar pergantian nama akun (misal gantian akun DANA karena limit) 100% aman dan tidak menimbulkan selisih/error!
+                const nowTs = window.getNextUniqueTs();
+                let trxChanged = false;
+                (window.transaksiJurnal || []).forEach(t => {
+                    let mod = false;
+                    if (t.akunMasuk1 === lama) { t.akunMasuk1 = baru; mod = true; }
+                    if (t.akunMasuk2 === lama) { t.akunMasuk2 = baru; mod = true; }
+                    if (t.akunKeluar1 === lama) { t.akunKeluar1 = baru; mod = true; }
+                    if (t.akunKeluar2 === lama) { t.akunKeluar2 = baru; mod = true; }
+                    if (mod) {
+                        t.updatedAt = nowTs;
+                        window.markLocalTrxEdited(t);
+                        trxChanged = true;
+                    }
+                });
+                if (trxChanged) nodesPayload.transaksi = window.transaksiJurnal;
+
+                let rwChanged = false;
+                (window.riwayatBelanjaStok || []).forEach(r => {
+                    if (r.sumberKas === lama) {
+                        r.sumberKas = baru;
+                        r.updatedAt = nowTs;
+                        window.markLocalEntityEdited('riwayatBelanjaStok', r);
+                        rwChanged = true;
+                    }
+                });
+                if (rwChanged) nodesPayload.riwayatBelanjaStok = window.riwayatBelanjaStok;
+
+                let spChanged = false;
+                (window.sparepartList || []).forEach(sp => {
+                    if (sp.sumber === lama) {
+                        sp.sumber = baru;
+                        sp.updatedAt = nowTs;
+                        window.markLocalEntityEdited('sparepart', sp);
+                        spChanged = true;
+                    }
+                });
+                if (spChanged) nodesPayload.sparepart = window.sparepartList;
+
+                let pChanged = false;
+                (window.piutangList || []).forEach(p => {
+                    let modP = false;
+                    if (p.sumber === lama) { p.sumber = baru; modP = true; }
+                    if (Array.isArray(p.riwayatCicilan)) {
+                        p.riwayatCicilan.forEach(c => {
+                            if (c.keAkun === lama) { c.keAkun = baru; modP = true; }
+                        });
+                    }
+                    if (modP) {
+                        p.updatedAt = nowTs;
+                        window.markLocalEntityEdited('piutang', p);
+                        pChanged = true;
+                    }
+                });
+                if (pChanged) nodesPayload.piutang = window.piutangList;
+
+                let opChanged = false;
+                (window.operasionalList || []).forEach(o => {
+                    if (o.sumber === lama) {
+                        o.sumber = baru;
+                        o.updatedAt = nowTs;
+                        window.markLocalEntityEdited('operasional', o);
+                        opChanged = true;
+                    }
+                });
+                if (opChanged) nodesPayload.operasional = window.operasionalList;
+
+                let stChanged = false;
+                (window.setoranOwnerList || []).forEach(st => {
+                    if (st.sumber === lama) {
+                        st.sumber = baru;
+                        st.updatedAt = nowTs;
+                        window.markLocalEntityEdited('setoran', st);
+                        stChanged = true;
+                    }
+                });
+                if (stChanged) nodesPayload.setoran = window.setoranOwnerList;
+
+                let vlChanged = false;
+                Object.keys(window.masterVlookup || {}).forEach(k => {
+                    const rule = window.masterVlookup[k];
+                    if (!rule) return;
+                    let modV = false;
+                    if (rule.masuk === lama) { rule.masuk = baru; modV = true; }
+                    if (rule.keluar === lama) { rule.keluar = baru; modV = true; }
+                    if (rule.m1 === lama) { rule.m1 = baru; modV = true; }
+                    if (rule.m2 === lama) { rule.m2 = baru; modV = true; }
+                    if (rule.k1 === lama) { rule.k1 = baru; modV = true; }
+                    if (rule.k2 === lama) { rule.k2 = baru; modV = true; }
+                    if (modV) vlChanged = true;
+                });
+                if (vlChanged) {
+                    const cleanVlookup = {};
+                    Object.keys(window.masterVlookup).forEach(k => {
+                        cleanVlookup[sanitizeKey(k)] = Object.assign({ origKey: k, isManual: true }, window.masterVlookup[k]);
+                    });
+                    nodesPayload.vlookup = cleanVlookup;
+                }
+            } else {
+                window.masterSaldoAwal[lama] = awal;
+            }
             window.masterBatasMinSaldo[baru] = min;
+
+            nodesPayload.saldoAwal = window.masterSaldoAwal;
+            nodesPayload.saldoListCustom = window.saldoList;
+            nodesPayload.batasMinSaldo = window.masterBatasMinSaldo;
 
             window.catatLogAktivitas('SETTING AKUN', `Mengubah pengaturan akun ${lama} menjadi ${baru} (Saldo Awal: ${window.formatRp(awal)}, Limit: ${window.formatRp(min)})`);
             window.initDropdowns();
             const cfgSel = document.getElementById('cfgAkunTarget');
             if (cfgSel) cfgSel.value = baru;
             window.muatDataAkunConfig(baru);
-            window.saveMultipleFirebaseNodes({
-                saldoAwal: window.masterSaldoAwal,
-                saldoListCustom: window.saldoList,
-                batasMinSaldo: window.masterBatasMinSaldo
-            }, false);
+            window.saveMultipleFirebaseNodes(nodesPayload, false);
             window.renderAll();
-            if (window.showToast) window.showToast(`✅ Pengaturan akun ${baru} & limit minimal (${window.formatRp(min)}) berhasil disimpan!`, "success");
+            if (window.showToast) window.showToast(`✅ Pengaturan akun ${baru} & riwayat terkait berhasil diperbarui!`, "success");
         }
 
         window.resetSemuaSaldoAwalKeNol = function() {
@@ -15120,10 +15301,21 @@
 
             const tRiwayatStok = document.getElementById('tabelRiwayatBelanjaStok');
             if (tRiwayatStok) {
+                const rPeriodeFilter = document.getElementById('riwayatStokFilterPeriode')?.value || '7DAYS';
+                const rMonthVal = document.getElementById('riwayatStokMonthPicker')?.value || window.getCurrentMonthIso();
                 const rKatFilter = document.getElementById('riwayatStokFilterKat')?.value || 'ALL';
                 const rSearch = (document.getElementById('riwayatStokSearchInput')?.value || '').trim().toUpperCase();
                 let totalBelanjaFiltered = 0;
                 const filteredRiwayat = (window.riwayatBelanjaStok || []).filter(r => {
+                    const isoR = String(r.isoDate || '').trim();
+                    if (rPeriodeFilter === '7DAYS') {
+                        if (isoR) {
+                            const ageDays = window.hitungUmurHariPiutang(isoR);
+                            if (ageDays > 7) return false;
+                        }
+                    } else if (rPeriodeFilter === 'MONTHLY') {
+                        if (!isoR || !isoR.startsWith(rMonthVal)) return false;
+                    }
                     const katR = (r.kat || '').toUpperCase();
                     const namaR = (r.nama || r.namaBarang || '').toUpperCase();
                     if (rKatFilter !== 'ALL' && katR !== rKatFilter) return false;
@@ -15494,11 +15686,27 @@
 
             const bPiutangArsip = document.getElementById('bodyPiutangLunasArsip');
             if (bPiutangArsip) {
+                const arsipMode = document.getElementById('piutangArsipFilterMode')?.value || '3DAYS';
+                const arsipMonth = document.getElementById('piutangArsipMonthPicker')?.value || window.getCurrentMonthIso();
                 const filteredArsip = listPiutangArsipLunas.filter(p => {
+                    const tglRef = String(p.tglLunas || p.isoDate || '').trim();
+                    if (arsipMode === '3DAYS') {
+                        if (tglRef && /^\d{4}-\d{2}-\d{2}$/.test(tglRef)) {
+                            const umurLunas = window.hitungUmurHariPiutang(tglRef);
+                            if (umurLunas > 3) return false;
+                        }
+                    } else if (arsipMode === 'MONTHLY') {
+                        if (!tglRef || !tglRef.startsWith(arsipMonth)) return false;
+                    }
                     if (!qPiutangArsip) return true;
                     const hay = `${p.nama || ''} ${p.catatan || ''} ${p.gadaiBarang || ''} ${p.gadaiKelengkapan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''} ${p.tglLunas || ''}`.toLowerCase();
                     return hay.includes(qPiutangArsip);
                 });
+                if (badgeArsipEl) {
+                    badgeArsipEl.innerText = arsipMode === 'ALL'
+                        ? `${filteredArsip.length} Data Lunas`
+                        : `${filteredArsip.length} / ${listPiutangArsipLunas.length} Data Lunas`;
+                }
                 const sortArsipNama = document.getElementById('piutangArsipSortNama')?.value || 'DEFAULT';
                 const sortArsipNominal = document.getElementById('piutangArsipSortNominal')?.value || 'DEFAULT';
                 if (sortArsipNominal === 'DESC') {
@@ -15542,7 +15750,7 @@
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada arsip piutang lunas lewat hari.</td></tr>`;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada arsip piutang lunas pada periode ini.</td></tr>`;
             }
             document.getElementById('topTotalPiutangVal').innerText = window.formatRp(totalPiutang);
 
@@ -15577,12 +15785,12 @@
                 }
 
                 if (t.isSplit) {
-                    if (t.akunMasuk1) masukAkun[t.akunMasuk1] += Number(t.jualSplit1 || 0);
-                    if (t.akunMasuk2) masukAkun[t.akunMasuk2] += Number(t.jualSplit2 || 0);
-                    if (t.akunKeluar1) keluarAkun[t.akunKeluar1] += Number(t.modalSplit1 || 0);
-                    if (t.akunKeluar2) keluarAkun[t.akunKeluar2] += Number(t.modalSplit2 || 0);
+                    if (t.akunMasuk1 && masukAkun[t.akunMasuk1] !== undefined) masukAkun[t.akunMasuk1] += Number(t.jualSplit1 || 0);
+                    if (t.akunMasuk2 && masukAkun[t.akunMasuk2] !== undefined) masukAkun[t.akunMasuk2] += Number(t.jualSplit2 || 0);
+                    if (t.akunKeluar1 && keluarAkun[t.akunKeluar1] !== undefined) keluarAkun[t.akunKeluar1] += Number(t.modalSplit1 || 0);
+                    if (t.akunKeluar2 && keluarAkun[t.akunKeluar2] !== undefined) keluarAkun[t.akunKeluar2] += Number(t.modalSplit2 || 0);
                 } else {
-                    if (t.akunMasuk1) masukAkun[t.akunMasuk1] += Number(t.hargaJual || 0);
+                    if (t.akunMasuk1 && masukAkun[t.akunMasuk1] !== undefined) masukAkun[t.akunMasuk1] += Number(t.hargaJual || 0);
                     if (t.akunKeluar1) {
                         if (t.akunKeluar1 === 'PIUTANG') {
                             if (keluarAkun['PIUTANG'] !== undefined) keluarAkun['PIUTANG'] += Number(t.hargaModal || t.hargaJual || 0);
@@ -20853,7 +21061,7 @@
                     if (d.stokOpnameItems) window.stokOpnameItems = d.stokOpnameItems;
                     if (d.masterVlookup) window.masterVlookup = d.masterVlookup;
                     if (d.masterSaldoAwal) window.masterSaldoAwal = d.masterSaldoAwal;
-                    if (d.saldoList) window.saldoList = d.saldoList;
+                    if (d.saldoList) window.saldoList = window.normalizeSaldoListOrder ? window.normalizeSaldoListOrder(d.saldoList) : d.saldoList;
                     if (d.masterBatasMinSaldo) window.masterBatasMinSaldo = d.masterBatasMinSaldo;
                     if (d.piutangList) window.piutangList = d.piutangList;
                     if (d.sparepartList) window.sparepartList = d.sparepartList;
