@@ -11444,46 +11444,18 @@
                     return;
                 }
 
-                const matchTiket = window.tiketServisList.find(t => t.status !== 'LUNAS' && (t.nama.toUpperCase() === val || val.includes(t.nama.toUpperCase()) || t.noServis.toUpperCase() === val || (t.tipeHp && val.includes(t.tipeHp.toUpperCase()))));
-                if (matchTiket) {
-                    document.getElementById('kategori').value = 'SERVICE';
-                    window.setKasirSelectAkunSafe('akunMasuk1', 'LACI');
-                    window.setKasirSelectAkunSafe('splitAkunMasuk1', 'LACI');
-                    
-                    const hargaJual = Number(matchTiket.estBiaya || 0);
-                    document.getElementById('hargaJual').value = hargaJual;
-                    document.getElementById('hargaJualDisplay').value = hargaJual > 0 ? Number(hargaJual).toLocaleString('id-ID') : '';
+                // Proteksi Akun Saldo: Cek apakah input cocok dengan salah satu Akun Saldo resmi toko
+                const allAccountNames = (window.saldoAkun || []).map(a => String(a.nama || '').toUpperCase().trim()).filter(Boolean);
+                const isMatchingAccountName = allAccountNames.some(acc => acc === val || val.startsWith(acc + ' ') || val.endsWith(' ' + acc));
 
-                    const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == matchTiket.id);
-                    if (matchTiket.perluSparepart && Number(matchTiket.modalPart || 0) > 0) {
-                        const m = Number(matchTiket.modalPart || 0);
-                        document.getElementById('hargaModal').value = m;
-                        document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
-                        window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
-                        window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
-                    } else if (spLinked && Number(spLinked.modal || 0) > 0) {
-                        const m = Number(spLinked.modal || 0);
-                        document.getElementById('hargaModal').value = m;
-                        document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
-                        window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
-                        window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
-                    } else {
-                        document.getElementById('hargaModal').value = '0';
-                        document.getElementById('hargaModalDisplay').value = '';
-                        window.setKasirSelectAkunSafe('akunKeluar1', '');
-                        window.setKasirSelectAkunSafe('splitAkunKeluar1', '');
-                    }
+                // 1. PRIORITAS #1: ATURAN DATA OTOMATIS (MASTER VLOOKUP)
+                // Jika input cocok dengan aturan Master VLookup yang didaftarkan user, selalu dahulukan VLookup!
+                const valSlash = val.replace(/[\/-]/g, '/');
+                const vRuleMatch = window.findMasterVlookupRule ? window.findMasterVlookupRule(val) : null;
+                const vRuleHasSplit = Boolean(vRuleMatch && vRuleMatch.isSplit && (vRuleMatch.akunMasuk2 || vRuleMatch.akunKeluar2 || Number(vRuleMatch.jualSplit2 || 0) > 0 || Number(vRuleMatch.modalSplit2 || 0) > 0));
+                const isManualNonStokVlookup = Boolean(vRuleMatch && vRuleMatch.kat && !['VOUCHER', 'SP', 'ACC'].includes(vRuleMatch.kat));
 
-                    window.hitungCuan();
-                    window._pendingTiketIdToLunas = matchTiket.id;
-                    window._pendingSparepartIdToLunas = spLinked ? spLinked.id : null;
-                    window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
-                    if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
-                    notice.style.display = 'block';
-                    notice.innerText = `⚡ Auto-Fill Service [${matchTiket.noServis} - ${matchTiket.nama} (${matchTiket.tipeHp})] Biaya: ${window.formatRp(hargaJual)}`;
-                    return;
-                }
-
+                // 2. PRIORITAS #2: PELUNASAN PIUTANG (Hanya jika format pelunasan spesifik atau nama pelanggan utang yang aktif)
                 const matchPiutangSpecific = window.piutangList.find(p => {
                     if (p.status === 'LUNAS' || Number(p.sisa || 0) <= 0) return false;
                     const pNm = (p.nama || '').trim().toUpperCase();
@@ -11496,7 +11468,10 @@
                     const pNm = (p.nama || '').trim().toUpperCase();
                     return pNm && (val === pNm || val === `[PELUNASAN UTANG] ${pNm}` || cleanValPiutangName === pNm);
                 });
-                if (matchPiutangGroup.length > 0) {
+                
+                // Jika ada vRuleMatch dan BUKAN keyword utang eksplisit, VLookup didahulukan dari piutang umum
+                const isExplicitPiutangKeyword = val.startsWith('[PELUNASAN UTANG]') || Boolean(matchPiutangSpecific);
+                if (matchPiutangGroup.length > 0 && (!vRuleMatch || isExplicitPiutangKeyword)) {
                     if (matchPiutangGroup.length > 1 && !matchPiutangSpecific) {
                         const custName = (matchPiutangGroup[0].nama || '').trim().toUpperCase();
                         window._pendingPiutangGroupNama = custName;
@@ -11556,7 +11531,90 @@
                     return;
                 }
 
-                const matchSparepart = window.sparepartList.find(s => s.status !== 'LUNAS' && (s.namaUnit.toUpperCase() === val || val.includes(s.namaUnit.toUpperCase())));
+                // 3. PRIORITAS #3: TIKET SERVIS (HANYA DENGAN PENCOCOKAN KETAT & TIDAK MENABRAK AKUN SALDO/VLOOKUP)
+                // Ketat: HANYA jika diawali [SERVIS], atau cocok persis nomor servis (SRV-...), atau nama persis (>=4 huruf & bukan akun saldo)
+                const isExplicitServicePrefix = val.startsWith('[SERVIS]') || val.startsWith('SERVIS ') || val.startsWith('SERVICE ') || val.startsWith('SRV-');
+                let matchTiket = null;
+                if (!vRuleMatch) {
+                    if (isExplicitServicePrefix) {
+                        const cleanSrv = val.replace(/^(\[SERVIS\]|SERVIS|SERVICE)\s*/i, '').trim();
+                        matchTiket = (window.tiketServisList || []).find(t => {
+                            if (t.status === 'LUNAS') return false;
+                            const noSrv = String(t.noServis || '').toUpperCase().trim();
+                            const tNm = String(t.nama || '').toUpperCase().trim();
+                            return noSrv === cleanSrv || noSrv === val || tNm === cleanSrv || (cleanSrv.length >= 4 && noSrv.includes(cleanSrv));
+                        });
+                    } else if (!isMatchingAccountName) {
+                        matchTiket = (window.tiketServisList || []).find(t => {
+                            if (t.status === 'LUNAS') return false;
+                            const noSrv = String(t.noServis || '').toUpperCase().trim();
+                            const tNm = String(t.nama || '').toUpperCase().trim();
+                            if (noSrv && val === noSrv) return true;
+                            if (tNm && tNm.length >= 4 && val === tNm) return true;
+                            return false;
+                        });
+                    }
+                }
+
+                if (matchTiket) {
+                    document.getElementById('kategori').value = 'SERVICE';
+                    window.setKasirSelectAkunSafe('akunMasuk1', 'LACI');
+                    window.setKasirSelectAkunSafe('splitAkunMasuk1', 'LACI');
+                    
+                    const hargaJual = Number(matchTiket.estBiaya || 0);
+                    document.getElementById('hargaJual').value = hargaJual;
+                    document.getElementById('hargaJualDisplay').value = hargaJual > 0 ? Number(hargaJual).toLocaleString('id-ID') : '';
+
+                    const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == matchTiket.id);
+                    if (matchTiket.perluSparepart && Number(matchTiket.modalPart || 0) > 0) {
+                        const m = Number(matchTiket.modalPart || 0);
+                        document.getElementById('hargaModal').value = m;
+                        document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                        window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
+                        window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
+                    } else if (spLinked && Number(spLinked.modal || 0) > 0) {
+                        const m = Number(spLinked.modal || 0);
+                        document.getElementById('hargaModal').value = m;
+                        document.getElementById('hargaModalDisplay').value = Number(m).toLocaleString('id-ID');
+                        window.setKasirSelectAkunSafe('akunKeluar1', 'SPAREPART');
+                        window.setKasirSelectAkunSafe('splitAkunKeluar1', 'SPAREPART');
+                    } else {
+                        document.getElementById('hargaModal').value = '0';
+                        document.getElementById('hargaModalDisplay').value = '';
+                        window.setKasirSelectAkunSafe('akunKeluar1', '');
+                        window.setKasirSelectAkunSafe('splitAkunKeluar1', '');
+                    }
+
+                    window.hitungCuan();
+                    window._pendingTiketIdToLunas = matchTiket.id;
+                    window._pendingSparepartIdToLunas = spLinked ? spLinked.id : null;
+                    window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
+                    if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
+                    notice.style.display = 'block';
+                    notice.innerText = `⚡ Auto-Fill Service [${matchTiket.noServis} - ${matchTiket.nama} (${matchTiket.tipeHp})] Biaya: ${window.formatRp(hargaJual)}`;
+                    return;
+                }
+
+                // 4. PRIORITAS #4: SPAREPART SERVIS (PENCOCOKAN KETAT)
+                const isExplicitPartSearch = val.startsWith('[SPAREPART]') || val.startsWith('[SERVIS PART]') || val.startsWith('PART ');
+                let matchSparepart = null;
+                if (!vRuleMatch) {
+                    if (isExplicitPartSearch) {
+                        const cleanPart = val.replace(/^(\[SPAREPART\]|\[SERVIS PART\]|PART)\s*/i, '').trim();
+                        matchSparepart = (window.sparepartList || []).find(s => {
+                            if (s.status === 'LUNAS') return false;
+                            const sNm = String(s.namaUnit || '').toUpperCase().trim();
+                            return sNm === cleanPart || sNm === val;
+                        });
+                    } else if (!isMatchingAccountName) {
+                        matchSparepart = (window.sparepartList || []).find(s => {
+                            if (s.status === 'LUNAS') return false;
+                            const sNm = String(s.namaUnit || '').toUpperCase().trim();
+                            return sNm && sNm.length >= 4 && val === sNm;
+                        });
+                    }
+                }
+
                 if (matchSparepart) {
                     document.getElementById('kategori').value = 'SERVICE';
                     window.setKasirSelectAkunSafe('akunMasuk1', document.getElementById('akunMasuk1').value || 'LACI');
@@ -11581,9 +11639,9 @@
                     return;
                 }
 
-                const valSlash = val.replace(/[\/-]/g, '/');
-                const vRuleMatch = window.findMasterVlookupRule(val);
-                const vRuleHasSplit = Boolean(vRuleMatch && vRuleMatch.isSplit && (vRuleMatch.akunMasuk2 || vRuleMatch.akunKeluar2 || Number(vRuleMatch.jualSplit2 || 0) > 0 || Number(vRuleMatch.modalSplit2 || 0) > 0));
+                // Pastikan flag pending tiket & sparepart selalu bersih jika BUKAN transaksi servis
+                window._pendingTiketIdToLunas = null;
+                window._pendingSparepartIdToLunas = null;
 
                 const matchStokCandidates = (window.stokOpnameItems || []).filter(s => {
                     const nm = (s.nama || s.namaBarang || '').toUpperCase().trim();
@@ -11596,7 +11654,6 @@
                     return nm === val || val.includes(nm) || nmSlash === valSlash || valSlash.includes(nmSlash);
                 }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
                 const matchStok = matchStokCandidates[0];
-                const isManualNonStokVlookup = Boolean(vRuleMatch && vRuleMatch.kat && !['VOUCHER', 'SP', 'ACC'].includes(vRuleMatch.kat));
 
                 if (matchStok && !vRuleHasSplit && !isManualNonStokVlookup) {
                     const sisa = Number(matchStok.awal || 0) - Number(matchStok.terjual || 0);
