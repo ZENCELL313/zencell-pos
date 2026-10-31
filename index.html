@@ -6423,7 +6423,7 @@
             'SPAREPART', 'VOUCHER', 'SP', 'ACC', 'KOMISI EDC'
         ];
         window.STANDARD_SALDO_ORDER_Z2 = [
-            'LACI', 'SEA ELSA', 'BCA YUNI', 'BRI YUNI', 'BRI AA', 'QRIS (PIPIT)', 'PIUTANG',
+            'LACI', 'SEA ELSA', 'BCA YUNI', 'BRI YUNI', 'BRI AA', 'QRIS', 'PIUTANG',
             'DANA ELSA', 'OVO ZIYAD', 'GOPAY ZIYAD',
             'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
             'VOUCHER', 'SP', 'ACC', 'SPAREPART'
@@ -6432,13 +6432,8 @@
             ? window.STANDARD_SALDO_ORDER_Z2.slice()
             : window.STANDARD_SALDO_ORDER_Z1.slice();
 
-        window.REMOVED_SALDO_ACCOUNTS = window.ACTIVE_CABANG === '2'
-            ? new Set([
-                'DANA ECA', 'DANA SRI', 'DANA NINING', 'BRANKAS', 'BRANGKAS',
-                'BRI', 'BCA', 'SEA FINA', 'SEA ECA', 'NOBU',
-                'GOPAY', 'QRIS', 'DANA FINA', 'DANA AA', 'OVO', 'KOMISI EDC', 'AMARTHA'
-            ])
-            : new Set(['DANA ECA', 'DANA SRI', 'DANA NINING', 'BRANKAS', 'BRANGKAS']);
+        // Akun yang dihapus permanen oleh permintaan user (tidak aktif di cabang manapun)
+        window.REMOVED_SALDO_ACCOUNTS = new Set(['DANA ECA', 'DANA SRI', 'DANA NINING', 'BRANKAS', 'BRANGKAS']);
 
         window.normalizeSaldoListOrder = function(rawList) {
             if (!Array.isArray(rawList) || rawList.length === 0) {
@@ -6449,18 +6444,29 @@
                 .map(s => s === 'AMARTHA' ? 'KOMISI EDC' : s)
                 .filter(Boolean);
 
-            // Deteksi apakah ada akun custom hasil ganti nama (cth: DANA FINA diganti nama jadi DANA BARU)
-            const standardSet = new Set(window.STANDARD_SALDO_ORDER);
-            const customAccounts = cleaned.filter(s => !standardSet.has(s) && !window.REMOVED_SALDO_ACCOUNTS.has(s));
+            const standardOrder = window.STANDARD_SALDO_ORDER.slice();
 
-            // Jika ada akun standar yang tidak ditemukan karena sudah di-rename oleh user di Pengaturan Akun,
-            // pasangkan akun custom penggantinya tepat di posisi urutan akun yang digantikan tersebut.
-            const presentStandard = new Set(cleaned.filter(s => standardSet.has(s)));
+            // Mendukung kecocokan nama setara seperti QRIS dan QRIS (PIPIT)
+            const isMatch = (cand, target) => {
+                if (cand === target) return true;
+                if ((cand === 'QRIS' && target === 'QRIS (PIPIT)') || (cand === 'QRIS (PIPIT)' && target === 'QRIS')) return true;
+                return false;
+            };
+
+            // Deteksi akun custom (bukan bagian dari standard order dan bukan akun yang dihapus permanen)
+            const customAccounts = cleaned.filter(s => {
+                if (window.REMOVED_SALDO_ACCOUNTS.has(s)) return false;
+                if (standardOrder.some(std => isMatch(s, std))) return false;
+                return true;
+            });
+
+            // Pasangkan setiap akun standar: jika ada versi custom / rename di rawList, gunakan nama tersebut
             let customIdx = 0;
             const result = [];
-            window.STANDARD_SALDO_ORDER.forEach(stdAcc => {
-                if (presentStandard.has(stdAcc)) {
-                    result.push(stdAcc);
+            standardOrder.forEach(stdAcc => {
+                const found = cleaned.find(c => isMatch(c, stdAcc));
+                if (found) {
+                    result.push(found);
                 } else if (customIdx < customAccounts.length) {
                     result.push(customAccounts[customIdx++]);
                 } else {
@@ -6510,9 +6516,11 @@
             'BCA YUNI': 8864434,
             'BRI YUNI': 3173106,
             'BRI AA': 68546,
+            'QRIS': 4880859,
             'QRIS (PIPIT)': 4880859,
             'PIUTANG': 0,
             'DANA ELSA': 0,
+            'DANA PIPIT': 0,
             'OVO ZIYAD': 297480,
             'GOPAY ZIYAD': 1016527,
             'O KUOTA': 924272,
@@ -7218,6 +7226,24 @@
                 }
             }
             if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
+
+            // Self-healing otomatis untuk akun QRIS di ZENCELL 2 (jika sebelumnya sempat hilang/tersembunyi karena filter nama)
+            if (window.ACTIVE_CABANG === '2') {
+                if (!window.saldoList.includes('QRIS') && !window.saldoList.includes('QRIS (PIPIT)')) {
+                    const idxPiutang = window.saldoList.indexOf('PIUTANG');
+                    if (idxPiutang !== -1) {
+                        window.saldoList.splice(idxPiutang, 0, 'QRIS');
+                    } else {
+                        window.saldoList.push('QRIS');
+                    }
+                    needsResyncMap.saldoListCustom = true;
+                }
+                if (window.masterSaldoAwal) {
+                    const qrisAwal = Number(window.masterSaldoAwal['QRIS'] || window.masterSaldoAwal['QRIS (PIPIT)'] || 4880859);
+                    window.masterSaldoAwal['QRIS'] = qrisAwal;
+                    window.masterSaldoAwal['QRIS (PIPIT)'] = qrisAwal;
+                }
+            }
 
             if (data.pengaturan) {
                 window.pengaturanToko = Object.assign({}, window.pengaturanToko, data.pengaturan);
@@ -11873,7 +11899,11 @@
                     return;
                 }
                 const idxLama = window.saldoList.indexOf(lama);
-                if (idxLama !== -1) window.saldoList[idxLama] = baru;
+                if (idxLama !== -1) {
+                    window.saldoList[idxLama] = baru;
+                } else if (!window.saldoList.includes(baru)) {
+                    window.saldoList.push(baru);
+                }
                 window.masterSaldoAwal[baru] = awal;
                 delete window.masterSaldoAwal[lama];
                 if (window.masterBatasMinSaldo[lama] !== undefined) {
