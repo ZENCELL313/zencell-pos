@@ -6416,13 +6416,29 @@
             return 'TOPUP';
         };
 
-        window.STANDARD_SALDO_ORDER = [
+        window.STANDARD_SALDO_ORDER_Z1 = [
             'LACI', 'BRI', 'BCA', 'SEA FINA', 'SEA ECA', 'NOBU', 'PIUTANG',
             'GOPAY', 'QRIS', 'DANA FINA', 'DANA AA', 'OVO',
             'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
             'SPAREPART', 'VOUCHER', 'SP', 'ACC', 'KOMISI EDC'
         ];
-        window.REMOVED_SALDO_ACCOUNTS = new Set(['DANA ECA', 'DANA SRI', 'DANA NINING', 'BRANKAS', 'BRANGKAS']);
+        window.STANDARD_SALDO_ORDER_Z2 = [
+            'LACI', 'SEA ELSA', 'BCA YUNI', 'BRI YUNI', 'BRI AA', 'QRIS (PIPIT)', 'PIUTANG',
+            'DANA ELSA', 'OVO ZIYAD', 'GOPAY ZIYAD',
+            'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
+            'VOUCHER', 'SP', 'ACC', 'SPAREPART'
+        ];
+        window.STANDARD_SALDO_ORDER = window.ACTIVE_CABANG === '2'
+            ? window.STANDARD_SALDO_ORDER_Z2.slice()
+            : window.STANDARD_SALDO_ORDER_Z1.slice();
+
+        window.REMOVED_SALDO_ACCOUNTS = window.ACTIVE_CABANG === '2'
+            ? new Set([
+                'DANA ECA', 'DANA SRI', 'DANA NINING', 'BRANKAS', 'BRANGKAS',
+                'BRI', 'BCA', 'SEA FINA', 'SEA ECA', 'NOBU',
+                'GOPAY', 'QRIS', 'DANA FINA', 'DANA AA', 'OVO', 'KOMISI EDC', 'AMARTHA'
+            ])
+            : new Set(['DANA ECA', 'DANA SRI', 'DANA NINING', 'BRANKAS', 'BRANGKAS']);
 
         window.normalizeSaldoListOrder = function(rawList) {
             if (!Array.isArray(rawList) || rawList.length === 0) {
@@ -6488,8 +6504,84 @@
             'KOMISI EDC': 205500
         };
 
-        window.DEFAULT_SALDO_AWAL_Z2 = {};
-        window.saldoList.forEach(s => { window.DEFAULT_SALDO_AWAL_Z2[s] = 0; });
+        window.DEFAULT_SALDO_AWAL_Z2 = {
+            'LACI': 12765700,
+            'SEA ELSA': 2792182,
+            'BCA YUNI': 8864434,
+            'BRI YUNI': 3173106,
+            'BRI AA': 68546,
+            'QRIS (PIPIT)': 4880859,
+            'PIUTANG': 0,
+            'DANA ELSA': 0,
+            'OVO ZIYAD': 297480,
+            'GOPAY ZIYAD': 1016527,
+            'O KUOTA': 924272,
+            'PROPANA': 142354,
+            'DIGIPOS': 1616378,
+            'RITA': 285679,
+            'SIDIVA': 344600,
+            'SIMPEL': 392231,
+            'VOUCHER': 0,
+            'SP': 0,
+            'ACC': 0,
+            'SPAREPART': 0
+        };
+
+        window.Z2_SEED_VERSION = '2026_10_31_v1';
+
+        window.DEFAULT_STOK_Z2 = [
+            // DATA STOK VOUCHER (VCR) - 26 ITEM
+            { id: 20261031001, kat: 'VOUCHER', nama: 'V AXIS 8/1', awal: 10, terjual: 0, modal: 7085, jual: 10000, updatedAt: 1761868800001 },
+            { id: 20261031002, kat: 'VOUCHER', nama: 'V AXIS 3/3', awal: 3, terjual: 0, modal: 10284, jual: 14000, updatedAt: 1761868800002 },
+            { id: 20261031003, kat: 'VOUCHER', nama: 'V AXIS 5/3', awal: 5, terjual: 0, modal: 11918, jual: 15000, updatedAt: 1761868800003 },
+            { id: 20261031004, kat: 'VOUCHER', nama: 'V AXIS 5/2', awal: 6, terjual: 0, modal: 9465, jual: 12000, updatedAt: 1761868800004 },
+            { id: 20261031005, kat: 'VOUCHER', nama: 'V AXIS 5/5', awal: 2, terjual: 0, modal: 13630, jual: 17000, updatedAt: 1761868800005 },
+            { id: 20261031006, kat: 'VOUCHER', nama: 'V AXIS 6/5', awal: 5, terjual: 0, modal: 14560, jual: 18000, updatedAt: 1761868800006 },
+            { id: 20261031007, kat: 'VOUCHER', nama: 'V XL 4/3', awal: 0, terjual: 0, modal: 12175, jual: 15000, updatedAt: 1761868800007 },
+            { id: 20261031008, kat: 'VOUCHER', nama: 'V XL 4/5', awal: 0, terjual: 0, modal: 14050, jual: 18000, updatedAt: 1761868800008 },
+            { id: 20261031009, kat: 'VOUCHER', nama: 'V SMART 4/3', awal: 0, terjual: 0, modal: 9250, jual: 15000, updatedAt: 1761868800009 },
+            { id: 20261031010, kat: 'VOUCHER', nama: 'V SMART 6/7', awal: 0, terjual: 0, modal: 15080, jual: 20000, updatedAt: 1761868800010 },
+            { id: 20261031011, kat: 'VOUCHER', nama: 'V SMART 4/14', awal: 0, terjual: 0, modal: 19140, jual: 23000, updatedAt: 1761868800011 },
+            { id: 20261031012, kat: 'VOUCHER', nama: 'V IM3 6/2', awal: 7, terjual: 0, modal: 9144, jual: 13000, updatedAt: 1761868800012 },
+            { id: 20261031013, kat: 'VOUCHER', nama: 'V IM3 5/5', awal: 7, terjual: 0, modal: 13124, jual: 16000, updatedAt: 1761868800013 },
+            { id: 20261031014, kat: 'VOUCHER', nama: 'V IM3 6/5', awal: 0, terjual: 0, modal: 14890, jual: 18000, updatedAt: 1761868800014 },
+            { id: 20261031015, kat: 'VOUCHER', nama: 'V IM3 9/5', awal: 0, terjual: 0, modal: 16915, jual: 20000, updatedAt: 1761868800015 },
+            { id: 20261031016, kat: 'VOUCHER', nama: 'V IM3 3/28', awal: 0, terjual: 0, modal: 23250, jual: 28000, updatedAt: 1761868800016 },
+            { id: 20261031017, kat: 'VOUCHER', nama: 'V TSEL 4/1', awal: 1, terjual: 0, modal: 7823, jual: 10000, updatedAt: 1761868800017 },
+            { id: 20261031018, kat: 'VOUCHER', nama: 'V TSEL 6/2', awal: 6, terjual: 0, modal: 8441, jual: 13000, updatedAt: 1761868800018 },
+            { id: 20261031019, kat: 'VOUCHER', nama: 'V TSEL 4/5', awal: 0, terjual: 0, modal: 12650, jual: 17000, updatedAt: 1761868800019 },
+            { id: 20261031020, kat: 'VOUCHER', nama: 'V TSEL 7/5', awal: 1, terjual: 0, modal: 14780, jual: 18000, updatedAt: 1761868800020 },
+            { id: 20261031021, kat: 'VOUCHER', nama: 'V TRI 6/1', awal: 6, terjual: 0, modal: 7572, jual: 10000, updatedAt: 1761868800021 },
+            { id: 20261031022, kat: 'VOUCHER', nama: 'V TRI 7/2', awal: 0, terjual: 0, modal: 9690, jual: 13000, updatedAt: 1761868800022 },
+            { id: 20261031023, kat: 'VOUCHER', nama: 'V TRI 5/3', awal: 3, terjual: 0, modal: 12170, jual: 15000, updatedAt: 1761868800023 },
+            { id: 20261031024, kat: 'VOUCHER', nama: 'V TRI 7/5', awal: 4, terjual: 0, modal: 14730, jual: 18000, updatedAt: 1761868800024 },
+            { id: 20261031025, kat: 'VOUCHER', nama: 'V TSEL 10/28', awal: 2, terjual: 0, modal: 41170, jual: 52000, updatedAt: 1761868800025 },
+            { id: 20261031026, kat: 'VOUCHER', nama: 'V TSEL 7/28', awal: 0, terjual: 0, modal: 0, jual: 42000, updatedAt: 1761868800026 },
+            // DATA STOK KARTU PERDANA (SP) - 10 ITEM
+            { id: 20261031027, kat: 'SP', nama: 'SP AXIS REG', awal: 0, terjual: 0, modal: 0, jual: 20000, updatedAt: 1761868800027 },
+            { id: 20261031028, kat: 'SP', nama: 'SP AXIS 3GB', awal: 1, terjual: 0, modal: 15059, jual: 35000, updatedAt: 1761868800028 },
+            { id: 20261031029, kat: 'SP', nama: 'SP AXIS 3GB A', awal: 2, terjual: 0, modal: 23200, jual: 50000, updatedAt: 1761868800029 },
+            { id: 20261031030, kat: 'SP', nama: 'SP XL REG', awal: 0, terjual: 0, modal: 3000, jual: 20000, updatedAt: 1761868800030 },
+            { id: 20261031031, kat: 'SP', nama: 'SP XL 3GB', awal: 2, terjual: 0, modal: 13700, jual: 35000, updatedAt: 1761868800031 },
+            { id: 20261031032, kat: 'SP', nama: 'SP TRI 3GB', awal: 3, terjual: 0, modal: 15133, jual: 35000, updatedAt: 1761868800032 },
+            { id: 20261031033, kat: 'SP', nama: 'SP IM3 3GB', awal: 0, terjual: 0, modal: 14771, jual: 35000, updatedAt: 1761868800033 },
+            { id: 20261031034, kat: 'SP', nama: 'SP BYU 3GB', awal: 2, terjual: 0, modal: 22000, jual: 35000, updatedAt: 1761868800034 },
+            { id: 20261031035, kat: 'SP', nama: 'SP TSEL 3GB', awal: 2, terjual: 0, modal: 24910, jual: 35000, updatedAt: 1761868800035 },
+            { id: 20261031036, kat: 'SP', nama: 'SP SMART 3 GB', awal: 0, terjual: 0, modal: 0, jual: 35000, updatedAt: 1761868800036 }
+        ];
+
+        window.DEFAULT_PIUTANG_Z2 = [
+            { id: 20261031101, isoDate: '2026-10-30', waktu: '19:15', tglDisplay: 'Jumat, 30 Okt, 19:15', nama: 'BU DENI', noHp: '', qty: 1, sisa: 100000, pokokAwal: 100000, tagihanJual: 100000, sisaTagihanJual: 100000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800101 },
+            { id: 20261031102, isoDate: '2026-10-30', waktu: '19:14', tglDisplay: 'Jumat, 30 Okt, 19:14', nama: 'PIPIT', noHp: '', qty: 1, sisa: 19862, pokokAwal: 19862, tagihanJual: 19862, sisaTagihanJual: 19862, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800102 },
+            { id: 20261031103, isoDate: '2026-10-30', waktu: '18:03', tglDisplay: 'Jumat, 30 Okt, 18:03', nama: 'ZIYAD', noHp: '', qty: 1, sisa: 34750, pokokAwal: 34750, tagihanJual: 34750, sisaTagihanJual: 34750, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800103 },
+            { id: 20261031104, isoDate: '2026-10-30', waktu: '13:57', tglDisplay: 'Jumat, 30 Okt, 13:57', nama: 'SENDI', noHp: '', qty: 1, sisa: 1800000, pokokAwal: 1800000, tagihanJual: 1800000, sisaTagihanJual: 1800000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800104 },
+            { id: 20261031105, isoDate: '2026-10-28', waktu: '13:29', tglDisplay: 'Rabu, 28 Okt, 13:29', nama: 'PIPIT', noHp: '', qty: 1, sisa: 100000, pokokAwal: 100000, tagihanJual: 100000, sisaTagihanJual: 100000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800105 },
+            { id: 20261031106, isoDate: '2026-10-27', waktu: '12:59', tglDisplay: 'Selasa, 27 Okt, 12:59', nama: 'ALAM', noHp: '', qty: 1, sisa: 80000, pokokAwal: 80000, tagihanJual: 80000, sisaTagihanJual: 80000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800106 },
+            { id: 20261031107, isoDate: '2026-10-26', waktu: '15:48', tglDisplay: 'Senin, 26 Okt, 15:48', nama: 'ZIYAD', noHp: '', qty: 1, sisa: 69000, pokokAwal: 69000, tagihanJual: 69000, sisaTagihanJual: 69000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800107 },
+            { id: 20261031108, isoDate: '2026-10-13', waktu: '18:38', tglDisplay: 'Selasa, 13 Okt, 18:38', nama: 'ELSA', noHp: '', qty: 1, sisa: 5000000, pokokAwal: 5000000, tagihanJual: 5000000, sisaTagihanJual: 5000000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800108 },
+            { id: 20261031109, isoDate: '2026-10-08', waktu: '17:49', tglDisplay: 'Kamis, 08 Okt, 17:49', nama: 'ECA', noHp: '', qty: 1, sisa: 48000, pokokAwal: 48000, tagihanJual: 48000, sisaTagihanJual: 48000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800109 },
+            { id: 20261031110, isoDate: '2026-10-01', waktu: '13:56', tglDisplay: 'Kamis, 01 Okt, 13:56', nama: 'PIPIT', noHp: '', qty: 1, sisa: 14100, pokokAwal: 14100, tagihanJual: 14100, sisaTagihanJual: 14100, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800110 }
+        ];
 
         window.DEFAULT_SALDO_AWAL = window.ACTIVE_CABANG === '2'
             ? Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2)
@@ -6503,7 +6595,8 @@
         window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL);
         try {
             const cachedSaldoAwal = JSON.parse(localStorage.getItem('zencell_saldo_awal') || 'null');
-            if (window.hasNonZeroSaldoAwal(cachedSaldoAwal)) {
+            const z2LocalSeeded = localStorage.getItem('zencell_seed_version') === window.Z2_SEED_VERSION;
+            if (window.hasNonZeroSaldoAwal(cachedSaldoAwal) && (window.ACTIVE_CABANG !== '2' || z2LocalSeeded)) {
                 window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL, cachedSaldoAwal, {
                     VOUCHER: 0, SP: 0, ACC: 0, SPAREPART: 0, PIUTANG: 0
                 });
@@ -6770,6 +6863,14 @@
         window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
         window.stokOpnameItems = JSON.parse(localStorage.getItem('zencell_stok') || '[]');
         window.piutangList = JSON.parse(localStorage.getItem('zencell_piutang') || '[]');
+        if (window.ACTIVE_CABANG === '2') {
+            if (!Array.isArray(window.stokOpnameItems) || window.stokOpnameItems.length === 0) {
+                window.stokOpnameItems = JSON.parse(JSON.stringify(window.DEFAULT_STOK_Z2));
+            }
+            if (!Array.isArray(window.piutangList) || window.piutangList.length === 0) {
+                window.piutangList = JSON.parse(JSON.stringify(window.DEFAULT_PIUTANG_Z2));
+            }
+        }
         window.setoranOwnerList = JSON.parse(localStorage.getItem('zencell_setoran') || '[]');
         window.sparepartList = JSON.parse(localStorage.getItem('zencell_sparepart') || '[]');
         window.riwayatBelanjaStok = JSON.parse(localStorage.getItem('zencell_riwayat_belanja') || '[]');
@@ -7023,6 +7124,28 @@
 
         function applyCloudSnapshotData(data) {
             if (!data) {
+                if (window.ACTIVE_CABANG === '2') {
+                    window.saldoList = window.STANDARD_SALDO_ORDER_Z2.slice();
+                    window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2);
+                    window.stokOpnameItems = JSON.parse(JSON.stringify(window.DEFAULT_STOK_Z2));
+                    window.piutangList = JSON.parse(JSON.stringify(window.DEFAULT_PIUTANG_Z2));
+                    localStorage.setItem('zencell_seed_version', window.Z2_SEED_VERSION);
+                    window.saveLocalBackup();
+                    isFirebaseSyncing = false;
+                    window.hasInitialCloudLoaded = true;
+                    window.initDropdowns();
+                    window.initVlookupAutoFill();
+                    if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
+                    if (window.renderAll) window.renderAll();
+                    window.saveMultipleFirebaseNodes({
+                        saldoListCustom: window.saldoList,
+                        saldoAwal: window.masterSaldoAwal,
+                        stok: window.stokOpnameItems,
+                        piutang: window.piutangList,
+                        seedVersionZ2: window.Z2_SEED_VERSION
+                    }, true);
+                    return;
+                }
                 isFirebaseSyncing = false;
                 window.hasInitialCloudLoaded = true;
                 if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
@@ -7034,6 +7157,7 @@
 
             const lastResetTs = Number(data.lastResetTimestamp || 0);
             const needsResyncMap = {};
+            const isZ2InitialSeedNeeded = (window.ACTIVE_CABANG === '2' && data.seedVersionZ2 !== window.Z2_SEED_VERSION);
 
             if (data.vlookup && typeof data.vlookup === 'object') {
                 let loadedVlookup = {};
@@ -7054,31 +7178,43 @@
                 localStorage.setItem('zencell_vlookup', '{}');
             }
 
-            if (data.saldoListCustom) {
-                window.saldoList = window.normalizeSaldoListOrder(data.saldoListCustom);
+            if (isZ2InitialSeedNeeded) {
+                window.saldoList = window.STANDARD_SALDO_ORDER_Z2.slice();
+                window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2);
+                needsResyncMap.saldoListCustom = true;
+                needsResyncMap.saldoAwal = true;
+                needsResyncMap.seedVersionZ2 = true;
+                localStorage.setItem('zencell_seed_version', window.Z2_SEED_VERSION);
             } else {
-                window.saldoList = window.STANDARD_SALDO_ORDER.slice();
-            }
-            if (data.saldoAwal) {
-                if (window.hasNonZeroSaldoAwal(data.saldoAwal) || data.isExplicitZeroSaldoAwal === true) {
-                    window.masterSaldoAwal = Object.assign({}, data.saldoAwal, {
-                        VOUCHER: 0,
-                        SP: 0,
-                        ACC: 0,
-                        SPAREPART: 0,
-                        PIUTANG: 0
-                    });
+                if (window.ACTIVE_CABANG === '2') {
+                    localStorage.setItem('zencell_seed_version', window.Z2_SEED_VERSION);
+                }
+                if (data.saldoListCustom) {
+                    window.saldoList = window.normalizeSaldoListOrder(data.saldoListCustom);
                 } else {
-                    // Self-healing: jika perangkat lain yang belum di-refresh tidak sengaja mengirim saldoAwal 0 semua karena bug Undo lama, pulihkan otomatis!
-                    const fallbackAwal = window.hasNonZeroSaldoAwal(window.masterSaldoAwal) ? window.masterSaldoAwal : window.DEFAULT_SALDO_AWAL;
-                    window.masterSaldoAwal = Object.assign({}, fallbackAwal, {
-                        VOUCHER: 0,
-                        SP: 0,
-                        ACC: 0,
-                        SPAREPART: 0,
-                        PIUTANG: 0
-                    });
-                    needsResyncMap.saldoAwal = true;
+                    window.saldoList = window.STANDARD_SALDO_ORDER.slice();
+                }
+                if (data.saldoAwal) {
+                    if (window.hasNonZeroSaldoAwal(data.saldoAwal) || data.isExplicitZeroSaldoAwal === true) {
+                        window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL, data.saldoAwal, {
+                            VOUCHER: 0,
+                            SP: 0,
+                            ACC: 0,
+                            SPAREPART: 0,
+                            PIUTANG: 0
+                        });
+                    } else {
+                        // Self-healing: jika perangkat lain yang belum di-refresh tidak sengaja mengirim saldoAwal 0 semua karena bug Undo lama, pulihkan otomatis!
+                        const fallbackAwal = window.hasNonZeroSaldoAwal(window.masterSaldoAwal) ? window.masterSaldoAwal : window.DEFAULT_SALDO_AWAL;
+                        window.masterSaldoAwal = Object.assign({}, fallbackAwal, {
+                            VOUCHER: 0,
+                            SP: 0,
+                            ACC: 0,
+                            SPAREPART: 0,
+                            PIUTANG: 0
+                        });
+                        needsResyncMap.saldoAwal = true;
+                    }
                 }
             }
             if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
@@ -7120,10 +7256,21 @@
             });
             window.transaksiJurnal = mergedTrx.sort((a, b) => String(b.id).localeCompare(String(a.id)));
 
-            // 2. Piutang Konsumen (Smart Merge)
+            // 2. Piutang Konsumen (Smart Merge + Seed Awal Z2 jika belum pernah di-seed)
             window.piutangList = mergeCloudCollection('piutang', data.piutang, needsResyncMap, lastResetTs);
+            if (isZ2InitialSeedNeeded) {
+                const existingPiutangIds = new Set(window.piutangList.map(p => String(p.id)));
+                const existingPiutangSigs = new Set(window.piutangList.map(p => `${(p.nama || '').trim().toUpperCase()}__${p.isoDate || ''}__${p.waktu || ''}__${Number(p.pokokAwal || p.sisa || 0)}`));
+                window.DEFAULT_PIUTANG_Z2.forEach(seedP => {
+                    const sig = `${seedP.nama}__${seedP.isoDate}__${seedP.waktu}__${seedP.pokokAwal}`;
+                    if (!existingPiutangIds.has(String(seedP.id)) && !existingPiutangSigs.has(sig)) {
+                        window.piutangList.push(JSON.parse(JSON.stringify(seedP)));
+                    }
+                });
+                needsResyncMap.piutang = true;
+            }
 
-            // 3. Stok Opname (Smart Merge + Normalisasi)
+            // 3. Stok Opname (Smart Merge + Normalisasi + Seed Awal Z2 jika belum pernah di-seed)
             const mergedStok = mergeCloudCollection('stok', data.stok, needsResyncMap, lastResetTs);
             window.stokOpnameItems = mergedStok.map(s => ({
                 id: s.id || Date.now(),
@@ -7135,6 +7282,25 @@
                 jual: Number(s.jual || 0),
                 updatedAt: Number(s.updatedAt || 0)
             }));
+            if (isZ2InitialSeedNeeded) {
+                const byKatNama = new Map();
+                window.stokOpnameItems.forEach(s => {
+                    byKatNama.set(`${s.kat}__${s.nama}`, s);
+                });
+                window.DEFAULT_STOK_Z2.forEach(seedS => {
+                    const key = `${seedS.kat}__${seedS.nama}`;
+                    const exist = byKatNama.get(key);
+                    if (exist) {
+                        exist.awal = seedS.awal;
+                        exist.modal = seedS.modal;
+                        exist.jual = seedS.jual;
+                        exist.updatedAt = Math.max(Number(exist.updatedAt || 0), seedS.updatedAt);
+                    } else {
+                        window.stokOpnameItems.push(JSON.parse(JSON.stringify(seedS)));
+                    }
+                });
+                needsResyncMap.stok = true;
+            }
 
             // 4. Sparepart Service (Smart Merge)
             window.sparepartList = mergeCloudCollection('sparepart', data.sparepart, needsResyncMap, lastResetTs);
@@ -7197,7 +7363,9 @@
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 setoran: window.setoranOwnerList,
                 operasional: window.operasionalList,
-                saldoAwal: window.masterSaldoAwal
+                saldoAwal: window.masterSaldoAwal,
+                saldoListCustom: window.saldoList,
+                seedVersionZ2: window.Z2_SEED_VERSION
             };
             Object.keys(needsResyncMap).forEach(col => {
                 if (needsResyncMap[col] && colToVarMap[col] !== undefined) {
@@ -7442,6 +7610,58 @@
 
         window._rtdbPermRetryCount = 0;
 
+        window.ensureZencell2BackgroundCloudSeed = async function() {
+            if (window._z2BgSeedChecked || window.ACTIVE_CABANG === '2') return;
+            window._z2BgSeedChecked = true;
+            try {
+                const snapSeed = await get(ref(db, 'zencell2Nodes/seedVersionZ2'));
+                if (snapSeed && snapSeed.exists() && snapSeed.val() === window.Z2_SEED_VERSION) {
+                    return;
+                }
+                const snapZ2 = await get(ref(db, 'zencell2Nodes'));
+                const existingZ2 = (snapZ2 && snapZ2.exists()) ? (snapZ2.val() || {}) : {};
+                let stokZ2 = existingZ2.stok ? (Array.isArray(existingZ2.stok) ? existingZ2.stok.slice() : Object.values(existingZ2.stok)) : [];
+                const byKatNama = new Map();
+                stokZ2.forEach(s => {
+                    if (s && (s.nama || s.namaBarang)) {
+                        byKatNama.set(`${s.kat || 'VOUCHER'}__${(s.nama || s.namaBarang).trim().toUpperCase()}`, s);
+                    }
+                });
+                window.DEFAULT_STOK_Z2.forEach(seedS => {
+                    const key = `${seedS.kat}__${seedS.nama}`;
+                    const exist = byKatNama.get(key);
+                    if (exist) {
+                        exist.awal = seedS.awal;
+                        exist.modal = seedS.modal;
+                        exist.jual = seedS.jual;
+                        exist.updatedAt = Math.max(Number(exist.updatedAt || 0), seedS.updatedAt);
+                    } else {
+                        stokZ2.push(JSON.parse(JSON.stringify(seedS)));
+                    }
+                });
+
+                let piutangZ2 = existingZ2.piutang ? (Array.isArray(existingZ2.piutang) ? existingZ2.piutang.slice() : Object.values(existingZ2.piutang)) : [];
+                const existingPiutangIds = new Set(piutangZ2.filter(Boolean).map(p => String(p.id)));
+                const existingPiutangSigs = new Set(piutangZ2.filter(Boolean).map(p => `${(p.nama || '').trim().toUpperCase()}__${p.isoDate || ''}__${p.waktu || ''}__${Number(p.pokokAwal || p.sisa || 0)}`));
+                window.DEFAULT_PIUTANG_Z2.forEach(seedP => {
+                    const sig = `${seedP.nama}__${seedP.isoDate}__${seedP.waktu}__${seedP.pokokAwal}`;
+                    if (!existingPiutangIds.has(String(seedP.id)) && !existingPiutangSigs.has(sig)) {
+                        piutangZ2.push(JSON.parse(JSON.stringify(seedP)));
+                    }
+                });
+
+                await update(ref(db, 'zencell2Nodes'), {
+                    saldoListCustom: window.STANDARD_SALDO_ORDER_Z2.slice(),
+                    saldoAwal: Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2),
+                    stok: stokZ2,
+                    piutang: piutangZ2,
+                    seedVersionZ2: window.Z2_SEED_VERSION
+                });
+            } catch (e) {
+                window._z2BgSeedChecked = false;
+            }
+        };
+
         window.startRealtimeDatabaseListener = function() {
             if (window._rtdbListenerAttached) return;
             window._rtdbListenerAttached = true;
@@ -7453,6 +7673,7 @@
                     window._firebaseAuthState = auth.currentUser ? 'AUTHENTICATED' : 'CONSOLE_NOT_ENABLED';
                 }
                 window.updateFirebaseSecurityStatusUI();
+                if (window.ensureZencell2BackgroundCloudSeed) window.ensureZencell2BackgroundCloudSeed();
                 if (window.pendingFirebaseWrites > 0 || window.isSavingToFirebase) {
                     window._deferredSnapshot = snapshot;
                     return;
@@ -10626,7 +10847,7 @@
             BLOKIR_MASUK_SERVER: ['O KUOTA', 'ORDER KUOTA', 'RITA', 'SIDIVA', 'SIMPEL', 'PROPANA', 'DIGIPOS'],
             BLOKIR_MASUK_STOK_PART: ['ACC', 'VOUCHER', 'SP', 'SPAREPART'],
             BLOKIR_MASUK_PIUTANG: ['PIUTANG'],
-            BLOKIR_KELUAR_CAIR: ['QRIS', 'KOMISI EDC'],
+            BLOKIR_KELUAR_CAIR: ['QRIS', 'QRIS (PIPIT)', 'KOMISI EDC'],
             KHUSUS_MASUK_TEDC: 'KOMISI EDC',
             KHUSUS_KELUAR_PELUNASAN: 'PIUTANG'
         };
@@ -11498,7 +11719,7 @@
                 BLOKIR_MASUK_SERVER: ['O KUOTA', 'ORDER KUOTA', 'RITA', 'SIDIVA', 'SIMPEL', 'PROPANA', 'DIGIPOS'],
                 BLOKIR_MASUK_STOK_PART: ['ACC', 'VOUCHER', 'SP', 'SPAREPART'],
                 BLOKIR_MASUK_PIUTANG: ['PIUTANG'],
-                BLOKIR_KELUAR_CAIR: ['QRIS', 'KOMISI EDC']
+                BLOKIR_KELUAR_CAIR: ['QRIS', 'QRIS (PIPIT)', 'KOMISI EDC']
             };
 
             if (stokKas) {
@@ -12627,7 +12848,7 @@
                     initTrx.modalSplit1 = nom;
                     initTrx.updatedAt = nowTs;
                     window.markLocalEntityEdited('transaksi', initTrx);
-                } else {
+                } else if (!p.isSeedAwal || sumber !== 'TIDAK POTONG SALDO') {
                     const newInitTrx = {
                         id: 'trx_init_piutang_' + p.id,
                         idPiutangRef: p.id,
