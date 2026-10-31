@@ -4949,6 +4949,29 @@
             </div>
         </div>
 
+        <!-- MODAL OTORISASI OWNER UNTUK EDIT / HAPUS STOK MASTER -->
+        <div id="modalOwnerAuthOverlay" class="modal-overlay">
+            <div class="modal-content" style="max-width: 410px; text-align: center; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--border);">
+                <div style="width: 54px; height: 54px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 10px; border: 2px solid #FECACA;">
+                    🔒
+                </div>
+                <h3 style="font-size: 15px; font-weight: 800; color: #0F172A; margin: 0 0 6px;">Akses Khusus OWNER</h3>
+                <p id="txtOwnerAuthDesc" style="font-size: 11.5px; color: #475569; margin: 0 0 14px; line-height: 1.5;">
+                    Perubahan data master stok opname (nama, modal HPP, harga jual, stok awal, atau hapus) hanya dapat dilakukan oleh Owner.<br>
+                    <span style="color:#0284C7; font-weight:700;">Kasir tetap bisa melakukan Restok & Penjualan secara bebas.</span>
+                </p>
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; margin-bottom: 14px; text-align: left;">
+                    <label style="font-size: 11px; font-weight: 700; color: #334155; display: block; margin-bottom: 5px;">🔑 Masukkan PIN Owner untuk Otorisasi:</label>
+                    <input type="password" id="inputOwnerAuthPin" class="form-control" placeholder="Ketik PIN Owner..." style="text-align: center; letter-spacing: 5px; font-size: 17px; font-weight: 800; background:#FFF;" maxlength="10" onkeyup="if(event.key==='Enter') window.submitOwnerAuthPin()">
+                    <div id="msgOwnerAuthError" style="font-size: 10.5px; color: #EF4444; font-weight: 700; margin-top: 5px; display: none;"></div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn" style="flex: 1; background: #64748B; color: #FFF; padding: 8px; font-size: 11px;" onclick="window.closeModalOwnerAuth()">Batal</button>
+                    <button type="button" class="btn" style="flex: 1.6; background: #059669; color: #FFF; padding: 8px; font-size: 11px; font-weight: 800;" onclick="window.submitOwnerAuthPin()">Verifikasi & Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>📦 Stok Opname Realtime</span>
@@ -12564,6 +12587,10 @@
             let toastMsg = '';
 
             if (editId) {
+                if (typeof window.isOwnerAuthorized === 'function' && !window.isOwnerAuthorized()) {
+                    window.showToast("⛔ Akses Dibatasi: Hanya OWNER yang dapat menyimpan perubahan data stok master!", "error");
+                    return;
+                }
                 let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
                 const oldNama = item ? (item.nama || item.namaBarang || '').trim().toUpperCase() : nama;
                 const oldKat = item ? item.kat : kat;
@@ -12719,7 +12746,91 @@
             window.showToast(toastMsg, "success");
         };
 
+        window.isCurrentSessionOwner = function() {
+            const activeUser = (sessionStorage.getItem('zencell_user') || '').toUpperCase().trim();
+            if (activeUser === 'OWNER') return true;
+            const staffList = window.daftarKaryawan || [];
+            const userObj = staffList.find(k => (k.username || '').toUpperCase().trim() === activeUser);
+            return !!(userObj && userObj.role === 'OWNER');
+        };
+
+        window._ownerAuthorizedUntil = 0;
+        window.isOwnerAuthorized = function() {
+            if (window.isCurrentSessionOwner()) return true;
+            if (window._ownerAuthorizedUntil && Date.now() < window._ownerAuthorizedUntil) return true;
+            return false;
+        };
+
+        window._pendingOwnerAuthCallback = null;
+
+        window.requireOwnerAccess = function(actionDesc, callback) {
+            if (window.isOwnerAuthorized()) {
+                if (typeof callback === 'function') callback();
+                return;
+            }
+            window._pendingOwnerAuthCallback = callback;
+            const descEl = document.getElementById('txtOwnerAuthDesc');
+            if (descEl) {
+                descEl.innerHTML = `Perubahan data stok opname (<b>${actionDesc}</b>) hanya dapat dilakukan oleh Owner.<br><span style="color:#0284C7; font-weight:700;">Kasir tetap diizinkan melakukan Restok & Penjualan bebas.</span><br>Masukkan PIN Owner jika Anda telah mendapatkan izin:`;
+            }
+            const pinInp = document.getElementById('inputOwnerAuthPin');
+            if (pinInp) pinInp.value = '';
+            const errEl = document.getElementById('msgOwnerAuthError');
+            if (errEl) { errEl.style.display = 'none'; errEl.innerText = ''; }
+            
+            document.getElementById('modalOwnerAuthOverlay')?.classList.add('show');
+            setTimeout(() => pinInp?.focus(), 100);
+        };
+
+        window.closeModalOwnerAuth = function() {
+            window._pendingOwnerAuthCallback = null;
+            document.getElementById('modalOwnerAuthOverlay')?.classList.remove('show');
+        };
+
+        window.submitOwnerAuthPin = function() {
+            const pinInp = document.getElementById('inputOwnerAuthPin');
+            const enteredPin = (pinInp?.value || '').trim();
+            const correctPin = (window.getPinForUsername && window.getPinForUsername('OWNER')) || '212';
+            const errEl = document.getElementById('msgOwnerAuthError');
+
+            if (!enteredPin) {
+                if (errEl) { errEl.innerText = '⚠️ Harap masukkan PIN Owner!'; errEl.style.display = 'block'; }
+                return;
+            }
+
+            if (enteredPin === correctPin) {
+                window._ownerAuthorizedUntil = Date.now() + (5 * 60 * 1000); // 5 menit otorisasi
+                document.getElementById('modalOwnerAuthOverlay')?.classList.remove('show');
+                window.showToast("🔓 Otorisasi Owner Berhasil!", "success");
+                const cb = window._pendingOwnerAuthCallback;
+                window._pendingOwnerAuthCallback = null;
+                if (typeof cb === 'function') {
+                    cb();
+                }
+            } else {
+                if (errEl) {
+                    errEl.innerText = '❌ PIN Owner salah! Akses ditolak.';
+                    errEl.style.display = 'block';
+                }
+                if (pinInp) {
+                    pinInp.value = '';
+                    pinInp.focus();
+                }
+                window.showToast("❌ PIN Owner salah! Akses ditolak.", "error");
+            }
+        };
+
         window.editStokOpname = function(id) {
+            const stok = (window.stokOpnameItems || []).find(s => s.id == id);
+            if (!stok) return;
+            const namaBarang = (stok.nama || stok.namaBarang || '').trim().toUpperCase();
+
+            window.requireOwnerAccess(`Edit Stok "${namaBarang}"`, function() {
+                window._doEditStokOpname(id);
+            });
+        };
+
+        window._doEditStokOpname = function(id) {
             const stok = window.stokOpnameItems.find(s => s.id == id);
             if (!stok) return;
 
@@ -12761,6 +12872,12 @@
         };
 
         window.hapusRiwayatBelanja = function(id) {
+            window.requireOwnerAccess("Hapus Riwayat Belanja Stok", function() {
+                window._doHapusRiwayatBelanja(id);
+            });
+        };
+
+        window._doHapusRiwayatBelanja = function(id) {
             const targetRiwayat = window.riwayatBelanjaStok.find(r => r.id == id);
             if (confirm("Hapus data stok ini?")) {
                 const nowTs = window.getNextUniqueTs();
@@ -12794,9 +12911,19 @@
                 }, false);
                 window.renderAll();
             }
-        }
+        };
 
         window.hapusStokOpnameItem = function(id) {
+            const target = (window.stokOpnameItems || []).find(s => s.id == id);
+            if (!target) return;
+            const namaItem = (target.nama || target.namaBarang || '').trim().toUpperCase();
+
+            window.requireOwnerAccess(`Hapus Item Stok "${namaItem}"`, function() {
+                window._doHapusStokOpnameItem(id);
+            });
+        };
+
+        window._doHapusStokOpnameItem = function(id) {
             const target = (window.stokOpnameItems || []).find(s => s.id == id);
             if (!target) return;
             const namaItem = (target.nama || target.namaBarang || '').trim().toUpperCase();
@@ -12821,7 +12948,7 @@
                 }, false);
                 window.renderAll();
             }
-        }
+        };
 
         window.simpanPiutang = function(e) {
             e.preventDefault();
