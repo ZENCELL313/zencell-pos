@@ -2548,6 +2548,57 @@
             animation: settingsFadeIn 0.2s ease-out;
         }
 
+        /* Kalkulator Cepat & Hitung Laci Styling */
+        .calc-btn {
+            border: 1px solid #CBD5E1;
+            border-radius: 7px;
+            padding: 8px 0;
+            font-size: 13.5px;
+            font-weight: 700;
+            background: #FFF;
+            color: #0F172A;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .calc-btn:hover {
+            background: #F1F5F9;
+        }
+        .calc-btn:active {
+            transform: scale(0.95);
+            background: #E2E8F0;
+        }
+        .laci-input-lbr {
+            width: 100%;
+            border: 1px solid #CBD5E1;
+            border-radius: 5px;
+            padding: 3px 4px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            background: #FFF;
+            color: #0F172A;
+        }
+        .laci-input-lbr:focus, .laci-input-nom:focus {
+            border-color: #059669;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.25);
+        }
+        .laci-input-nom {
+            width: 100%;
+            border: 1px solid #CBD5E1;
+            border-radius: 5px;
+            padding: 3px 6px;
+            text-align: right;
+            font-size: 11px;
+            font-weight: 700;
+            background: #FFF;
+            color: #0F172A;
+        }
+
         /* AI Audit & Tanya Bos Styling */
         .ai-hero-card {
             background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
@@ -2943,22 +2994,22 @@
     <div id="rightInsightSidebar" class="right-sidebar">
         <div class="sidebar-header" style="padding: 10px 12px;">
             <div style="display:flex; flex-direction:column; gap:1px;">
-                <span style="font-size:13px; font-weight:900; letter-spacing:0.3px;">🤖 RADAR, AI AUDIT &amp; WA CEPAT</span>
-                <span style="font-size:9.5px; font-weight:600; opacity:0.9;">Grafik Cuan • Asisten Bos AI • Kirim WA 1-Klik</span>
+                <span style="font-size:13px; font-weight:900; letter-spacing:0.3px;">📊 RADAR, KALKULATOR &amp; WA CEPAT</span>
+                <span style="font-size:9.5px; font-weight:600; opacity:0.9;">Grafik Cuan • Hitung Laci Kas • Kirim WA 1-Klik</span>
             </div>
             <button onclick="toggleRightInsightSidebar()" style="background:rgba(239,68,68,0.9); border:1px solid rgba(255,255,255,0.45); color:white; font-size:11px; font-weight:900; padding:4px 9px; border-radius:7px; cursor:pointer;">✕ TUTUP</button>
         </div>
         <div class="right-sidebar-subtabs">
             <button type="button" class="right-subtab-btn active" id="btnRightTab-RADAR" onclick="switchRightSidebarTab('RADAR')">📊 Radar &amp; Grafik</button>
-            <button type="button" class="right-subtab-btn" id="btnRightTab-AI" onclick="switchRightSidebarTab('AI')">🤖 AI Audit &amp; Bos</button>
+            <button type="button" class="right-subtab-btn" id="btnRightTab-KALKULATOR" onclick="switchRightSidebarTab('KALKULATOR')">🧮 Kalkulator &amp; Laci</button>
             <button type="button" class="right-subtab-btn" id="btnRightTab-WA" onclick="switchRightSidebarTab('WA')">💬 WA Cepat</button>
         </div>
         <div class="sidebar-content" style="padding: 10px;">
             <div id="rightPane-RADAR" class="right-pane-section active">
                 <div id="rightInsightSidebarContent"></div>
             </div>
-            <div id="rightPane-AI" class="right-pane-section">
-                <div id="rightAiAssistantContent"></div>
+            <div id="rightPane-KALKULATOR" class="right-pane-section">
+                <div id="rightKalkulatorContent"></div>
             </div>
             <div id="rightPane-WA" class="right-pane-section">
                 <div id="rightWaQuickContent"></div>
@@ -4122,8 +4173,8 @@
                 <button type="button" id="btnToggleKpiCollapse" class="saldo-banner-btn" onclick="toggleKpiCardsCollapse()" style="background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; padding:5px 9px; font-size:10px;" title="Sembunyikan / Tampilkan 8 Kotak Kartu KPI di atas agar tabel lebih lega">
                     <span id="lblToggleKpiCollapse">🔼 LIPAT KPI</span>
                 </button>
-                <button type="button" class="saldo-banner-btn radar-btn" onclick="toggleRightInsightSidebar()" title="Buka Panel Radar Grafik, Bos AI Audit & WA Cepat">
-                    <span>🤖 RADAR &amp; AI</span>
+                <button type="button" class="saldo-banner-btn radar-btn" onclick="toggleRightInsightSidebar()" title="Buka Panel Radar Grafik, Kalkulator Hitung Laci & WA Cepat">
+                    <span>🧮 RADAR &amp; HITUNG</span>
                     <span id="badgeRadarAlertCount" class="radar-notif-badge" style="display:none;">0</span>
                 </button>
             </div>
@@ -8215,8 +8266,12 @@
             const overlay = document.getElementById('rightSidebarOverlay');
             if (!sidebar || !overlay) return;
             const willShow = !sidebar.classList.contains('show');
-            if (willShow && typeof window.renderRightInsightSidebar === 'function') {
-                window.renderRightInsightSidebar();
+            if (willShow) {
+                if (window._activeRightSidebarTab === 'KALKULATOR' && typeof window.renderRightKalkulatorPanel === 'function') {
+                    window.renderRightKalkulatorPanel();
+                } else if (typeof window.renderRightInsightSidebar === 'function') {
+                    window.renderRightInsightSidebar();
+                }
             }
             sidebar.classList.toggle('show');
             overlay.classList.toggle('show');
@@ -22139,7 +22194,7 @@
         window._isAiLoading = false;
 
         window.switchRightSidebarTab = function(tabName) {
-            const validTabs = ['RADAR', 'AI', 'WA'];
+            const validTabs = ['RADAR', 'KALKULATOR', 'WA'];
             const target = validTabs.includes(tabName) ? tabName : 'RADAR';
             window._activeRightSidebarTab = target;
 
@@ -22150,8 +22205,8 @@
                 if (pane) pane.classList.toggle('active', t === target);
             });
 
-            if (target === 'AI' && window.renderRightAiPanel) {
-                window.renderRightAiPanel();
+            if (target === 'KALKULATOR' && window.renderRightKalkulatorPanel) {
+                window.renderRightKalkulatorPanel();
             } else if (target === 'WA' && window.renderRightWaPanel) {
                 window.renderRightWaPanel();
             }
@@ -22408,98 +22463,524 @@
             window.open(url, '_blank');
         };
 
-        window.renderRightAiPanel = function() {
-            const box = document.getElementById('rightAiAssistantContent');
-            if (!box) return;
+        window.renderRightAiPanel = function() {};
 
-            const scan = window.scanLocalAnomaliesKonter();
-            const anomHtml = scan.anomalies.length > 0
-                ? scan.anomalies.map(a => {
-                    const bg = a.level === 'DANGER' ? '#FEF2F2' : (a.level === 'WARN' ? '#FFFBEB' : '#F0F9FF');
-                    const brd = a.level === 'DANGER' ? '#FCA5A5' : (a.level === 'WARN' ? '#FDE68A' : '#BAE6FD');
-                    const clr = a.level === 'DANGER' ? '#991B1B' : (a.level === 'WARN' ? '#92400E' : '#0369A1');
-                    return `
-                        <div class="radar-alert-item" style="background:${bg}; border-color:${brd}; align-items:flex-start; flex-direction:column; gap:4px;">
-                            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; gap:6px;">
-                                <b style="color:${clr}; font-size:10.5px;">${a.level === 'DANGER' ? '🚨' : '⚠️'} ${a.title}</b>
-                                ${a.trxId ? `<button type="button" onclick="toggleRightInsightSidebar(); lompatKeHasilFind('TRX', '${a.trxId}', '${a.isoDate}')" style="background:#0F172A; color:#FFF; border:none; border-radius:5px; padding:2px 7px; font-size:9px; font-weight:800; cursor:pointer; flex-shrink:0;">👁️ Cek Trx</button>` : ''}
-                            </div>
-                            <div style="font-size:9.8px; color:#334155; line-height:1.35;">${a.desc}</div>
-                        </div>
-                    `;
-                }).join('')
-                : `<div style="background:#ECFDF5; border:1px solid #86EFAC; color:#065F46; border-radius:8px; padding:8px 10px; font-size:10.5px; font-weight:700; text-align:center;">✅ Semua ${scan.dayTrxCount} transaksi pada ${scan.selectedDate} terlihat wajar (Tidak ada cuan minus / dobel input).</div>`;
+        // Helper untuk mendapatkan Saldo Laci Realtime di Sistem
+        window.getSaldoLaciSistem = function() {
+            const rowLaci = document.querySelector('#tabelSaldo tr[data-mutasi-akun="LACI"] span');
+            if (rowLaci && rowLaci.innerText) {
+                const raw = rowLaci.innerText.replace(/[^0-9-]/g, '');
+                const n = parseFloat(raw);
+                if (!isNaN(n)) return n;
+            }
+            const awal = Number((window.saldoAwal && window.saldoAwal['LACI']) || 0);
+            let mutasi = 0;
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t) return;
+                if (t.isSplit) {
+                    if (t.akunMasuk1 === 'LACI') mutasi += Number(t.jualSplit1 || 0);
+                    if (t.akunMasuk2 === 'LACI') mutasi += Number(t.jualSplit2 || 0);
+                    if (t.akunKeluar1 === 'LACI') mutasi -= Number(t.modalSplit1 || 0);
+                    if (t.akunKeluar2 === 'LACI') mutasi -= Number(t.modalSplit2 || 0);
+                } else {
+                    if (t.akunMasuk1 === 'LACI') mutasi += Number(t.hargaJual || 0);
+                    if (t.akunKeluar1 === 'LACI') mutasi -= Number(t.hargaModal || 0);
+                }
+            });
+            return awal + mutasi;
+        };
 
-            box.innerHTML = `
-                <div class="ai-hero-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+        // =========================================================================
+        // 🧮 1. KALKULATOR CEPAT (STANDAR DAGANG)
+        // =========================================================================
+        window._calcExpression = '';
+        window._calcCurrentVal = '0';
+        window._calcResetNext = false;
+        window._calcOpPending = null;
+        window._calcPrevVal = null;
+
+        window.calcUpdateDisplay = function() {
+            const expEl = document.getElementById('calcExpressionDisplay');
+            const mainEl = document.getElementById('calcMainDisplay');
+            if (expEl) expEl.innerText = window._calcExpression || '';
+            if (mainEl) {
+                const str = window._calcCurrentVal;
+                if (!str) {
+                    mainEl.innerText = '0';
+                    return;
+                }
+                const parts = str.split('.');
+                const intNum = parseFloat(parts[0]);
+                const intStr = !isNaN(intNum) ? intNum.toLocaleString('id-ID') : '0';
+                mainEl.innerText = parts.length > 1 ? `${intStr},${parts[1]}` : (str.endsWith('.') ? `${intStr},` : intStr);
+            }
+        };
+
+        window.calcDigit = function(digit) {
+            if (window._calcResetNext) {
+                window._calcCurrentVal = '0';
+                window._calcResetNext = false;
+            }
+            if (digit === '.') {
+                if (!window._calcCurrentVal.includes('.')) {
+                    window._calcCurrentVal += '.';
+                }
+            } else if (digit === '00') {
+                if (window._calcCurrentVal === '0') return;
+                window._calcCurrentVal += '00';
+            } else {
+                if (window._calcCurrentVal === '0') {
+                    window._calcCurrentVal = String(digit);
+                } else {
+                    window._calcCurrentVal += String(digit);
+                }
+            }
+            window.calcUpdateDisplay();
+        };
+
+        window.calcOperator = function(op) {
+            const current = parseFloat(window._calcCurrentVal) || 0;
+            if (op === '%') {
+                window._calcCurrentVal = String(current / 100);
+                window.calcUpdateDisplay();
+                return;
+            }
+            const opSymbol = op === '*' ? '×' : (op === '/' ? '÷' : (op === '-' ? '−' : '+'));
+            window._calcExpression = `${current.toLocaleString('id-ID')} ${opSymbol}`;
+            window._calcOpPending = op;
+            window._calcPrevVal = current;
+            window._calcResetNext = true;
+            window.calcUpdateDisplay();
+        };
+
+        window.calcEqual = function() {
+            if (!window._calcOpPending || window._calcPrevVal === undefined || window._calcPrevVal === null) return;
+            const prev = Number(window._calcPrevVal);
+            const current = parseFloat(window._calcCurrentVal) || 0;
+            let res = 0;
+            if (window._calcOpPending === '+') res = prev + current;
+            else if (window._calcOpPending === '-') res = prev - current;
+            else if (window._calcOpPending === '*') res = prev * current;
+            else if (window._calcOpPending === '/') res = current !== 0 ? prev / current : 0;
+
+            const opSymbol = window._calcOpPending === '*' ? '×' : (window._calcOpPending === '/' ? '÷' : (window._calcOpPending === '-' ? '−' : '+'));
+            window._calcExpression = `${prev.toLocaleString('id-ID')} ${opSymbol} ${current.toLocaleString('id-ID')} =`;
+            window._calcCurrentVal = String(Math.round(res * 1000) / 1000);
+            window._calcOpPending = null;
+            window._calcPrevVal = null;
+            window._calcResetNext = true;
+            window.calcUpdateDisplay();
+        };
+
+        window.calcClear = function() {
+            window._calcExpression = '';
+            window._calcCurrentVal = '0';
+            window._calcOpPending = null;
+            window._calcPrevVal = null;
+            window._calcResetNext = false;
+            window.calcUpdateDisplay();
+        };
+
+        window.calcBackspace = function() {
+            if (window._calcResetNext) {
+                window.calcClear();
+                return;
+            }
+            if (window._calcCurrentVal.length > 1) {
+                window._calcCurrentVal = window._calcCurrentVal.slice(0, -1);
+            } else {
+                window._calcCurrentVal = '0';
+            }
+            window.calcUpdateDisplay();
+        };
+
+        window.calcCopyResult = function() {
+            const raw = window._calcCurrentVal;
+            const n = parseFloat(raw) || 0;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(String(n));
+                window.showToast(`📋 Hasil disalin: ${window.formatRp(n)}`, 'info');
+            }
+        };
+
+        // =========================================================================
+        // 💵 2. HITUNG FISIK UANG LACI (BERDASARKAN EXCEL USER)
+        // =========================================================================
+        window.LACI_PECAHAN = [100000, 50000, 20000, 10000, 5000, 2000, 1000];
+
+        window.getSavedLaciCalc = function() {
+            try {
+                return JSON.parse(localStorage.getItem('zencell_laci_calc') || '{}');
+            } catch (e) {
+                return {};
+            }
+        };
+
+        window.saveLaciCalc = function(data) {
+            try {
+                localStorage.setItem('zencell_laci_calc', JSON.stringify(data));
+            } catch (e) {}
+        };
+
+        window.onInputLaciNominalManual = function(inputEl, fieldType) {
+            const raw = (inputEl.value || '').replace(/[^0-9]/g, '');
+            const val = parseFloat(raw) || 0;
+            inputEl.value = val > 0 ? Number(val).toLocaleString('id-ID') : '';
+            const hiddenId = fieldType === 'receh' ? 'laci_manual_receh' : 'laci_manual_fix';
+            const hiddenEl = document.getElementById(hiddenId);
+            if (hiddenEl) hiddenEl.value = val;
+            window.updateHitungLaci();
+        };
+
+        window.updateHitungLaci = function() {
+            let totalFisik = 0;
+            let totalLembar = 0;
+            const saved = {};
+
+            window.LACI_PECAHAN.forEach(pecahan => {
+                const inp = document.getElementById(`laci_lbr_${pecahan}`);
+                const lbr = inp ? (parseInt(inp.value) || 0) : 0;
+                const subtotal = lbr * pecahan;
+                totalFisik += subtotal;
+                totalLembar += lbr;
+                saved[pecahan] = lbr;
+
+                const subEl = document.getElementById(`laci_sub_${pecahan}`);
+                if (subEl) subEl.innerText = subtotal > 0 ? window.formatRp(subtotal) : 'Rp0';
+            });
+
+            const nomReceh = parseFloat(document.getElementById('laci_manual_receh')?.value) || 0;
+            const nomFix = parseFloat(document.getElementById('laci_manual_fix')?.value) || 0;
+            totalFisik += nomReceh + nomFix;
+
+            saved.receh = nomReceh;
+            saved.fix = nomFix;
+            window.saveLaciCalc(saved);
+
+            const totLbrEl = document.getElementById('laci_total_lembar');
+            if (totLbrEl) totLbrEl.innerText = `${totalLembar.toLocaleString('id-ID')} Lbr`;
+
+            const grandEl = document.getElementById('laci_grand_total');
+            if (grandEl) grandEl.innerText = window.formatRp(totalFisik);
+
+            // Update perbandingan dengan saldo laci sistem realtime
+            const saldoSistem = window.getSaldoLaciSistem ? window.getSaldoLaciSistem() : 0;
+            const lblSistem = document.getElementById('lblLaciSaldoSistem');
+            if (lblSistem) lblSistem.innerText = window.formatRp(saldoSistem);
+
+            const lblFisik = document.getElementById('lblLaciFisikDihitung');
+            if (lblFisik) lblFisik.innerText = window.formatRp(totalFisik);
+
+            const selisih = totalFisik - saldoSistem;
+            const lblSel = document.getElementById('lblLaciSelisih');
+            if (lblSel) {
+                if (totalFisik === 0 && saldoSistem === 0) {
+                    lblSel.innerText = 'Rp0 (Belum dihitung)';
+                    lblSel.style.background = '#F1F5F9';
+                    lblSel.style.color = '#64748B';
+                } else if (selisih === 0) {
+                    lblSel.innerText = '✅ Rp0 (COCOK / PAS)';
+                    lblSel.style.background = '#DCFCE7';
+                    lblSel.style.color = '#15803D';
+                } else if (selisih > 0) {
+                    lblSel.innerText = `📈 +${window.formatRp(selisih)} (LEBIH FISIK)`;
+                    lblSel.style.background = '#FEF3C7';
+                    lblSel.style.color = '#B45309';
+                } else {
+                    lblSel.innerText = `⚠️ -${window.formatRp(Math.abs(selisih))} (KURANG / TEKOR)`;
+                    lblSel.style.background = '#FEE2E2';
+                    lblSel.style.color = '#DC2626';
+                }
+            }
+        };
+
+        window.resetHitungLaci = function() {
+            if (confirm("Reset semua hitungan uang fisik laci?")) {
+                window.LACI_PECAHAN.forEach(pecahan => {
+                    const inp = document.getElementById(`laci_lbr_${pecahan}`);
+                    if (inp) inp.value = '';
+                });
+                const rDisp = document.getElementById('laci_manual_receh_disp');
+                const rVal = document.getElementById('laci_manual_receh');
+                if (rDisp) rDisp.value = '';
+                if (rVal) rVal.value = '0';
+
+                const fDisp = document.getElementById('laci_manual_fix_disp');
+                const fVal = document.getElementById('laci_manual_fix');
+                if (fDisp) fDisp.value = '';
+                if (fVal) fVal.value = '0';
+
+                window.saveLaciCalc({});
+                window.updateHitungLaci();
+                window.showToast("🔄 Hitungan fisik laci telah direset!", "info");
+            }
+        };
+
+        window.salinRekapLaciKeWa = function() {
+            const saved = window.getSavedLaciCalc();
+            let totalFisik = 0;
+            let totalLembar = 0;
+            const lines = [];
+
+            window.LACI_PECAHAN.forEach(pecahan => {
+                const lbr = Number(saved[pecahan] || 0);
+                if (lbr > 0) {
+                    const sub = lbr * pecahan;
+                    totalFisik += sub;
+                    totalLembar += lbr;
+                    lines.push(`• Rp ${Number(pecahan).toLocaleString('id-ID')}: ${lbr} lbr = ${window.formatRp(sub)}`);
+                }
+            });
+
+            const receh = Number(saved.receh || 0);
+            const fix = Number(saved.fix || 0);
+            if (receh > 0) {
+                totalFisik += receh;
+                lines.push(`• RECEH / KOIN: ${window.formatRp(receh)}`);
+            }
+            if (fix > 0) {
+                totalFisik += fix;
+                lines.push(`• FIX (MODAL/SIMPANAN): ${window.formatRp(fix)}`);
+            }
+
+            const saldoSistem = window.getSaldoLaciSistem ? window.getSaldoLaciSistem() : 0;
+            const selisih = totalFisik - saldoSistem;
+            const selisihLabel = selisih === 0
+                ? '✅ Rp0 (COCOK / PAS)'
+                : (selisih > 0 ? `📈 +${window.formatRp(selisih)} (LEBIH)` : `⚠️ -${window.formatRp(Math.abs(selisih))} (KURANG/TEKOR)`);
+
+            const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+            const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const petugas = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
+
+            const text = [
+                `💵 *REKAP HITUNG FISIK LACI ZENCELL*`,
+                `📅 ${dateStr} • ⏰ ${timeStr} WIB`,
+                `👤 Petugas: ${petugas}`,
+                `----------------------------------------`,
+                lines.length > 0 ? lines.join('\n') : '(Belum ada lembaran yang diisi)',
+                `----------------------------------------`,
+                `💵 *TOTAL FISIK:* *${window.formatRp(totalFisik)}* (${totalLembar} Lembar)`,
+                `🖥️ *SALDO SISTEM:* ${window.formatRp(saldoSistem)}`,
+                `⚖️ *STATUS SELISIH:* ${selisihLabel}`,
+                `----------------------------------------`
+            ].join('\n');
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+                window.showToast("📋 Rincian fisik laci disalin ke clipboard!", "success");
+            }
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(waUrl, '_blank');
+        };
+
+        window.renderRightKalkulatorPanel = function() {
+            const container = document.getElementById('rightKalkulatorContent');
+            if (!container) return;
+            if (container.children.length > 0) {
+                window.updateHitungLaci();
+                return;
+            }
+
+            container.innerHTML = `
+                <!-- BAGIAN ATAS: KALKULATOR DAGANG STANDAR -->
+                <div class="kalkulator-section-box" style="background:#FFF; border:1px solid #CBD5E1; border-radius:12px; padding:10px; margin-bottom:12px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:11.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:5px;">
+                            <span>🧮</span> <span>KALKULATOR CEPAT</span>
+                        </span>
+                        <button type="button" onclick="window.calcCopyResult()" style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:6px; padding:2px 8px; font-size:10px; font-weight:700; cursor:pointer;" title="Salin hasil perhitungan">
+                            📋 Salin
+                        </button>
+                    </div>
+
+                    <!-- Screen Display -->
+                    <div style="background:#0F172A; color:#FFF; border-radius:8px; padding:8px 12px; text-align:right; margin-bottom:8px; min-height:52px; display:flex; flex-direction:column; justify-content:center;">
+                        <div id="calcExpressionDisplay" style="font-size:10px; color:#94A3B8; min-height:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+                        <div id="calcMainDisplay" style="font-size:19px; font-weight:900; letter-spacing:0.5px; color:#38BDF8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">0</div>
+                    </div>
+
+                    <!-- Keypad Grid (4 columns) -->
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:5px;">
+                        <button type="button" class="calc-btn" onclick="window.calcClear()" style="background:#FEE2E2; color:#DC2626; font-weight:800;">C</button>
+                        <button type="button" class="calc-btn" onclick="window.calcBackspace()" style="background:#F1F5F9; color:#334155; font-weight:700;">⌫</button>
+                        <button type="button" class="calc-btn" onclick="window.calcOperator('%')" style="background:#F1F5F9; color:#0284C7; font-weight:800;">%</button>
+                        <button type="button" class="calc-btn" onclick="window.calcOperator('/')" style="background:#E0F2FE; color:#0369A1; font-weight:800;">÷</button>
+
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('7')">7</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('8')">8</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('9')">9</button>
+                        <button type="button" class="calc-btn" onclick="window.calcOperator('*')" style="background:#E0F2FE; color:#0369A1; font-weight:800;">×</button>
+
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('4')">4</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('5')">5</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('6')">6</button>
+                        <button type="button" class="calc-btn" onclick="window.calcOperator('-')" style="background:#E0F2FE; color:#0369A1; font-weight:800;">−</button>
+
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('1')">1</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('2')">2</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('3')">3</button>
+                        <button type="button" class="calc-btn" onclick="window.calcOperator('+')" style="background:#E0F2FE; color:#0369A1; font-weight:800;">+</button>
+
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('0')">0</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('00')">00</button>
+                        <button type="button" class="calc-btn" onclick="window.calcDigit('.')">.</button>
+                        <button type="button" class="calc-btn" onclick="window.calcEqual()" style="background:#059669; color:#FFF; font-weight:900;">=</button>
+                    </div>
+                </div>
+
+                <!-- BAGIAN BAWAH: KALKULATOR HITUNG FISIK UANG LACI (EXCEL FORMAT) -->
+                <div class="kalkulator-section-box" style="background:#FFF; border:1px solid #CBD5E1; border-radius:12px; padding:10px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;">
                         <div>
-                            <div style="font-size:11.5px; font-weight:900; color:#38BDF8; display:flex; align-items:center; gap:5px;">
-                                <span>🤖</span> <span>ASISTEN BOS AI &amp; AUDITOR</span>
-                            </div>
-                            <div style="font-size:9.5px; color:#CBD5E1; margin-top:1px;">Analisis otomatis Jurnal, Saldo, Stok &amp; Piutang (${scan.selectedDate})</div>
+                            <span style="font-size:11.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:5px;">
+                                <span>💵</span> <span>HITUNG FISIK LACI</span>
+                            </span>
+                            <small style="font-size:9.5px; color:#64748B;">Format tabel Excel penghitung uang kasir</small>
                         </div>
-                        <span style="background:rgba(56,189,248,0.18); color:#38BDF8; border:1px solid rgba(56,189,248,0.4); font-size:9px; font-weight:800; padding:2px 7px; border-radius:999px;">Gemini AI</span>
-                    </div>
-
-                    <div class="ai-action-grid">
-                        <button type="button" class="ai-action-btn" onclick="runAiAssistantQuery('audit')" ${window._isAiLoading ? 'disabled' : ''}>
-                            <span>🕵️‍♂️ 1. Audit Pembukuan &amp; Cek Salah Input</span>
-                            <span style="color:#34D399;">➔</span>
-                        </button>
-                        <button type="button" class="ai-action-btn" onclick="runAiAssistantQuery('performance')" ${window._isAiLoading ? 'disabled' : ''}>
-                            <span>📈 2. Analisa Performa &amp; Strategi Cuan</span>
-                            <span style="color:#38BDF8;">➔</span>
-                        </button>
-                        <button type="button" class="ai-action-btn" onclick="runAiAssistantQuery('piutang')" ${window._isAiLoading ? 'disabled' : ''}>
-                            <span>🤝 3. Cek Risiko Piutang &amp; Prioritas Tagih</span>
-                            <span style="color:#FBBF24;">➔</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tanya Bos AI (Natural Language Q&A) -->
-                <div class="insight-box" style="margin-bottom:10px;">
-                    <div class="insight-box-title">
-                        <span>💬 Tanya Bos AI (Bebas Tanya Data Konter)</span>
-                    </div>
-                    <div class="ai-chip-row">
-                        <button type="button" class="ai-prompt-chip" onclick="runAiAssistantQuery('chat', 'Siapa 3 pengutang terbesar yang harus ditagih?')">Siapa pengutang terbesar?</button>
-                        <button type="button" class="ai-prompt-chip" onclick="runAiAssistantQuery('chat', 'Bandingkan cuan ATM vs Konter hari ini dan beri saran')">ATM vs Konter hari ini?</button>
-                        <button type="button" class="ai-prompt-chip" onclick="runAiAssistantQuery('chat', 'Apakah ada transaksi hari ini yang janggal atau salah akun?')">Cek transaksi janggal</button>
-                    </div>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="aiCustomQuestionInput" class="form-control" placeholder="Tanya apa saja ke Bos AI..." style="font-size:11px; padding:7px 9px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); runAiAssistantQuery('chat');}">
-                        <button type="button" onclick="runAiAssistantQuery('chat')" ${window._isAiLoading ? 'disabled' : ''} style="background:linear-gradient(135deg, #4F46E5, #0284C7); color:#FFF; border:none; border-radius:8px; padding:0 12px; font-size:11px; font-weight:800; cursor:pointer; flex-shrink:0;">
-                            ${window._isAiLoading ? '⏳' : 'Kirim'}
-                        </button>
-                    </div>
-                </div>
-
-                ${window._isAiLoading ? `
-                    <div class="ai-chat-response-box" style="text-align:center; padding:18px 12px;">
-                        <div style="font-size:20px; margin-bottom:6px;">🤖⏳</div>
-                        <div style="font-weight:800; color:var(--primary); font-size:11px;">Bos AI sedang memeriksa pembukuan &amp; menghitung data...</div>
-                    </div>
-                ` : (window._lastAiAuditResponseHtml ? `
-                    <div class="ai-chat-response-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--border); padding-bottom:6px; margin-bottom:7px;">
-                            <span style="font-weight:900; font-size:10.5px; color:#4F46E5;">🤖 HASIL ANALISIS BOS AI:</span>
-                            <button type="button" onclick="kirimHasilAuditAiKeWaOwner()" style="background:#16A34A; color:#FFF; border:none; border-radius:6px; padding:3px 8px; font-size:9.5px; font-weight:800; cursor:pointer;">📲 Kirim ke WA</button>
+                        <div style="display:flex; gap:4px;">
+                            <button type="button" onclick="window.resetHitungLaci()" style="background:#FEE2E2; color:#DC2626; border:1px solid #FECACA; border-radius:6px; padding:2px 7px; font-size:9.5px; font-weight:700; cursor:pointer;" title="Reset semua input lembar">
+                                🔄 Reset
+                            </button>
+                            <button type="button" onclick="window.salinRekapLaciKeWa()" style="background:#16A34A; color:#FFF; border:none; border-radius:6px; padding:2px 8px; font-size:9.5px; font-weight:800; cursor:pointer;" title="Kirim rincian ke WhatsApp">
+                                📲 WA
+                            </button>
                         </div>
-                        <div>${window._lastAiAuditResponseHtml}</div>
                     </div>
-                ` : '')}
 
-                <!-- Deteksi Otomatis Lokal (Realtime Tanpa Tunggu) -->
-                <div class="insight-box">
-                    <div class="insight-box-title">
-                        <span>🔍 Deteksi Otomatis Transaksi (${scan.selectedDate})</span>
-                        <span style="font-size:9px; background:#E2E8F0; color:#0F172A; padding:1px 6px; border-radius:999px;">${scan.anomalies.length} Temuan</span>
+                    <!-- Table Pecahan Uang -->
+                    <div style="overflow-x:auto;">
+                        <table class="table-laci-excel" style="width:100%; border-collapse:collapse; font-size:11px;">
+                            <thead>
+                                <tr style="background:#FEF9C3; border:1px solid #CBD5E1; color:#713F12; text-align:center; font-weight:800;">
+                                    <th style="padding:6px 4px; border:1px solid #CBD5E1; width:34%;">PECAHAN</th>
+                                    <th style="padding:6px 4px; border:1px solid #CBD5E1; width:28%;">LEMBAR</th>
+                                    <th style="padding:6px 4px; border:1px solid #CBD5E1; width:38%; text-align:right;">JUMLAH</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #E2E8F0; font-weight:700; color:#0F172A;">Rp 100.000</td>
+                                    <td style="padding:2px 4px; border:1px solid #E2E8F0; text-align:center;">
+                                        <input type="number" id="laci_lbr_100000" class="laci-input-lbr" min="0" placeholder="0" oninput="window.updateHitungLaci()" onfocus="this.select()">
+                                    </td>
+                                    <td id="laci_sub_100000" style="padding:4px 6px; border:1px solid #E2E8F0; text-align:right; font-weight:700; color:#334155;">Rp0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #E2E8F0; font-weight:700; color:#0F172A;">Rp 50.000</td>
+                                    <td style="padding:2px 4px; border:1px solid #E2E8F0; text-align:center;">
+                                        <input type="number" id="laci_lbr_50000" class="laci-input-lbr" min="0" placeholder="0" oninput="window.updateHitungLaci()" onfocus="this.select()">
+                                    </td>
+                                    <td id="laci_sub_50000" style="padding:4px 6px; border:1px solid #E2E8F0; text-align:right; font-weight:700; color:#334155;">Rp0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #E2E8F0; font-weight:700; color:#0F172A;">Rp 20.000</td>
+                                    <td style="padding:2px 4px; border:1px solid #E2E8F0; text-align:center;">
+                                        <input type="number" id="laci_lbr_20000" class="laci-input-lbr" min="0" placeholder="0" oninput="window.updateHitungLaci()" onfocus="this.select()">
+                                    </td>
+                                    <td id="laci_sub_20000" style="padding:4px 6px; border:1px solid #E2E8F0; text-align:right; font-weight:700; color:#334155;">Rp0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #E2E8F0; font-weight:700; color:#0F172A;">Rp 10.000</td>
+                                    <td style="padding:2px 4px; border:1px solid #E2E8F0; text-align:center;">
+                                        <input type="number" id="laci_lbr_10000" class="laci-input-lbr" min="0" placeholder="0" oninput="window.updateHitungLaci()" onfocus="this.select()">
+                                    </td>
+                                    <td id="laci_sub_10000" style="padding:4px 6px; border:1px solid #E2E8F0; text-align:right; font-weight:700; color:#334155;">Rp0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #E2E8F0; font-weight:700; color:#0F172A;">Rp 5.000</td>
+                                    <td style="padding:2px 4px; border:1px solid #E2E8F0; text-align:center;">
+                                        <input type="number" id="laci_lbr_5000" class="laci-input-lbr" min="0" placeholder="0" oninput="window.updateHitungLaci()" onfocus="this.select()">
+                                    </td>
+                                    <td id="laci_sub_5000" style="padding:4px 6px; border:1px solid #E2E8F0; text-align:right; font-weight:700; color:#334155;">Rp0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #E2E8F0; font-weight:700; color:#0F172A;">Rp 2.000</td>
+                                    <td style="padding:2px 4px; border:1px solid #E2E8F0; text-align:center;">
+                                        <input type="number" id="laci_lbr_2000" class="laci-input-lbr" min="0" placeholder="0" oninput="window.updateHitungLaci()" onfocus="this.select()">
+                                    </td>
+                                    <td id="laci_sub_2000" style="padding:4px 6px; border:1px solid #E2E8F0; text-align:right; font-weight:700; color:#334155;">Rp0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #E2E8F0; font-weight:700; color:#0F172A;">Rp 1.000</td>
+                                    <td style="padding:2px 4px; border:1px solid #E2E8F0; text-align:center;">
+                                        <input type="number" id="laci_lbr_1000" class="laci-input-lbr" min="0" placeholder="0" oninput="window.updateHitungLaci()" onfocus="this.select()">
+                                    </td>
+                                    <td id="laci_sub_1000" style="padding:4px 6px; border:1px solid #E2E8F0; text-align:right; font-weight:700; color:#334155;">Rp0</td>
+                                </tr>
+
+                                <!-- RECEH / KOIN -->
+                                <tr style="background:#F8FAFC;">
+                                    <td colspan="2" style="padding:5px 6px; border:1px solid #CBD5E1; font-weight:800; color:#0F172A;">
+                                        🪙 RECEH / KOIN <small style="font-size:9px; color:#64748B; font-weight:normal;">(Input Rp)</small>
+                                    </td>
+                                    <td style="padding:2px 4px; border:1px solid #CBD5E1; text-align:right;">
+                                        <input type="text" id="laci_manual_receh_disp" class="laci-input-nom" placeholder="Rp 0" oninput="window.onInputLaciNominalManual(this, 'receh')" onfocus="this.select()">
+                                        <input type="hidden" id="laci_manual_receh" value="0">
+                                    </td>
+                                </tr>
+
+                                <!-- FIX -->
+                                <tr style="background:#F8FAFC;">
+                                    <td colspan="2" style="padding:5px 6px; border:1px solid #CBD5E1; font-weight:800; color:#0F172A;">
+                                        🔒 FIX <small style="font-size:9px; color:#64748B; font-weight:normal;">(Input Rp)</small>
+                                    </td>
+                                    <td style="padding:2px 4px; border:1px solid #CBD5E1; text-align:right;">
+                                        <input type="text" id="laci_manual_fix_disp" class="laci-input-nom" placeholder="Rp 0" oninput="window.onInputLaciNominalManual(this, 'fix')" onfocus="this.select()">
+                                        <input type="hidden" id="laci_manual_fix" value="0">
+                                    </td>
+                                </tr>
+
+                                <!-- TOTAL -->
+                                <tr style="background:#E2E8F0; font-weight:900; border:2px solid #0F172A;">
+                                    <td style="padding:6px; border:1px solid #94A3B8; text-align:center; color:#0F172A;">TOTAL</td>
+                                    <td id="laci_total_lembar" style="padding:6px; border:1px solid #94A3B8; text-align:center; font-size:10.5px; color:#475569;">0 Lbr</td>
+                                    <td id="laci_grand_total" style="padding:6px 8px; border:1px solid #94A3B8; text-align:right; font-size:13px; font-weight:900; background:#86EFAC; color:#065F46;">Rp0</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    ${anomHtml}
+
+                    <!-- Live Comparison with Saldo Laci System -->
+                    <div id="laciComparisonBox" style="margin-top:10px; background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:8px; padding:8px 10px; font-size:10.5px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                            <span style="color:#64748B;">🖥️ Saldo Laci di Sistem:</span>
+                            <b id="lblLaciSaldoSistem" style="color:#0F172A;">Rp0</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#64748B;">💵 Total Fisik Dihitung:</span>
+                            <b id="lblLaciFisikDihitung" style="color:#059669;">Rp0</b>
+                        </div>
+                        <div id="boxLaciSelisihStatus" style="border-top:1px solid #E2E8F0; padding-top:4px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:700;">⚖️ Status Selisih:</span>
+                            <b id="lblLaciSelisih" style="padding:2px 8px; border-radius:6px; font-size:11px; font-weight:800;">Rp0</b>
+                        </div>
+                    </div>
                 </div>
             `;
+
+            // Restore saved values from localStorage
+            const saved = window.getSavedLaciCalc();
+            window.LACI_PECAHAN.forEach(pecahan => {
+                const inp = document.getElementById(`laci_lbr_${pecahan}`);
+                if (inp && saved[pecahan] !== undefined && saved[pecahan] > 0) {
+                    inp.value = saved[pecahan];
+                }
+            });
+            if (saved.receh && saved.receh > 0) {
+                const rDisp = document.getElementById('laci_manual_receh_disp');
+                const rVal = document.getElementById('laci_manual_receh');
+                if (rDisp) rDisp.value = Number(saved.receh).toLocaleString('id-ID');
+                if (rVal) rVal.value = saved.receh;
+            }
+            if (saved.fix && saved.fix > 0) {
+                const fDisp = document.getElementById('laci_manual_fix_disp');
+                const fVal = document.getElementById('laci_manual_fix');
+                if (fDisp) fDisp.value = Number(saved.fix).toLocaleString('id-ID');
+                if (fVal) fVal.value = saved.fix;
+            }
+
+            window.updateHitungLaci();
         };
 
         // =========================================================================
