@@ -22465,29 +22465,21 @@
 
         window.renderRightAiPanel = function() {};
 
-        // Helper untuk mendapatkan Saldo Laci Realtime di Sistem
-        window.getSaldoLaciSistem = function() {
-            const rowLaci = document.querySelector('#tabelSaldo tr[data-mutasi-akun="LACI"] span');
-            if (rowLaci && rowLaci.innerText) {
-                const raw = rowLaci.innerText.replace(/[^0-9-]/g, '');
-                const n = parseFloat(raw);
-                if (!isNaN(n)) return n;
-            }
-            const awal = Number((window.saldoAwal && window.saldoAwal['LACI']) || 0);
-            let mutasi = 0;
-            (window.transaksiJurnal || []).forEach(t => {
-                if (!t) return;
-                if (t.isSplit) {
-                    if (t.akunMasuk1 === 'LACI') mutasi += Number(t.jualSplit1 || 0);
-                    if (t.akunMasuk2 === 'LACI') mutasi += Number(t.jualSplit2 || 0);
-                    if (t.akunKeluar1 === 'LACI') mutasi -= Number(t.modalSplit1 || 0);
-                    if (t.akunKeluar2 === 'LACI') mutasi -= Number(t.modalSplit2 || 0);
-                } else {
-                    if (t.akunMasuk1 === 'LACI') mutasi += Number(t.hargaJual || 0);
-                    if (t.akunKeluar1 === 'LACI') mutasi -= Number(t.hargaModal || 0);
+        // Helper untuk mendapatkan Saldo Laci Realtime di Sistem (Sesuai Akun LACI di Cek Saldo & Laporan Shift)
+        window.getSaldoLaciSistem = function(modeOverride) {
+            const mode = modeOverride || document.getElementById('selLaciCompareMode')?.value || 'REALTIME';
+            if (typeof window.hitungAuditLaciSistem === 'function') {
+                const audit = window.hitungAuditLaciSistem();
+                if (mode === 'SHIFT') {
+                    return Number(audit.laciSistem || 0);
                 }
-            });
-            return awal + mutasi;
+                return Number(audit.laciRealtime !== undefined ? audit.laciRealtime : (audit.laciSistem || 0));
+            }
+            if (window._latestActualSaldoPerAkun && window._latestActualSaldoPerAkun['LACI'] !== undefined) {
+                return Number(window._latestActualSaldoPerAkun['LACI'] || 0);
+            }
+            const awalMaster = Number((window.masterSaldoAwal && window.masterSaldoAwal['LACI']) || 0);
+            return awalMaster;
         };
 
         // =========================================================================
@@ -22664,7 +22656,8 @@
             if (grandEl) grandEl.innerText = window.formatRp(totalFisik);
 
             // Update perbandingan dengan saldo laci sistem realtime
-            const saldoSistem = window.getSaldoLaciSistem ? window.getSaldoLaciSistem() : 0;
+            const compareMode = document.getElementById('selLaciCompareMode')?.value || 'REALTIME';
+            const saldoSistem = window.getSaldoLaciSistem ? window.getSaldoLaciSistem(compareMode) : 0;
             const lblSistem = document.getElementById('lblLaciSaldoSistem');
             if (lblSistem) lblSistem.innerText = window.formatRp(saldoSistem);
 
@@ -22943,17 +22936,30 @@
 
                     <!-- Live Comparison with Saldo Laci System -->
                     <div id="laciComparisonBox" style="margin-top:10px; background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:8px; padding:8px 10px; font-size:10.5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; padding-bottom:5px; border-bottom:1px solid #E2E8F0;">
+                            <span style="color:#475569; font-weight:800;">🖥️ Sumber Pembanding:</span>
+                            <div style="display:flex; gap:4px; align-items:center;">
+                                <select id="selLaciCompareMode" onchange="window.updateHitungLaci()" style="font-size:9.5px; font-weight:700; padding:2px 5px; border-radius:5px; border:1px solid #CBD5E1; background:#FFF; color:#0F172A; cursor:pointer;">
+                                    <option value="REALTIME" selected>Buku Utama (Realtime)</option>
+                                    <option value="SHIFT">Laporan Shift (Hari Ini)</option>
+                                </select>
+                                <button type="button" onclick="window.toggleSaldoSidebar()" title="Buka Rincian Akun di Cek Saldo" style="font-size:9px; background:#E0E7FF; color:#4338CA; border:1px solid #C7D2FE; border-radius:5px; padding:2px 6px; font-weight:800; cursor:pointer;">💰 Cek Saldo</button>
+                            </div>
+                        </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                            <span style="color:#64748B;">🖥️ Saldo Laci di Sistem:</span>
-                            <b id="lblLaciSaldoSistem" style="color:#0F172A;">Rp0</b>
+                            <span style="color:#64748B;">Saldo Akun LACI Sistem:</span>
+                            <b id="lblLaciSaldoSistem" style="color:#0F172A; font-family:monospace; font-size:11px;">Rp0</b>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                             <span style="color:#64748B;">💵 Total Fisik Dihitung:</span>
-                            <b id="lblLaciFisikDihitung" style="color:#059669;">Rp0</b>
+                            <b id="lblLaciFisikDihitung" style="color:#059669; font-family:monospace; font-size:11px;">Rp0</b>
                         </div>
                         <div id="boxLaciSelisihStatus" style="border-top:1px solid #E2E8F0; padding-top:4px; display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight:700;">⚖️ Status Selisih:</span>
                             <b id="lblLaciSelisih" style="padding:2px 8px; border-radius:6px; font-size:11px; font-weight:800;">Rp0</b>
+                        </div>
+                        <div style="margin-top:5px; font-size:9px; color:#64748B; line-height:1.3; background:#F1F5F9; border-radius:5px; padding:4px 6px;">
+                            💡 <b>Info Sumber:</b> Nilai ini sinkron 100% dengan akun <b>LACI</b> di menu <i>Cek Saldo</i> (Saldo Awal Master + Masuk Kasir - Pengeluaran/Belanja/Setoran).
                         </div>
                     </div>
                 </div>
