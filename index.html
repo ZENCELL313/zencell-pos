@@ -2599,6 +2599,33 @@
             color: #0F172A;
         }
 
+        /* Riwayat Cek Laci Kasir Styling */
+        .badge-sesi-laci {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 9.5px;
+            font-weight: 800;
+        }
+        .badge-pagi { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+        .badge-siang { background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
+        .badge-maghrib { background: #FFEDD5; color: #C2410C; border: 1px solid #FDBA74; }
+        .badge-malam { background: #EDE9FE; color: #6D28D9; border: 1px solid #DDD6FE; }
+        .card-riwayat-cek {
+            background: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            border-radius: 9px;
+            padding: 8px 10px;
+            font-size: 10.5px;
+            transition: all 0.15s ease;
+        }
+        .card-riwayat-cek:hover {
+            border-color: #94A3B8;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
         /* AI Audit & Tanya Bos Styling */
         .ai-hero-card {
             background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
@@ -4196,6 +4223,78 @@
                 <span>Catat Utang Baru</span>
                 <span class="icon-badge" style="background:#D97706;">🤝</span>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: KONFIRMASI & UPLOAD HASIL CEK FISIK LACI (PAGI / MAGHRIB / MALAM) -->
+    <div id="modalKonfirmasiCekLaciOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #CBD5E1; padding-bottom:8px;">
+                <div>
+                    <h3 style="font-size:15px; color:#0F766E; margin:0; display:flex; align-items:center; gap:6px;">
+                        <span>📋 Konfirmasi Cek Laci Kasir</span>
+                    </h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Rekam audit fisik laci kasir (Pagi, Maghrib, Malam) ke riwayat sistem</small>
+                </div>
+                <button type="button" onclick="closeModalKonfirmasiCekLaci()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <form id="formKonfirmasiCekLaci" onsubmit="submitKonfirmasiCekLaci(event)">
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Sesi Waktu Cek</label>
+                        <select id="modalCekLaciSesi" class="form-control" style="font-weight:800;" required>
+                            <option value="PAGI">🌅 PAGI (Buka Toko / Pagi)</option>
+                            <option value="SIANG">☀️ SIANG / SORE</option>
+                            <option value="MAGHRIB">🌆 MAGHRIB (Jelang Malam)</option>
+                            <option value="MALAM">🌙 MALAM (Tutup Toko / Shift Akhir)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Petugas Kasir</label>
+                        <select id="modalCekLaciKasir" class="form-control" style="font-weight:800;"></select>
+                    </div>
+                </div>
+
+                <!-- Box Ringkasan Komparasi -->
+                <div style="background:#F8FAFC; border:1.5px solid #CBD5E1; border-radius:9px; padding:10px 12px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span style="font-size:11px; color:#475569; font-weight:700;">🖥️ Saldo Laci di Sistem:</span>
+                        <b id="modalCekLaciSistemDisp" style="font-family:monospace; font-size:12.5px; color:#0F172A;">Rp0</b>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:11px; color:#475569; font-weight:700;">💵 Fisik Laci Dihitung Kasir:</span>
+                        <b id="modalCekLaciFisikDisp" style="font-family:monospace; font-size:12.5px; color:#059669;">Rp0</b>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #CBD5E1; padding-top:6px;">
+                        <span style="font-size:11.5px; font-weight:800; color:#0F172A;">⚖️ Status Selisih:</span>
+                        <b id="modalCekLaciSelisihDisp" style="padding:3px 9px; border-radius:6px; font-size:12px; font-weight:900;">Rp0</b>
+                    </div>
+                    <div id="modalCekLaciRincianLbrRingkas" style="margin-top:6px; font-size:9.5px; color:#64748B; border-top:1px dotted #E2E8F0; padding-top:4px;">
+                        <!-- Rincian lembar -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Catatan Kasir / Keterangan Selisih (Opsional)</label>
+                    <input type="text" id="modalCekLaciCatatan" class="form-control" placeholder="Contoh: Ada uang kembalian 2rb belum diambil, atau pas aman...">
+                </div>
+
+                <!-- Checklist Wajib Konfirmasi -->
+                <div style="background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:8px 10px; margin-bottom:12px;">
+                    <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:11px; color:#92400E; font-weight:700; margin:0;">
+                        <input type="checkbox" id="modalCekLaciChecklist" style="margin-top:2px; transform:scale(1.2); cursor:pointer;" onchange="onCekLaciChecklistChange()">
+                        <span>Saya menyatakan bahwa hitungan uang fisik di laci sudah dicek dengan benar, teliti, dan sesuai kondisi riil saat ini.</span>
+                    </label>
+                </div>
+
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button type="button" onclick="closeModalKonfirmasiCekLaci()" class="btn-secondary" style="padding:7px 14px; font-size:11px; font-weight:700;">Batal</button>
+                    <button type="submit" id="btnSubmitKonfirmasiCekLaci" disabled style="background:#0D9488; color:#FFF; border:none; border-radius:7px; padding:7px 16px; font-size:11px; font-weight:900; cursor:not-allowed; opacity:0.5; display:inline-flex; align-items:center; gap:5px;">
+                        <span>📤 Upload &amp; Simpan Riwayat</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -7035,6 +7134,7 @@
         window.operasionalList = JSON.parse(localStorage.getItem('zencell_operasional') || '[]');
         window.logAktivitasList = JSON.parse(localStorage.getItem('zencell_log_aktivitas') || '[]');
         window.tiketServisList = JSON.parse(localStorage.getItem('zencell_tiket_servis') || '[]');
+        window.riwayatCekLaciList = JSON.parse(localStorage.getItem('zencell_riwayat_cek_laci') || '[]');
 
         window.pengaturanToko = JSON.parse(localStorage.getItem('zencell_pengaturan') || 'null') || {
             namaToko: window.DEFAULT_SHOP_NAME_CABANG || (window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1'),
@@ -7517,6 +7617,16 @@
                 window.logAktivitasList = cloudLog.filter(l => l && l.id);
             } else {
                 window.logAktivitasList = [];
+            }
+
+            // 10. Riwayat Cek Laci Kasir (Pagi, Maghrib, Malam)
+            if (data.riwayatCekLaci) {
+                let cloudCek = Array.isArray(data.riwayatCekLaci) ? data.riwayatCekLaci : Object.values(data.riwayatCekLaci);
+                window.riwayatCekLaciList = cloudCek.filter(c => c && c.id);
+                localStorage.setItem('zencell_riwayat_cek_laci', JSON.stringify(window.riwayatCekLaciList));
+                if (typeof window.renderRiwayatCekLaciList === 'function') {
+                    window.renderRiwayatCekLaciList();
+                }
             }
             if (window._pendingLogsBeforeInit && window._pendingLogsBeforeInit.length > 0) {
                 const existingLogIds = new Set(window.logAktivitasList.map(l => String(l.id)));
@@ -8094,6 +8204,7 @@
             localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
             localStorage.setItem('zencell_operasional', JSON.stringify(window.operasionalList));
             localStorage.setItem('zencell_log_aktivitas', JSON.stringify(window.logAktivitasList));
+            localStorage.setItem('zencell_riwayat_cek_laci', JSON.stringify(window.riwayatCekLaciList || []));
             localStorage.setItem('zencell_batas_min', JSON.stringify(window.masterBatasMinSaldo));
             localStorage.setItem('zencell_saldo_awal', JSON.stringify(window.masterSaldoAwal));
             localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
@@ -8183,6 +8294,7 @@
                     riwayatBelanjaStok: window.riwayatBelanjaStok,
                     operasional: window.operasionalList,
                     logAktivitas: window.logAktivitasList,
+                    riwayatCekLaci: window.riwayatCekLaciList || [],
                     saldoAwal: window.masterSaldoAwal,
                     saldoListCustom: window.saldoList,
                     seedSaldoAwalV1: true,
@@ -22962,6 +23074,31 @@
                             💡 <b>Info Sumber:</b> Nilai ini sinkron 100% dengan akun <b>LACI</b> di menu <i>Cek Saldo</i> (Saldo Awal Master + Masuk Kasir - Pengeluaran/Belanja/Setoran).
                         </div>
                     </div>
+
+                    <!-- Tombol Konfirmasi & Upload Riwayat Cek Laci -->
+                    <button type="button" id="btnBukaKonfirmasiCekLaci" onclick="window.openModalKonfirmasiCekLaci()" style="margin-top:10px; width:100%; background:linear-gradient(135deg, #0F766E 0%, #0D9488 100%); color:#FFFFFF; border:none; border-radius:8px; padding:9px 12px; font-size:11px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(13,148,136,0.35);">
+                        <span>☑️ Konfirmasi &amp; Upload Hasil Cek (Pagi/Maghrib/Malam)</span>
+                    </button>
+                </div>
+
+                <!-- BAGIAN 3: RIWAYAT CEK LACI KASIR (AUDIT TRACKER) -->
+                <div class="kalkulator-section-box" style="margin-top:12px; background:#FFF; border:1px solid #CBD5E1; border-radius:12px; padding:10px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;">
+                        <div>
+                            <span style="font-size:11.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:5px;">
+                                <span>📋</span> <span>RIWAYAT CEK LACI</span>
+                            </span>
+                            <small style="font-size:9.5px; color:#64748B;">Audit kasir vs sistem (Pagi, Maghrib, Malam)</small>
+                        </div>
+                        <div style="display:flex; gap:3px;">
+                            <button type="button" id="btnFilterCekLaciHariIni" onclick="window.filterRiwayatCekLaci('TODAY')" style="background:#0D9488; color:#FFF; border:none; border-radius:5px; padding:2px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">Hari Ini</button>
+                            <button type="button" id="btnFilterCekLaciSemua" onclick="window.filterRiwayatCekLaci('ALL')" style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:5px; padding:2px 7px; font-size:9.5px; font-weight:700; cursor:pointer;">Semua</button>
+                        </div>
+                    </div>
+
+                    <div id="containerRiwayatCekLaciList" style="display:flex; flex-direction:column; gap:8px;">
+                        <!-- Rendered by window.renderRiwayatCekLaciList() -->
+                    </div>
                 </div>
             `;
 
@@ -22987,6 +23124,379 @@
             }
 
             window.updateHitungLaci();
+            window.renderRiwayatCekLaciList();
+        };
+
+        // =========================================================================
+        // 📋 3. LOGIKA RIWAYAT CEK LACI KASIR (PAGI, MAGHRIB, MALAM)
+        // =========================================================================
+        window._filterCekLaciMode = 'TODAY';
+
+        window.detectSesiSekarang = function() {
+            const hr = new Date().getHours();
+            if (hr >= 5 && hr < 12) return 'PAGI';
+            if (hr >= 12 && hr < 17) return 'SIANG';
+            if (hr >= 17 && hr < 19) return 'MAGHRIB';
+            return 'MALAM';
+        };
+
+        window.openModalKonfirmasiCekLaci = function() {
+            const totalFisik = parseFloat(document.getElementById('laci_grand_total')?.innerText.replace(/[^0-9]/g, '')) || 0;
+            const compareMode = document.getElementById('selLaciCompareMode')?.value || 'REALTIME';
+            const saldoSistem = window.getSaldoLaciSistem ? window.getSaldoLaciSistem(compareMode) : 0;
+            const selisih = totalFisik - saldoSistem;
+
+            // Isi Sesi Waktu Otomatis
+            const selSesi = document.getElementById('modalCekLaciSesi');
+            if (selSesi) selSesi.value = window.detectSesiSekarang();
+
+            // Isi Kasir dari Login Aktif atau Daftar Karyawan
+            const selKasir = document.getElementById('modalCekLaciKasir');
+            const currentUser = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
+            if (selKasir) {
+                let options = (window.daftarKaryawan || []).map(k => {
+                    const un = (k.username || '').toUpperCase();
+                    return `<option value="${un}" ${un === currentUser ? 'selected' : ''}>${un} (${k.role || 'STAFF'})</option>`;
+                });
+                if (!options.some(opt => opt.includes(`value="${currentUser}"`))) {
+                    options.unshift(`<option value="${currentUser}" selected>${currentUser}</option>`);
+                }
+                selKasir.innerHTML = options.join('');
+            }
+
+            // Tampilkan Ringkasan Angka
+            const elSys = document.getElementById('modalCekLaciSistemDisp');
+            const elFis = document.getElementById('modalCekLaciFisikDisp');
+            const elSel = document.getElementById('modalCekLaciSelisihDisp');
+            if (elSys) elSys.innerText = window.formatRp(saldoSistem);
+            if (elFis) elFis.innerText = window.formatRp(totalFisik);
+            if (elSel) {
+                if (selisih === 0) {
+                    elSel.innerText = '✅ Rp0 (COCOK / PAS)';
+                    elSel.style.background = '#DCFCE7';
+                    elSel.style.color = '#15803D';
+                } else if (selisih > 0) {
+                    elSel.innerText = `📈 +${window.formatRp(selisih)} (SURPLUS / LEBIH)`;
+                    elSel.style.background = '#FEF3C7';
+                    elSel.style.color = '#B45309';
+                } else {
+                    elSel.innerText = `⚠️ -${window.formatRp(Math.abs(selisih))} (KURANG / TEKOR)`;
+                    elSel.style.background = '#FEE2E2';
+                    elSel.style.color = '#DC2626';
+                }
+            }
+
+            // Ringkasan pecahan yang dihitung
+            const saved = window.getSavedLaciCalc();
+            const breakdownParts = [];
+            window.LACI_PECAHAN.forEach(pecahan => {
+                if (saved[pecahan] > 0) {
+                    breakdownParts.push(`${pecahan >= 1000 ? (pecahan / 1000) + 'k' : pecahan}×${saved[pecahan]}`);
+                }
+            });
+            if (saved.receh > 0) breakdownParts.push(`Receh:${window.formatRp(saved.receh)}`);
+            if (saved.fix > 0) breakdownParts.push(`Fix:${window.formatRp(saved.fix)}`);
+            const ringkasEl = document.getElementById('modalCekLaciRincianLbrRingkas');
+            if (ringkasEl) {
+                ringkasEl.innerText = breakdownParts.length > 0 ? `Pecahan: ${breakdownParts.join(', ')}` : 'Belum ada pecahan lembaran yang diisi';
+            }
+
+            // Reset checklist & tombol submit
+            const chk = document.getElementById('modalCekLaciChecklist');
+            if (chk) chk.checked = false;
+            window.onCekLaciChecklistChange();
+
+            const catEl = document.getElementById('modalCekLaciCatatan');
+            if (catEl) catEl.value = '';
+
+            document.getElementById('modalKonfirmasiCekLaciOverlay')?.classList.add('show');
+        };
+
+        window.closeModalKonfirmasiCekLaci = function() {
+            document.getElementById('modalKonfirmasiCekLaciOverlay')?.classList.remove('show');
+        };
+
+        window.onCekLaciChecklistChange = function() {
+            const chk = document.getElementById('modalCekLaciChecklist');
+            const btn = document.getElementById('btnSubmitKonfirmasiCekLaci');
+            if (chk && btn) {
+                if (chk.checked) {
+                    btn.disabled = false;
+                    btn.style.cursor = 'pointer';
+                    btn.style.opacity = '1';
+                } else {
+                    btn.disabled = true;
+                    btn.style.cursor = 'not-allowed';
+                    btn.style.opacity = '0.5';
+                }
+            }
+        };
+
+        window.submitKonfirmasiCekLaci = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const chk = document.getElementById('modalCekLaciChecklist');
+            if (!chk || !chk.checked) {
+                alert("Harap centang checklist pernyataan kasir terlebih dahulu!");
+                return;
+            }
+
+            const sesi = document.getElementById('modalCekLaciSesi')?.value || window.detectSesiSekarang();
+            const kasir = (document.getElementById('modalCekLaciKasir')?.value || sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
+            const catatan = (document.getElementById('modalCekLaciCatatan')?.value || '').trim();
+
+            const totalFisik = parseFloat(document.getElementById('laci_grand_total')?.innerText.replace(/[^0-9]/g, '')) || 0;
+            const compareMode = document.getElementById('selLaciCompareMode')?.value || 'REALTIME';
+            const saldoSistem = window.getSaldoLaciSistem ? window.getSaldoLaciSistem(compareMode) : 0;
+            const selisih = totalFisik - saldoSistem;
+            const saved = window.getSavedLaciCalc();
+
+            const dNow = new Date();
+            const jamStr = String(dNow.getHours()).padStart(2, '0') + ':' + String(dNow.getMinutes()).padStart(2, '0');
+
+            const newCek = {
+                id: 'LACI_' + Date.now(),
+                timestamp: Date.now(),
+                isoDate: window.getTodayIso(),
+                waktu: jamStr,
+                sesi: sesi,
+                petugas: kasir,
+                saldoSistem: saldoSistem,
+                saldoFisik: totalFisik,
+                selisih: selisih,
+                lembar: saved,
+                catatan: catatan,
+                sourceMode: compareMode
+            };
+
+            if (!Array.isArray(window.riwayatCekLaciList)) {
+                window.riwayatCekLaciList = [];
+            }
+            window.riwayatCekLaciList.unshift(newCek);
+
+            // Simpan lokal & kirim ke Firebase
+            try {
+                localStorage.setItem('zencell_riwayat_cek_laci', JSON.stringify(window.riwayatCekLaciList));
+                if (typeof window.saveToFirebaseNode === 'function') {
+                    window.saveToFirebaseNode('riwayatCekLaci', window.riwayatCekLaciList);
+                }
+            } catch (err) {
+                console.error('Error saving riwayatCekLaci:', err);
+            }
+
+            // Catat ke Log Aktivitas
+            if (typeof window.catatLogAktivitas === 'function') {
+                const selLabel = selisih === 0 ? 'PAS (Rp0)' : (selisih < 0 ? `KURANG -${window.formatRp(Math.abs(selisih))}` : `LEBIH +${window.formatRp(selisih)}`);
+                window.catatLogAktivitas('CEK LACI', `Kasir ${kasir} konfirmasi cek laci sesi ${sesi}. Sistem: ${window.formatRp(saldoSistem)}, Fisik: ${window.formatRp(totalFisik)}, Selisih: ${selLabel}`);
+            }
+
+            window.closeModalKonfirmasiCekLaci();
+            window.renderRiwayatCekLaciList();
+            window.showToast(`✅ Hasil Cek Laci (${sesi}) berhasil dikonfirmasi dan diupload!`, 'success');
+        };
+
+        window.filterRiwayatCekLaci = function(mode) {
+            window._filterCekLaciMode = mode || 'TODAY';
+            const btnToday = document.getElementById('btnFilterCekLaciHariIni');
+            const btnAll = document.getElementById('btnFilterCekLaciSemua');
+            if (btnToday && btnAll) {
+                if (window._filterCekLaciMode === 'TODAY') {
+                    btnToday.style.background = '#0D9488';
+                    btnToday.style.color = '#FFF';
+                    btnToday.style.fontWeight = '800';
+                    btnAll.style.background = '#F1F5F9';
+                    btnAll.style.color = '#475569';
+                    btnAll.style.fontWeight = '700';
+                } else {
+                    btnAll.style.background = '#0D9488';
+                    btnAll.style.color = '#FFF';
+                    btnAll.style.fontWeight = '800';
+                    btnToday.style.background = '#F1F5F9';
+                    btnToday.style.color = '#475569';
+                    btnToday.style.fontWeight = '700';
+                }
+            }
+            window.renderRiwayatCekLaciList();
+        };
+
+        window.renderRiwayatCekLaciList = function() {
+            const container = document.getElementById('containerRiwayatCekLaciList');
+            if (!container) return;
+
+            const allList = window.riwayatCekLaciList || [];
+            const todayIso = window.getTodayIso();
+            const list = (window._filterCekLaciMode === 'TODAY')
+                ? allList.filter(item => item && item.isoDate === todayIso)
+                : allList;
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:16px 8px; color:#94A3B8; font-size:11px; background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:8px;">
+                        <span style="font-size:18px; display:block; margin-bottom:4px;">📭</span>
+                        Belum ada riwayat cek laci ${window._filterCekLaciMode === 'TODAY' ? 'hari ini' : ''}.<br>
+                        <span style="font-size:9.5px; color:#64748B;">Kasir cukup hitung fisik uang di atas lalu klik tombol <b>Konfirmasi & Upload</b>.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            const currentUser = (sessionStorage.getItem('zencell_user') || '').toUpperCase();
+            const isOwner = currentUser === 'OWNER';
+
+            container.innerHTML = list.map(item => {
+                const sesi = item.sesi || 'PAGI';
+                let iconSesi = '🌅';
+                if (sesi === 'SIANG') iconSesi = '☀️';
+                else if (sesi === 'MAGHRIB') iconSesi = '🌆';
+                else if (sesi === 'MALAM') iconSesi = '🌙';
+
+                const selisih = Number(item.selisih || 0);
+                let badgeSelisih = '✅ Rp0 (PAS)';
+                let colorSelisih = '#15803D';
+                if (selisih > 0) {
+                    badgeSelisih = `📈 +${window.formatRp(selisih)}`;
+                    colorSelisih = '#B45309';
+                } else if (selisih < 0) {
+                    badgeSelisih = `⚠️ -${window.formatRp(Math.abs(selisih))}`;
+                    colorSelisih = '#DC2626';
+                }
+
+                // Breakdown uang lembaran jika ada
+                let breakdownHtml = '';
+                if (item.lembar) {
+                    const rows = [];
+                    window.LACI_PECAHAN.forEach(pecahan => {
+                        const lbr = item.lembar[pecahan] || 0;
+                        if (lbr > 0) {
+                            rows.push(`<div>Rp ${pecahan.toLocaleString('id-ID')}: <b>${lbr} lbr</b> (${window.formatRp(lbr * pecahan)})</div>`);
+                        }
+                    });
+                    if (item.lembar.receh > 0) rows.push(`<div>Receh / Koin: <b>${window.formatRp(item.lembar.receh)}</b></div>`);
+                    if (item.lembar.fix > 0) rows.push(`<div>Fix Modal/Simpanan: <b>${window.formatRp(item.lembar.fix)}</b></div>`);
+                    breakdownHtml = rows.join('') || '<div>Tidak ada rincian lembaran tersimpan</div>';
+                }
+
+                return `
+                    <div class="card-riwayat-cek">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <span class="badge-sesi-laci badge-${sesi.toLowerCase()}">${iconSesi} ${sesi}</span>
+                                <span style="font-weight:700; color:#334155; font-size:10px;">${item.waktu || ''} WIB • ${item.isoDate || ''}</span>
+                            </div>
+                            <span style="font-size:9.5px; font-weight:800; background:#E2E8F0; color:#1E293B; padding:1px 6px; border-radius:4px;">👤 ${item.petugas || 'KASIR'}</span>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; background:#FFF; border:1px solid #E2E8F0; border-radius:7px; padding:6px; margin-bottom:5px; text-align:center;">
+                            <div>
+                                <div style="font-size:8px; color:#64748B; font-weight:700;">SISTEM</div>
+                                <div style="font-size:10.5px; font-weight:800; color:#0F172A; font-family:monospace;">${window.formatRp(item.saldoSistem || 0)}</div>
+                            </div>
+                            <div style="border-left:1px solid #E2E8F0; border-right:1px solid #E2E8F0;">
+                                <div style="font-size:8px; color:#64748B; font-weight:700;">FISIK</div>
+                                <div style="font-size:10.5px; font-weight:800; color:#059669; font-family:monospace;">${window.formatRp(item.saldoFisik || 0)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:8px; color:#64748B; font-weight:700;">SELISIH</div>
+                                <div style="font-size:10.5px; font-weight:900; color:${colorSelisih}; font-family:monospace;">${badgeSelisih}</div>
+                            </div>
+                        </div>
+
+                        ${item.catatan ? `<div style="font-size:9.5px; color:#475569; background:#FEF3C7; border-left:2.5px solid #F59E0B; padding:3px 6px; border-radius:3px; margin-bottom:5px; font-style:italic;">💬 "${item.catatan}"</div>` : ''}
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dotted #CBD5E1; padding-top:4px;">
+                            <button type="button" onclick="window.toggleRincianLembarCekLaci('${item.id}')" style="background:#F1F5F9; border:1px solid #CBD5E1; color:#334155; font-size:9px; font-weight:700; border-radius:4px; padding:2px 6px; cursor:pointer;">
+                                🔍 Lembar
+                            </button>
+                            <div style="display:flex; gap:4px;">
+                                <button type="button" onclick="window.kirimWaRiwayatCekLaci('${item.id}')" style="background:#16A34A; color:#FFF; border:none; font-size:9px; font-weight:800; border-radius:4px; padding:2px 7px; cursor:pointer;" title="Kirim ke WhatsApp Owner">
+                                    📲 Kirim WA
+                                </button>
+                                ${isOwner ? `
+                                <button type="button" onclick="window.hapusRiwayatCekLaci('${item.id}')" style="background:#FEE2E2; color:#DC2626; border:1px solid #FECACA; font-size:9px; font-weight:700; border-radius:4px; padding:2px 5px; cursor:pointer;" title="Hapus Riwayat (Khusus Owner)">
+                                    🗑️
+                                </button>` : ''}
+                            </div>
+                        </div>
+
+                        <div id="rincianLembar_${item.id}" style="display:none; margin-top:5px; padding:6px; background:#FFF; border:1px dashed #CBD5E1; border-radius:6px; font-size:9.5px; color:#334155;">
+                            ${breakdownHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.toggleRincianLembarCekLaci = function(idCek) {
+            const el = document.getElementById(`rincianLembar_${idCek}`);
+            if (el) {
+                el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            }
+        };
+
+        window.kirimWaRiwayatCekLaci = function(idCek) {
+            const item = (window.riwayatCekLaciList || []).find(x => x.id === idCek);
+            if (!item) return;
+
+            const p = window.pengaturanToko || {};
+            let noWa = String(p.waOwner || p.kontakToko || '').replace(/\D/g, '');
+            if (noWa.startsWith('0')) noWa = '62' + noWa.slice(1);
+
+            const selisih = Number(item.selisih || 0);
+            const statusSel = selisih === 0
+                ? '✅ PAS / COCOK (Rp0)'
+                : (selisih < 0 ? `⚠️ TEKOR / KURANG -${window.formatRp(Math.abs(selisih))}` : `📈 SURPLUS / LEBIH +${window.formatRp(selisih)}`);
+
+            let lbrText = '';
+            if (item.lembar) {
+                const parts = [];
+                window.LACI_PECAHAN.forEach(pecahan => {
+                    const lbr = item.lembar[pecahan] || 0;
+                    if (lbr > 0) {
+                        parts.push(`• Rp ${pecahan.toLocaleString('id-ID')}: ${lbr} lembar`);
+                    }
+                });
+                if (item.lembar.receh > 0) parts.push(`• Receh / Koin: ${window.formatRp(item.lembar.receh)}`);
+                if (item.lembar.fix > 0) parts.push(`• Fix Modal / Simpanan: ${window.formatRp(item.lembar.fix)}`);
+                if (parts.length > 0) {
+                    lbrText = `\n*Rincian Fisik Uang:*\n${parts.join('\n')}\n`;
+                }
+            }
+
+            const msg =
+                `*📋 LAPORAN AUDIT LACI KASIR — ${p.namaToko || 'POS ZENCELL'}*\n` +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                `• Sesi Cek: *${item.sesi || 'PAGI'}*\n` +
+                `• Waktu: ${item.waktu || '-'} WIB (${item.isoDate || '-'})\n` +
+                `• Petugas Kasir: *${item.petugas || 'KASIR'}*\n\n` +
+                `• 🖥️ Saldo Sistem: *${window.formatRp(item.saldoSistem || 0)}*\n` +
+                `• 💵 Fisik Dihitung: *${window.formatRp(item.saldoFisik || 0)}*\n` +
+                `• ⚖️ Status Selisih: *${statusSel}*\n` +
+                `${item.catatan ? `• Catatan: _"${item.catatan}"_\n` : ''}` +
+                lbrText +
+                `\nData telah terkonfirmasi & ter-upload di pembukuan POS Zencell 🙏`;
+
+            const url = noWa
+                ? `https://wa.me/${noWa}?text=${encodeURIComponent(msg)}`
+                : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        };
+
+        window.hapusRiwayatCekLaci = function(idCek) {
+            const user = (sessionStorage.getItem('zencell_user') || '').toUpperCase();
+            if (user !== 'OWNER') {
+                alert("Hanya akun OWNER yang berhak menghapus riwayat audit cek laci.");
+                return;
+            }
+            if (!confirm("Hapus data riwayat audit cek laci ini?")) return;
+
+            window.riwayatCekLaciList = (window.riwayatCekLaciList || []).filter(x => x.id !== idCek);
+            try {
+                localStorage.setItem('zencell_riwayat_cek_laci', JSON.stringify(window.riwayatCekLaciList));
+                if (typeof window.saveToFirebaseNode === 'function') {
+                    window.saveToFirebaseNode('riwayatCekLaci', window.riwayatCekLaciList);
+                }
+            } catch (err) {}
+            window.renderRiwayatCekLaciList();
+            window.showToast("🗑️ Riwayat cek laci berhasil dihapus", "info");
         };
 
         // =========================================================================
