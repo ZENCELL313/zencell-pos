@@ -52,144 +52,37 @@
         /* ==========================================================================
            TEMA NUANSA PUTIH BERSIH (MINIMALIS, SERAGAM & BERSIH ALA LEMBAR KERJA)
            - Dominan Putih Asli (#FFFFFF) pada Header, Kartu, Tabel & Tombol
-           - Latar Belakang Abu-Putih Sangat Halus (#F8FAFC) & Garis Abu Tipis (#CBD5E1)
-           - Teks Kontras Gelap Seragam (#0F172A) Tanpa Warna-Warni Mencolok
+           - Latar Belakang Dasar Putih Bersih (#F8FAFC) & Tabel/Kartu Utama Putih (#FFFFFF)
+           - Ikon, 8 Kartu KPI, Menu, Header & Bar Bawah TETAP BERWARNA seperti Tema Hijau
            ========================================================================== */
         body.theme-cream {
-            --primary: #1E293B;
-            --primary-dark: #0F172A;
-            --primary-light: #F1F5F9;
-            --accent: #334155;
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #ECFDF5;
+            --accent: #10B981;
             --bg: #F8FAFC;
             --card: #FFFFFF;
             --text: #0F172A;
-            --debit: #B91C1C;
-            --kredit: #15803D;
+            --debit: #DC2626;
+            --kredit: #16A34A;
             --border: #CBD5E1;
             background-color: #F8FAFC !important;
         }
 
-        body.theme-cream header {
-            background: #FFFFFF !important;
-            color: #0F172A !important;
-            border-bottom: 1.5px solid #CBD5E1 !important;
-            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05) !important;
-        }
-        body.theme-cream .header-title h1 {
-            color: #0F172A !important;
-            font-weight: 800 !important;
-        }
-        body.theme-cream .header-logo-svg {
-            border-color: #CBD5E1 !important;
-            background: #F8FAFC !important;
-        }
-        body.theme-cream .btn-icon-hdr,
-        body.theme-cream #btnHeaderGlobalFind,
-        body.theme-cream #btnHeaderDpiScale,
-        body.theme-cream #btnHeaderBranchSwitch {
-            background: #F8FAFC !important;
-            color: #0F172A !important;
-            border: 1px solid #CBD5E1 !important;
-            box-shadow: none !important;
-        }
-        body.theme-cream .btn-icon-hdr:hover,
-        body.theme-cream #btnHeaderGlobalFind:hover,
-        body.theme-cream #btnHeaderDpiScale:hover,
-        body.theme-cream #btnHeaderBranchSwitch:hover {
-            background: #F1F5F9 !important;
-        }
-        body.theme-cream .btn-icon-hdr svg {
-            color: #0F172A !important;
-            stroke: #0F172A !important;
-        }
-        body.theme-cream .header-status-bar {
-            background: #F8FAFC !important;
-            border: 1px solid #CBD5E1 !important;
-            color: #0F172A !important;
-        }
-        body.theme-cream .header-status-bar span,
-        body.theme-cream #hdrRealtimeDateText,
-        body.theme-cream #hdrRealtimeTimeText,
-        body.theme-cream #hdrUserActive {
-            color: #0F172A !important;
-        }
-        body.theme-cream .status-marquee-box {
-            background: #F8FAFC !important;
-            border: 1px solid #CBD5E1 !important;
-        }
-        body.theme-cream .status-marquee-track {
-            color: #334155 !important;
-            font-weight: 700 !important;
-        }
-
-        /* 8 Kartu KPI: Putih Bersih Seragam */
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c1,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c2,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c3,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c4,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c5,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c6,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c7,
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c8 {
-            background: #FFFFFF !important;
-            border: 1px solid #CBD5E1 !important;
-            border-left: 3.5px solid #475569 !important;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
-        }
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .kpi-icon-box {
-            background: #F8FAFC !important;
-            border: 1px solid #CBD5E1 !important;
-            color: #1E293B !important;
-            box-shadow: none !important;
-        }
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .lbl {
-            color: #475569 !important;
-            font-size: 9.5px !important;
-            font-weight: 700 !important;
-            text-shadow: none !important;
-            letter-spacing: 0.2px !important;
-        }
-        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .val {
-            color: #0F172A !important;
-            font-size: 13px !important;
-            font-weight: 800 !important;
-            text-shadow: none !important;
-            font-variant-numeric: tabular-nums !important;
-        }
-
-        /* Banner Total Saldo Konter Putih Bersih */
+        /* Kartu & Kontainer Utama Putih Bersih, sedangkan Header, 8 Kartu KPI, Ikon, Menu & Bar Bawah Tetap Berwarna */
         body.theme-cream .saldo-banner-bar {
             background: #FFFFFF !important;
-            border: 1px solid #CBD5E1 !important;
-            border-left: 4px solid #334155 !important;
-            border-right: 4px solid #334155 !important;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
-        }
-        body.theme-cream .saldo-banner-btn,
-        body.theme-cream .saldo-banner-btn.radar-btn,
-        body.theme-cream #btnToggleKpiCollapse {
-            background: #F8FAFC !important;
-            color: #0F172A !important;
-            border: 1px solid #CBD5E1 !important;
-            box-shadow: none !important;
-            font-size: 10.5px !important;
-            font-weight: 700 !important;
-        }
-        body.theme-cream .saldo-banner-btn:hover {
-            background: #F1F5F9 !important;
+            border: 1.5px solid #CBD5E1 !important;
+            border-left: 4px solid #059669 !important;
+            border-right: 4px solid #0284C7 !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05) !important;
         }
         body.theme-cream .saldo-banner-center {
-            background: #FFFFFF !important;
-            border: 1px solid #CBD5E1 !important;
-            box-shadow: none !important;
-        }
-        body.theme-cream .saldo-banner-icon {
             background: #F8FAFC !important;
-            border-color: #CBD5E1 !important;
+            border: 1px solid #CBD5E1 !important;
         }
         body.theme-cream .saldo-banner-title {
-            color: #475569 !important;
+            color: #047857 !important;
         }
         body.theme-cream .saldo-banner-val {
             color: #0F172A !important;
@@ -203,9 +96,9 @@
         }
         body.theme-cream .card-header,
         body.theme-cream .sidebar-section-hdr {
-            background: #F8FAFC !important;
-            color: #0F172A !important;
-            border: 1px solid #CBD5E1 !important;
+            background: #ECFDF5 !important;
+            color: #065F46 !important;
+            border: 1px solid #A7F3D0 !important;
             font-size: 12px !important;
             font-weight: 800 !important;
         }
@@ -248,7 +141,7 @@
             background: #F1F5F9 !important;
             color: #0F172A !important;
             border-color: #CBD5E1 !important;
-            border-bottom: 2px solid #94A3B8 !important;
+            border-bottom: 2px solid #10B981 !important;
             font-size: 11px !important;
             font-weight: 800 !important;
             letter-spacing: 0.2px !important;
@@ -270,13 +163,13 @@
         }
         body.theme-cream tbody tr:hover td,
         body.theme-cream .table-jurnal tbody tr:hover td {
-            background-color: #F1F5F9 !important;
+            background-color: #ECFDF5 !important;
         }
         body.theme-cream tfoot tr,
         body.theme-cream tfoot td {
-            background-color: #F1F5F9 !important;
-            color: #0F172A !important;
-            border-color: #CBD5E1 !important;
+            background-color: #ECFDF5 !important;
+            color: #064E3B !important;
+            border-color: #A7F3D0 !important;
             font-weight: 800 !important;
         }
         body.theme-cream .jurnal-ket-cell,
@@ -303,65 +196,19 @@
             font-weight: 700 !important;
         }
         body.theme-cream .bottom-nav {
-            background: rgba(255, 255, 255, 0.98) !important;
-            border: 1.5px solid #CBD5E1 !important;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
-        }
-        body.theme-cream .nav-item {
-            background: #FFFFFF !important;
-            border: 1px solid #E2E8F0 !important;
-            color: #334155 !important;
-            font-size: 8.5px !important;
-        }
-        body.theme-cream .nav-item .icon {
-            background: #F8FAFC !important;
-            border: 1px solid #CBD5E1 !important;
-            color: #1E293B !important;
-            animation: none !important;
-        }
-        body.theme-cream .nav-item.active {
-            background: #1E293B !important;
-            border: 1.5px solid #0F172A !important;
-            color: #FFFFFF !important;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18) !important;
-            transform: none !important;
-        }
-        body.theme-cream .nav-item.active .nav-lbl-wrap {
-            color: #FFFFFF !important;
-        }
-        body.theme-cream .nav-item.active::after {
-            background: #CBD5E1 !important;
-            box-shadow: none !important;
-        }
-        body.theme-cream .nav-item.active .icon {
-            background: #FFFFFF !important;
-            color: #0F172A !important;
-            border-color: #CBD5E1 !important;
-            transform: none !important;
-            animation: none !important;
-            margin-bottom: 2px !important;
-            box-shadow: none !important;
+            background: rgba(255, 255, 255, 0.96) !important;
+            border: 1.5px solid #A7F3D0 !important;
+            box-shadow: 0 4px 16px rgba(5, 150, 105, 0.12) !important;
         }
         body.theme-cream .sub-nav-bar-wrap {
-            background: #F8FAFC !important;
-            border: 1px solid #CBD5E1 !important;
-        }
-        body.theme-cream .sub-tab-btn,
-        body.theme-cream .sub-quick-btn {
             background: #FFFFFF !important;
-            color: #0F172A !important;
             border: 1px solid #CBD5E1 !important;
         }
-        body.theme-cream .sub-tab-btn.active {
-            background: #1E293B !important;
-            color: #FFFFFF !important;
-            border-color: #0F172A !important;
-        }
-        body.theme-cream .sidebar-header,
-        body.theme-cream .right-sidebar .sidebar-header {
-            background: #F8FAFC !important;
-            color: #0F172A !important;
-            border-bottom: 1.5px solid #CBD5E1 !important;
+
+        /* Masking PIN Anti-Autofill Password Manager Browser */
+        input.pin-masked {
+            -webkit-text-security: disc !important;
+            text-security: disc !important;
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -372,7 +219,7 @@
             padding: 0 10px 78px 10px; 
             max-width: 650px; 
             margin: 0 auto; 
-            transition: background-color 0.3s ease, color 0.3s ease, padding-left 0.3s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s ease; 
+            transition: background-color 0.25s ease, color 0.25s ease, padding-left 0.26s cubic-bezier(0.22, 1, 0.36, 1), padding-right 0.26s cubic-bezier(0.22, 1, 0.36, 1); 
         }
 
         input[type="text"], textarea, select { text-transform: uppercase; }
@@ -969,21 +816,26 @@
         }
 
         .left-sidebar {
-            position: fixed; top: 0; left: -105%; width: 100%; max-width: 100vw; height: 100%; background: var(--card);
-            box-shadow: 5px 0 25px rgba(0,0,0,0.25); z-index: 99995; transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; max-width: 100vw; height: 100%; background: var(--card);
+            box-shadow: 5px 0 25px rgba(0,0,0,0.22); z-index: 99995;
+            transform: translate3d(-104%, 0, 0);
+            will-change: transform;
+            backface-visibility: hidden;
+            transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
             display: flex; flex-direction: column; border-right: 1.5px solid var(--border);
         }
-        .left-sidebar.show { left: 0; }
+        .left-sidebar.show { transform: translate3d(0, 0, 0); }
 
         @media (min-width: 960px) {
             .left-sidebar {
                 width: clamp(490px, 42vw, 575px);
                 max-width: 575px;
-                left: -595px;
+                left: 0;
                 z-index: 9990;
                 box-shadow: 4px 0 22px rgba(15, 23, 42, 0.14);
+                transform: translate3d(-104%, 0, 0);
             }
-            .left-sidebar.show { left: 0; }
+            .left-sidebar.show { transform: translate3d(0, 0, 0); }
             body.saldo-sidebar-open {
                 max-width: 100% !important;
                 padding-left: calc(clamp(490px, 42vw, 575px) + 14px) !important;
@@ -1138,11 +990,15 @@
         }
 
         .right-sidebar {
-            position: fixed; top: 0; right: -370px; width: 350px; max-width: 92vw; height: 100%; background: var(--card);
-            box-shadow: -5px 0 28px rgba(0,0,0,0.28); z-index: 99995; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: fixed; top: 0; right: 0; width: 350px; max-width: 92vw; height: 100%; background: var(--card);
+            box-shadow: -5px 0 28px rgba(0,0,0,0.25); z-index: 99995;
+            transform: translate3d(104%, 0, 0);
+            will-change: transform;
+            backface-visibility: hidden;
+            transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
             display: flex; flex-direction: column; border-left: 1px solid var(--border);
         }
-        .right-sidebar.show { right: 0; }
+        .right-sidebar.show { transform: translate3d(0, 0, 0); }
         .right-sidebar .sidebar-header {
             background: linear-gradient(135deg, #0F172A 0%, #0284C7 100%);
         }
@@ -2391,7 +2247,11 @@
         }
 
         @media (min-width: 768px) {
-            body { max-width: 1250px; padding: 0 16px 90px 16px; }
+            body {
+                max-width: 100%;
+                margin: 0;
+                padding: 0 max(16px, calc((100vw - 1250px) / 2)) 90px max(16px, calc((100vw - 1250px) / 2));
+            }
             header { padding: 14px 18px; }
             .header-title h1 { font-size: 18px; }
             .header-status-bar { font-size: 12.5px; padding: 6px 12px; }
@@ -3086,11 +2946,11 @@
                 <span id="loginLiveClockText">MEMUAT WAKTU...</span>
             </div>
 
-            <form onsubmit="prosesLogin(event)">
+            <form onsubmit="prosesLogin(event)" autocomplete="off" data-form-type="other">
                 <div class="form-group" style="text-align:left; margin-bottom:10px;">
                     <label>Pilih Akun Cepat / Kasir Bertugas</label>
                     <div class="login-user-pills" id="loginQuickUserPills"></div>
-                    <select id="loginUser" class="form-control" required style="font-weight:bold;" onchange="syncLoginUserPillSelection(this.value)">
+                    <select id="loginUser" class="form-control" required style="font-weight:bold;" onchange="syncLoginUserPillSelection(this.value)" autocomplete="off">
                         <option value="OWNER">👑 OWNER (OWNER)</option>
                         <option value="FINA">👩‍💼 FINA (KASIR)</option>
                         <option value="ECA">👩‍💼 ECA (KASIR)</option>
@@ -3100,7 +2960,7 @@
                 <div class="form-group" style="text-align:left; margin-bottom:16px;">
                     <label>Kata Sandi / PIN Keamanan</label>
                     <div style="position:relative;">
-                        <input type="password" id="loginPass" class="form-control" placeholder="MASUKKAN PIN..." required inputmode="numeric" style="padding-right:40px; letter-spacing:2px; font-weight:800;">
+                        <input type="text" id="loginPass" name="zencell_pin_code_input" class="form-control pin-masked" placeholder="MASUKKAN PIN..." required inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other" style="padding-right:40px; letter-spacing:2px; font-weight:800;">
                         <button type="button" onclick="toggleShowLoginPin()" id="btnToggleLoginPin" title="Lihat/Sembunyikan PIN" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94A3B8; cursor:pointer; font-size:15px; padding:4px;">👁️</button>
                     </div>
                 </div>
@@ -3264,8 +3124,8 @@
                     <div class="form-group" style="background:var(--bg); border:1px solid var(--border); padding:10px 12px; border-radius:10px; margin-top:8px;">
                         <label style="font-size:11px; font-weight:800; margin-bottom:6px; display:block;">🎨 Pilih Tema Warna Pembukuan (Bisa Diganti Kapan Saja)</label>
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:6px;">
-                            <button type="button" class="btn" onclick="window.setAppTheme('theme-cream')" style="background:#DFECE6; color:#1E3630; border:1.5px solid #9FB8AD; font-size:11px; padding:8px; font-weight:800;">🌿 Soft Teduh (Ramah Mata)</button>
-                            <button type="button" class="btn" onclick="window.setAppTheme('default')" style="background:#059669; color:#FFFFFF; font-size:11px; padding:8px; font-weight:800;">🌿 Hijau Emerald</button>
+                            <button type="button" class="btn" onclick="window.setAppTheme('default')" style="background:#059669; color:#FFFFFF; font-size:11px; padding:8px; font-weight:800;">🌿 Hijau Emerald (Default)</button>
+                            <button type="button" class="btn" onclick="window.setAppTheme('theme-cream')" style="background:#FFFFFF; color:#0F172A; border:1.5px solid #10B981; font-size:11px; padding:8px; font-weight:800;">⬜ Putih Bersih (Warna-Warni)</button>
                             <button type="button" class="btn" onclick="window.setAppTheme('theme-blue')" style="background:#0284C7; color:#FFFFFF; font-size:11px; padding:8px; font-weight:800;">💎 Biru Langit</button>
                             <button type="button" class="btn" onclick="window.setAppTheme('theme-dark')" style="background:#1E293B; color:#F8FAFC; font-size:11px; padding:8px; font-weight:800;">🌙 Mode Gelap</button>
                         </div>
@@ -7294,12 +7154,18 @@
         if (window.pengaturanToko.targetModalBerputar === undefined) window.pengaturanToko.targetModalBerputar = 250000000;
         if (!window.pengaturanToko.modeAuditModal) window.pengaturanToko.modeAuditModal = 'HARIAN';
 
-        window.daftarKaryawan = JSON.parse(localStorage.getItem('zencell_karyawan') || 'null') || [
-            { id: 1, username: 'OWNER', role: 'OWNER', pin: '212', dibuat: '2026-10-14' },
-            { id: 2, username: 'FINA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
-            { id: 3, username: 'ECA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
-            { id: 4, username: 'TAMU', role: 'KASIR', pin: '414', dibuat: '2026-10-14' }
-        ];
+        window.daftarKaryawan = (function() {
+            const rawGlobal = window._rawLsGet ? window._rawLsGet('zencell_karyawan') : null;
+            const rawBranch = localStorage.getItem('zencell_karyawan') || localStorage.getItem('zencell_daftarKaryawan');
+            const parsed = JSON.parse(rawGlobal || rawBranch || 'null');
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            return [
+                { id: 1, username: 'OWNER', role: 'OWNER', pin: '212', dibuat: '2026-10-14' },
+                { id: 2, username: 'FINA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
+                { id: 3, username: 'ECA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
+                { id: 4, username: 'TAMU', role: 'KASIR', pin: '414', dibuat: '2026-10-14' }
+            ];
+        })();
 
         window.undoStack = [];
         window.redoStack = [];
@@ -8237,22 +8103,55 @@
             return window._authInitInFlight;
         };
 
-        window.verifyPinFromCloudIfNeeded = async function(user, pass) {
+        window.syncDaftarKaryawanFromCloud = async function() {
             try {
                 await window.ensureFirebaseAuthAndSync();
                 const rootNode = window.FIREBASE_ROOT_NODE || 'zencellNodes';
-                const snap = await get(ref(db, `${rootNode}/daftarKaryawan`));
+                let snap = await get(ref(db, `${rootNode}/daftarKaryawan`));
+                if (!snap || !snap.exists()) {
+                    snap = await get(ref(db, 'zencellNodes/daftarKaryawan'));
+                }
                 if (snap && snap.exists()) {
-                    const cloudStaff = snap.val();
-                    if (Array.isArray(cloudStaff) && cloudStaff.length > 0) {
+                    const rawVal = snap.val();
+                    const cloudStaff = Array.isArray(rawVal) ? rawVal : Object.values(rawVal || {});
+                    if (cloudStaff.length > 0) {
                         window.daftarKaryawan = cloudStaff;
-                        localStorage.setItem('zencell_daftarKaryawan', JSON.stringify(cloudStaff));
-                        const matched = cloudStaff.find(k => k && k.username && k.username.toUpperCase() === user.toUpperCase());
-                        if (matched && String(matched.pin) === String(pass)) {
-                            return true;
-                        }
+                        const str = JSON.stringify(cloudStaff);
+                        localStorage.setItem('zencell_karyawan', str);
+                        localStorage.setItem('zencell_daftarKaryawan', str);
+                        if (window._rawLsSet) window._rawLsSet('zencell_karyawan', str);
+                        return cloudStaff;
                     }
                 }
+            } catch (e) {}
+            return window.daftarKaryawan || [];
+        };
+
+        window.isPinValidForUser = function(user, pass) {
+            const uUpper = String(user || '').toUpperCase().trim();
+            const pClean = String(pass || '').trim();
+            if (!uUpper || !pClean) return false;
+
+            const list = Array.isArray(window.daftarKaryawan) ? window.daftarKaryawan : [];
+            const matched = list.find(k => k && String(k.username || '').toUpperCase().trim() === uUpper);
+
+            // Jika akun ditemukan di daftarKaryawan dan sudah memiliki PIN tercatat,
+            // WAJIB cocok 100% dengan PIN tersebut (PIN lama bawaan tidak boleh tembus lagi!)
+            if (matched && matched.pin !== undefined && String(matched.pin).trim() !== '') {
+                return String(matched.pin).trim() === pClean;
+            }
+
+            // Fallback hanya jika akun belum ada di daftarKaryawan sama sekali
+            if (uUpper === 'OWNER') return pClean === '212';
+            if (uUpper === 'FINA' || uUpper === 'ECA') return pClean === '313';
+            if (uUpper === 'TAMU') return pClean === '414';
+            return false;
+        };
+
+        window.verifyPinFromCloudIfNeeded = async function(user, pass) {
+            try {
+                await window.syncDaftarKaryawanFromCloud();
+                return window.isPinValidForUser(user, pass);
             } catch (e) {}
             return false;
         };
@@ -8489,11 +8388,15 @@
         window.openSaldoSidebar = function() {
             const sidebar = document.getElementById('leftSaldoSidebar');
             if (!sidebar) return;
-            if (typeof window.renderAll === 'function') {
-                window.renderAll();
-            }
+            const alreadyOpen = sidebar.classList.contains('show');
             sidebar.classList.add('show');
             document.body.classList.add('saldo-sidebar-open');
+            const sidebarContent = document.getElementById('leftSaldoSidebarContent');
+            if (!alreadyOpen && (!sidebarContent || !sidebarContent.innerHTML.trim())) {
+                requestAnimationFrame(() => {
+                    if (typeof window.renderAll === 'function') window.renderAll();
+                });
+            }
         };
 
         window.closeSaldoSidebar = function() {
@@ -10330,20 +10233,20 @@
             }
         };
 
-        const themes = ['theme-cream', 'default', 'theme-blue', 'theme-dark'];
+        const themes = ['default', 'theme-cream', 'theme-blue', 'theme-dark'];
         const themeLabels = {
-            'theme-cream': 'Putih Bersih (Minimalis)',
             'default': 'Hijau Emerald',
+            'theme-cream': 'Putih Bersih (Warna-Warni)',
             'theme-blue': 'Biru Langit',
             'theme-dark': 'Mode Gelap'
         };
         let currentThemeIdx = 0;
         window.initTheme = function() {
-            // Default langsung ke tema Putih & Cream (Soft Excel) jika belum pernah memilih di versi v2
-            let savedTheme = localStorage.getItem('zencell_theme_v2');
+            // Default langsung ke tema Hijau Emerald ('default') sesuai instruksi Owner
+            let savedTheme = localStorage.getItem('zencell_theme_v3');
             if (!savedTheme) {
-                savedTheme = 'theme-cream';
-                localStorage.setItem('zencell_theme_v2', savedTheme);
+                savedTheme = 'default';
+                localStorage.setItem('zencell_theme_v3', savedTheme);
             }
             document.body.classList.remove('theme-cream', 'theme-blue', 'theme-dark');
             if (savedTheme && savedTheme !== 'default') {
@@ -10352,12 +10255,13 @@
             currentThemeIdx = themes.indexOf(savedTheme) !== -1 ? themes.indexOf(savedTheme) : 0;
         };
         window.setAppTheme = function(themeKey) {
-            const target = themes.includes(themeKey) ? themeKey : 'theme-cream';
+            const target = themes.includes(themeKey) ? themeKey : 'default';
             currentThemeIdx = themes.indexOf(target);
             document.body.classList.remove('theme-cream', 'theme-blue', 'theme-dark');
             if (target !== 'default') {
                 document.body.classList.add(target);
             }
+            localStorage.setItem('zencell_theme_v3', target);
             localStorage.setItem('zencell_theme_v2', target);
             localStorage.setItem('zencell_theme', target === 'default' ? '' : target);
             const label = themeLabels[target] || target;
@@ -10431,14 +10335,26 @@
             const inp = document.getElementById('loginPass');
             const btn = document.getElementById('btnToggleLoginPin');
             if (!inp) return;
-            if (inp.type === 'password') {
-                inp.type = 'text';
+            inp.type = 'text';
+            if (inp.classList.contains('pin-masked')) {
+                inp.classList.remove('pin-masked');
                 if (btn) btn.innerText = '🙈';
             } else {
-                inp.type = 'password';
+                inp.classList.add('pin-masked');
                 if (btn) btn.innerText = '👁️';
             }
             inp.focus();
+        };
+
+        window.clearLoginPinInputSafe = function() {
+            const passInput = document.getElementById('loginPass');
+            const btn = document.getElementById('btnToggleLoginPin');
+            if (passInput) {
+                passInput.type = 'text';
+                passInput.classList.add('pin-masked');
+                passInput.value = '';
+            }
+            if (btn) btn.innerText = '👁️';
         };
 
         window.selectQuickLoginUser = function(username) {
@@ -10448,6 +10364,7 @@
                 if (matchOpt) sel.value = matchOpt.value;
             }
             window.syncLoginUserPillSelection(username);
+            window.clearLoginPinInputSafe();
             const passInput = document.getElementById('loginPass');
             if (passInput) passInput.focus();
         };
@@ -10457,6 +10374,7 @@
             document.querySelectorAll('#loginQuickUserPills .login-user-pill').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-user')?.toUpperCase() === valUp);
             });
+            window.clearLoginPinInputSafe();
         };
 
         // --- ENGINE LIVE ANIMATED BACKGROUND LOGIN (ZERO-CPU SAAT SUDAH LOGIN) ---
@@ -10720,8 +10638,62 @@
             }
         };
 
+        // Batas waktu sesi berkala & idle otomatis:
+        // - Akun OWNER: terkunci otomatis jika tidak aktif selama 45 menit (mencegah kasir memakai sesi Owner yang lupa di-logout di PC)
+        // - Akun KASIR: wajib login ulang berkala setiap pergantian shift / 6 jam
+        const SESSION_IDLE_LIMIT_OWNER_MS = 45 * 60 * 1000;
+        const SESSION_IDLE_LIMIT_KASIR_MS = 4 * 60 * 60 * 1000;
+        const SESSION_MAX_DURATION_MS = 8 * 60 * 60 * 1000;
+
+        window.isCurrentSessionExpired = function(activeUser) {
+            if (!activeUser) return true;
+            const now = Date.now();
+            const loginTs = Number(sessionStorage.getItem('zencell_login_ts') || 0);
+            const lastActiveTs = Number(sessionStorage.getItem('zencell_last_active_ts') || loginTs || 0);
+            if (!loginTs) return true;
+            if (now - loginTs > SESSION_MAX_DURATION_MS) return true;
+            const isOwner = String(activeUser).toUpperCase() === 'OWNER' || (window.isUserOwner && window.isUserOwner());
+            const idleLimit = isOwner ? SESSION_IDLE_LIMIT_OWNER_MS : SESSION_IDLE_LIMIT_KASIR_MS;
+            if (lastActiveTs > 0 && (now - lastActiveTs > idleLimit)) return true;
+            return false;
+        };
+
+        window.touchSessionActivity = function() {
+            if (sessionStorage.getItem('zencell_user')) {
+                sessionStorage.setItem('zencell_last_active_ts', String(Date.now()));
+            }
+        };
+
+        if (!window._sessionMonitorBound) {
+            window._sessionMonitorBound = true;
+            ['click', 'keydown', 'touchstart'].forEach(evtName => {
+                window.addEventListener(evtName, () => {
+                    window.touchSessionActivity();
+                }, { passive: true });
+            });
+            setInterval(() => {
+                const activeUser = sessionStorage.getItem('zencell_user');
+                if (activeUser && window.isCurrentSessionExpired(activeUser)) {
+                    sessionStorage.removeItem('zencell_user');
+                    sessionStorage.removeItem('zencell_login_ts');
+                    sessionStorage.removeItem('zencell_last_active_ts');
+                    window.clearLoginPinInputSafe();
+                    window.checkSessionLogin();
+                    if (window.showToast) {
+                        window.showToast('🔒 Sesi dikunci otomatis demi keamanan. Silakan masukkan PIN kembali.', 'warn');
+                    }
+                }
+            }, 30000);
+        }
+
         window.checkSessionLogin = function() {
-            const activeUser = sessionStorage.getItem('zencell_user');
+            let activeUser = sessionStorage.getItem('zencell_user');
+            if (activeUser && window.isCurrentSessionExpired(activeUser)) {
+                sessionStorage.removeItem('zencell_user');
+                sessionStorage.removeItem('zencell_login_ts');
+                sessionStorage.removeItem('zencell_last_active_ts');
+                activeUser = null;
+            }
             const btnSetting = document.getElementById('btnHeaderSetting');
             const btnBranchHdr = document.getElementById('btnHeaderBranchSwitch');
             const shiftKasirInput = document.getElementById('shiftKasirName');
@@ -10762,6 +10734,16 @@
                 if (btnSetting) btnSetting.style.display = 'none';
                 if (btnBranchHdr) btnBranchHdr.style.display = 'none';
                 window.renderLoginUserOptions();
+                window.clearLoginPinInputSafe();
+                setTimeout(window.clearLoginPinInputSafe, 80);
+                setTimeout(window.clearLoginPinInputSafe, 350);
+                if (window.syncDaftarKaryawanFromCloud) {
+                    window.syncDaftarKaryawanFromCloud().then(() => {
+                        if (document.getElementById('loginOverlay')?.style.display !== 'none') {
+                            window.renderLoginUserOptions();
+                        }
+                    });
+                }
                 window.initLoginLiveBackground();
             }
         }
@@ -10807,31 +10789,24 @@
 
         window.prosesLogin = async function(e) {
             e.preventDefault();
-            const user = document.getElementById('loginUser').value;
-            const pass = document.getElementById('loginPass').value;
-            let valid = false;
+            const user = (document.getElementById('loginUser')?.value || '').trim();
+            const pass = (document.getElementById('loginPass')?.value || '').trim();
 
-            const matched = (window.daftarKaryawan || []).find(k => k.username.toUpperCase() === user.toUpperCase());
-            if (matched && String(matched.pin) === String(pass)) {
-                valid = true;
-            } else if (user.toUpperCase() === 'OWNER' && pass === '212') {
-                valid = true;
-            } else if ((user.toUpperCase() === 'FINA' || user.toUpperCase() === 'ECA') && pass === '313') {
-                valid = true;
-            } else if (user.toUpperCase() === 'TAMU' && pass === '414') {
-                valid = true;
+            // Pastikan daftarKaryawan terbaru dari Cloud sudah disinkronkan sebelum memvalidasi PIN
+            if (navigator.onLine && window.syncDaftarKaryawanFromCloud) {
+                await window.syncDaftarKaryawanFromCloud();
             }
 
-            if (!valid && window.verifyPinFromCloudIfNeeded) {
-                valid = await window.verifyPinFromCloudIfNeeded(user, pass);
-            }
+            const valid = window.isPinValidForUser ? window.isPinValidForUser(user, pass) : false;
 
             if (valid) {
+                const nowStr = String(Date.now());
                 sessionStorage.setItem('zencell_user', user);
+                sessionStorage.setItem('zencell_login_ts', nowStr);
+                sessionStorage.setItem('zencell_last_active_ts', nowStr);
                 document.getElementById('hdrUserActive').innerText = user.toUpperCase();
                 document.getElementById('loginOverlay').style.display = 'none';
-                const passEl = document.getElementById('loginPass');
-                if (passEl) { passEl.value = ''; passEl.type = 'password'; }
+                window.clearLoginPinInputSafe();
                 if (window.ensureFirebaseAuthAndSync) {
                     await window.ensureFirebaseAuthAndSync();
                 }
@@ -10839,6 +10814,7 @@
                 window.catatLogAktivitas('LOGIN', `Pengguna ${user} masuk ke aplikasi`);
                 window.showToast(`👋 Selamat datang kembali, ${user.toUpperCase()}!`, "success");
             } else { 
+                window.clearLoginPinInputSafe();
                 window.showToast("❌ Kata Sandi / PIN Salah!", "error");
             }
         }
@@ -10847,6 +10823,9 @@
             if (confirm("Apakah Anda yakin ingin keluar / logout dari akun ini?")) {
                 window.catatLogAktivitas('LOGOUT', `Pengguna keluar dari aplikasi`);
                 sessionStorage.removeItem('zencell_user');
+                sessionStorage.removeItem('zencell_login_ts');
+                sessionStorage.removeItem('zencell_last_active_ts');
+                window.clearLoginPinInputSafe();
                 if (window.stopRealtimeDatabaseListener) window.stopRealtimeDatabaseListener();
                 if (window._firebaseAuth) {
                     signOut(window._firebaseAuth).catch(() => {});
@@ -19413,10 +19392,9 @@
             );
             if (inputPin === null) return false;
             const cleanPin = String(inputPin).trim();
-            const ownerUsers = (window.daftarKaryawan || []).filter(u => String(u.role || '').toUpperCase() === 'OWNER');
-            const isValidOwnerPin = ownerUsers.length > 0
-                ? ownerUsers.some(u => String(u.pin || '').trim() === cleanPin)
-                : cleanPin === '122333';
+            const isValidOwnerPin = window.isPinValidForUser
+                ? window.isPinValidForUser('OWNER', cleanPin)
+                : (String(window.getPinForUsername ? window.getPinForUsername('OWNER') : '212').trim() === cleanPin);
 
             if (!isValidOwnerPin) {
                 if (window.showToast) window.showToast("⛔ PIN OWNER salah! Akses Koreksi Saldo ditolak.", "error");
@@ -20404,6 +20382,22 @@
             window.showToast(`🔑 Silakan ketik PIN baru untuk akun ${uUp}`, "success");
         };
 
+        window.persistDaftarKaryawanEverywhere = function() {
+            const str = JSON.stringify(window.daftarKaryawan || []);
+            localStorage.setItem('zencell_karyawan', str);
+            localStorage.setItem('zencell_daftarKaryawan', str);
+            if (window._rawLsSet) {
+                window._rawLsSet('zencell_karyawan', str);
+                window._rawLsSet('zencell2_zencell_karyawan', str);
+            }
+            window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
+            try {
+                const payload = cleanForFirebase(window.daftarKaryawan);
+                update(ref(db, 'zencellNodes'), { daftarKaryawan: payload }).catch(() => {});
+                update(ref(db, 'zencell2Nodes'), { daftarKaryawan: payload }).catch(() => {});
+            } catch (e) {}
+        };
+
         window.updatePasswordAktif = function(e) {
             e.preventDefault();
             const selTarget = document.getElementById('setTargetUserPin');
@@ -20417,18 +20411,22 @@
             }
 
             if (!window.daftarKaryawan) window.daftarKaryawan = [];
-            let userObj = window.daftarKaryawan.find(k => String(k.username || '').toUpperCase() === targetUser);
+            // Pastikan semua entri dengan username yang sama diperbarui (jika ada duplikat lama)
+            let foundAny = false;
+            window.daftarKaryawan.forEach(k => {
+                if (k && String(k.username || '').toUpperCase().trim() === targetUser) {
+                    k.pin = pinBaru;
+                    foundAny = true;
+                }
+            });
 
-            if (!userObj) {
+            if (!foundAny) {
                 const defaultRole = targetUser === 'OWNER' ? 'OWNER' : (targetUser === 'TAMU' ? 'TAMU' : 'KASIR');
-                userObj = { id: Date.now(), username: targetUser, role: defaultRole, pin: pinBaru, dibuat: window.getTodayIso() };
+                const userObj = { id: Date.now(), username: targetUser, role: defaultRole, pin: pinBaru, dibuat: window.getTodayIso() };
                 window.daftarKaryawan.push(userObj);
-            } else {
-                userObj.pin = pinBaru;
             }
 
-            localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
-            window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
+            window.persistDaftarKaryawanEverywhere();
             window.catatLogAktivitas('GANTI PIN', `Owner memperbarui PIN untuk akun ${targetUser}`);
             document.getElementById('setPinBaru').value = '';
             window.renderDaftarKaryawanSettings();
@@ -20436,7 +20434,7 @@
             if (window.renderLoginUserOptions) window.renderLoginUserOptions();
 
             window.flashButtonSuccess('btnSimpanPin', '✅ PIN TERSIMPAN!', '💾 SIMPAN PIN AKUN TERPILIH');
-            window.showSettingBanner(`✅ PIN baru untuk akun <b>"${targetUser}"</b> berhasil diperbarui menjadi <b>${pinBaru}</b>!`);
+            window.showSettingBanner(`✅ PIN baru untuk akun <b>"${targetUser}"</b> berhasil diperbarui menjadi <b>${pinBaru}</b> (PIN lama otomatis dinonaktifkan)!`);
             window.showToast(`✅ PIN untuk akun ${targetUser} berhasil diperbarui!`, "success");
         };
 
@@ -20474,8 +20472,7 @@
             const newStaff = { id: Date.now(), username: uName, role, pin, dibuat: window.getTodayIso() };
             window.daftarKaryawan.push(newStaff);
 
-            localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
-            window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
+            window.persistDaftarKaryawanEverywhere();
             window.renderDaftarKaryawanSettings();
             window.renderLoginUserOptions();
             window.catatLogAktivitas('TAMBAH KARYAWAN', `Menambahkan karyawan baru: ${uName} (${role})`);
@@ -20495,8 +20492,7 @@
 
             if (confirm(`Yakin ingin menghapus karyawan "${k.username}"?`)) {
                 window.daftarKaryawan = window.daftarKaryawan.filter(item => item.id !== id);
-                localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
-                window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
+                window.persistDaftarKaryawanEverywhere();
                 window.renderDaftarKaryawanSettings();
                 window.renderLoginUserOptions();
                 window.catatLogAktivitas('HAPUS KARYAWAN', `Menghapus karyawan: ${k.username}`);
