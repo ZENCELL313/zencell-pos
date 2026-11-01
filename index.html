@@ -4641,6 +4641,90 @@
         </div>
     </div>
 
+    <!-- MODAL POPUP: 🏢 OPERASIONAL TOKO & TALANGAN KASIR -->
+    <div id="modalOperasionalFastOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 680px; width: 96%; max-height: 90vh; display: flex; flex-direction: column; padding: 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <div>
+                    <h3 style="font-size:15px; color:#7C3AED; margin:0; display:flex; align-items:center; gap:6px;">🏢 Operasional Toko &amp; Talangan Kasir</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Biaya operasional toko yang ditalangi kasir/konter hingga diganti oleh Owner</small>
+                </div>
+                <button type="button" onclick="closeModalOperasionalFast()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <!-- RINGKASAN TALANGAN OPERASIONAL -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                <div style="background:#FAF5FF; border:1.5px solid #DDD6FE; border-radius:10px; padding:8px 12px;">
+                    <div style="font-size:10px; font-weight:700; color:#6B21A8;">🔴 TOTAL BELUM DIGANTI OWNER</div>
+                    <div id="lblOpFastBelumDiganti" style="font-size:16px; font-weight:900; color:#7C3AED; margin-top:2px;">Rp0</div>
+                    <div style="font-size:9.5px; color:#64748B; margin-top:2px;">Tercatat di Akun Saldo <b>OPERASIONAL</b> (Menjaga Modal 250Jt Pas)</div>
+                </div>
+                <div style="background:#F0FDF4; border:1.5px solid #BBF7D0; border-radius:10px; padding:8px 12px;">
+                    <div style="font-size:10px; font-weight:700; color:#166534;">🟢 SUDAH DIGANTI OWNER (LUNAS)</div>
+                    <div id="lblOpFastSudahDiganti" style="font-size:16px; font-weight:900; color:#16A34A; margin-top:2px;">Rp0</div>
+                    <div style="font-size:9.5px; color:#64748B; margin-top:2px;">Kas sudah diisi kembali oleh Owner</div>
+                </div>
+            </div>
+
+            <!-- FORM INPUT OPERASIONAL CEPAT -->
+            <form id="formOpFast" onsubmit="submitFormOpFast(event)" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px; margin-bottom:12px;">
+                <input type="hidden" id="editOpFastId" value="">
+                <div style="font-weight:800; font-size:11.5px; color:#1E293B; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span id="titleFormOpFast">➕ Catat Pengeluaran Operasional Baru</span>
+                    <button type="button" id="btnBatalEditOpFast" onclick="resetFormOpFast()" style="display:none; background:#E2E8F0; color:#334155; border:none; padding:2px 8px; border-radius:5px; font-size:10px; font-weight:700; cursor:pointer;">Batal Edit</button>
+                </div>
+                <div class="row-3" style="gap:8px;">
+                    <div class="form-group" style="margin-bottom:6px;">
+                        <label style="font-size:10.5px;">Tanggal</label>
+                        <input type="date" id="opFastTgl" class="form-control" style="font-size:11px; padding:6px 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:6px;">
+                        <label style="font-size:10.5px;">Ambil dari Kas/Bank *</label>
+                        <select id="opFastSumber" class="form-control" required style="font-size:11px; font-weight:700; padding:6px 8px;"></select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:6px;">
+                        <label style="font-size:10.5px;">Nominal (Rp) *</label>
+                        <input type="text" id="opFastNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'opFastNom')" style="font-size:11px; font-weight:700; padding:6px 8px;">
+                        <input type="hidden" id="opFastNom" value="0">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="font-size:10.5px;">Keperluan / Keterangan Operasional *</label>
+                    <input type="text" id="opFastKet" class="form-control" placeholder="Contoh: KERTAS THERMAL, TOKEN LISTRIK TOKO, AIR GALON..." required style="font-size:11px; padding:6px 8px;">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:6px;">
+                    <button type="submit" id="btnSubmitOpFast" class="btn" style="background:#7C3AED; padding:7px 14px; font-size:11px; width:auto;">💾 Catat Operasional (Ditalangi Kas)</button>
+                </div>
+            </form>
+
+            <!-- TABEL RIWAYAT OPERASIONAL -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="font-size:11.5px; font-weight:800; color:#1E293B;">📋 Riwayat Operasional Toko</span>
+                <div style="display:flex; gap:4px;">
+                    <button type="button" id="btnFilterOpBelum" onclick="setFilterOpFast('BELUM')" class="btn" style="width:auto; padding:3px 8px; font-size:10px; font-weight:700; background:#7C3AED; color:#FFF;">🔴 Belum Diganti</button>
+                    <button type="button" id="btnFilterOpLunas" onclick="setFilterOpFast('LUNAS')" class="btn" style="width:auto; padding:3px 8px; font-size:10px; font-weight:700; background:#E2E8F0; color:#475569;">🟢 Sudah Diganti</button>
+                    <button type="button" id="btnFilterOpSemua" onclick="setFilterOpFast('ALL')" class="btn" style="width:auto; padding:3px 8px; font-size:10px; font-weight:700; background:#E2E8F0; color:#475569;">Semua</button>
+                </div>
+            </div>
+
+            <div style="flex:1; overflow-y:auto; border:1px solid #E2E8F0; border-radius:8px;">
+                <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                    <thead>
+                        <tr style="background:#F1F5F9; color:#475569; position:sticky; top:0; z-index:1;">
+                            <th style="padding:6px 8px; text-align:left;">WAKTU</th>
+                            <th style="padding:6px 8px; text-align:left;">KEPERLUAN</th>
+                            <th style="padding:6px 8px; text-align:center;">DITALANGI</th>
+                            <th style="padding:6px 8px; text-align:right;">NOMINAL</th>
+                            <th style="padding:6px 8px; text-align:center;">STATUS</th>
+                            <th style="padding:6px 8px; text-align:center;">AKSI OWNER</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyOpFastTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL POPUP 4: 🧾 CETAK STRUK BUKTI TRANSFER / MINI-ATM (CARA 1 AUTO-PARSE & CARA 2 SCAN SS BUKTI TF) -->
     <div id="modalStrukTransferOverlay" class="modal-overlay">
         <div class="modal-content" style="max-width: 820px; width: 96%;">
@@ -4857,6 +4941,7 @@
                     <button type="button" class="btn-jurnal-hdr" onclick="openModalLaporanShift()" title="Buka Popup Laporan Akhir Shift & Audit Uang Fisik Laci">📑 Laporan Shift</button>
                     <button type="button" class="btn-jurnal-hdr" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
                     <button type="button" class="btn-jurnal-hdr" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
+                    <button type="button" class="btn-jurnal-hdr" onclick="openModalOperasionalFast()" title="Catat Pengeluaran Operasional Toko / Talangan" style="background:#7C3AED; color:#FFF; border-color:#6D28D9;">🏢 Operasional</button>
                     <button type="button" class="btn-jurnal-hdr" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
                     <button type="button" class="btn-jurnal-hdr" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
                 </div>
@@ -6590,13 +6675,13 @@
         };
 
         window.STANDARD_SALDO_ORDER_Z1 = [
-            'LACI', 'BRI', 'BCA', 'SEA FINA', 'SEA ECA', 'NOBU', 'PIUTANG',
+            'LACI', 'BRI', 'BCA', 'SEA FINA', 'SEA ECA', 'NOBU', 'PIUTANG', 'OPERASIONAL',
             'GOPAY', 'QRIS', 'DANA FINA', 'DANA AA', 'OVO',
             'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
             'SPAREPART', 'VOUCHER', 'SP', 'ACC', 'KOMISI EDC'
         ];
         window.STANDARD_SALDO_ORDER_Z2 = [
-            'LACI', 'SEA ELSA', 'BCA YUNI', 'BRI YUNI', 'BRI AA', 'QRIS', 'PIUTANG',
+            'LACI', 'SEA ELSA', 'BCA YUNI', 'BRI YUNI', 'BRI AA', 'QRIS', 'PIUTANG', 'OPERASIONAL',
             'DANA ELSA', 'OVO ZIYAD', 'GOPAY ZIYAD',
             'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
             'VOUCHER', 'SP', 'ACC', 'SPAREPART'
@@ -9649,6 +9734,8 @@
                 const now = new Date();
                 pWaktuEl.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             }
+            if (window.initDropdowns) window.initDropdowns();
+            if (window.onPiutangKatChange) window.onPiutangKatChange(document.getElementById('pKat')?.value || 'TOPUP');
             if (window.updateDatalistStokPiutang) window.updateDatalistStokPiutang('');
             if (window.updateDatalistNamaPengutang) window.updateDatalistNamaPengutang();
             document.getElementById('modalInputPiutangOverlay').classList.add('show');
@@ -9932,16 +10019,26 @@
                 if (lblKet) lblKet.innerHTML = `📦 Pilih Barang Stok <b>${kat}</b> yang Diutang *`;
                 if (pKetEl) pKetEl.placeholder = `KETIK / PILIH NAMA BARANG STOK ${kat}...`;
             } else if (kat === 'GADAI') {
+                if (pSumberEl) pSumberEl.value = 'LACI';
+                window.onGadaiInputUpdate();
+            } else if (['TRANSFER', 'TARIK TUNAI', 'EDC'].includes(kat)) {
+                if (pSumberEl && (['VOUCHER', 'SP', 'ACC', 'TIDAK POTONG SALDO'].includes(pSumberEl.value) || !pSumberEl.value)) {
+                    pSumberEl.value = window.saldoList.includes('BCA') ? 'BCA' : (window.saldoList.includes('BRI') ? 'BRI' : 'LACI');
+                }
+                if (lblKet) lblKet.innerText = 'Keterangan / Nama Pelanggan';
+                if (pKetEl) pKetEl.placeholder = 'Ketik nama bank/keterangan transfer...';
+            } else if (['TOPUP', 'PULSA', 'KUOTA', 'PPOB', 'GAME'].includes(kat)) {
+                if (pSumberEl && (['VOUCHER', 'SP', 'ACC', 'TIDAK POTONG SALDO'].includes(pSumberEl.value) || !pSumberEl.value)) {
+                    pSumberEl.value = window.saldoList.includes('DIGIPOS') ? 'DIGIPOS' : (window.saldoList.includes('O KUOTA') ? 'O KUOTA' : 'LACI');
+                }
+                if (lblKet) lblKet.innerText = 'Keterangan / Paket Data / Pulsa';
+                if (pKetEl) pKetEl.placeholder = 'Ketik nominal pulsa / paket data...';
+            } else {
                 if (pSumberEl && (['VOUCHER', 'SP', 'ACC', 'TIDAK POTONG SALDO'].includes(pSumberEl.value) || !pSumberEl.value)) {
                     pSumberEl.value = 'LACI';
                 }
-                window.onGadaiInputUpdate();
-            } else {
-                if (pSumberEl && ['VOUCHER', 'SP', 'ACC'].includes(pSumberEl.value)) {
-                    pSumberEl.value = 'TIDAK POTONG SALDO';
-                }
-                if (lblKet) lblKet.innerText = 'Keterangan / Nama Barang Stok (Auto-Fill)';
-                if (pKetEl) pKetEl.placeholder = 'KETIK NAMA VOUCHER / SP / ACC / PULSA...';
+                if (lblKet) lblKet.innerText = 'Keterangan / Catatan Piutang';
+                if (pKetEl) pKetEl.placeholder = 'Ketik keperluan utang/kasbon...';
             }
             window.updateDatalistStokPiutang(kat);
             if (pKetEl && pKetEl.value.trim()) window.onPiutangKetInput();
@@ -12086,12 +12183,12 @@
                 fKat.innerHTML += `<option value="${k}">${k}</option>`;
             });
 
-            window.AKUN_DATA_OTOMATIS = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            window.AKUN_DATA_OTOMATIS = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'];
             const rules = window.ATURAN_AKUN_KASIR || {
                 BLOKIR_PENUH_KASIR: ['BRANKAS', 'BRANGKAS'],
                 BLOKIR_MASUK_SERVER: ['O KUOTA', 'ORDER KUOTA', 'RITA', 'SIDIVA', 'SIMPEL', 'PROPANA', 'DIGIPOS'],
                 BLOKIR_MASUK_STOK_PART: ['ACC', 'VOUCHER', 'SP', 'SPAREPART'],
-                BLOKIR_MASUK_PIUTANG: ['PIUTANG'],
+                BLOKIR_MASUK_PIUTANG: ['PIUTANG', 'OPERASIONAL'],
                 BLOKIR_KELUAR_CAIR: ['QRIS', 'QRIS (PIPIT)', 'KOMISI EDC']
             };
 
@@ -12101,7 +12198,12 @@
             }
             const pSumberEl = document.getElementById('pSumber');
             if (pSumberEl) {
-                let sumberHtml = '<option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (PINDAH DATA / AUDIT)</option>';
+                const currentUser = (sessionStorage.getItem('zencell_user') || '').toUpperCase();
+                const isOwner = currentUser === 'OWNER';
+                let sumberHtml = '';
+                if (isOwner) {
+                    sumberHtml += '<option value="TIDAK POTONG SALDO">🔒 TIDAK POTONG SALDO (Khusus Koreksi/Migrasi Owner)</option>';
+                }
                 sumberHtml += '<optgroup label="📦 POTONG STOK FISIK (STOK OPNAME)">';
                 sumberHtml += '<option value="VOUCHER">VOUCHER (Potong Stok Fisik Voucher)</option>';
                 sumberHtml += '<option value="SP">SP (Potong Stok Fisik Kartu Perdana)</option>';
@@ -12120,7 +12222,7 @@
             if (cfgAkun) window.saldoList.forEach(s => cfgAkun.innerHTML += `<option value="${s}">${s}</option>`);
 
             // LAPIS 1: Filter Dropdown UANG MASUK di Kasir & VLOOKUP
-            // Sembunyikan: BRANKAS, Akun Server (O KUOTA, RITA, SIDIVA, SIMPEL, PROPANA, DIGIPOS), Akun Stok/Part (ACC, VOUCHER, SP, SPAREPART), dan PIUTANG
+            // Sembunyikan: BRANKAS, Akun Server (O KUOTA, RITA, SIDIVA, SIMPEL, PROPANA, DIGIPOS), Akun Stok/Part (ACC, VOUCHER, SP, SPAREPART), PIUTANG, dan OPERASIONAL
             const excludeMasukKasir = new Set([
                 ...rules.BLOKIR_PENUH_KASIR,
                 ...rules.BLOKIR_MASUK_SERVER,
@@ -12144,7 +12246,7 @@
             });
 
             // LAPIS 1: Filter Dropdown MODAL KELUAR di Kasir & VLOOKUP
-            // Sembunyikan: BRANKAS, QRIS, KOMISI EDC. Untuk PIUTANG dikunci kecuali Auto-Fill Pelunasan Piutang.
+            // Sembunyikan: BRANKAS, QRIS, KOMISI EDC. Untuk PIUTANG & OPERASIONAL dikunci dari input kasir umum.
             const excludeKeluarKasir = new Set([
                 ...rules.BLOKIR_PENUH_KASIR,
                 ...rules.BLOKIR_KELUAR_CAIR
@@ -12158,6 +12260,8 @@
                         if (excludeKeluarKasir.has(sUp)) return;
                         if (sUp === 'PIUTANG') {
                             el.innerHTML += `<option value="${s}" disabled>🔒 PIUTANG (Khusus Auto-Fill Pelunasan)</option>`;
+                        } else if (sUp === 'OPERASIONAL') {
+                            el.innerHTML += `<option value="${s}" disabled>🔒 OPERASIONAL (Khusus Menu Operasional)</option>`;
                         } else {
                             el.innerHTML += `<option value="${s}">${s}</option>`;
                         }
@@ -12165,21 +12269,21 @@
                 }
             });
 
-            // Untuk Master VLOOKUP Akun Keluar: sembunyikan juga PIUTANG karena pelunasan utang wajib dari Rekapan Piutang
+            // Untuk Master VLOOKUP Akun Keluar: sembunyikan juga PIUTANG & OPERASIONAL
             ['v_akunKeluar', 'v_akunKeluar2', 'v_akunKeluar_fast'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.innerHTML = '<option value="">-- Pilih Akun Keluar --</option>';
                     window.saldoList.forEach(s => {
                         const sUp = String(s).toUpperCase().trim();
-                        if (excludeKeluarKasir.has(sUp) || sUp === 'PIUTANG') return;
+                        if (excludeKeluarKasir.has(sUp) || sUp === 'PIUTANG' || sUp === 'OPERASIONAL') return;
                         el.innerHTML += `<option value="${s}">${s}</option>`;
                     });
                 }
             });
 
-            // Dropdown Pindah Saldo & Sumber Kas Pengeluaran HANYA menampilkan akun Kas / Bank / E-Wallet Cair (Bukan Stok Opname / Service / Piutang)
-            ['tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'spSumber', 'setorSumber', 'opSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
+            // Dropdown Pindah Saldo & Sumber Kas Pengeluaran HANYA menampilkan akun Kas / Bank / E-Wallet Cair (Bukan Stok Opname / Service / Piutang / Operasional)
+            ['tfSumber', 'tfTujuan', 'tfSumber_fast', 'tfTujuan_fast', 'spSumber', 'setorSumber', 'opSumber', 'opFastSumber', 'tSumberKasPart', 'bpSumberKas'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.innerHTML = '<option value="">-- Pilih Akun Kas/Bank --</option>';
@@ -12190,6 +12294,10 @@
                     });
                 }
             });
+            const opFastSumberEl = document.getElementById('opFastSumber');
+            if (opFastSumberEl && !opFastSumberEl.value && window.saldoList.includes('LACI')) {
+                opFastSumberEl.value = 'LACI';
+            }
 
             const fMasuk = document.getElementById('jurnalFilterMasuk');
             const fKeluar = document.getElementById('jurnalFilterKeluar');
@@ -12208,7 +12316,7 @@
         window.muatDataAkunConfig = function(namaAkun) {
             if (!namaAkun) return;
             document.getElementById('cfgNamaBaru').value = namaAkun;
-            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'].includes(namaAkun);
+            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'].includes(namaAkun);
             const awal = isAutoDataAkun ? 0 : (window.masterSaldoAwal[namaAkun] || 0);
             document.getElementById('cfgSaldoAwal').value = awal;
             const elAwalDisp = document.getElementById('cfgSaldoAwalDisplay');
@@ -12225,7 +12333,7 @@
         window.simpanPengaturanAkun = function() {
             const lama = document.getElementById('cfgAkunTarget').value;
             const baru = (document.getElementById('cfgNamaBaru').value.trim() || lama).toUpperCase();
-            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'].includes(baru);
+            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'].includes(baru);
             const awal = isAutoDataAkun ? 0 : (parseFloat(document.getElementById('cfgSaldoAwal').value) || 0);
             const min = parseFloat(document.getElementById('cfgBatasMin').value) || 0;
             if (!lama || !baru) {
@@ -13192,6 +13300,11 @@
 
             if (!rawNama || !sumber) return window.showToast("Lengkapi nama pengutang dan sumber akun/stok!", "error");
 
+            const activeUser = (sessionStorage.getItem('zencell_user') || '').toUpperCase();
+            if (activeUser !== 'OWNER' && sumber === 'TIDAK POTONG SALDO') {
+                return window.showToast("⚠️ Kasir wajib memilih Saldo Keluar riil (LACI / Bank / Server / Stok) agar pembukuan tidak selisih!", "error");
+            }
+
             if (kat === 'GADAI') {
                 if (!gadaiBarangInput) {
                     document.getElementById('pGadaiBarang')?.focus();
@@ -13665,6 +13778,19 @@
                 if (!s) return;
                 const d = s.isoDate || s.tgl || '';
                 if (s.sumber === 'LACI') addMutasiLaci('LACI', 'KELUAR', s.nominal || 0, d);
+            });
+
+            (window.operasionalList || []).forEach(op => {
+                if (!op) return;
+                const d = op.isoDate || op.tgl || '';
+                const nom = Number(op.nominal || 0);
+                if (op.sumber === 'LACI') addMutasiLaci('LACI', 'KELUAR', nom, d);
+                if (op.status === 'LUNAS DIGANTI') {
+                    const akunGanti = op.sumberDiganti || op.sumber;
+                    if (akunGanti === 'LACI') {
+                        addMutasiLaci('LACI', 'MASUK', nom, op.isoDateGanti || d);
+                    }
+                }
             });
 
             const akhirAktual = awalMaster + masukAll - keluarAll;
@@ -14215,6 +14341,338 @@
                 window.renderAll();
             }
         }
+
+        // =========================================================================
+        // 🏢 MANAJEMEN OPERASIONAL TOKO & TALANGAN KASIR (MODAL CEPAT)
+        // =========================================================================
+        window._filterOpFastMode = 'BELUM';
+
+        window.openModalOperasionalFast = function() {
+            const overlay = document.getElementById('modalOperasionalFastOverlay');
+            if (!overlay) return;
+
+            // Isi dropdown Sumber Kas (hanya akun kas cair riil, default LACI)
+            const selSumber = document.getElementById('opFastSumber');
+            if (selSumber) {
+                const nonCash = window.AKUN_DATA_OTOMATIS || ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'];
+                const liquidAccounts = (window.saldoList || []).filter(s => !nonCash.includes(s));
+                selSumber.innerHTML = liquidAccounts.map(s => `<option value="${s}">${s}</option>`).join('');
+                selSumber.value = liquidAccounts.includes('LACI') ? 'LACI' : (liquidAccounts[0] || 'LACI');
+            }
+
+            window.resetFormOpFast();
+            overlay.classList.add('show');
+            overlay.style.display = 'flex';
+            window.renderOpFastTable();
+        };
+
+        window.closeModalOperasionalFast = function() {
+            const overlay = document.getElementById('modalOperasionalFastOverlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+                overlay.style.display = 'none';
+            }
+            window.resetFormOpFast();
+        };
+
+        window.setFilterOpFast = function(mode) {
+            window._filterOpFastMode = mode || 'BELUM';
+            const btnBelum = document.getElementById('btnFilterOpBelum');
+            const btnLunas = document.getElementById('btnFilterOpLunas');
+            const btnSemua = document.getElementById('btnFilterOpSemua');
+
+            if (btnBelum) {
+                btnBelum.style.background = mode === 'BELUM' ? '#7C3AED' : '#E2E8F0';
+                btnBelum.style.color = mode === 'BELUM' ? '#FFF' : '#475569';
+            }
+            if (btnLunas) {
+                btnLunas.style.background = mode === 'LUNAS' ? '#16A34A' : '#E2E8F0';
+                btnLunas.style.color = mode === 'LUNAS' ? '#FFF' : '#475569';
+            }
+            if (btnSemua) {
+                btnSemua.style.background = mode === 'ALL' ? '#334155' : '#E2E8F0';
+                btnSemua.style.color = mode === 'ALL' ? '#FFF' : '#475569';
+            }
+            window.renderOpFastTable();
+        };
+
+        window.resetFormOpFast = function() {
+            const editIdEl = document.getElementById('editOpFastId');
+            if (editIdEl) editIdEl.value = '';
+
+            const tglEl = document.getElementById('opFastTgl');
+            if (tglEl) tglEl.value = window.getTodayIso();
+
+            const nomDisp = document.getElementById('opFastNomDisplay');
+            const nomVal = document.getElementById('opFastNom');
+            if (nomDisp) nomDisp.value = '';
+            if (nomVal) nomVal.value = '0';
+
+            const ketEl = document.getElementById('opFastKet');
+            if (ketEl) ketEl.value = '';
+
+            const selSumber = document.getElementById('opFastSumber');
+            if (selSumber && (window.saldoList || []).includes('LACI')) selSumber.value = 'LACI';
+
+            const titleEl = document.getElementById('titleFormOpFast');
+            if (titleEl) titleEl.innerText = '➕ Catat Pengeluaran Operasional Baru';
+
+            const btnBatal = document.getElementById('btnBatalEditOpFast');
+            if (btnBatal) btnBatal.style.display = 'none';
+
+            const btnSubmit = document.getElementById('btnSubmitOpFast');
+            if (btnSubmit) {
+                btnSubmit.innerText = '💾 Catat Operasional (Ditalangi Kas)';
+                btnSubmit.style.background = '#7C3AED';
+            }
+        };
+
+        window.submitFormOpFast = function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editOpFastId')?.value || '';
+            const tgl = document.getElementById('opFastTgl')?.value || window.getTodayIso();
+            const sumber = document.getElementById('opFastSumber')?.value || 'LACI';
+            const nom = parseFloat(document.getElementById('opFastNom')?.value) || 0;
+            const ket = (document.getElementById('opFastKet')?.value || '').trim().toUpperCase();
+
+            if (!ket || nom <= 0) {
+                window.showToast("⚠️ Lengkapi keperluan operasional dan nominal pengeluaran!", "error");
+                return;
+            }
+
+            const nowTs = window.getNextUniqueTs();
+            if (editId) {
+                const op = (window.operasionalList || []).find(x => String(x.id) === String(editId));
+                if (!op) {
+                    window.showToast("Data operasional tidak ditemukan!", "error");
+                    return;
+                }
+                const oldNom = op.nominal;
+                const oldSumber = op.sumber;
+                op.isoDate = tgl;
+                op.tgl = tgl;
+                op.sumber = sumber;
+                op.nominal = nom;
+                op.ket = ket;
+                op.updatedAt = nowTs;
+                window.markLocalEntityEdited('operasional', op);
+                window.catatLogAktivitas('EDIT OPERASIONAL', `Mengubah operasional "${ket}" menjadi ${window.formatRp(nom)} (sumber: ${sumber})`);
+                if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber, oldSumber, 'OPERASIONAL'], 10000);
+            } else {
+                const newOp = {
+                    id: nowTs,
+                    waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }).replace('.', ':'),
+                    isoDate: tgl,
+                    tgl: tgl,
+                    sumber: sumber,
+                    nominal: nom,
+                    ket: ket,
+                    status: 'BELUM DIGANTI',
+                    tglDiganti: null,
+                    sumberDiganti: null,
+                    updatedAt: nowTs
+                };
+                if (!window.operasionalList) window.operasionalList = [];
+                window.operasionalList.unshift(newOp);
+                window.markLocalEntityEdited('operasional', newOp);
+                window.catatLogAktivitas('CATAT OPERASIONAL', `Mencatat operasional toko "${ket}" sebesar ${window.formatRp(nom)} ditalangi ${sumber}`);
+                if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber, 'OPERASIONAL'], 10000);
+            }
+
+            window.saveToFirebaseNode('operasional', window.operasionalList);
+            window.renderAll();
+            window.resetFormOpFast();
+            window.renderOpFastTable();
+            window.showToast(`✅ Pengeluaran operasional ${window.formatRp(nom)} berhasil dicatat! Saldo ${sumber} ditalangi ke akun OPERASIONAL sehingga modal konter tetap pas.`, "success");
+        };
+
+        window.gantiTalanganOperasionalOwner = function(opId) {
+            const op = (window.operasionalList || []).find(x => String(x.id) === String(opId));
+            if (!op) return;
+
+            const akunDefault = op.sumber || 'LACI';
+            const inputTujuan = prompt(
+                `📥 OWNER GANTI TALANGAN OPERASIONAL\n\n` +
+                `Keperluan: ${op.ket}\n` +
+                `Nominal: ${window.formatRp(op.nominal)}\n\n` +
+                `Uang penggantian dari Owner dimasukkan kembali ke akun mana?\n` +
+                `(Ketik: LACI / BCA / MANDIRI / dll):`,
+                akunDefault
+            );
+            if (inputTujuan === null) return;
+
+            const targetAkun = (inputTujuan.trim() || akunDefault).toUpperCase();
+            const ok = confirm(
+                `Konfirmasi:\n` +
+                `Owner telah mengganti uang operasional "${op.ket}" sebesar ${window.formatRp(op.nominal)}?\n\n` +
+                `Dana akan masuk ke akun kas: ${targetAkun}.\n` +
+                `Status operasional akan menjadi LUNAS DIGANTI.`
+            );
+            if (!ok) return;
+
+            const nowTs = window.getNextUniqueTs();
+            op.status = 'LUNAS DIGANTI';
+            op.tglDiganti = window.getTodayIso();
+            op.isoDateGanti = window.getTodayIso();
+            op.waktuDiganti = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }).replace('.', ':');
+            op.sumberDiganti = targetAkun;
+            op.updatedAt = nowTs;
+
+            window.markLocalEntityEdited('operasional', op);
+            window.catatLogAktivitas('GANTI OPERASIONAL', `Owner mengganti talangan operasional "${op.ket}" sebesar ${window.formatRp(op.nominal)} ke akun ${targetAkun}`);
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([targetAkun, 'OPERASIONAL'], 10000);
+
+            window.saveToFirebaseNode('operasional', window.operasionalList);
+            window.renderAll();
+            window.renderOpFastTable();
+            window.showToast(`✅ Talangan ${window.formatRp(op.nominal)} berhasil diganti Owner ke akun ${targetAkun}!`, "success");
+        };
+
+        window.batalGantiOperasionalOwner = function(opId) {
+            const op = (window.operasionalList || []).find(x => String(x.id) === String(opId));
+            if (!op) return;
+
+            if (!confirm(`Batalkan status pelunasan talangan "${op.ket}" (${window.formatRp(op.nominal)})?\n\nStatus akan kembali menjadi BELUM DIGANTI OWNER.`)) return;
+
+            const nowTs = window.getNextUniqueTs();
+            const akunSebelumnya = op.sumberDiganti || op.sumber || 'LACI';
+            op.status = 'BELUM DIGANTI';
+            op.tglDiganti = null;
+            op.isoDateGanti = null;
+            op.waktuDiganti = null;
+            op.sumberDiganti = null;
+            op.updatedAt = nowTs;
+
+            window.markLocalEntityEdited('operasional', op);
+            window.catatLogAktivitas('BATAL GANTI OPERASIONAL', `Membatalkan pelunasan talangan operasional "${op.ket}"`);
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([akunSebelumnya, 'OPERASIONAL'], 10000);
+
+            window.saveToFirebaseNode('operasional', window.operasionalList);
+            window.renderAll();
+            window.renderOpFastTable();
+            window.showToast("↩️ Status talangan dikembalikan ke BELUM DIGANTI", "warn");
+        };
+
+        window.editOperasionalFast = function(opId) {
+            const op = (window.operasionalList || []).find(x => String(x.id) === String(opId));
+            if (!op) return;
+
+            document.getElementById('editOpFastId').value = op.id;
+            document.getElementById('opFastTgl').value = op.isoDate || op.tgl || window.getTodayIso();
+            const selSumber = document.getElementById('opFastSumber');
+            if (selSumber) selSumber.value = op.sumber || 'LACI';
+            document.getElementById('opFastNom').value = op.nominal || 0;
+            document.getElementById('opFastNomDisplay').value = Number(op.nominal || 0).toLocaleString('id-ID');
+            document.getElementById('opFastKet').value = op.ket || '';
+
+            const titleEl = document.getElementById('titleFormOpFast');
+            if (titleEl) titleEl.innerText = `✏️ Edit Pengeluaran Operasional (${op.ket})`;
+
+            const btnBatal = document.getElementById('btnBatalEditOpFast');
+            if (btnBatal) btnBatal.style.display = 'inline-block';
+
+            const btnSubmit = document.getElementById('btnSubmitOpFast');
+            if (btnSubmit) {
+                btnSubmit.innerText = '💾 Simpan Perubahan Operasional';
+                btnSubmit.style.background = '#0284C7';
+            }
+            document.getElementById('opFastNomDisplay')?.focus();
+        };
+
+        window.hapusOperasionalFast = function(opId) {
+            const op = (window.operasionalList || []).find(x => String(x.id) === String(opId));
+            if (!op) return;
+
+            if (!confirm(`Hapus pencatatan operasional "${op.ket}" (${window.formatRp(op.nominal)})?\n\nSaldo kas/laci akan dipulihkan seperti semula.`)) return;
+
+            window.markLocalEntityDeleted('operasional', opId);
+            window.catatLogAktivitas('HAPUS OPERASIONAL', `Menghapus operasional "${op.ket}" (${window.formatRp(op.nominal)}) dari ${op.sumber}`);
+            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([op.sumber, 'OPERASIONAL'], 10000);
+
+            window.operasionalList = window.operasionalList.filter(x => String(x.id) !== String(opId));
+            window.saveToFirebaseNode('operasional', window.operasionalList);
+            window.renderAll();
+            window.renderOpFastTable();
+            window.showToast("🗑️ Data operasional berhasil dihapus", "info");
+        };
+
+        window.renderOpFastTable = function() {
+            const tbody = document.getElementById('bodyOpFastTable');
+            if (!tbody) return;
+
+            let totalBelum = 0;
+            let totalSudah = 0;
+            (window.operasionalList || []).forEach(o => {
+                const nom = Number(o.nominal || 0);
+                if (o.status === 'LUNAS DIGANTI') {
+                    totalSudah += nom;
+                } else {
+                    totalBelum += nom;
+                }
+            });
+
+            const lblBelum = document.getElementById('lblOpFastBelumDiganti');
+            if (lblBelum) lblBelum.innerText = window.formatRp(totalBelum);
+            const lblSudah = document.getElementById('lblOpFastSudahDiganti');
+            if (lblSudah) lblSudah.innerText = window.formatRp(totalSudah);
+
+            const filterMode = window._filterOpFastMode || 'BELUM';
+            const list = (window.operasionalList || []).filter(o => {
+                if (filterMode === 'BELUM') return o.status !== 'LUNAS DIGANTI';
+                if (filterMode === 'LUNAS') return o.status === 'LUNAS DIGANTI';
+                return true;
+            });
+
+            // Urutkan id/tanggal terbaru di atas
+            list.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:18px; color:#94A3B8;">Tidak ada data operasional ${filterMode === 'BELUM' ? 'yang belum diganti' : (filterMode === 'LUNAS' ? 'yang sudah diganti' : '')}.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(o => {
+                const isLunas = o.status === 'LUNAS DIGANTI';
+                const statusBadge = isLunas
+                    ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:4px; font-weight:800; font-size:9.5px; display:inline-block;">🟢 SUDAH DIGANTI</span><br><small style="color:#16A34A; font-size:9px;">ke ${o.sumberDiganti || o.sumber || 'LACI'}${o.tglDiganti ? ' (' + o.tglDiganti + ')' : ''}</small>`
+                    : `<span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; padding:2px 6px; border-radius:4px; font-weight:800; font-size:9.5px; display:inline-block;">🔴 BELUM DIGANTI</span>`;
+
+                const actionBtns = isLunas
+                    ? `<div style="display:flex; gap:3px; justify-content:center;">
+                           <button type="button" onclick="batalGantiOperasionalOwner('${o.id}')" title="Batalkan Penggantian" style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:2.5px 6px; border-radius:4px; font-size:9.5px; font-weight:700; cursor:pointer;">↩️ Batal</button>
+                           <button type="button" onclick="hapusOperasionalFast('${o.id}')" title="Hapus" style="background:#FEE2E2; color:#DC2626; border:none; padding:2.5px 6px; border-radius:4px; font-size:9.5px; font-weight:700; cursor:pointer;">🗑️</button>
+                       </div>`
+                    : `<div style="display:flex; gap:3px; justify-content:center; align-items:center;">
+                           <button type="button" onclick="gantiTalanganOperasionalOwner('${o.id}')" title="Owner Mengganti Dana ke Kas/Laci" style="background:#16A34A; color:#FFF; border:none; padding:3px 7px; border-radius:5px; font-size:10px; font-weight:800; cursor:pointer; box-shadow:0 1px 3px rgba(22,163,74,0.3);">📥 Ganti ke Kas</button>
+                           <button type="button" onclick="editOperasionalFast('${o.id}')" title="Edit" style="background:#F59E0B; color:#FFF; border:none; padding:3px 6px; border-radius:5px; font-size:10px; font-weight:800; cursor:pointer;">✏️</button>
+                           <button type="button" onclick="hapusOperasionalFast('${o.id}')" title="Hapus" style="background:#EF4444; color:#FFF; border:none; padding:3px 6px; border-radius:5px; font-size:10px; font-weight:800; cursor:pointer;">🗑️</button>
+                       </div>`;
+
+                return `
+                    <tr style="border-bottom:1px solid #F1F5F9; ${isLunas ? 'background:#F8FAFC;' : ''}">
+                        <td style="padding:6px 8px; text-align:left; white-space:nowrap;">
+                            <b>${o.tgl || o.isoDate || '-'}</b><br>
+                            <small style="color:#64748B;">${o.waktu || ''}</small>
+                        </td>
+                        <td style="padding:6px 8px; text-align:left;">
+                            <b style="color:#0F172A;">${o.ket}</b>
+                        </td>
+                        <td style="padding:6px 8px; text-align:center;">
+                            <span style="background:#EDE9FE; color:#7C3AED; border:1px solid #DDD6FE; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:10px;">${o.sumber || 'LACI'}</span>
+                        </td>
+                        <td style="padding:6px 8px; text-align:right;">
+                            <b style="color:#DC2626; font-size:11.5px;">${window.formatRp(o.nominal)}</b>
+                        </td>
+                        <td style="padding:6px 8px; text-align:center;">
+                            ${statusBadge}
+                        </td>
+                        <td style="padding:6px 8px; text-align:center;">
+                            ${actionBtns}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
 
         window.hapusJurnalTrx = function(idTrx) {
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
@@ -16548,7 +17006,35 @@
             });
             const totalLunasSparepartAll = Math.max(0, totalModalSparepartAll - totalSparepartStok);
 
-            // Fitur Operasional telah dinonaktifkan karena biaya operasional dibayar langsung oleh Owner di luar Modal Berputar Konter.
+            let totalOperasionalBelumDiganti = 0;
+            let totalOperasionalAll = 0;
+            let totalOperasionalLunasAll = 0;
+            (window.operasionalList || []).forEach(op => {
+                const nom = Number(op.nominal || 0);
+                totalOperasionalAll += nom;
+                if (op.status === 'LUNAS DIGANTI') {
+                    totalOperasionalLunasAll += nom;
+                } else {
+                    totalOperasionalBelumDiganti += nom;
+                }
+
+                const itemDate = op.isoDate || op.tgl || '';
+                const matchExpenseDate = (saldoMode === 'ALL') || (saldoMode === 'DAILY' && itemDate === saldoDate) || (saldoMode === 'MONTHLY' && itemDate.startsWith(saldoMonth));
+                if (matchExpenseDate) {
+                    if (keluarAkun[op.sumber] !== undefined) keluarAkun[op.sumber] += nom;
+                    if (masukAkun['OPERASIONAL'] !== undefined) masukAkun['OPERASIONAL'] += nom;
+                }
+
+                if (op.status === 'LUNAS DIGANTI') {
+                    const gantiDate = op.tglDiganti || op.isoDateGanti || itemDate;
+                    const matchGantiDate = (saldoMode === 'ALL') || (saldoMode === 'DAILY' && gantiDate === saldoDate) || (saldoMode === 'MONTHLY' && gantiDate.startsWith(saldoMonth));
+                    if (matchGantiDate) {
+                        const targetAkun = op.sumberDiganti || op.sumber || 'LACI';
+                        if (masukAkun[targetAkun] !== undefined) masukAkun[targetAkun] += nom;
+                        if (keluarAkun['OPERASIONAL'] !== undefined) keluarAkun['OPERASIONAL'] += nom;
+                    }
+                }
+            });
 
             window.setoranOwnerList?.forEach(s => {
                 const itemDate = s.isoDate || s.tgl || '';
@@ -16558,7 +17044,7 @@
                 if (keluarAkun[s.sumber] !== undefined) keluarAkun[s.sumber] += Number(s.nominal || 0);
             });
 
-            // Akun berbasis data (VOUCHER, SP, ACC, SPAREPART, PIUTANG) pada mode ALL selalu sinkron 100% dengan nilai Stok Opname, Service, & Piutang
+            // Akun berbasis data (VOUCHER, SP, ACC, SPAREPART, PIUTANG, OPERASIONAL) pada mode ALL selalu sinkron 100%
             if (saldoMode === 'ALL') {
                 masukAkun['VOUCHER'] = awalVoucher;
                 keluarAkun['VOUCHER'] = terjualVoucher;
@@ -16574,6 +17060,9 @@
 
                 masukAkun['PIUTANG'] = totalPokokPiutangAll;
                 keluarAkun['PIUTANG'] = totalTerbayarPiutangAll;
+
+                masukAkun['OPERASIONAL'] = totalOperasionalAll;
+                keluarAkun['OPERASIONAL'] = totalOperasionalLunasAll;
             }
 
             let totalKasCair = 0;
@@ -16586,6 +17075,9 @@
             let totalSparepartVal = saldoMode === 'ALL'
                 ? (totalSparepartStok || 0)
                 : Math.max(0, (masukAkun['SPAREPART'] || 0) - (keluarAkun['SPAREPART'] || 0));
+            let totalOperasionalVal = saldoMode === 'ALL'
+                ? (totalOperasionalBelumDiganti || 0)
+                : Math.max(0, (masukAkun['OPERASIONAL'] || 0) - (keluarAkun['OPERASIONAL'] || 0));
             let totalSaldoKeseluruhan = 0;
 
             document.getElementById('bodySaldo').innerHTML = window.saldoList.map(s => {
@@ -16594,6 +17086,8 @@
                 let akhir = awal + (masukAkun[s] || 0) - (keluarAkun[s] || 0);
                 if (s === 'PIUTANG') {
                     akhir = totalPiutangVal;
+                } else if (s === 'OPERASIONAL') {
+                    akhir = totalOperasionalVal;
                 } else if (s === 'SPAREPART') {
                     akhir = totalSparepartVal;
                 } else if (akunStokFisik.includes(s)) {
@@ -16609,11 +17103,13 @@
                 const isBelowLimit = (minLimit > 0 && akhir < minLimit) || akhir < 0;
                 const labelBadge = s === 'PIUTANG'
                     ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 5px; border-radius:4px; font-weight:700;">Data Piutang</span>'
-                    : (s === 'SPAREPART'
-                        ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Part)</span>'
-                        : (akunStokFisik.includes(s)
-                            ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 5px; border-radius:4px; font-weight:700;">Data Stok</span>'
-                            : ''));
+                    : (s === 'OPERASIONAL'
+                        ? ' <span style="font-size:9px; background:#EDE9FE; color:#7C3AED; padding:1px 5px; border-radius:4px; font-weight:700;">Talangan Owner</span>'
+                        : (s === 'SPAREPART'
+                            ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 5px; border-radius:4px; font-weight:700;">Belum Cair (Part)</span>'
+                            : (akunStokFisik.includes(s)
+                                ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 5px; border-radius:4px; font-weight:700;">Data Stok</span>'
+                                : '')));
                 const isBlinkRow = window.isMutasiAkunBlinking && window.isMutasiAkunBlinking(s);
                 const blinkBadgeMain = isBlinkRow ? '<span class="badge-mutasi-baru">🔄 UPDATE</span>' : '';
                 return `<tr data-mutasi-akun="${s}" class="${isBlinkRow ? 'mutasi-akun-blink-slow' : ''}"><td><b>${s}</b>${labelBadge}${blinkBadgeMain}</td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><span class="${isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam'}" title="${minLimit > 0 ? 'Batas Minimal: ' + window.formatRp(minLimit) : ''}">${window.formatRp(akhir)}</span></td></tr>`;
@@ -16653,8 +17149,13 @@
                         <td colspan="4" style="color:#B91C1C;">📑 PIUTANG PELANGGAN / TAGIHAN TEMPO (BELUM CAIR)</td>
                         <td class="text-debit" style="font-size:12px;"><b>${window.formatRp(totalPiutangVal)}</b></td>
                     </tr>` : ''}
+                    ${totalOperasionalBelumDiganti > 0 ? `
+                    <tr style="background:#FAF5FF; font-weight:700;">
+                        <td colspan="4" style="color:#7C3AED;">🏢 TALANGAN BIAYA OPERASIONAL TOKO (BELUM DIGANTI OWNER)</td>
+                        <td style="color:#7C3AED; font-size:12px;"><b>${window.formatRp(totalOperasionalBelumDiganti)}</b></td>
+                    </tr>` : ''}
                     <tr style="background:#ECFDF5; font-weight:900; font-size:13px; border-top:2px solid #059669;">
-                        <td colspan="4" style="color:#065F46;">🏆 TOTAL KESELURUHAN SALDO (CAIR + STOK + PIUTANG)</td>
+                        <td colspan="4" style="color:#065F46;">🏆 TOTAL KESELURUHAN SALDO (CAIR + STOK + PIUTANG + OPERASIONAL)</td>
                         <td class="text-cuan" style="font-size:13.5px;"><b>${window.formatRp(totalSaldoKeseluruhan)}</b></td>
                     </tr>
                 `;
@@ -16749,8 +17250,23 @@
                     if (s.sumber) addMutasiSb(s.sumber, 'KELUAR', s.nominal || 0, d);
                 });
 
+                (window.operasionalList || []).forEach(op => {
+                    if (!op) return;
+                    const d = op.isoDate || op.tgl || '';
+                    const nom = Number(op.nominal || 0);
+                    if (op.sumber) addMutasiSb(op.sumber, 'KELUAR', nom, d);
+                    addMutasiSb('OPERASIONAL', 'MASUK', nom, d);
+
+                    if (op.status === 'LUNAS DIGANTI') {
+                        const gantiDate = op.tglDiganti || op.isoDateGanti || d;
+                        const targetAkun = op.sumberDiganti || op.sumber || 'LACI';
+                        addMutasiSb(targetAkun, 'MASUK', nom, gantiDate);
+                        addMutasiSb('OPERASIONAL', 'KELUAR', nom, gantiDate);
+                    }
+                });
+
                 let sumKemarinSb = 0, sumMasukSb = 0, sumKeluarSb = 0, sumAkhirSb = 0;
-                let sbKasCair = 0, sbStokOpnameVal = 0, sbSparepartVal = 0, sbPiutangVal = 0;
+                let sbKasCair = 0, sbStokOpnameVal = 0, sbSparepartVal = 0, sbPiutangVal = 0, sbOperasionalVal = 0;
                 window._latestActualSaldoPerAkun = {};
 
                 const rowsMutasiHtml = window.saldoList.map(s => {
@@ -16758,6 +17274,7 @@
                     const awalMaster = isAutoData ? 0 : Number((window.masterSaldoAwal && window.masterSaldoAwal[s]) || 0);
                     let akhirAktual = awalMaster + (masukAllSb[s] || 0) - (keluarAllSb[s] || 0);
                     if (s === 'PIUTANG') akhirAktual = Number(totalPiutang || 0);
+                    else if (s === 'OPERASIONAL') akhirAktual = Number(totalOperasionalBelumDiganti || 0);
                     else if (s === 'SPAREPART') akhirAktual = Number(totalSparepartStok || 0);
                     else if (akunStokFisik.includes(s)) {
                         akhirAktual = mapNilaiStokOpname[s] !== undefined ? Number(mapNilaiStokOpname[s] || 0) : Math.max(0, (masukAllSb[s] || 0) - (keluarAllSb[s] || 0));
@@ -16775,6 +17292,7 @@
                     sumAkhirSb += akhirRow;
 
                     if (s === 'PIUTANG') sbPiutangVal += akhirRow;
+                    else if (s === 'OPERASIONAL') sbOperasionalVal += akhirRow;
                     else if (s === 'SPAREPART') sbSparepartVal += akhirRow;
                     else if (akunStokFisik.includes(s)) sbStokOpnameVal += akhirRow;
                     else sbKasCair += akhirRow;
@@ -16783,11 +17301,13 @@
                     const isBelowLimit = (minLimit > 0 && akhirRow < minLimit) || akhirRow < 0;
                     const badgeTag = s === 'PIUTANG'
                         ? ' <span style="font-size:9px; background:#FEE2E2; color:#B91C1C; padding:1px 4px; border-radius:3px; font-weight:800;">Piutang</span>'
-                        : (s === 'SPAREPART'
-                            ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 4px; border-radius:3px; font-weight:800;">Part</span>'
-                            : (akunStokFisik.includes(s)
-                                ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 4px; border-radius:3px; font-weight:800;">Stok</span>'
-                                : ''));
+                        : (s === 'OPERASIONAL'
+                            ? ' <span style="font-size:9px; background:#EDE9FE; color:#7C3AED; padding:1px 4px; border-radius:3px; font-weight:800;">Talangan</span>'
+                            : (s === 'SPAREPART'
+                                ? ' <span style="font-size:9px; background:#F5F3FF; color:#6D28D9; padding:1px 4px; border-radius:3px; font-weight:800;">Part</span>'
+                                : (akunStokFisik.includes(s)
+                                    ? ' <span style="font-size:9px; background:#FEF3C7; color:#B45309; padding:1px 4px; border-radius:3px; font-weight:800;">Stok</span>'
+                                    : '')));
 
                     const isBlinkSb = window.isMutasiAkunBlinking && window.isMutasiAkunBlinking(s);
                     const blinkBadgeSb = isBlinkSb ? '<span class="badge-mutasi-baru">🔄 UPDATE</span>' : '';
@@ -17010,6 +17530,11 @@
                         <div class="sidebar-sum-row sum-piutang">
                             <span>📑 Piutang Tempo:</span>
                             <b>${window.formatRp(sbPiutangVal)}</b>
+                        </div>` : ''}
+                        ${sbOperasionalVal > 0 ? `
+                        <div class="sidebar-sum-row" style="color:#7C3AED; font-weight:700;">
+                            <span>🏢 Talangan Operasional:</span>
+                            <b>${window.formatRp(sbOperasionalVal)}</b>
                         </div>` : ''}
                         <div class="sidebar-sum-total">
                             <span>TOTAL SALDO:</span>
@@ -17315,6 +17840,9 @@
             window.renderRekapHarianSektorTab();
             if (typeof window.renderRightInsightSidebar === 'function') {
                 window.renderRightInsightSidebar();
+            }
+            if (typeof window.renderOpFastTable === 'function') {
+                window.renderOpFastTable();
             }
             window.updateUndoRedoBtnState();
         }
