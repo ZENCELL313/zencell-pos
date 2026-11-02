@@ -6427,7 +6427,8 @@
                 'zencell_active_branch',
                 'zencell_ui_scale_mode',
                 'zencell_login_bg_mode',
-                'zencell_bt_printer_name'
+                'zencell_bt_printer_name',
+                'zencell_owner_pin_global'
             ]);
 
             const mapStorageKey = (key) => {
@@ -6629,6 +6630,9 @@
                 return false;
             };
 
+            // Akun inti / sistem yang TIDAK BOLEH digantikan oleh akun custom
+            const CORE_LOCKED_ACCOUNTS = new Set(['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART']);
+
             // Deteksi akun custom (bukan bagian dari standard order dan bukan akun yang dihapus permanen)
             const customAccounts = cleaned.filter(s => {
                 if (window.REMOVED_SALDO_ACCOUNTS.has(s)) return false;
@@ -6643,7 +6647,7 @@
                 const found = cleaned.find(c => isMatch(c, stdAcc));
                 if (found) {
                     result.push(found);
-                } else if (customIdx < customAccounts.length) {
+                } else if (!CORE_LOCKED_ACCOUNTS.has(stdAcc) && customIdx < customAccounts.length) {
                     result.push(customAccounts[customIdx++]);
                 } else {
                     result.push(stdAcc);
@@ -6655,6 +6659,19 @@
                 }
                 customIdx++;
             }
+
+            // Garansi mutlak: akun PIUTANG dan OPERASIONAL wajib selalu ada di daftar saldo
+            if (!result.includes('PIUTANG')) {
+                const idxLaci = result.indexOf('LACI');
+                if (idxLaci !== -1) result.splice(idxLaci + 1, 0, 'PIUTANG');
+                else result.unshift('PIUTANG');
+            }
+            if (!result.includes('OPERASIONAL')) {
+                const idxPiu = result.indexOf('PIUTANG');
+                if (idxPiu !== -1) result.splice(idxPiu + 1, 0, 'OPERASIONAL');
+                else result.push('OPERASIONAL');
+            }
+
             return result;
         };
 
@@ -6668,6 +6685,7 @@
             'SEA ECA': 9745056,
             'NOBU': 18506000,
             'PIUTANG': 0,
+            'OPERASIONAL': 0,
             'GOPAY': 681614,
             'QRIS': 3662660,
             'DANA FINA': 2292476,
@@ -6695,6 +6713,7 @@
             'QRIS': 4880859,
             'QRIS (PIPIT)': 4880859,
             'PIUTANG': 0,
+            'OPERASIONAL': 0,
             'DANA ELSA': 0,
             'DANA PIPIT': 0,
             'OVO ZIYAD': 297480,
@@ -6836,7 +6855,7 @@
 
         window.hasNonZeroSaldoAwal = function(obj) {
             if (!obj || typeof obj !== 'object') return false;
-            return Object.keys(obj).some(k => !['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'].includes(k) && Number(obj[k] || 0) !== 0);
+            return Object.keys(obj).some(k => !['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'].includes(k) && Number(obj[k] || 0) !== 0);
         };
 
         window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL);
@@ -6845,7 +6864,7 @@
             const z2LocalSeeded = localStorage.getItem('zencell_seed_version') === window.Z2_SEED_VERSION;
             if (window.hasNonZeroSaldoAwal(cachedSaldoAwal) && (window.ACTIVE_CABANG !== '2' || z2LocalSeeded)) {
                 window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL, cachedSaldoAwal, {
-                    VOUCHER: 0, SP: 0, ACC: 0, SPAREPART: 0, PIUTANG: 0
+                    VOUCHER: 0, SP: 0, ACC: 0, SPAREPART: 0, PIUTANG: 0, OPERASIONAL: 0
                 });
             }
         } catch (e) {}
@@ -7154,17 +7173,96 @@
         if (window.pengaturanToko.targetModalBerputar === undefined) window.pengaturanToko.targetModalBerputar = 250000000;
         if (!window.pengaturanToko.modeAuditModal) window.pengaturanToko.modeAuditModal = 'HARIAN';
 
-        window.daftarKaryawan = (function() {
-            const rawGlobal = window._rawLsGet ? window._rawLsGet('zencell_karyawan') : null;
-            const rawBranch = localStorage.getItem('zencell_karyawan') || localStorage.getItem('zencell_daftarKaryawan');
-            const parsed = JSON.parse(rawGlobal || rawBranch || 'null');
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        window.getDefaultBranchKaryawanList = function(targetCabang) {
+            const branch = String(targetCabang || window.ACTIVE_CABANG || '1') === '2' ? '2' : '1';
+            if (branch === '2') {
+                return [
+                    { id: 1, username: 'OWNER', role: 'OWNER', pin: '212', dibuat: '2026-10-14' },
+                    { id: 2, username: 'PIPIT', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
+                    { id: 3, username: 'ELSA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' }
+                ];
+            }
             return [
                 { id: 1, username: 'OWNER', role: 'OWNER', pin: '212', dibuat: '2026-10-14' },
                 { id: 2, username: 'FINA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
                 { id: 3, username: 'ECA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
-                { id: 4, username: 'TAMU', role: 'KASIR', pin: '414', dibuat: '2026-10-14' }
+                { id: 4, username: 'ZIYAD', role: 'KASIR', pin: '313', dibuat: '2026-10-14' }
             ];
+        };
+
+        window.normalizeBranchKaryawanList = function(rawList, targetCabang) {
+            const branch = String(targetCabang || window.ACTIVE_CABANG || '1') === '2' ? '2' : '1';
+            const baseList = window.getDefaultBranchKaryawanList(branch);
+            // Akun yang TIDAK BOLEH muncul di cabang ini (mencegah akun Zen 1 nyasar ke Zen 2 atau sebaliknya, serta membuang TAMU)
+            const forbiddenInBranch = branch === '2'
+                ? new Set(['FINA', 'ECA', 'ZIYAD', 'TAMU'])
+                : new Set(['PIPIT', 'ELSA', 'TAMU']);
+
+            const arr = Array.isArray(rawList) ? rawList : (rawList && typeof rawList === 'object' ? Object.values(rawList) : []);
+            const byUser = new Map();
+            arr.forEach(item => {
+                if (!item || !item.username) return;
+                const uUp = String(item.username).toUpperCase().trim();
+                if (!uUp || forbiddenInBranch.has(uUp)) return;
+                const pinVal = String(item.pin !== undefined && item.pin !== '' ? item.pin : (uUp === 'OWNER' ? '212' : '313')).trim();
+                const prev = byUser.get(uUp);
+                if (!prev || Number(item.pinUpdatedAt || 0) >= Number(prev.pinUpdatedAt || 0)) {
+                    byUser.set(uUp, Object.assign({}, item, {
+                        username: uUp,
+                        role: uUp === 'OWNER' ? 'OWNER' : (item.role || 'KASIR'),
+                        pin: pinVal
+                    }));
+                }
+            });
+
+            const result = [];
+            const usedNames = new Set();
+            baseList.forEach(defAcc => {
+                const uUp = defAcc.username.toUpperCase();
+                usedNames.add(uUp);
+                const saved = byUser.get(uUp);
+                if (saved) {
+                    result.push(Object.assign({}, defAcc, saved, {
+                        username: uUp,
+                        role: uUp === 'OWNER' ? 'OWNER' : (saved.role || defAcc.role)
+                    }));
+                } else {
+                    result.push(Object.assign({}, defAcc));
+                }
+            });
+
+            // Tambahkan akun karyawan baru tambahan yang memang dibuat khusus di cabang ini
+            byUser.forEach((val, uUp) => {
+                if (!usedNames.has(uUp) && !forbiddenInBranch.has(uUp)) {
+                    usedNames.add(uUp);
+                    result.push(val);
+                }
+            });
+
+            // Terapkan PIN OWNER global jika sudah pernah diperbarui
+            try {
+                const rawOwnerGlobal = localStorage.getItem('zencell_owner_pin_global');
+                const ownerGlobal = rawOwnerGlobal ? JSON.parse(rawOwnerGlobal) : null;
+                if (ownerGlobal && ownerGlobal.pin) {
+                    const ownerEntry = result.find(k => k.username === 'OWNER');
+                    if (ownerEntry) {
+                        const globalTs = Number(ownerGlobal.pinUpdatedAt || 0);
+                        const localTs = Number(ownerEntry.pinUpdatedAt || 0);
+                        if (globalTs > localTs || (localTs === 0 && ownerEntry.pin === '212' && ownerGlobal.pin !== '212')) {
+                            ownerEntry.pin = String(ownerGlobal.pin).trim();
+                            ownerEntry.pinUpdatedAt = globalTs;
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            return result;
+        };
+
+        window.daftarKaryawan = (function() {
+            const rawBranch = localStorage.getItem('zencell_karyawan') || localStorage.getItem('zencell_daftarKaryawan');
+            const parsed = JSON.parse(rawBranch || 'null');
+            return window.normalizeBranchKaryawanList(parsed, window.ACTIVE_CABANG);
         })();
 
         window.undoStack = [];
@@ -7461,6 +7559,27 @@
                 } else {
                     window.saldoList = window.STANDARD_SALDO_ORDER.slice();
                 }
+
+                // Self-healing otomatis untuk akun OPERASIONAL & PIUTANG di POS ZENCELL 1 & 2
+                if (!window.saldoList.includes('PIUTANG')) {
+                    const idxLaci = window.saldoList.indexOf('LACI');
+                    if (idxLaci !== -1) {
+                        window.saldoList.splice(idxLaci + 1, 0, 'PIUTANG');
+                    } else {
+                        window.saldoList.unshift('PIUTANG');
+                    }
+                    needsResyncMap.saldoListCustom = true;
+                }
+                if (!window.saldoList.includes('OPERASIONAL')) {
+                    const idxPiutang = window.saldoList.indexOf('PIUTANG');
+                    if (idxPiutang !== -1) {
+                        window.saldoList.splice(idxPiutang + 1, 0, 'OPERASIONAL');
+                    } else {
+                        window.saldoList.push('OPERASIONAL');
+                    }
+                    needsResyncMap.saldoListCustom = true;
+                }
+
                 if (data.saldoAwal) {
                     if (window.hasNonZeroSaldoAwal(data.saldoAwal) || data.isExplicitZeroSaldoAwal === true) {
                         window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL, data.saldoAwal, {
@@ -7468,7 +7587,8 @@
                             SP: 0,
                             ACC: 0,
                             SPAREPART: 0,
-                            PIUTANG: 0
+                            PIUTANG: 0,
+                            OPERASIONAL: 0
                         });
                     } else {
                         // Self-healing: jika perangkat lain yang belum di-refresh tidak sengaja mengirim saldoAwal 0 semua karena bug Undo lama, pulihkan otomatis!
@@ -7478,10 +7598,15 @@
                             SP: 0,
                             ACC: 0,
                             SPAREPART: 0,
-                            PIUTANG: 0
+                            PIUTANG: 0,
+                            OPERASIONAL: 0
                         });
                         needsResyncMap.saldoAwal = true;
                     }
+                }
+                if (window.masterSaldoAwal) {
+                    window.masterSaldoAwal['OPERASIONAL'] = 0;
+                    window.masterSaldoAwal['PIUTANG'] = 0;
                 }
             }
             if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
@@ -7513,11 +7638,21 @@
             if (data.daftarKaryawan) {
                 let cloudKar = Array.isArray(data.daftarKaryawan) ? data.daftarKaryawan : Object.values(data.daftarKaryawan);
                 if (cloudKar.length > 0) {
-                    window.daftarKaryawan = cloudKar;
-                    localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
+                    const cleanedBranchList = window.normalizeBranchKaryawanList(cloudKar, window.ACTIVE_CABANG);
+                    window.daftarKaryawan = cleanedBranchList;
+                    const strKar = JSON.stringify(cleanedBranchList);
+                    localStorage.setItem('zencell_karyawan', strKar);
+                    if (JSON.stringify(cloudKar) !== strKar) {
+                        window.saveToFirebaseNode('daftarKaryawan', cleanedBranchList, true);
+                    }
                     if (window.renderLoginUserOptions) window.renderLoginUserOptions();
                     if (window.renderDaftarKaryawanSettings) window.renderDaftarKaryawanSettings();
+                    if (window.renderTargetUserPinOptions) window.renderTargetUserPinOptions();
                 }
+            }
+            if (!window._crossBranchPinSyncedOnce && typeof window.syncDaftarKaryawanFromCloud === 'function') {
+                window._crossBranchPinSyncedOnce = true;
+                setTimeout(() => { window.syncDaftarKaryawanFromCloud(); }, 150);
             }
 
             // Bersihkan cache lokal dari histori Pindah Saldo yang tidak sah (menyentuh VOUCHER / SP / ACC / SPAREPART / PIUTANG)
@@ -7968,12 +8103,25 @@
                     piutang: piutangZ2,
                     seedVersionZ2: window.Z2_SEED_VERSION
                 };
-                if (!existingZ2.saldoListCustom) {
-                    updatePayloadZ2.saldoListCustom = window.STANDARD_SALDO_ORDER_Z2.slice();
+                let z2SaldoList = existingZ2.saldoListCustom
+                    ? window.normalizeSaldoListOrder(existingZ2.saldoListCustom)
+                    : window.STANDARD_SALDO_ORDER_Z2.slice();
+                if (!z2SaldoList.includes('OPERASIONAL')) {
+                    const idxPiu = z2SaldoList.indexOf('PIUTANG');
+                    if (idxPiu !== -1) z2SaldoList.splice(idxPiu + 1, 0, 'OPERASIONAL');
+                    else z2SaldoList.push('OPERASIONAL');
                 }
-                if (!existingZ2.saldoAwal) {
-                    updatePayloadZ2.saldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2);
-                }
+                updatePayloadZ2.saldoListCustom = z2SaldoList;
+
+                const z2SaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2, existingZ2.saldoAwal || {}, {
+                    VOUCHER: 0,
+                    SP: 0,
+                    ACC: 0,
+                    SPAREPART: 0,
+                    PIUTANG: 0,
+                    OPERASIONAL: 0
+                });
+                updatePayloadZ2.saldoAwal = z2SaldoAwal;
 
                 await update(ref(db, 'zencell2Nodes'), updatePayloadZ2);
             } catch (e) {
@@ -8103,28 +8251,125 @@
             return window._authInitInFlight;
         };
 
+        window.resolveUnifiedOwnerPin = function(listZ1, listZ2, listLocal) {
+            const toArr = (v) => {
+                if (!v) return [];
+                return (Array.isArray(v) ? v : Object.values(v)).filter(k => k && String(k.username || '').toUpperCase().trim() === 'OWNER');
+            };
+            const candidates = [];
+            const pushOwners = (arr, prio) => {
+                toArr(arr).forEach(item => {
+                    const pinStr = String(item.pin !== undefined ? item.pin : '').trim();
+                    if (!pinStr) return;
+                    candidates.push({
+                        pin: pinStr,
+                        pinUpdatedAt: Number(item.pinUpdatedAt || item.updatedAt || 0),
+                        prio
+                    });
+                });
+            };
+            pushOwners(listLocal, 1);
+            pushOwners(listZ2, 2);
+            pushOwners(listZ1, 3);
+            try {
+                const rawGlobal = localStorage.getItem('zencell_owner_pin_global');
+                const parsedGlobal = rawGlobal ? JSON.parse(rawGlobal) : null;
+                if (parsedGlobal && parsedGlobal.pin) {
+                    candidates.push({
+                        pin: String(parsedGlobal.pin).trim(),
+                        pinUpdatedAt: Number(parsedGlobal.pinUpdatedAt || 0),
+                        prio: 4
+                    });
+                }
+            } catch (e) {}
+
+            if (candidates.length === 0) {
+                return { pin: '212', pinUpdatedAt: 0 };
+            }
+
+            let best = candidates[0];
+            for (let i = 1; i < candidates.length; i++) {
+                const cand = candidates[i];
+                if (cand.pinUpdatedAt !== best.pinUpdatedAt) {
+                    if (cand.pinUpdatedAt > best.pinUpdatedAt) best = cand;
+                    continue;
+                }
+                const candIsDef = cand.pin === '212';
+                const bestIsDef = best.pin === '212';
+                if (!candIsDef && bestIsDef) {
+                    best = cand;
+                    continue;
+                }
+                if (candIsDef && !bestIsDef) {
+                    continue;
+                }
+                if (cand.prio > best.prio) {
+                    best = cand;
+                }
+            }
+            return { pin: best.pin, pinUpdatedAt: best.pinUpdatedAt };
+        };
+
         window.syncDaftarKaryawanFromCloud = async function() {
             try {
                 await window.ensureFirebaseAuthAndSync();
-                const rootNode = window.FIREBASE_ROOT_NODE || 'zencellNodes';
-                let snap = await get(ref(db, `${rootNode}/daftarKaryawan`));
-                if (!snap || !snap.exists()) {
-                    snap = await get(ref(db, 'zencellNodes/daftarKaryawan'));
+                const [snapZ1, snapZ2] = await Promise.all([
+                    get(ref(db, 'zencellNodes/daftarKaryawan')).catch(() => null),
+                    get(ref(db, 'zencell2Nodes/daftarKaryawan')).catch(() => null)
+                ]);
+
+                const z1Raw = (snapZ1 && snapZ1.exists()) ? snapZ1.val() : null;
+                const z2Raw = (snapZ2 && snapZ2.exists()) ? snapZ2.val() : null;
+
+                // 1. Tentukan 1 PIN OWNER terpadu untuk POS Zen 1 & POS Zen 2
+                const bestOwner = window.resolveUnifiedOwnerPin(z1Raw, z2Raw, window.daftarKaryawan);
+                if (bestOwner && bestOwner.pin) {
+                    localStorage.setItem('zencell_owner_pin_global', JSON.stringify(bestOwner));
                 }
-                if (snap && snap.exists()) {
-                    const rawVal = snap.val();
-                    const cloudStaff = Array.isArray(rawVal) ? rawVal : Object.values(rawVal || {});
-                    if (cloudStaff.length > 0) {
-                        window.daftarKaryawan = cloudStaff;
-                        const str = JSON.stringify(cloudStaff);
-                        localStorage.setItem('zencell_karyawan', str);
-                        localStorage.setItem('zencell_daftarKaryawan', str);
-                        if (window._rawLsSet) window._rawLsSet('zencell_karyawan', str);
-                        return cloudStaff;
-                    }
+
+                // 2. Bersihkan & pisahkan akun masing-masing cabang (Zen 1: OWNER, FINA, ECA, ZIYAD | Zen 2: OWNER, PIPIT, ELSA)
+                const z1Clean = window.normalizeBranchKaryawanList(z1Raw, '1');
+                const z2Clean = window.normalizeBranchKaryawanList(z2Raw, '2');
+
+                const applyOwnerPin = (list) => {
+                    list.forEach(k => {
+                        if (k && k.username === 'OWNER' && bestOwner && bestOwner.pin) {
+                            k.pin = bestOwner.pin;
+                            if (bestOwner.pinUpdatedAt) k.pinUpdatedAt = bestOwner.pinUpdatedAt;
+                        }
+                    });
+                };
+                applyOwnerPin(z1Clean);
+                applyOwnerPin(z2Clean);
+
+                const z1RawStr = z1Raw ? JSON.stringify(Array.isArray(z1Raw) ? z1Raw : Object.values(z1Raw)) : '';
+                const z2RawStr = z2Raw ? JSON.stringify(Array.isArray(z2Raw) ? z2Raw : Object.values(z2Raw)) : '';
+                const z1CleanStr = JSON.stringify(z1Clean);
+                const z2CleanStr = JSON.stringify(z2Clean);
+
+                if (z1RawStr !== z1CleanStr) {
+                    update(ref(db, 'zencellNodes'), { daftarKaryawan: cleanForFirebase(z1Clean) }).catch(() => {});
                 }
+                if (z2RawStr !== z2CleanStr) {
+                    update(ref(db, 'zencell2Nodes'), { daftarKaryawan: cleanForFirebase(z2Clean) }).catch(() => {});
+                }
+
+                if (window._rawLsSet) {
+                    window._rawLsSet('zencell_karyawan', z1CleanStr);
+                    window._rawLsSet('zencell2_karyawan', z2CleanStr);
+                }
+
+                const activeList = window.ACTIVE_CABANG === '2' ? z2Clean : z1Clean;
+                window.daftarKaryawan = activeList;
+                localStorage.setItem('zencell_karyawan', JSON.stringify(activeList));
+
+                if (window.renderLoginUserOptions) window.renderLoginUserOptions();
+                if (window.renderDaftarKaryawanSettings) window.renderDaftarKaryawanSettings();
+                if (window.renderTargetUserPinOptions) window.renderTargetUserPinOptions();
+                return activeList;
             } catch (e) {}
-            return window.daftarKaryawan || [];
+            window.daftarKaryawan = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
+            return window.daftarKaryawan;
         };
 
         window.isPinValidForUser = function(user, pass) {
@@ -8132,19 +8377,17 @@
             const pClean = String(pass || '').trim();
             if (!uUpper || !pClean) return false;
 
-            const list = Array.isArray(window.daftarKaryawan) ? window.daftarKaryawan : [];
+            const list = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
             const matched = list.find(k => k && String(k.username || '').toUpperCase().trim() === uUpper);
 
-            // Jika akun ditemukan di daftarKaryawan dan sudah memiliki PIN tercatat,
+            // Jika akun ditemukan di daftarKaryawan cabang aktif dan memiliki PIN tercatat,
             // WAJIB cocok 100% dengan PIN tersebut (PIN lama bawaan tidak boleh tembus lagi!)
             if (matched && matched.pin !== undefined && String(matched.pin).trim() !== '') {
                 return String(matched.pin).trim() === pClean;
             }
 
-            // Fallback hanya jika akun belum ada di daftarKaryawan sama sekali
             if (uUpper === 'OWNER') return pClean === '212';
-            if (uUpper === 'FINA' || uUpper === 'ECA') return pClean === '313';
-            if (uUpper === 'TAMU') return pClean === '414';
+            if (['FINA', 'ECA', 'ZIYAD', 'PIPIT', 'ELSA'].includes(uUpper)) return pClean === '313';
             return false;
         };
 
@@ -10752,12 +10995,8 @@
             const sel = document.getElementById('loginUser');
             if (!sel) return;
             const currentVal = sel.value;
-            const staffList = window.daftarKaryawan || [
-                { username: 'OWNER', role: 'OWNER' },
-                { username: 'FINA', role: 'KASIR' },
-                { username: 'ECA', role: 'KASIR' },
-                { username: 'TAMU', role: 'KASIR' }
-            ];
+            const staffList = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
+            window.daftarKaryawan = staffList;
             sel.innerHTML = staffList.map(k => {
                 const icon = k.role === 'OWNER' ? '👑' : (k.role === 'TEKNISI' ? '🛠️' : '👤');
                 return `<option value="${k.username}">${icon} ${k.username} (${k.role})</option>`;
@@ -10868,6 +11107,7 @@
                 } else {
                     window.masterSaldoAwal['SPAREPART'] = 0;
                     window.masterSaldoAwal['PIUTANG'] = 0;
+                    window.masterSaldoAwal['OPERASIONAL'] = 0;
                 }
             }
 
@@ -11225,7 +11465,7 @@
             if (window.hasNonZeroSaldoAwal(state.masterSaldoAwal)) {
                 if (JSON.stringify(window.masterSaldoAwal) !== JSON.stringify(state.masterSaldoAwal)) {
                     window.masterSaldoAwal = Object.assign({}, state.masterSaldoAwal, {
-                        VOUCHER: 0, SP: 0, ACC: 0, SPAREPART: 0, PIUTANG: 0
+                        VOUCHER: 0, SP: 0, ACC: 0, SPAREPART: 0, PIUTANG: 0, OPERASIONAL: 0
                     });
                     nodesToSync.saldoAwal = window.masterSaldoAwal;
                 }
@@ -20317,11 +20557,10 @@
 
         window.getPinForUsername = function(username) {
             const uUpper = String(username || '').toUpperCase().trim();
-            const found = (window.daftarKaryawan || []).find(k => String(k.username || '').toUpperCase().trim() === uUpper);
+            const list = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
+            const found = list.find(k => String(k.username || '').toUpperCase().trim() === uUpper);
             if (found && found.pin !== undefined && found.pin !== '') return String(found.pin);
             if (uUpper === 'OWNER') return '212';
-            if (uUpper === 'FINA' || uUpper === 'ECA') return '313';
-            if (uUpper === 'TAMU') return '414';
             return '313';
         };
 
@@ -20330,27 +20569,16 @@
             if (!sel) return;
             const currentVal = (selectedUsername || sel.value || sessionStorage.getItem('zencell_user') || 'OWNER').toUpperCase();
 
-            // Pastikan akun bawaan + seluruh daftarKaryawan masuk ke opsi dropdown
-            const baseAccounts = [
-                { username: 'OWNER', role: 'OWNER' },
-                { username: 'FINA', role: 'KASIR' },
-                { username: 'ECA', role: 'KASIR' },
-                { username: 'TAMU', role: 'TAMU' }
-            ];
-            const mapAcc = new Map();
-            baseAccounts.forEach(a => mapAcc.set(a.username, a));
-            (window.daftarKaryawan || []).forEach(k => {
-                if (k && k.username) {
-                    const uUp = k.username.toUpperCase().trim();
-                    mapAcc.set(uUp, { username: uUp, role: k.role || 'KASIR', pin: k.pin });
-                }
-            });
+            // Hanya tampilkan akun yang sah untuk cabang aktif (Zen 1: OWNER, FINA, ECA, ZIYAD | Zen 2: OWNER, PIPIT, ELSA)
+            const branchStaff = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
+            window.daftarKaryawan = branchStaff;
 
-            sel.innerHTML = Array.from(mapAcc.values()).map(acc => {
-                const icon = acc.role === 'OWNER' ? '👑' : (acc.role === 'TEKNISI' ? '🛠️' : (acc.role === 'TAMU' ? '👀' : '💼'));
+            sel.innerHTML = branchStaff.map(acc => {
+                const icon = acc.role === 'OWNER' ? '👑' : (acc.role === 'TEKNISI' ? '🛠️' : '💼');
                 const pinNow = window.getPinForUsername(acc.username);
                 const isSelected = acc.username === currentVal ? 'selected' : '';
-                return `<option value="${acc.username}" ${isSelected}>${icon} ${acc.username} (${acc.role}) — PIN: ${pinNow}</option>`;
+                const syncInfo = acc.username === 'OWNER' ? ' [Berlaku di Zen 1 & Zen 2]' : '';
+                return `<option value="${acc.username}" ${isSelected}>${icon} ${acc.username} (${acc.role}) — PIN: ${pinNow}${syncInfo}</option>`;
             }).join('');
 
             window.onChangeTargetUserPin();
@@ -20382,20 +20610,51 @@
             window.showToast(`🔑 Silakan ketik PIN baru untuk akun ${uUp}`, "success");
         };
 
-        window.persistDaftarKaryawanEverywhere = function() {
-            const str = JSON.stringify(window.daftarKaryawan || []);
-            localStorage.setItem('zencell_karyawan', str);
-            localStorage.setItem('zencell_daftarKaryawan', str);
-            if (window._rawLsSet) {
-                window._rawLsSet('zencell_karyawan', str);
-                window._rawLsSet('zencell2_zencell_karyawan', str);
-            }
+        window.persistDaftarKaryawanEverywhere = async function(changedUsername) {
+            window.daftarKaryawan = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
+            const strActive = JSON.stringify(window.daftarKaryawan);
+            localStorage.setItem('zencell_karyawan', strActive);
+            localStorage.setItem('zencell_daftarKaryawan', strActive);
             window.saveToFirebaseNode('daftarKaryawan', window.daftarKaryawan);
-            try {
-                const payload = cleanForFirebase(window.daftarKaryawan);
-                update(ref(db, 'zencellNodes'), { daftarKaryawan: payload }).catch(() => {});
-                update(ref(db, 'zencell2Nodes'), { daftarKaryawan: payload }).catch(() => {});
-            } catch (e) {}
+
+            // HANYA KHUSUS AKUN OWNER: sinkronkan PIN baru OWNER ke cabang sebelah tanpa mencampur akun kasir!
+            const targetUp = String(changedUsername || '').toUpperCase().trim();
+            if (targetUp === 'OWNER') {
+                const ownerObj = window.daftarKaryawan.find(k => k && k.username === 'OWNER');
+                if (ownerObj && ownerObj.pin) {
+                    const ownerPinPayload = {
+                        pin: String(ownerObj.pin).trim(),
+                        pinUpdatedAt: Number(ownerObj.pinUpdatedAt || Date.now())
+                    };
+                    localStorage.setItem('zencell_owner_pin_global', JSON.stringify(ownerPinPayload));
+
+                    const otherBranch = window.ACTIVE_CABANG === '2' ? '1' : '2';
+                    const otherNode = otherBranch === '2' ? 'zencell2Nodes' : 'zencellNodes';
+                    const otherLsKey = otherBranch === '2' ? 'zencell2_karyawan' : 'zencell_karyawan';
+
+                    try {
+                        let otherList = [];
+                        if (window._rawLsGet) {
+                            otherList = JSON.parse(window._rawLsGet(otherLsKey) || '[]');
+                        }
+                        const snapOther = await get(ref(db, `${otherNode}/daftarKaryawan`)).catch(() => null);
+                        if (snapOther && snapOther.exists()) {
+                            otherList = snapOther.val();
+                        }
+                        const cleanedOther = window.normalizeBranchKaryawanList(otherList, otherBranch);
+                        cleanedOther.forEach(k => {
+                            if (k && k.username === 'OWNER') {
+                                k.pin = ownerPinPayload.pin;
+                                k.pinUpdatedAt = ownerPinPayload.pinUpdatedAt;
+                            }
+                        });
+                        if (window._rawLsSet) {
+                            window._rawLsSet(otherLsKey, JSON.stringify(cleanedOther));
+                        }
+                        await update(ref(db, otherNode), { daftarKaryawan: cleanForFirebase(cleanedOther) }).catch(() => {});
+                    } catch (e) {}
+                }
+            }
         };
 
         window.updatePasswordAktif = function(e) {
@@ -20410,23 +20669,24 @@
                 return;
             }
 
-            if (!window.daftarKaryawan) window.daftarKaryawan = [];
-            // Pastikan semua entri dengan username yang sama diperbarui (jika ada duplikat lama)
+            window.daftarKaryawan = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
+            const nowTs = Date.now();
             let foundAny = false;
             window.daftarKaryawan.forEach(k => {
                 if (k && String(k.username || '').toUpperCase().trim() === targetUser) {
                     k.pin = pinBaru;
+                    k.pinUpdatedAt = nowTs;
                     foundAny = true;
                 }
             });
 
             if (!foundAny) {
-                const defaultRole = targetUser === 'OWNER' ? 'OWNER' : (targetUser === 'TAMU' ? 'TAMU' : 'KASIR');
-                const userObj = { id: Date.now(), username: targetUser, role: defaultRole, pin: pinBaru, dibuat: window.getTodayIso() };
+                const defaultRole = targetUser === 'OWNER' ? 'OWNER' : 'KASIR';
+                const userObj = { id: nowTs, username: targetUser, role: defaultRole, pin: pinBaru, pinUpdatedAt: nowTs, dibuat: window.getTodayIso() };
                 window.daftarKaryawan.push(userObj);
             }
 
-            window.persistDaftarKaryawanEverywhere();
+            window.persistDaftarKaryawanEverywhere(targetUser);
             window.catatLogAktivitas('GANTI PIN', `Owner memperbarui PIN untuk akun ${targetUser}`);
             document.getElementById('setPinBaru').value = '';
             window.renderDaftarKaryawanSettings();
@@ -20434,8 +20694,14 @@
             if (window.renderLoginUserOptions) window.renderLoginUserOptions();
 
             window.flashButtonSuccess('btnSimpanPin', '✅ PIN TERSIMPAN!', '💾 SIMPAN PIN AKUN TERPILIH');
-            window.showSettingBanner(`✅ PIN baru untuk akun <b>"${targetUser}"</b> berhasil diperbarui menjadi <b>${pinBaru}</b> (PIN lama otomatis dinonaktifkan)!`);
-            window.showToast(`✅ PIN untuk akun ${targetUser} berhasil diperbarui!`, "success");
+            if (targetUser === 'OWNER') {
+                window.showSettingBanner(`✅ PIN <b>OWNER</b> berhasil diperbarui menjadi <b>${pinBaru}</b> & otomatis berlaku di <b>POS Zen 1 & POS Zen 2</b>!`);
+                window.showToast(`✅ PIN OWNER berhasil diperbarui di POS Zen 1 & Zen 2!`, "success");
+            } else {
+                const branchLabel = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+                window.showSettingBanner(`✅ PIN akun <b>"${targetUser}"</b> (${branchLabel}) berhasil diperbarui menjadi <b>${pinBaru}</b>!`);
+                window.showToast(`✅ PIN akun ${targetUser} berhasil diperbarui!`, "success");
+            }
         };
 
         window.bukaModalTambahKaryawan = function() {
@@ -20462,17 +20728,18 @@
                 return;
             }
 
-            if (!window.daftarKaryawan) window.daftarKaryawan = [];
+            window.daftarKaryawan = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
             const exists = window.daftarKaryawan.find(k => k.username.toUpperCase() === uName);
             if (exists) {
                 window.showToast(`Username ${uName} sudah terdaftar! Gunakan nama lain.`, "error");
                 return;
             }
 
-            const newStaff = { id: Date.now(), username: uName, role, pin, dibuat: window.getTodayIso() };
+            const nowTs = Date.now();
+            const newStaff = { id: nowTs, username: uName, role, pin, pinUpdatedAt: nowTs, dibuat: window.getTodayIso() };
             window.daftarKaryawan.push(newStaff);
 
-            window.persistDaftarKaryawanEverywhere();
+            window.persistDaftarKaryawanEverywhere(uName);
             window.renderDaftarKaryawanSettings();
             window.renderLoginUserOptions();
             window.catatLogAktivitas('TAMBAH KARYAWAN', `Menambahkan karyawan baru: ${uName} (${role})`);
@@ -20492,7 +20759,7 @@
 
             if (confirm(`Yakin ingin menghapus karyawan "${k.username}"?`)) {
                 window.daftarKaryawan = window.daftarKaryawan.filter(item => item.id !== id);
-                window.persistDaftarKaryawanEverywhere();
+                window.persistDaftarKaryawanEverywhere(k.username);
                 window.renderDaftarKaryawanSettings();
                 window.renderLoginUserOptions();
                 window.catatLogAktivitas('HAPUS KARYAWAN', `Menghapus karyawan: ${k.username}`);
@@ -20505,7 +20772,8 @@
         window.renderDaftarKaryawanSettings = function() {
             const tbody = document.getElementById('bodyDaftarKaryawanSettings');
             if (!tbody) return;
-            const staff = window.daftarKaryawan || [];
+            const staff = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
+            window.daftarKaryawan = staff;
             if (window.renderTargetUserPinOptions) {
                 const currentSel = document.getElementById('setTargetUserPin')?.value;
                 window.renderTargetUserPinOptions(currentSel);
