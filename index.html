@@ -11511,6 +11511,147 @@
             window.renderAll();
         });
 
+        window.findExactStokItemByKeterangan = function(rawKet, editTrxObj) {
+            const val = String(rawKet || '').toUpperCase().trim();
+            if (!val) return null;
+            if (val.startsWith('[PELUNASAN UTANG]') || val.startsWith('[SERVIS]') || val.startsWith('[SPAREPART]') || val.startsWith('[SERVIS PART]')) {
+                return null;
+            }
+            if (window._pendingTiketIdToLunas || window._pendingSparepartIdToLunas) {
+                return null;
+            }
+            if (window.hasValidReferensiPelunasanPiutang && window.hasValidReferensiPelunasanPiutang(val, editTrxObj)) {
+                return null;
+            }
+            const valSlash = val.replace(/[\/-]/g, '/');
+            const akunStokValid = ['VOUCHER', 'SP', 'ACC'];
+            const matches = (window.stokOpnameItems || []).filter(s => {
+                if (!s || !akunStokValid.includes(String(s.kat || '').toUpperCase().trim())) return false;
+                const nm = String(s.nama || s.namaBarang || '').toUpperCase().trim();
+                if (!nm) return false;
+                const nmSlash = nm.replace(/[\/-]/g, '/');
+                return nm === val || nmSlash === valSlash;
+            });
+            return matches[0] || null;
+        };
+
+        window.applyKasirExactStokLockUI = function() {
+            const ketEl = document.getElementById('keterangan');
+            if (!ketEl) return null;
+            const ketRaw = (ketEl.value || '').toUpperCase().trim();
+            const editId = document.getElementById('editTrxId')?.value || '';
+            const editTrxObj = editId ? (window.transaksiJurnal || []).find(x => x.id == editId) : null;
+            const exactStok = window.findExactStokItemByKeterangan ? window.findExactStokItemByKeterangan(ketRaw, editTrxObj) : null;
+
+            const katEl = document.getElementById('kategori');
+            const ak1El = document.getElementById('akunKeluar1');
+            const spAk1El = document.getElementById('splitAkunKeluar1');
+            const ak2El = document.getElementById('akunKeluar2');
+            const hmEl = document.getElementById('hargaModal');
+            const hmDispEl = document.getElementById('hargaModalDisplay');
+            const spM1El = document.getElementById('modalSplit1');
+            const spM1DispEl = document.getElementById('modalSplit1Display');
+            const spM2El = document.getElementById('modalSplit2');
+            const spM2DispEl = document.getElementById('modalSplit2Display');
+
+            if (exactStok) {
+                const katStok = String(exactStok.kat || 'VOUCHER').toUpperCase().trim();
+                const qtyVal = parseFloat(document.getElementById('trxQty')?.value) || 1;
+                const lockedModal = Math.round(Number(exactStok.modal || 0) * qtyVal);
+
+                if (katEl) {
+                    katEl.value = katStok;
+                    Array.from(katEl.options).forEach(opt => {
+                        opt.disabled = (String(opt.value).toUpperCase().trim() !== katStok);
+                    });
+                    katEl.style.pointerEvents = 'none';
+                    katEl.style.backgroundColor = '#F1F5F9';
+                }
+
+                window.setKasirSelectAkunSafe('akunKeluar1', katStok);
+                window.setKasirSelectAkunSafe('splitAkunKeluar1', katStok);
+
+                [ak1El, spAk1El].forEach(sel => {
+                    if (!sel) return;
+                    Array.from(sel.options).forEach(opt => {
+                        const optVal = String(opt.value || '').toUpperCase().trim();
+                        if (optVal === katStok) {
+                            opt.disabled = false;
+                            opt.textContent = `🔒 ${katStok} (Terkunci Sesuai Stok)`;
+                        } else {
+                            opt.disabled = true;
+                        }
+                    });
+                    sel.value = katStok;
+                    sel.style.pointerEvents = 'none';
+                    sel.style.backgroundColor = '#F1F5F9';
+                });
+
+                if (ak2El) {
+                    ak2El.value = '';
+                    ak2El.style.pointerEvents = 'none';
+                    ak2El.style.backgroundColor = '#F1F5F9';
+                }
+                if (spM2El) spM2El.value = '0';
+                if (spM2DispEl) {
+                    spM2DispEl.value = '';
+                    spM2DispEl.readOnly = true;
+                    spM2DispEl.style.pointerEvents = 'none';
+                    spM2DispEl.style.backgroundColor = '#F1F5F9';
+                }
+
+                if (hmEl) hmEl.value = lockedModal;
+                if (hmDispEl) {
+                    hmDispEl.value = lockedModal > 0 ? lockedModal.toLocaleString('id-ID') : '0';
+                    hmDispEl.readOnly = true;
+                    hmDispEl.style.pointerEvents = 'none';
+                    hmDispEl.style.backgroundColor = '#F1F5F9';
+                }
+                if (spM1El) spM1El.value = lockedModal;
+                if (spM1DispEl) {
+                    spM1DispEl.value = lockedModal > 0 ? lockedModal.toLocaleString('id-ID') : '0';
+                    spM1DispEl.readOnly = true;
+                    spM1DispEl.style.pointerEvents = 'none';
+                    spM1DispEl.style.backgroundColor = '#F1F5F9';
+                }
+                return exactStok;
+            } else {
+                const allowPelunasan = window.hasValidReferensiPelunasanPiutang ? window.hasValidReferensiPelunasanPiutang(ketRaw, editTrxObj) : false;
+                if (katEl) {
+                    Array.from(katEl.options).forEach(opt => { opt.disabled = false; });
+                    katEl.style.pointerEvents = '';
+                    katEl.style.backgroundColor = '';
+                }
+                [ak1El, spAk1El, ak2El].forEach(sel => {
+                    if (!sel) return;
+                    Array.from(sel.options).forEach(opt => {
+                        const optVal = String(opt.value || '').toUpperCase().trim();
+                        if (optVal === 'PIUTANG') {
+                            opt.disabled = !allowPelunasan;
+                            opt.textContent = allowPelunasan ? 'PIUTANG (Pelunasan Utang)' : '🔒 PIUTANG (Khusus Auto-Fill Pelunasan)';
+                        } else if (optVal === 'OPERASIONAL') {
+                            opt.disabled = true;
+                            opt.textContent = '🔒 OPERASIONAL (Khusus Menu Operasional)';
+                        } else if (['VOUCHER', 'SP', 'ACC'].includes(optVal)) {
+                            opt.disabled = false;
+                            opt.textContent = optVal;
+                        } else {
+                            opt.disabled = false;
+                        }
+                    });
+                    sel.style.pointerEvents = '';
+                    sel.style.backgroundColor = '';
+                });
+                [hmDispEl, spM1DispEl, spM2DispEl].forEach(inp => {
+                    if (!inp) return;
+                    inp.readOnly = false;
+                    inp.style.pointerEvents = '';
+                    inp.style.backgroundColor = '';
+                });
+                return null;
+            }
+        };
+
         window.cekValidasiAkunStokManual = function() {
             const badge = document.getElementById('manualStokMismatchBadge');
             if (!badge) return { valid: true };
@@ -11534,7 +11675,7 @@
                     if (s.kat !== ak) return false;
                     const nm = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
                     const nmSlash = nm.replace(/[\/-]/g, '/');
-                    return nm && (ketRaw === nm || ketRaw.includes(nm) || ketSlash === nmSlash || ketSlash.includes(nmSlash));
+                    return nm && (ketRaw === nm || ketSlash === nmSlash);
                 });
                 if (!match) missingAkuns.push(ak);
             });
@@ -11542,7 +11683,7 @@
             if (missingAkuns.length > 0) {
                 const akStr = missingAkuns.join(' / ');
                 badge.style.display = 'block';
-                badge.innerHTML = `⚠️ <b>PERINGATAN INPUT MANUAL STOK [${akStr}]:</b> Teks Keterangan <b>"${ketRaw || '(Kosong)'}"</b> tidak cocok dengan nama barang di Stok Opname <b>${akStr}</b>! Pilih dari daftar <i>Auto-Fill</i> agar stok fisik otomatis terpotong.`;
+                badge.innerHTML = `⚠️ <b>PERINGATAN INPUT MANUAL STOK [${akStr}]:</b> Teks Keterangan <b>"${ketRaw || '(Kosong)'}"</b> tidak cocok persis dengan nama barang di Stok Opname <b>${akStr}</b>! Pilih dari daftar <i>Auto-Fill</i> agar stok fisik otomatis terpotong.`;
                 return { valid: false, missingAkuns, ketRaw };
             }
 
@@ -11736,6 +11877,10 @@
                 }
             });
 
+            if (window.applyKasirExactStokLockUI) {
+                window.applyKasirExactStokLockUI();
+            }
+
             // Sinkronisasi form VLOOKUP jika sedang diketik
             const vKetRaw = (document.getElementById('v_ket')?.value || '').toUpperCase().trim();
             const allowTedcVlookup = window.isKeteranganT_EDC(vKetRaw);
@@ -11801,6 +11946,17 @@
                     }
                 }
             });
+
+            // 3. Cek Penguncian Stok Identik (Jika Keterangan sama persis dengan nama Stok Opname VOUCHER / SP / ACC)
+            if (!isVlookupForm && window.findExactStokItemByKeterangan) {
+                const exactStok = window.findExactStokItemByKeterangan(ketRaw, editTrxObj);
+                if (exactStok) {
+                    const expectedAkun = String(exactStok.kat || 'VOUCHER').toUpperCase().trim();
+                    if (keluarList.length !== 1 || keluarList[0] !== expectedAkun) {
+                        errors.push(`🔒 Keterangan identik dengan Stok [${expectedAkun}]. Akun Keluar & Modal dikunci ke <b>${expectedAkun}</b>.`);
+                    }
+                }
+            }
 
             return {
                 valid: errors.length === 0,
@@ -12209,15 +12365,11 @@
                     const nm = (s.nama || s.namaBarang || '').toUpperCase().trim();
                     const nmSlash = nm.replace(/[\/-]/g, '/');
                     if (!nm) return false;
-                    // Jika ada VLOOKUP manual yang cocok persis, hanya cocokkan Stok Opname jika namanya sama persis
-                    if (vRuleMatch) {
-                        return nm === val || nmSlash === valSlash;
-                    }
-                    return nm === val || val.includes(nm) || nmSlash === valSlash || valSlash.includes(nmSlash);
+                    return nm === val || nmSlash === valSlash;
                 }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
                 const matchStok = matchStokCandidates[0];
 
-                if (matchStok && !vRuleHasSplit && !isManualNonStokVlookup) {
+                if (matchStok) {
                     const sisa = Number(matchStok.awal || 0) - Number(matchStok.terjual || 0);
                     const namaStok = matchStok.nama || matchStok.namaBarang || '';
                     if (sisa <= 0) { warnStok.style.display = 'block'; warnStok.innerText = `⚠️ Stok [${namaStok}] Habis!`; }
@@ -12240,25 +12392,24 @@
                     window.setKasirSelectAkunSafe('splitAkunKeluar1', katStok);
                     
                     const baseModalStok = Number(matchStok.modal || 0) > 0 ? Number(matchStok.modal) : Number((vRuleMatch && vRuleMatch.defModal) || 0);
-                    const mStok = baseModalStok * qtyVal;
+                    const mStok = Math.round(baseModalStok * qtyVal);
                     document.getElementById('hargaModal').value = mStok;
                     document.getElementById('hargaModalDisplay').value = mStok > 0 ? Number(mStok).toLocaleString('id-ID') : '';
 
                     const baseJualStok = Number(matchStok.jual || 0) > 0 ? Number(matchStok.jual) : Number((vRuleMatch && vRuleMatch.defJual) || 0);
                     if (baseJualStok > 0) {
-                        const jStok = baseJualStok * qtyVal;
+                        const jStok = Math.round(baseJualStok * qtyVal);
                         document.getElementById('hargaJual').value = jStok;
                         document.getElementById('hargaJualDisplay').value = Number(jStok).toLocaleString('id-ID');
-                    } else {
+                    } else if (!isEditingTrx) {
                         document.getElementById('hargaJual').value = 0;
                         document.getElementById('hargaJualDisplay').value = '';
                     }
 
+                    if (window.applyKasirExactStokLockUI) window.applyKasirExactStokLockUI();
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = baseJualStok > 0
-                        ? `⚡ Auto-Fill Stok & Modal (${katStok} • Masuk: ${akunMasukStok} ${window.formatRp(baseJualStok * qtyVal)} | Modal: ${window.formatRp(mStok)})`
-                        : `⚡ Auto-Fill HPP (${katStok}: ${window.formatRp(mStok)} • Masuk: ${akunMasukStok}) — Silakan isi Harga Jual`;
+                    notice.innerText = `🔒 Keterangan identik dengan Stok [${katStok}]. Akun Keluar & Modal dikunci ke ${katStok}.`;
                     if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
                     if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
                     return;
@@ -12434,6 +12585,7 @@
             document.getElementById('boxSingleModeInputs').style.display = isSplit ? 'none' : 'block';
             document.getElementById('boxSplitMasuk').style.display = isSplit ? 'block' : 'none';
             document.getElementById('boxSplitKeluar').style.display = isSplit ? 'block' : 'none';
+            if (window.applyKasirExactStokLockUI) window.applyKasirExactStokLockUI();
             window.hitungCuan();
             if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
         }
@@ -12447,8 +12599,12 @@
         window.hitungSubtotalModal = function() {
             const isEditingTrx = Boolean(document.getElementById('editTrxId')?.value);
             const inputKet = document.getElementById('keterangan');
-            if (!isEditingTrx && inputKet.value.trim()) inputKet.dispatchEvent(new Event('input'));
-            else window.hitungCuan();
+            if (!isEditingTrx && inputKet.value.trim()) {
+                inputKet.dispatchEvent(new Event('input'));
+            } else {
+                if (window.applyKasirExactStokLockUI) window.applyKasirExactStokLockUI();
+                window.hitungCuan();
+            }
         }
 
         window.hitungCuan = function() {
@@ -15640,7 +15796,12 @@
             const selectedDate = document.getElementById('trxDateInput').value || window.getTodayIso();
             const ket = document.getElementById('keterangan').value.trim().toUpperCase();
             const qty = parseFloat(document.getElementById('trxQty').value) || 1;
-            const kat = document.getElementById('kategori').value;
+            const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
+            if (window.applyKasirExactStokLockUI) {
+                window.applyKasirExactStokLockUI();
+            }
+            const exactStokSubmit = window.findExactStokItemByKeterangan ? window.findExactStokItemByKeterangan(ket, existingTrx) : null;
+            const kat = exactStokSubmit ? String(exactStokSubmit.kat || 'VOUCHER').toUpperCase().trim() : document.getElementById('kategori').value;
             const isNewCustomer = document.getElementById('chkIsNewCustomer').checked;
             let isSplit = document.getElementById('chkSplit').checked;
 
@@ -15719,7 +15880,15 @@
                 modalSplit2 = 0;
             }
 
-            const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
+            if (exactStokSubmit) {
+                const lockedAkunStok = String(exactStokSubmit.kat || 'VOUCHER').toUpperCase().trim();
+                const lockedModalStok = Math.round(Number(exactStokSubmit.modal || 0) * qty);
+                akunKeluar1 = lockedAkunStok;
+                akunKeluar2 = '';
+                hargaModalTotal = lockedModalStok;
+                modalSplit1 = lockedModalStok;
+                modalSplit2 = 0;
+            }
 
             // LAPIS 2: Hard-Block Proteksi Aturan Akun Saldo Kasir
             if (window.validasiAturanAkunKasir) {
@@ -16017,6 +16186,15 @@
 
             document.getElementById('chkSplit').checked = isSplit;
             window.toggleSplitMode(isSplit);
+            if (window.applyKasirExactStokLockUI) {
+                const lockedItem = window.applyKasirExactStokLockUI();
+                const notice = document.getElementById('vlookupNotice');
+                if (lockedItem && notice) {
+                    const katStok = String(lockedItem.kat || 'VOUCHER').toUpperCase().trim();
+                    notice.style.display = 'block';
+                    notice.innerText = `🔒 Keterangan identik dengan Stok [${katStok}]. Akun Keluar & Modal dikunci ke ${katStok}.`;
+                }
+            }
             window.hitungCuan();
             if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
             window.openModalKasir();
@@ -16493,15 +16671,22 @@
                 }
                 if (namaStokRef) {
                     const cleanNamaRef = String(namaStokRef).toUpperCase().trim();
-                    const byExactName = window.stokOpnameItems.find(s => ((s.nama || s.namaBarang) || '').toUpperCase().trim() === cleanNamaRef && (!filterKat || s.kat === filterKat));
+                    const cleanSlashRef = cleanNamaRef.replace(/[\/-]/g, '/');
+                    const byExactName = window.stokOpnameItems.find(s => {
+                        if (filterKat && s.kat !== filterKat) return false;
+                        const nm = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
+                        return nm === cleanNamaRef || nm.replace(/[\/-]/g, '/') === cleanSlashRef;
+                    });
                     if (byExactName) return byExactName;
                 }
+                const ketSlash = String(ketUpper || '').replace(/[\/-]/g, '/');
                 let bestStokMatch = null;
                 let bestLen = 0;
                 window.stokOpnameItems.forEach(s => {
                     if (filterKat && s.kat !== filterKat) return;
                     const namaUpper = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
-                    if (namaUpper && (ketUpper === namaUpper || ketUpper.includes(namaUpper))) {
+                    const namaSlash = namaUpper.replace(/[\/-]/g, '/');
+                    if (namaUpper && (ketUpper === namaUpper || ketSlash === namaSlash)) {
                         if (namaUpper.length > bestLen) {
                             bestLen = namaUpper.length;
                             bestStokMatch = s;
@@ -16525,10 +16710,13 @@
                         }
                     }
                 } else if (!t.isPindahSaldo && !isPelunasanPiutang) {
-                    // Penjualan tunai/langsung di Kasir (Pelunasan Piutang tidak boleh memotong stok dua kali!)
-                    const bestStokMatch = findMatchingStokItem(t.idStokRef, t.namaBarangStok, ketUpper, null);
-                    if (bestStokMatch) {
-                        bestStokMatch.terjual += Number(t.qty || 1);
+                    // Penjualan tunai/langsung di Kasir: HANYA memotong stok fisik jika Akun Keluar memang VOUCHER / SP / ACC
+                    const akunKeluarStok = akunStokSet.has(t.akunKeluar1) ? t.akunKeluar1 : (akunStokSet.has(t.akunKeluar2) ? t.akunKeluar2 : null);
+                    if (akunKeluarStok) {
+                        const bestStokMatch = findMatchingStokItem(t.idStokRef, t.namaBarangStok, ketUpper, akunKeluarStok);
+                        if (bestStokMatch) {
+                            bestStokMatch.terjual += Number(t.qty || 1);
+                        }
                     }
                 }
 
