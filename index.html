@@ -2859,7 +2859,7 @@
             }
         }
     </style>
-<script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
+</head>
 <body>
 
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
@@ -4474,10 +4474,28 @@
                     <span style="color:#991B1B; font-weight:800;">💡 Jatah Profit Siap Setor:</span>
                     <b id="lblFastJatahSetor" style="color:#16A34A; font-size:13px;">Rp0</b>
                 </div>
-                <button type="button" onclick="isiOtomatisJatahSetorProfit()" style="margin-top:8px; width:100%; background:#059669; color:#FFF; border:none; border-radius:7px; padding:7px 10px; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(5,150,105,0.25);">⚡ Isi Nominal Otomatis Sesuai Jatah Profit</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:4px; border-top:1px dashed #FECACA;">
+                    <span style="color:#0369A1; font-weight:800;">📅 Cuan Kemarin (<span id="lblFastTglKemarin">-</span>):</span>
+                    <b id="lblFastCuanKemarin" style="color:#0284C7; font-size:12px;">Rp0</b>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px;">
+                    <button type="button" onclick="isiOtomatisProfitKemarin()" style="background:#0284C7; color:#FFF; border:none; border-radius:7px; padding:7px 8px; font-size:10.5px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(2,132,199,0.25);">⏮️ Setor Cuan Kemarin (H-1)</button>
+                    <button type="button" onclick="isiOtomatisJatahSetorProfit()" style="background:#059669; color:#FFF; border:none; border-radius:7px; padding:7px 8px; font-size:10.5px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(5,150,105,0.25);">⚡ Sesuai Jatah Profit</button>
+                </div>
             </div>
 
             <form id="formSetorFast" onsubmit="prosesSetoranOwner(event)">
+                <input type="hidden" id="editSetoranId" value="">
+                <div class="form-group" style="margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <label style="margin:0;">Untuk Profit Tanggal *</label>
+                        <div style="display:flex; gap:4px;">
+                            <button type="button" onclick="setSetorTanggalPreset(-1)" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; border-radius:5px; padding:2px 7px; font-size:10px; font-weight:800; cursor:pointer;">⏮️ Kemarin (H-1)</button>
+                            <button type="button" onclick="setSetorTanggalPreset(0)" style="background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; border-radius:5px; padding:2px 7px; font-size:10px; font-weight:800; cursor:pointer;">📅 Hari Ini</button>
+                        </div>
+                    </div>
+                    <input type="date" id="setorTgl" class="form-control" required style="font-weight:700;">
+                </div>
                 <div class="row-2">
                     <div class="form-group">
                         <label>Ambil dari Akun Kas / Bank *</label>
@@ -4491,10 +4509,10 @@
                 </div>
                 <div class="form-group" style="margin-bottom:10px;">
                     <label>Catatan / Keterangan Setoran</label>
-                    <input type="text" id="setorKet" class="form-control" placeholder="SETORAN PROFIT HARIAN...">
+                    <input type="text" id="setorKet" class="form-control" placeholder="CONTOH: PROFIT TGL 1...">
                 </div>
                 <div class="row-2" style="margin-top:6px;">
-                    <button type="submit" class="btn" style="background:#DC2626;">💸 Catat Setoran Profit</button>
+                    <button type="submit" id="btnSubmitSetorFast" class="btn" style="background:#DC2626;">💸 Catat Setoran Profit</button>
                     <button type="button" class="btn" style="background:#64748B;" onclick="closeModalSetorFast()">Batal</button>
                 </div>
             </form>
@@ -7126,12 +7144,30 @@
             return rule.isManual === true || rule.isSplit === true;
         };
 
+        window.sortStokOpnameAlphabetical = function(list) {
+            if (!Array.isArray(list)) return [];
+            const katOrder = { 'ACC': 1, 'SP': 2, 'VOUCHER': 3 };
+            return list.sort((a, b) => {
+                if (!a && !b) return 0;
+                if (!a) return 1;
+                if (!b) return -1;
+                const katA = String(a.kat || 'VOUCHER').toUpperCase().trim();
+                const katB = String(b.kat || 'VOUCHER').toUpperCase().trim();
+                const ordA = katOrder[katA] || 99;
+                const ordB = katOrder[katB] || 99;
+                if (ordA !== ordB) return ordA - ordB;
+                const namaA = String(a.nama || a.namaBarang || '').toUpperCase().trim();
+                const namaB = String(b.nama || b.namaBarang || '').toUpperCase().trim();
+                return namaA.localeCompare(namaB, 'id', { numeric: true, sensitivity: 'base' });
+            });
+        };
+
         window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
-        window.stokOpnameItems = JSON.parse(localStorage.getItem('zencell_stok') || '[]');
+        window.stokOpnameItems = window.sortStokOpnameAlphabetical(JSON.parse(localStorage.getItem('zencell_stok') || '[]'));
         window.piutangList = JSON.parse(localStorage.getItem('zencell_piutang') || '[]');
         if (window.ACTIVE_CABANG === '2') {
             if (!Array.isArray(window.stokOpnameItems) || window.stokOpnameItems.length === 0) {
-                window.stokOpnameItems = JSON.parse(JSON.stringify(window.DEFAULT_STOK_Z2));
+                window.stokOpnameItems = window.sortStokOpnameAlphabetical(JSON.parse(JSON.stringify(window.DEFAULT_STOK_Z2)));
             } else {
                 const existingAccNames = new Set(
                     window.stokOpnameItems
@@ -7145,6 +7181,7 @@
                         existingAccNames.add(normName);
                     }
                 });
+                window.sortStokOpnameAlphabetical(window.stokOpnameItems);
             }
             if (!Array.isArray(window.piutangList) || window.piutangList.length === 0) {
                 window.piutangList = JSON.parse(JSON.stringify(window.DEFAULT_PIUTANG_Z2));
@@ -7690,7 +7727,7 @@
                 needsResyncMap.piutang = true;
             }
 
-            // 3. Stok Opname (Smart Merge + Normalisasi + Seed Awal Z2 jika belum pernah di-seed)
+            // 3. Stok Opname (Smart Merge + Normalisasi + Seed Awal Z2 jika belum pernah di-seed + Urut Abjad A-Z)
             const mergedStok = mergeCloudCollection('stok', data.stok, needsResyncMap, lastResetTs);
             window.stokOpnameItems = mergedStok.map(s => ({
                 id: s.id || Date.now(),
@@ -7738,6 +7775,9 @@
                 if (accAddedCount > 0) {
                     needsResyncMap.stok = true;
                 }
+            }
+            if (window.sortStokOpnameAlphabetical) {
+                window.sortStokOpnameAlphabetical(window.stokOpnameItems);
             }
 
             // 4. Sparepart Service (Smart Merge)
@@ -8761,7 +8801,62 @@
             document.getElementById('modalTfFastOverlay')?.classList.remove('show');
         };
 
-        window.openModalSetorFast = function() {
+        window.getOffsetDateIso = function(offsetDays = 0) {
+            const d = new Date();
+            d.setDate(d.getDate() + Number(offsetDays || 0));
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        };
+
+        window.hitungCuanBersihByDate = function(targetIsoDate) {
+            let cuan = 0;
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t || t.isoDate !== targetIsoDate) return;
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
+                if (window.isTransaksiPelunasanPiutang && window.isTransaksiPelunasanPiutang(t)) {
+                    const cp = Number(t.cuan || 0);
+                    if (cp > 0) cuan += cp;
+                    return;
+                }
+                cuan += Number(t.cuan || 0);
+            });
+            return cuan;
+        };
+
+        window.setSetorTanggalPreset = function(offsetDays) {
+            const tglEl = document.getElementById('setorTgl');
+            const targetIso = window.getOffsetDateIso(offsetDays);
+            if (tglEl) tglEl.value = targetIso;
+        };
+
+        window.isiOtomatisProfitKemarin = function() {
+            const kemarinIso = window.getOffsetDateIso(-1);
+            const cuanKemarin = window.hitungCuanBersihByDate(kemarinIso);
+            const tglEl = document.getElementById('setorTgl');
+            if (tglEl) tglEl.value = kemarinIso;
+            if (cuanKemarin <= 0) {
+                window.showToast(`⚠️ Tidak ada catatan cuan pada tanggal kemarin (${kemarinIso})!`, "warn");
+                return;
+            }
+            const nomEl = document.getElementById('setorNom');
+            const dispEl = document.getElementById('setorNomDisplay');
+            const ketEl = document.getElementById('setorKet');
+            if (nomEl) nomEl.value = cuanKemarin;
+            if (dispEl) dispEl.value = cuanKemarin.toLocaleString('id-ID');
+            const dayNum = Number(kemarinIso.split('-')[2] || 0);
+            if (ketEl) ketEl.value = `PROFIT TGL ${dayNum}`;
+            window.showToast(`⏮️ Otomatis diisi Cuan Kemarin (${kemarinIso}): ${window.formatRp(cuanKemarin)}`, "success");
+        };
+
+        window.openModalSetorFast = function(isEditMode = false) {
+            if (!isEditMode) {
+                if (document.getElementById('editSetoranId')) document.getElementById('editSetoranId').value = '';
+                if (document.getElementById('setorTgl')) document.getElementById('setorTgl').value = window.getTodayIso();
+                if (document.getElementById('setorNomDisplay')) document.getElementById('setorNomDisplay').value = '';
+                if (document.getElementById('setorNom')) document.getElementById('setorNom').value = '0';
+                if (document.getElementById('setorKet')) document.getElementById('setorKet').value = '';
+                const btnEl = document.getElementById('btnSubmitSetorFast');
+                if (btnEl) btnEl.innerText = '💸 Catat Setoran Profit';
+            }
             if (typeof window.hitungRingkasanProfitDanHarta === 'function') {
                 const info = window.hitungRingkasanProfitDanHarta();
                 const elTarget = document.getElementById('lblFastTargetModal');
@@ -8769,10 +8864,18 @@
                 const elJatah = document.getElementById('lblFastJatahSetor');
                 if (elJatah) elJatah.innerText = window.formatRp(info.jatahProfitSiapSetor);
             }
+            const kemarinIso = window.getOffsetDateIso(-1);
+            const cuanKemarin = window.hitungCuanBersihByDate(kemarinIso);
+            const elTglKemarin = document.getElementById('lblFastTglKemarin');
+            if (elTglKemarin) elTglKemarin.innerText = kemarinIso;
+            const elCuanKemarin = document.getElementById('lblFastCuanKemarin');
+            if (elCuanKemarin) elCuanKemarin.innerText = window.formatRp(cuanKemarin);
+
             const ov = document.getElementById('modalSetorFastOverlay');
             if (ov) ov.classList.add('show');
         };
         window.closeModalSetorFast = function() {
+            if (document.getElementById('editSetoranId')) document.getElementById('editSetoranId').value = '';
             document.getElementById('modalSetorFastOverlay')?.classList.remove('show');
         };
 
@@ -13520,6 +13623,10 @@
 
             window.closeModalStokOpname();
 
+            if (window.sortStokOpnameAlphabetical) {
+                window.sortStokOpnameAlphabetical(window.stokOpnameItems);
+            }
+
             window.saveMultipleFirebaseNodes({
                 stok: window.stokOpnameItems,
                 riwayatBelanjaStok: window.riwayatBelanjaStok
@@ -14762,6 +14869,8 @@
 
         window.prosesSetoranOwner = function(e) {
             e.preventDefault();
+            const editId = document.getElementById('editSetoranId')?.value || '';
+            const tglInput = document.getElementById('setorTgl')?.value || window.getTodayIso();
             const sumber = document.getElementById('setorSumber').value;
             const nom = parseFloat(document.getElementById('setorNom').value) || 0;
             const ket = document.getElementById('setorKet').value.trim().toUpperCase() || 'SETORAN';
@@ -14771,19 +14880,65 @@
             }
 
             const nowTs = window.getNextUniqueTs();
-            const newSetoran = { id: nowTs, waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }), isoDate: window.getTodayIso(), tgl: window.getTodayIso(), sumber, nominal: nom, catatan: ket, updatedAt: nowTs };
-            window.setoranOwnerList.unshift(newSetoran);
-            window.markLocalEntityEdited('setoran', newSetoran);
+            if (editId) {
+                const existing = window.setoranOwnerList.find(item => String(item.id) === String(editId));
+                if (existing) {
+                    const oldSumber = existing.sumber;
+                    existing.isoDate = tglInput;
+                    existing.tgl = tglInput;
+                    existing.sumber = sumber;
+                    existing.nominal = nom;
+                    existing.catatan = ket;
+                    existing.updatedAt = nowTs;
+                    window.markLocalEntityEdited('setoran', existing);
+                    window.catatLogAktivitas('EDIT SETORAN PROFIT', `Mengubah setoran profit menjadi ${window.formatRp(nom)} (${ket}) untuk tanggal ${tglInput} dari akun ${sumber}`);
+                    if (window.triggerBlinkMutasiAkun) {
+                        const accs = oldSumber && oldSumber !== sumber ? [oldSumber, sumber] : [sumber];
+                        window.triggerBlinkMutasiAkun(accs, 10000);
+                    }
+                    window.showToast(`✅ Perubahan setoran profit (${tglInput}) berhasil disimpan!`, "success");
+                }
+            } else {
+                const newSetoran = {
+                    id: nowTs,
+                    waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
+                    isoDate: tglInput,
+                    tgl: tglInput,
+                    sumber,
+                    nominal: nom,
+                    catatan: ket,
+                    updatedAt: nowTs
+                };
+                window.setoranOwnerList.unshift(newSetoran);
+                window.markLocalEntityEdited('setoran', newSetoran);
+                window.catatLogAktivitas('SETORAN PROFIT', `Mencatat setoran profit ${window.formatRp(nom)} (${ket}) untuk tanggal ${tglInput} dari akun ${sumber}`);
+                if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber], 10000);
+                window.showToast(`✅ Setoran profit ${window.formatRp(nom)} (Tanggal: ${tglInput}) dari ${sumber} berhasil dicatat!`, "success");
+            }
+
+            if (document.getElementById('editSetoranId')) document.getElementById('editSetoranId').value = '';
             document.getElementById('setorNomDisplay').value = '';
             document.getElementById('setorNom').value = '0';
             document.getElementById('setorKet').value = '';
             if (window.closeModalSetorFast) window.closeModalSetorFast();
-            window.catatLogAktivitas('SETORAN PROFIT', `Mencatat setoran profit ${window.formatRp(nom)} dari akun ${sumber}`);
-            if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber], 10000);
             window.saveToFirebaseNode('setoran', window.setoranOwnerList);
             window.renderAll();
-            window.showToast(`✅ Setoran profit ${window.formatRp(nom)} dari ${sumber} berhasil dicatat!`, "success");
-        }
+        };
+
+        window.editSetoranOwner = function(id) {
+            const s = (window.setoranOwnerList || []).find(item => String(item.id) === String(id));
+            if (!s) return;
+            window.openModalSetorFast(true);
+            if (document.getElementById('editSetoranId')) document.getElementById('editSetoranId').value = s.id;
+            if (document.getElementById('setorTgl')) document.getElementById('setorTgl').value = s.isoDate || s.tgl || window.getTodayIso();
+            if (document.getElementById('setorSumber')) document.getElementById('setorSumber').value = s.sumber || '';
+            const nom = Number(s.nominal || 0);
+            if (document.getElementById('setorNom')) document.getElementById('setorNom').value = nom;
+            if (document.getElementById('setorNomDisplay')) document.getElementById('setorNomDisplay').value = nom.toLocaleString('id-ID');
+            if (document.getElementById('setorKet')) document.getElementById('setorKet').value = s.catatan || '';
+            const btnEl = document.getElementById('btnSubmitSetorFast');
+            if (btnEl) btnEl.innerText = '💾 Simpan Perubahan Setoran';
+        };
 
         window.hapusSetoranOwner = function(id) {
             const s = window.setoranOwnerList.find(item => item.id === id);
@@ -16954,6 +17109,10 @@
                     return true;
                 });
 
+                if (window.sortStokOpnameAlphabetical) {
+                    window.sortStokOpnameAlphabetical(filteredStokList);
+                }
+
                 let filteredNilaiTotal = 0;
                 let filteredPcsTotal = 0;
 
@@ -18319,11 +18478,12 @@
                 bHistoriSetor.innerHTML = listSetoran.map(s => `
                     <tr id="row-setor-${s.id}">
                         <td><b>${s.waktu || '-'}</b></td>
-                        <td>${s.isoDate || s.tgl || '-'}</td>
+                        <td><b>${s.isoDate || s.tgl || '-'}</b></td>
                         <td><span style="background:#FEE2E2; color:#991B1B; padding:2px 7px; border-radius:5px; font-weight:800; font-size:10.5px;">${s.sumber || '-'}</span></td>
                         <td class="text-debit"><b>${window.formatRp(s.nominal || 0)}</b></td>
                         <td><b>${s.catatan || '-'}</b></td>
-                        <td style="text-align:center;">
+                        <td style="text-align:center; white-space:nowrap;">
+                            <button type="button" class="btn-edit" onclick="editSetoranOwner(${s.id})" style="margin-right:4px;">Edit</button>
                             <button type="button" class="btn-delete" onclick="hapusSetoranOwner(${s.id})">Hapus</button>
                         </td>
                     </tr>
