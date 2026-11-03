@@ -2859,7 +2859,7 @@
             }
         }
     </style>
-</head>
+<script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
 <body>
 
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
@@ -6269,8 +6269,18 @@
                 <button onclick="closeModalKasir()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
             </div>
 
-            <form id="formTrx">
+            <form id="formTrx" novalidate>
                 <input type="hidden" id="editTrxId" value="">
+
+                <!-- KOTAK ANTREAN MULTI-TRANSAKSI (1 KONSUMEN BANYAK TRX SEKALIGUS) -->
+                <div id="boxKasirMultiQueue" style="display:none; background:#F0F9FF; border:1.5px solid #38BDF8; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:11.5px; font-weight:800; color:#0369A1;">🛒 Daftar Transaksi Konsumen Ini (<span id="lblQueueCount">0</span> TRX • Dihitung 1 Pelanggan)</span>
+                        <button type="button" onclick="window.clearKasirMultiQueue()" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; border-radius:5px; padding:2px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">Kosongkan</button>
+                    </div>
+                    <div id="listKasirMultiQueueItems" style="display:flex; flex-direction:column; gap:5px; max-height:165px; overflow-y:auto; margin-bottom:8px;"></div>
+                    <div id="summaryKasirMultiQueue" style="background:#FFFFFF; border:1px solid #BAE6FD; border-radius:8px; padding:7px 9px; font-size:11px; line-height:1.45; color:#0F172A;"></div>
+                </div>
 
                 <div class="row-2" style="margin-bottom:8px;">
                     <div class="form-group" style="margin-bottom:0;">
@@ -6285,8 +6295,8 @@
                 <div id="trxDateNoticeBadge" style="display:none; background:#FEF3C7; color:#92400E; border:1.5px solid #F59E0B; border-radius:8px; padding:6px 10px; font-size:11px; font-weight:800; margin-top:-2px; margin-bottom:8px; line-height:1.35;"></div>
 
                 <div class="form-group">
-                    <label>Keterangan Transaksi / Nama Barang / Pelanggan Utang / Tiket Servis</label>
-                    <input type="text" id="keterangan" list="listVlookup" class="form-control" placeholder="KETIK KATA KUNCI / NAMA PELANGGAN SERVIS..." required autocomplete="off">
+                    <label id="lblInputKetKasir">Keterangan Transaksi / Nama Barang / Pelanggan Utang / Tiket Servis</label>
+                    <input type="text" id="keterangan" list="listVlookup" class="form-control" placeholder="KETIK KATA KUNCI / NAMA PELANGGAN SERVIS..." autocomplete="off">
                     <datalist id="listVlookup"></datalist>
                     <div id="vlookupNotice" class="badge-vlookup">⚡ Auto-Fill Terdeteksi!</div>
                     <div id="stokWarningBadge" class="badge-warn-stok">⚠️ Stok Tinggal Sedikit!</div>
@@ -6299,11 +6309,17 @@
                         <label>Kategori</label>
                         <select id="kategori" class="form-control" required></select>
                     </div>
-                    <div class="form-group" style="background-color:var(--primary-light); padding:6px 8px; border-radius:8px; border:1px solid var(--border);">
-                        <label style="color:var(--primary); font-weight:bold;">Pelanggan</label>
+                    <div id="boxInfoPelangganAuto" class="form-group" style="background-color:var(--primary-light); padding:6px 8px; border-radius:8px; border:1px solid var(--border);">
+                        <label style="color:var(--primary); font-weight:bold;">Hitungan Pelanggan</label>
+                        <div id="txtModePelangganAuto" style="font-size:10.5px; font-weight:800; color:#0F172A; margin-top:3px; line-height:1.3;">
+                            👤 Otomatis 1 Konsumen <span style="color:#64748B; font-weight:600;">(Klik +Tambah Trx jika beli lagi)</span>
+                        </div>
+                    </div>
+                    <div id="boxEditPelangganManual" class="form-group" style="display:none; background-color:var(--primary-light); padding:6px 8px; border-radius:8px; border:1px solid var(--border);">
+                        <label style="color:var(--primary); font-weight:bold;">Pelanggan (Edit)</label>
                         <label style="font-size:11px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px; margin-top:2px;">
                             <input type="checkbox" id="chkIsNewCustomer" checked style="width:15px; height:15px;">
-                            👤 Baru (+1)
+                            👤 Hitung +1 Pelanggan
                         </label>
                     </div>
                 </div>
@@ -6399,8 +6415,14 @@
                     <input type="text" id="cuanDisplay" class="form-control text-cuan" placeholder="0" readonly style="font-weight:bold; background-color:#FEF3C7;">
                 </div>
 
-                <div class="row-2" style="margin-top:12px;">
-                    <button type="submit" id="btnSubmitTrx" class="btn">Simpan Transaksi</button>
+                <div id="boxAddQueueBtnWrap" style="margin-top:10px;">
+                    <button type="button" id="btnAddQueueTrx" class="btn" style="width:100%; background:#0284C7; color:#FFF; font-weight:800; padding:9px 12px; border:1.5px dashed #BAE6FD; box-shadow:0 2px 6px rgba(2,132,199,0.22);" onclick="window.tambahKeAntreanKasir()">
+                        ➕ Tambah Trx Lagi (Konsumen Sama)
+                    </button>
+                </div>
+
+                <div class="row-2" style="margin-top:8px;">
+                    <button type="submit" id="btnSubmitTrx" class="btn">💾 Simpan Transaksi</button>
                     <button type="button" class="btn" style="background-color:#64748B;" onclick="closeModalKasir()">Batal</button>
                 </div>
             </form>
@@ -11300,13 +11322,24 @@
             }, durationMs + 80);
         };
 
+        window._kasirMultiQueue = [];
+
         window.openModalKasir = function() { 
-            if (!document.getElementById('editTrxId').value) {
+            const isEdit = Boolean(document.getElementById('editTrxId').value);
+            const boxAuto = document.getElementById('boxInfoPelangganAuto');
+            const boxEdit = document.getElementById('boxEditPelangganManual');
+            const boxAddBtn = document.getElementById('boxAddQueueBtnWrap');
+            if (boxAuto) boxAuto.style.display = isEdit ? 'none' : 'block';
+            if (boxEdit) boxEdit.style.display = isEdit ? 'block' : 'none';
+            if (boxAddBtn) boxAddBtn.style.display = isEdit ? 'none' : 'block';
+
+            if (!isEdit) {
                 document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
                 document.getElementById('chkSplit').checked = false;
                 const chkCust = document.getElementById('chkIsNewCustomer');
                 if (chkCust) chkCust.checked = true;
                 window.toggleSplitMode(false);
+                if (window.renderKasirMultiQueueUI) window.renderKasirMultiQueueUI();
             }
             window.updateTrxDateNoticeBadge();
             document.getElementById('modalKasirOverlay').classList.add('show');
@@ -11316,14 +11349,12 @@
             window.cancelEditTrx(); 
         }
 
-        window.cancelEditTrx = function() {
-            document.getElementById('formTrx').reset();
+        window.resetFormKasirFieldsKeepQueue = function() {
+            const currentSelectedDate = document.getElementById('trxDateInput')?.value || window.getDefaultKasirDate();
             document.getElementById('editTrxId').value = '';
-            const titleEl = document.getElementById('formTrxTitle');
-            if (titleEl) titleEl.innerText = '+ Input Transaksi Kasir';
-            const btnSubmitEl = document.getElementById('btnSubmitTrx');
-            if (btnSubmitEl) btnSubmitEl.innerText = 'Simpan Transaksi';
-            document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
+            document.getElementById('keterangan').value = '';
+            document.getElementById('trxQty').value = '1';
+            document.getElementById('trxDateInput').value = currentSelectedDate;
             window.updateTrxDateNoticeBadge();
             ['akunMasuk1', 'akunKeluar1', 'splitAkunMasuk1', 'akunMasuk2', 'splitAkunKeluar1', 'akunKeluar2'].forEach(id => {
                 const el = document.getElementById(id);
@@ -11351,9 +11382,31 @@
             window._pendingTiketIdToLunas = null;
             window._pendingSparepartIdToLunas = null;
             window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
+            document.getElementById('chkSplit').checked = false;
+            if (window.applyKasirExactStokLockUI) window.applyKasirExactStokLockUI();
             if (window.syncKasirAkunDropdownRestrictions) window.syncKasirAkunDropdownRestrictions();
             window.toggleSplitMode(false);
             if (window.cekValidasiPasanganNominalAkunUI) window.cekValidasiPasanganNominalAkunUI();
+            if (window.renderKasirMultiQueueUI) window.renderKasirMultiQueueUI();
+        };
+
+        window.cancelEditTrx = function() {
+            window._kasirMultiQueue = [];
+            document.getElementById('formTrx').reset();
+            window.resetFormKasirFieldsKeepQueue();
+            const titleEl = document.getElementById('formTrxTitle');
+            if (titleEl) titleEl.innerText = '+ Input Transaksi Kasir';
+            const btnSubmitEl = document.getElementById('btnSubmitTrx');
+            if (btnSubmitEl) btnSubmitEl.innerText = '💾 Simpan Transaksi';
+            document.getElementById('trxDateInput').value = window.getDefaultKasirDate();
+            window.updateTrxDateNoticeBadge();
+            const boxAuto = document.getElementById('boxInfoPelangganAuto');
+            const boxEdit = document.getElementById('boxEditPelangganManual');
+            const boxAddBtn = document.getElementById('boxAddQueueBtnWrap');
+            if (boxAuto) boxAuto.style.display = 'block';
+            if (boxEdit) boxEdit.style.display = 'none';
+            if (boxAddBtn) boxAddBtn.style.display = 'block';
+            if (window.renderKasirMultiQueueUI) window.renderKasirMultiQueueUI();
         }
 
         window.applyKpiCollapseUI = function(isCollapsed) {
@@ -12623,6 +12676,9 @@
                 notice.style.display = 'none';
                 if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
                 if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
+                if (window._kasirMultiQueue && window._kasirMultiQueue.length > 0 && window.renderKasirMultiQueueUI) {
+                    window.renderKasirMultiQueueUI();
+                }
             });
         }
 
@@ -12716,6 +12772,9 @@
             let m = isSplit ? (parseFloat(document.getElementById('modalSplit1').value)||0) + (parseFloat(document.getElementById('modalSplit2').value)||0) : parseFloat(document.getElementById('hargaModal').value)||0;
             document.getElementById('cuanDisplay').value = window.formatRp(j - m);
             if (window.cekValidasiPasanganNominalAkunUI) window.cekValidasiPasanganNominalAkunUI();
+            if (window._kasirMultiQueue && window._kasirMultiQueue.length > 0 && window.renderKasirMultiQueueUI) {
+                window.renderKasirMultiQueueUI();
+            }
         }
 
         window.initDropdowns = function() {
@@ -15404,6 +15463,27 @@
                 window.markLocalTrxDeleted(idTrx);
                 window.catatLogAktivitas('HAPUS TRX', `Menghapus transaksi "${t.ket}" (${window.formatRp(t.hargaJual)})`);
                 window.transaksiJurnal = window.transaksiJurnal.filter(item => item.id != idTrx);
+
+                // Jika transaksi yang dihapus adalah transaksi utama (+1 Pelanggan) dalam paket 1 kunjungan (visitGroupId),
+                // pindahkan status +1 Pelanggan ke sisa anggota grup yang sama agar hitungan Pelanggan Harian tetap akurat!
+                if (t.visitGroupId) {
+                    const remainingSiblings = window.transaksiJurnal
+                        .filter(item => item && item.visitGroupId === t.visitGroupId)
+                        .sort((a, b) => Number(a.visitGroupIndex || 0) - Number(b.visitGroupIndex || 0));
+                    if (remainingSiblings.length > 0) {
+                        const hasNewCust = remainingSiblings.some(s => s.isNewCustomer !== false);
+                        remainingSiblings.forEach((sib, sIdx) => {
+                            sib.visitGroupIndex = sIdx + 1;
+                            sib.visitGroupTotal = remainingSiblings.length;
+                            if (!hasNewCust && sIdx === 0) {
+                                sib.isNewCustomer = true;
+                            }
+                            sib.updatedAt = nowTs;
+                            window.markLocalTrxEdited(sib);
+                        });
+                    }
+                }
+
                 nodesToSave.transaksi = window.transaksiJurnal;
                 window.renderAll();
                 if (nodesToSave.piutang) nodesToSave.piutang = window.piutangList;
@@ -15945,25 +16025,26 @@
             if (window.showToast) window.showToast(`✅ Pindah saldo ${sumber} ➔ ${tujuan} (${window.formatRp(nom)}) berhasil disimpan!`, "success");
         }
 
-        document.getElementById('formTrx').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editTrxId').value;
+        window.extractAndValidateCurrentKasirFormItem = function(existingTrx = null) {
             const selectedDate = document.getElementById('trxDateInput').value || window.getTodayIso();
-            const ket = document.getElementById('keterangan').value.trim().toUpperCase();
+            const ket = (document.getElementById('keterangan').value || '').trim().toUpperCase();
+            if (!ket) {
+                const ketEl = document.getElementById('keterangan');
+                if (ketEl) ketEl.focus();
+                if (window.showToast) window.showToast("⚠️ Isi Keterangan Transaksi terlebih dahulu!", "error");
+                return null;
+            }
             const qty = parseFloat(document.getElementById('trxQty').value) || 1;
-            const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
             if (window.applyKasirExactStokLockUI) {
                 window.applyKasirExactStokLockUI();
             }
             const exactStokSubmit = window.findExactStokItemByKeterangan ? window.findExactStokItemByKeterangan(ket, existingTrx) : null;
             const kat = exactStokSubmit ? String(exactStokSubmit.kat || 'VOUCHER').toUpperCase().trim() : document.getElementById('kategori').value;
-            const isNewCustomer = document.getElementById('chkIsNewCustomer').checked;
             let isSplit = document.getElementById('chkSplit').checked;
 
             let akunMasuk1 = '', akunMasuk2 = '', jualSplit1 = 0, jualSplit2 = 0, hargaJualTotal = 0;
             let akunKeluar1 = '', akunKeluar2 = '', modalSplit1 = 0, modalSplit2 = 0, hargaModalTotal = 0;
 
-            // VALIDASI PASANGAN MENGUNCI DUA ARAH (NOMINAL <-> AKUN SALDO)
             if (window.validasiPasanganNominalAkunKasir) {
                 const pairCheck = window.validasiPasanganNominalAkunKasir({ isSubmit: true });
                 if (!pairCheck.valid) {
@@ -15975,7 +16056,7 @@
                     const plainMsg = pairCheck.errors.map(x => '• ' + x.replace(/<[^>]+>/g, '')).join('\n');
                     if (window.showToast) window.showToast("⛔ Simpan ditolak: Pasangan Akun & Nominal belum lengkap!", "error");
                     alert(`⛔ PROTEKSI PASANGAN AKUN & NOMINAL KASIR:\n\n${plainMsg}\n\nCatatan: Jika memang tidak ada transaksi pada bagian tersebut, pastikan Akun dikosongkan ("-- Pilih Akun --") dan Nominal Rp 0.`);
-                    return;
+                    return null;
                 }
             }
 
@@ -16045,7 +16126,6 @@
                 modalSplit2 = 0;
             }
 
-            // LAPIS 2: Hard-Block Proteksi Aturan Akun Saldo Kasir
             if (window.validasiAturanAkunKasir) {
                 const ruleCheck = window.validasiAturanAkunKasir({
                     ket,
@@ -16059,7 +16139,7 @@
                     const plainMsg = ruleCheck.errors.map(x => '• ' + x.replace(/<[^>]+>/g, '')).join('\n');
                     if (window.showToast) window.showToast("⛔ Transaksi ditolak: Pilihan akun melanggar aturan alur saldo!", "error");
                     alert(`⛔ PROTEKSI ALUR AKUN SALDO KASIR:\n\n${plainMsg}\n\nSilakan perbaiki pilihan Akun Masuk / Keluar terlebih dahulu.`);
-                    return;
+                    return null;
                 }
             }
 
@@ -16072,20 +16152,15 @@
                         `Akibatnya stok fisik barang TIDAK akan terpotong otomatis.\n` +
                         `Tetap lanjutkan simpan transaksi manual ini?`
                     );
-                    if (!okForce) return;
+                    if (!okForce) return null;
                 }
             }
 
-            const nowMs = window.getNextUniqueTs();
-            const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-            const trxData = {
-                id: editId ? editId : 'trx_' + nowMs,
-                waktu: existingTrx ? (existingTrx.waktu || timeStr) : timeStr,
-                isoDate: selectedDate,
+            return {
+                selectedDate,
                 ket,
                 qty,
                 kat,
-                isNewCustomer,
                 hargaJual: hargaJualTotal,
                 akunMasuk1: akunMasuk1 || '',
                 jualSplit1: Number(jualSplit1 || 0),
@@ -16098,193 +16173,392 @@
                 modalSplit2: Number(modalSplit2 || 0),
                 cuan: hargaJualTotal - hargaModalTotal,
                 isSplit: Boolean(isSplit),
-                updatedAt: nowMs,
                 idTiketRef: (window._pendingTiketIdToLunas || (existingTrx ? existingTrx.idTiketRef : null)) || null,
                 idSparepartRef: (window._pendingSparepartIdToLunas || (existingTrx ? existingTrx.idSparepartRef : null)) || null,
                 idPiutangRef: (window._pendingPiutangIdToLunas || (existingTrx ? existingTrx.idPiutangRef : null)) || null,
                 piutangGroupNama: (window._pendingPiutangGroupNama || (existingTrx ? existingTrx.piutangGroupNama : null)) || null
             };
+        };
 
-            // Jika transaksi adalah Pelunasan / Cicilan Piutang dan dibayar sebagian (Cicilan), sesuaikan hargaModal dengan porsi Pokok FIFO yang benar-benar terbayar agar Saldo PIUTANG akurat 100%
-            if ((trxData.kat === 'PIUTANG' || trxData.akunKeluar1 === 'PIUTANG') && !trxData.isPencatatanUtangAwal) {
-                const groupNm = (trxData.piutangGroupNama || (trxData.ket || '').replace(/^\[PELUNASAN UTANG\]\s*/i, '').replace(/\s*\(AKUMULASI.*\)$/i, '').replace(/\s*\(.*\)$/, '')).trim().toUpperCase();
-                let targetNotes = [];
-                if (trxData.idPiutangRef && !trxData.piutangGroupNama) {
-                    const singleP = (window.piutangList || []).find(x => x.id == trxData.idPiutangRef);
-                    if (singleP) targetNotes = [singleP];
-                }
-                if (targetNotes.length === 0 && groupNm) {
-                    targetNotes = (window.piutangList || []).filter(x => (x.nama || '').trim().toUpperCase() === groupNm && x.status !== 'LUNAS' && Number(x.sisa || 0) > 0)
-                        .sort((a, b) => (a.isoDate || '').localeCompare(b.isoDate || '') || (Number(a.id) - Number(b.id)));
-                }
-                if (targetNotes.length > 0) {
-                    let remJual = Number(trxData.hargaJual || 0);
-                    let calcPokokBayar = 0;
-                    targetNotes.forEach(np => {
-                        if (remJual <= 0) return;
-                        const sPokok = Number(np.sisa !== undefined ? np.sisa : (np.pokokAwal || 0));
-                        const sTagih = Number(np.sisaTagihanJual !== undefined ? np.sisaTagihanJual : Math.max(sPokok, Number(np.tagihanJual || 0)));
-                        if (remJual >= sTagih) {
-                            calcPokokBayar += sPokok;
-                            remJual -= sTagih;
-                        } else {
-                            calcPokokBayar += Math.min(sPokok, remJual);
-                            remJual = 0;
-                        }
-                    });
-                    if (calcPokokBayar > 0 && (trxData.hargaJual < trxData.hargaModal || trxData.piutangGroupNama)) {
-                        trxData.hargaModal = calcPokokBayar;
-                        if (!trxData.isSplit) trxData.modalSplit1 = calcPokokBayar;
-                        trxData.cuan = Math.max(0, Number(trxData.hargaJual || 0) - calcPokokBayar);
-                    }
-                } else if (trxData.hargaJual < trxData.hargaModal) {
-                    trxData.hargaModal = trxData.hargaJual;
-                    if (!trxData.isSplit) trxData.modalSplit1 = trxData.hargaJual;
-                    trxData.cuan = 0;
-                }
+        window.renderKasirMultiQueueUI = function() {
+            const box = document.getElementById('boxKasirMultiQueue');
+            const listEl = document.getElementById('listKasirMultiQueueItems');
+            const sumEl = document.getElementById('summaryKasirMultiQueue');
+            const cntEl = document.getElementById('lblQueueCount');
+            const btnSubmitEl = document.getElementById('btnSubmitTrx');
+            const lblKetEl = document.getElementById('lblInputKetKasir');
+            const txtAutoEl = document.getElementById('txtModePelangganAuto');
+            const isEdit = Boolean(document.getElementById('editTrxId')?.value);
+
+            const q = window._kasirMultiQueue || [];
+            if (!box || isEdit) {
+                if (box) box.style.display = 'none';
+                return;
             }
 
-            if (existingTrx && existingTrx.isPencatatanUtangAwal) trxData.isPencatatanUtangAwal = true;
-            if (existingTrx && existingTrx.isPindahSaldo) trxData.isPindahSaldo = true;
+            if (q.length === 0) {
+                box.style.display = 'none';
+                if (lblKetEl) lblKetEl.innerHTML = 'Keterangan Transaksi / Nama Barang / Pelanggan Utang / Tiket Servis';
+                if (txtAutoEl) txtAutoEl.innerHTML = '👤 Otomatis 1 Konsumen <span style="color:#64748B; font-weight:600;">(Klik +Tambah Trx jika beli lagi)</span>';
+                if (btnSubmitEl) btnSubmitEl.innerText = '💾 Simpan Transaksi';
+                return;
+            }
 
+            box.style.display = 'block';
+            if (cntEl) cntEl.innerText = q.length;
+            if (lblKetEl) lblKetEl.innerHTML = `<span style="color:#0284C7; font-weight:800;">➕ Input Transaksi Ke-${q.length + 1} (Konsumen Sama)</span> <small style="color:#64748B;">— Kosongkan jika sudah selesai</small>`;
+            if (txtAutoEl) txtAutoEl.innerHTML = `🔗 Paket <b>${q.length} Trx</b> di Antrean = <b style="color:#16A34A;">Tetap 1 Pelanggan</b>`;
+
+            let totalJualQueue = 0;
+            let totalCuanQueue = 0;
+            const masukPerAkun = {};
+
+            listEl.innerHTML = q.map((item, idx) => {
+                totalJualQueue += Number(item.hargaJual || 0);
+                totalCuanQueue += Number(item.cuan || 0);
+                if (item.isSplit) {
+                    if (item.akunMasuk1 && item.jualSplit1 > 0) masukPerAkun[item.akunMasuk1] = (masukPerAkun[item.akunMasuk1] || 0) + Number(item.jualSplit1);
+                    if (item.akunMasuk2 && item.jualSplit2 > 0) masukPerAkun[item.akunMasuk2] = (masukPerAkun[item.akunMasuk2] || 0) + Number(item.jualSplit2);
+                } else if (item.akunMasuk1 && item.hargaJual > 0) {
+                    masukPerAkun[item.akunMasuk1] = (masukPerAkun[item.akunMasuk1] || 0) + Number(item.hargaJual);
+                }
+
+                const keluarStr = item.isSplit && item.akunKeluar2
+                    ? `${item.akunKeluar1}+${item.akunKeluar2}`
+                    : (item.akunKeluar1 || '-');
+                const masukStr = item.isSplit && item.akunMasuk2
+                    ? `${item.akunMasuk1}+${item.akunMasuk2}`
+                    : (item.akunMasuk1 || '-');
+
+                return `
+                    <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-left:3.5px solid #0284C7; border-radius:7px; padding:6px 8px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                        <div style="font-size:10.5px; line-height:1.35; flex:1;">
+                            <div>
+                                <b style="color:#0369A1;">#${idx + 1} [${item.kat}]</b> <b>${item.ket}</b> ${item.qty > 1 ? `<span style="color:#64748B;">(x${item.qty})</span>` : ''}
+                            </div>
+                            <div style="color:#475569; font-size:10px;">
+                                Alur: <b style="color:#DC2626;">${keluarStr}</b> ➔ <b style="color:#16A34A;">${masukStr}</b> • Jual: <b style="color:#16A34A;">${window.formatRp(item.hargaJual)}</b> • Modal: <b style="color:#DC2626;">${window.formatRp(item.hargaModal)}</b>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:4px; shrink:0;">
+                            <button type="button" onclick="window.editItemAntreanKasir(${idx})" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; border-radius:5px; padding:3px 6px; font-size:10px; font-weight:800; cursor:pointer;" title="Edit item ini">✏️</button>
+                            <button type="button" onclick="window.hapusItemAntreanKasir(${idx})" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; border-radius:5px; padding:3px 6px; font-size:10px; font-weight:800; cursor:pointer;" title="Hapus dari antrean">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const rincianAkunStr = Object.keys(masukPerAkun).map(ak => `<b>${ak}</b>: ${window.formatRp(masukPerAkun[ak])}`).join(' • ');
+            sumEl.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>💰 <b>Total Tagihan Antrean (${q.length} Trx):</b></span>
+                    <b style="color:#16A34A; font-size:12.5px;">${window.formatRp(totalJualQueue)}</b>
+                </div>
+                ${rincianAkunStr ? `<div style="font-size:10px; color:#475569; margin-top:2px;">Uang Masuk: ${rincianAkunStr} • Total Cuan: <b style="color:#D97706;">${window.formatRp(totalCuanQueue)}</b></div>` : ''}
+            `;
+
+            const currentKet = (document.getElementById('keterangan')?.value || '').trim();
+            const totalSaveCount = currentKet ? (q.length + 1) : q.length;
+            if (btnSubmitEl) {
+                btnSubmitEl.innerText = `💾 Simpan Semua (${totalSaveCount} Trx • 1 Pelanggan)`;
+            }
+        };
+
+        window.tambahKeAntreanKasir = function() {
+            const item = window.extractAndValidateCurrentKasirFormItem(null);
+            if (!item) return;
+            window._kasirMultiQueue.push(item);
+            window.resetFormKasirFieldsKeepQueue();
+            window.renderKasirMultiQueueUI();
+            const ketEl = document.getElementById('keterangan');
+            if (ketEl) ketEl.focus();
+            if (window.showToast) {
+                window.showToast(`➕ "${item.ket}" masuk antrean (#${window._kasirMultiQueue.length}). Silakan isi transaksi berikutnya atau klik Simpan Semua!`, "success");
+            }
+        };
+
+        window.hapusItemAntreanKasir = function(idx) {
+            if (!window._kasirMultiQueue || idx < 0 || idx >= window._kasirMultiQueue.length) return;
+            window._kasirMultiQueue.splice(idx, 1);
+            window.renderKasirMultiQueueUI();
+        };
+
+        window.editItemAntreanKasir = function(idx) {
+            if (!window._kasirMultiQueue || idx < 0 || idx >= window._kasirMultiQueue.length) return;
+            const item = window._kasirMultiQueue.splice(idx, 1)[0];
+            window.resetFormKasirFieldsKeepQueue();
+
+            document.getElementById('trxDateInput').value = item.selectedDate || window.getDefaultKasirDate();
+            document.getElementById('keterangan').value = item.ket || '';
+            document.getElementById('trxQty').value = item.qty || 1;
+            document.getElementById('kategori').value = item.kat || 'VOUCHER';
+
+            const isSplit = Boolean(item.isSplit);
+            document.getElementById('akunMasuk1').value = item.akunMasuk1 || '';
+            document.getElementById('hargaJual').value = item.hargaJual || 0;
+            document.getElementById('hargaJualDisplay').value = item.hargaJual ? Number(item.hargaJual).toLocaleString('id-ID') : '0';
+            document.getElementById('akunKeluar1').value = item.akunKeluar1 || '';
+            document.getElementById('hargaModal').value = item.hargaModal || 0;
+            document.getElementById('hargaModalDisplay').value = item.hargaModal ? Number(item.hargaModal).toLocaleString('id-ID') : '0';
+
+            document.getElementById('splitAkunMasuk1').value = item.akunMasuk1 || '';
+            document.getElementById('jualSplit1').value = item.jualSplit1 || 0;
+            document.getElementById('jualSplit1Display').value = item.jualSplit1 ? Number(item.jualSplit1).toLocaleString('id-ID') : '0';
+            document.getElementById('akunMasuk2').value = item.akunMasuk2 || '';
+            document.getElementById('jualSplit2').value = item.jualSplit2 || 0;
+            document.getElementById('jualSplit2Display').value = item.jualSplit2 ? Number(item.jualSplit2).toLocaleString('id-ID') : '0';
+
+            document.getElementById('splitAkunKeluar1').value = item.akunKeluar1 || '';
+            document.getElementById('modalSplit1').value = item.modalSplit1 || 0;
+            document.getElementById('modalSplit1Display').value = item.modalSplit1 ? Number(item.modalSplit1).toLocaleString('id-ID') : '0';
+            document.getElementById('akunKeluar2').value = item.akunKeluar2 || '';
+            document.getElementById('modalSplit2').value = item.modalSplit2 || 0;
+            document.getElementById('modalSplit2Display').value = item.modalSplit2 ? Number(item.modalSplit2).toLocaleString('id-ID') : '0';
+
+            window._pendingTiketIdToLunas = item.idTiketRef || null;
+            window._pendingSparepartIdToLunas = item.idSparepartRef || null;
+            window._pendingPiutangIdToLunas = item.idPiutangRef || null;
+            window._pendingPiutangGroupNama = item.piutangGroupNama || null;
+
+            document.getElementById('chkSplit').checked = isSplit;
+            window.toggleSplitMode(isSplit);
+            if (window.applyKasirExactStokLockUI) window.applyKasirExactStokLockUI();
+            window.hitungCuan();
+            window.renderKasirMultiQueueUI();
+        };
+
+        window.clearKasirMultiQueue = function() {
+            window._kasirMultiQueue = [];
+            window.renderKasirMultiQueueUI();
+        };
+
+        document.getElementById('formTrx').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editTrxId').value;
+            const existingTrx = editId ? window.transaksiJurnal.find(x => x.id == editId) : null;
+
+            let itemsToProcess = [];
             if (editId) {
-                const idx = window.transaksiJurnal.findIndex(item => item.id == editId);
-                if (idx !== -1) window.transaksiJurnal[idx] = trxData;
-                else window.transaksiJurnal.unshift(trxData);
-                window.catatLogAktivitas('EDIT TRX', `Mengubah transaksi "${ket}" (${window.formatRp(hargaJualTotal)})`);
-            } else { 
-                window.transaksiJurnal.unshift(trxData);
-                window.catatLogAktivitas('TAMBAH TRX', `Mencatat transaksi baru [${kat}] "${ket}" (${window.formatRp(hargaJualTotal)})`);
+                const singleEditItem = window.extractAndValidateCurrentKasirFormItem(existingTrx);
+                if (!singleEditItem) return;
+                itemsToProcess = [singleEditItem];
+            } else {
+                const queueItems = (window._kasirMultiQueue || []).slice();
+                const currentKet = (document.getElementById('keterangan')?.value || '').trim();
+                if (queueItems.length > 0 && !currentKet) {
+                    itemsToProcess = queueItems;
+                } else {
+                    const currentItem = window.extractAndValidateCurrentKasirFormItem(null);
+                    if (!currentItem) return;
+                    itemsToProcess = [...queueItems, currentItem];
+                }
             }
+
+            if (itemsToProcess.length === 0) return;
+
+            const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            const isMultiVisitBatch = !editId && itemsToProcess.length > 1;
+            const batchGroupId = isMultiVisitBatch ? ('grp_' + window.getNextUniqueTs()) : (existingTrx && existingTrx.visitGroupId ? existingTrx.visitGroupId : null);
 
             let touchedTiket = false;
             let touchedSparepart = false;
             let touchedPiutang = false;
+            const blinkAccounts = [];
+            let lastSavedTrxId = null;
+            let lastSavedDate = itemsToProcess[0].selectedDate;
 
-            if (window._pendingTiketIdToLunas) {
-                const tk = window.tiketServisList.find(x => x.id == window._pendingTiketIdToLunas);
-                const spFromTiket = window.sparepartList.find(s => s.idTiketRef == window._pendingTiketIdToLunas);
-                if (tk) {
-                    const pakaiModal = Boolean((tk.perluSparepart && Number(tk.modalPart || 0) > 0) || (spFromTiket && Number(spFromTiket.modal || 0) > 0));
-                    tk.isSettledInKasir = true;
-                    tk.tglLunas = selectedDate || window.getTodayIso();
-                    tk.waktuLunas = timeStr;
-                    tk.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
-                    tk.updatedAt = nowMs;
-                    window.markLocalEntityEdited('tiketServis', tk);
-                    touchedTiket = true;
-                    window.catatLogAktivitas('SERVIS SELESAI', `Tiket ${tk.noServis} (${tk.nama}) otomatis ${tk.status} via kasir`);
-                }
-                if (spFromTiket) {
-                    spFromTiket.status = 'LUNAS';
-                    spFromTiket.trxIdRef = trxData.id;
-                    spFromTiket.updatedAt = nowMs;
-                    trxData.idSparepartRef = spFromTiket.id;
-                    window.markLocalEntityEdited('sparepart', spFromTiket);
-                    touchedSparepart = true;
-                }
-                window._pendingTiketIdToLunas = null;
-            }
+            itemsToProcess.forEach((rawItem, idx) => {
+                const nowMs = window.getNextUniqueTs();
+                const isNewCustomer = editId
+                    ? document.getElementById('chkIsNewCustomer').checked
+                    : (idx === 0);
 
-            if (window._pendingSparepartIdToLunas) {
-                const sp = window.sparepartList.find(x => x.id == window._pendingSparepartIdToLunas);
-                if (sp) {
-                    sp.status = 'LUNAS';
-                    sp.trxIdRef = trxData.id;
-                    sp.updatedAt = nowMs;
-                    window.markLocalEntityEdited('sparepart', sp);
-                    touchedSparepart = true;
-                    window.catatLogAktivitas('LUNAS SPAREPART', `Sparepart "${sp.namaUnit}" otomatis LUNAS via kasir`);
-                }
-                window._pendingSparepartIdToLunas = null;
-            }
+                const trxData = {
+                    id: editId ? editId : 'trx_' + nowMs,
+                    waktu: existingTrx ? (existingTrx.waktu || timeStr) : timeStr,
+                    isoDate: rawItem.selectedDate,
+                    ket: rawItem.ket,
+                    qty: rawItem.qty,
+                    kat: rawItem.kat,
+                    isNewCustomer,
+                    hargaJual: rawItem.hargaJual,
+                    akunMasuk1: rawItem.akunMasuk1 || '',
+                    jualSplit1: Number(rawItem.jualSplit1 || 0),
+                    akunMasuk2: rawItem.akunMasuk2 || '',
+                    jualSplit2: Number(rawItem.jualSplit2 || 0),
+                    hargaModal: rawItem.hargaModal,
+                    akunKeluar1: rawItem.akunKeluar1 || '',
+                    modalSplit1: Number(rawItem.modalSplit1 || 0),
+                    akunKeluar2: rawItem.akunKeluar2 || '',
+                    modalSplit2: Number(rawItem.modalSplit2 || 0),
+                    cuan: rawItem.hargaJual - rawItem.hargaModal,
+                    isSplit: Boolean(rawItem.isSplit),
+                    updatedAt: nowMs,
+                    idTiketRef: rawItem.idTiketRef || null,
+                    idSparepartRef: rawItem.idSparepartRef || null,
+                    idPiutangRef: rawItem.idPiutangRef || null,
+                    piutangGroupNama: rawItem.piutangGroupNama || null,
+                    visitGroupId: batchGroupId || null,
+                    visitGroupIndex: isMultiVisitBatch ? (idx + 1) : (existingTrx && existingTrx.visitGroupIndex ? existingTrx.visitGroupIndex : null),
+                    visitGroupTotal: isMultiVisitBatch ? itemsToProcess.length : (existingTrx && existingTrx.visitGroupTotal ? existingTrx.visitGroupTotal : null)
+                };
 
-            if (window._pendingPiutangIdToLunas) {
-                const p = window.piutangList.find(x => x.id == window._pendingPiutangIdToLunas);
-                if (p) {
-                    p.updatedAt = nowMs;
-                    window.markLocalEntityEdited('piutang', p);
+                // Jika transaksi adalah Pelunasan / Cicilan Piutang dan dibayar sebagian (Cicilan), sesuaikan hargaModal dengan porsi Pokok FIFO yang benar-benar terbayar agar Saldo PIUTANG akurat 100%
+                if ((trxData.kat === 'PIUTANG' || trxData.akunKeluar1 === 'PIUTANG') && !trxData.isPencatatanUtangAwal) {
+                    const groupNm = (trxData.piutangGroupNama || (trxData.ket || '').replace(/^\[PELUNASAN UTANG\]\s*/i, '').replace(/\s*\(AKUMULASI.*\)$/i, '').replace(/\s*\(.*\)$/, '')).trim().toUpperCase();
+                    let targetNotes = [];
+                    if (trxData.idPiutangRef && !trxData.piutangGroupNama) {
+                        const singleP = (window.piutangList || []).find(x => x.id == trxData.idPiutangRef);
+                        if (singleP) targetNotes = [singleP];
+                    }
+                    if (targetNotes.length === 0 && groupNm) {
+                        targetNotes = (window.piutangList || []).filter(x => (x.nama || '').trim().toUpperCase() === groupNm && x.status !== 'LUNAS' && Number(x.sisa || 0) > 0)
+                            .sort((a, b) => (a.isoDate || '').localeCompare(b.isoDate || '') || (Number(a.id) - Number(b.id)));
+                    }
+                    if (targetNotes.length > 0) {
+                        let remJual = Number(trxData.hargaJual || 0);
+                        let calcPokokBayar = 0;
+                        targetNotes.forEach(np => {
+                            if (remJual <= 0) return;
+                            const sPokok = Number(np.sisa !== undefined ? np.sisa : (np.pokokAwal || 0));
+                            const sTagih = Number(np.sisaTagihanJual !== undefined ? np.sisaTagihanJual : Math.max(sPokok, Number(np.tagihanJual || 0)));
+                            if (remJual >= sTagih) {
+                                calcPokokBayar += sPokok;
+                                remJual -= sTagih;
+                            } else {
+                                calcPokokBayar += Math.min(sPokok, remJual);
+                                remJual = 0;
+                            }
+                        });
+                        if (calcPokokBayar > 0 && (trxData.hargaJual < trxData.hargaModal || trxData.piutangGroupNama)) {
+                            trxData.hargaModal = calcPokokBayar;
+                            if (!trxData.isSplit) trxData.modalSplit1 = calcPokokBayar;
+                            trxData.cuan = Math.max(0, Number(trxData.hargaJual || 0) - calcPokokBayar);
+                        }
+                    } else if (trxData.hargaJual < trxData.hargaModal) {
+                        trxData.hargaModal = trxData.hargaJual;
+                        if (!trxData.isSplit) trxData.modalSplit1 = trxData.hargaJual;
+                        trxData.cuan = 0;
+                    }
+                }
+
+                if (existingTrx && existingTrx.isPencatatanUtangAwal) trxData.isPencatatanUtangAwal = true;
+                if (existingTrx && existingTrx.isPindahSaldo) trxData.isPindahSaldo = true;
+
+                if (editId) {
+                    const idxExist = window.transaksiJurnal.findIndex(item => item.id == editId);
+                    if (idxExist !== -1) window.transaksiJurnal[idxExist] = trxData;
+                    else window.transaksiJurnal.unshift(trxData);
+                    window.catatLogAktivitas('EDIT TRX', `Mengubah transaksi "${trxData.ket}" (${window.formatRp(trxData.hargaJual)})`);
+                } else {
+                    window.transaksiJurnal.unshift(trxData);
+                    const tagMulti = isMultiVisitBatch ? ` (Paket Konsumen ${idx + 1}/${itemsToProcess.length})` : '';
+                    window.catatLogAktivitas('TAMBAH TRX', `Mencatat transaksi baru [${trxData.kat}] "${trxData.ket}" (${window.formatRp(trxData.hargaJual)})${tagMulti}`);
+                }
+
+                if (trxData.idTiketRef) {
+                    const tk = window.tiketServisList.find(x => x.id == trxData.idTiketRef);
+                    const spFromTiket = window.sparepartList.find(s => s.idTiketRef == trxData.idTiketRef);
+                    if (tk) {
+                        const pakaiModal = Boolean((tk.perluSparepart && Number(tk.modalPart || 0) > 0) || (spFromTiket && Number(spFromTiket.modal || 0) > 0));
+                        tk.isSettledInKasir = true;
+                        tk.tglLunas = trxData.isoDate || window.getTodayIso();
+                        tk.waktuLunas = timeStr;
+                        tk.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
+                        tk.updatedAt = nowMs;
+                        window.markLocalEntityEdited('tiketServis', tk);
+                        touchedTiket = true;
+                        window.catatLogAktivitas('SERVIS SELESAI', `Tiket ${tk.noServis} (${tk.nama}) otomatis ${tk.status} via kasir`);
+                    }
+                    if (spFromTiket) {
+                        spFromTiket.status = 'LUNAS';
+                        spFromTiket.trxIdRef = trxData.id;
+                        spFromTiket.updatedAt = nowMs;
+                        trxData.idSparepartRef = spFromTiket.id;
+                        window.markLocalEntityEdited('sparepart', spFromTiket);
+                        touchedSparepart = true;
+                    }
+                }
+
+                if (trxData.idSparepartRef) {
+                    const sp = window.sparepartList.find(x => x.id == trxData.idSparepartRef);
+                    if (sp) {
+                        sp.status = 'LUNAS';
+                        sp.trxIdRef = trxData.id;
+                        sp.updatedAt = nowMs;
+                        window.markLocalEntityEdited('sparepart', sp);
+                        touchedSparepart = true;
+                        window.catatLogAktivitas('LUNAS SPAREPART', `Sparepart "${sp.namaUnit}" otomatis LUNAS via kasir`);
+                    }
+                }
+
+                if (trxData.idPiutangRef) {
+                    const p = window.piutangList.find(x => x.id == trxData.idPiutangRef);
+                    if (p) {
+                        p.updatedAt = nowMs;
+                        window.markLocalEntityEdited('piutang', p);
+                        touchedPiutang = true;
+                        const targetMasukInfo = trxData.isSplit && trxData.akunMasuk2 ? `${trxData.akunMasuk1} & ${trxData.akunMasuk2}` : trxData.akunMasuk1;
+                        window.catatLogAktivitas('PELUNASAN UTANG', `Menerima pembayaran piutang ${p.nama} sebesar ${window.formatRp(trxData.hargaJual)} masuk ke ${targetMasukInfo}`);
+                    }
+                }
+
+                if (trxData.piutangGroupNama) {
+                    const gName = String(trxData.piutangGroupNama || '').trim().toUpperCase();
+                    const groupItems = (window.piutangList || []).filter(x => (x.nama || '').trim().toUpperCase() === gName && x.status !== 'LUNAS');
+                    groupItems.forEach(pItem => {
+                        pItem.updatedAt = nowMs;
+                        window.markLocalEntityEdited('piutang', pItem);
+                    });
                     touchedPiutang = true;
-                    const targetMasukInfo = isSplit && akunMasuk2 ? `${akunMasuk1} & ${akunMasuk2}` : akunMasuk1;
-                    window.catatLogAktivitas('PELUNASAN UTANG', `Menerima pembayaran piutang ${p.nama} sebesar ${window.formatRp(hargaJualTotal)} masuk ke ${targetMasukInfo}`);
+                    const targetMasukInfo = trxData.isSplit && trxData.akunMasuk2 ? `${trxData.akunMasuk1} & ${trxData.akunMasuk2}` : trxData.akunMasuk1;
+                    window.catatLogAktivitas('PELUNASAN AKUMULASI UTANG', `Menerima pembayaran akumulasi piutang ${gName} (${groupItems.length} nota) sebesar ${window.formatRp(trxData.hargaJual)} masuk ke ${targetMasukInfo}`);
                 }
-                window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
-            }
 
-            if (window._pendingPiutangGroupNama) {
-                const gName = String(window._pendingPiutangGroupNama || '').trim().toUpperCase();
-                const groupItems = (window.piutangList || []).filter(x => (x.nama || '').trim().toUpperCase() === gName && x.status !== 'LUNAS');
-                groupItems.forEach(pItem => {
-                    pItem.updatedAt = nowMs;
-                    window.markLocalEntityEdited('piutang', pItem);
-                });
-                touchedPiutang = true;
-                const targetMasukInfo = isSplit && akunMasuk2 ? `${akunMasuk1} & ${akunMasuk2}` : akunMasuk1;
-                window.catatLogAktivitas('PELUNASAN AKUMULASI UTANG', `Menerima pembayaran akumulasi piutang ${gName} (${groupItems.length} nota) sebesar ${window.formatRp(hargaJualTotal)} masuk ke ${targetMasukInfo}`);
-                window._pendingPiutangGroupNama = null;
-            }
+                if (trxData.idTiketRef) touchedTiket = true;
+                if (trxData.idSparepartRef || trxData.akunKeluar1 === 'SPAREPART' || trxData.akunKeluar2 === 'SPAREPART') touchedSparepart = true;
+                if (trxData.idPiutangRef || trxData.kat === 'PIUTANG' || trxData.akunKeluar1 === 'PIUTANG') touchedPiutang = true;
 
-            if (trxData.idTiketRef) touchedTiket = true;
-            if (trxData.idSparepartRef || trxData.akunKeluar1 === 'SPAREPART' || trxData.akunKeluar2 === 'SPAREPART') touchedSparepart = true;
-            if (trxData.idPiutangRef || trxData.kat === 'PIUTANG' || trxData.akunKeluar1 === 'PIUTANG') touchedPiutang = true;
+                window.markLocalTrxEdited(trxData);
+                blinkAccounts.push(trxData.akunMasuk1, trxData.akunMasuk2, trxData.akunKeluar1, trxData.akunKeluar2);
+                lastSavedTrxId = trxData.id;
+                lastSavedDate = trxData.isoDate;
+            });
 
-            // Simpan ke proteksi lokal anti-rollback sebelum sinkronisasi Firebase
-            window.markLocalTrxEdited(trxData);
+            window._pendingTiketIdToLunas = null;
+            window._pendingSparepartIdToLunas = null;
+            window._pendingPiutangIdToLunas = null;
+            window._pendingPiutangGroupNama = null;
+            window._kasirMultiQueue = [];
 
-            // Jika sedang di filter harian dan tanggal transaksi yang disimpan/diedit berbeda, sesuaikan filter agar langsung terlihat
             const fModeEl = document.getElementById('jurnalFilterMode');
             const fDateEl = document.getElementById('jurnalDatePicker');
-            if (fModeEl && fModeEl.value === 'DAILY' && fDateEl && fDateEl.value !== selectedDate) {
-                fDateEl.value = selectedDate;
+            if (fModeEl && fModeEl.value === 'DAILY' && fDateEl && fDateEl.value !== lastSavedDate) {
+                fDateEl.value = lastSavedDate;
             }
 
-            // Aktifkan kedap-kedip santai (10 detik) pada baris Mutasi Akun yang bersangkutan
-            if (window.triggerBlinkMutasiAkun) {
-                window.triggerBlinkMutasiAkun([akunMasuk1, akunMasuk2, akunKeluar1, akunKeluar2], 10000);
+            if (window.triggerBlinkMutasiAkun && blinkAccounts.length > 0) {
+                window.triggerBlinkMutasiAkun(blinkAccounts, 10000);
             }
 
             window.closeModalKasir();
             window.renderAll();
 
-            // Hanya simpan node yang benar-benar berubah (bukan saveAllToFirebase yang menimpa modul lain!)
             const nodesToSync = { transaksi: window.transaksiJurnal };
-            if (touchedTiket) {
-                if (trxData.idTiketRef) {
-                    const tkRef = window.tiketServisList.find(x => x.id == trxData.idTiketRef);
-                    if (tkRef) {
-                        tkRef.updatedAt = nowMs;
-                        window.markLocalEntityEdited('tiketServis', tkRef);
-                    }
-                }
-                nodesToSync.tiketServis = window.tiketServisList;
-            }
-            if (touchedSparepart) {
-                if (trxData.idSparepartRef) {
-                    const spRef = window.sparepartList.find(x => x.id == trxData.idSparepartRef);
-                    if (spRef) {
-                        spRef.updatedAt = nowMs;
-                        window.markLocalEntityEdited('sparepart', spRef);
-                    }
-                }
-                nodesToSync.sparepart = window.sparepartList;
-            }
-            if (touchedPiutang) {
-                if (trxData.idPiutangRef) {
-                    const pRef = window.piutangList.find(x => x.id == trxData.idPiutangRef);
-                    if (pRef) {
-                        pRef.updatedAt = nowMs;
-                        window.markLocalEntityEdited('piutang', pRef);
-                    }
-                }
-                nodesToSync.piutang = window.piutangList;
-            }
+            if (touchedTiket) nodesToSync.tiketServis = window.tiketServisList;
+            if (touchedSparepart) nodesToSync.sparepart = window.sparepartList;
+            if (touchedPiutang) nodesToSync.piutang = window.piutangList;
             window.saveMultipleFirebaseNodes(nodesToSync, false);
 
-            window.highlightRowAndScroll(`row-trx-${trxData.id}`);
+            if (lastSavedTrxId) {
+                window.highlightRowAndScroll(`row-trx-${lastSavedTrxId}`);
+            }
             if (editId) {
-                window.showToast(`✅ Perubahan transaksi "${ket}" berhasil disimpan & disinkronkan!`, "success");
+                window.showToast(`✅ Perubahan transaksi "${itemsToProcess[0].ket}" berhasil disimpan & disinkronkan!`, "success");
+            } else if (itemsToProcess.length > 1) {
+                window.showToast(`✅ ${itemsToProcess.length} Transaksi (Dihitung 1 Pelanggan) berhasil disimpan sekaligus!`, "success");
             } else {
-                window.showToast(`✅ Transaksi "${ket}" berhasil disimpan!`, "success");
+                window.showToast(`✅ Transaksi "${itemsToProcess[0].ket}" berhasil disimpan!`, "success");
             }
         });
 
@@ -16940,12 +17214,19 @@
                 if (isArsipRekap) {
                     extraKatBadges += `<div><span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">📦 REKAP ARSIP</span></div>`;
                 }
-                if (t.isNewCustomer === false) {
+                if (t.visitGroupId) {
+                    const gIdx = Number(t.visitGroupIndex || 1);
+                    const gTot = Number(t.visitGroupTotal || 2);
+                    const orgInfo = t.isNewCustomer === false ? ' • 0 ORG' : ' • +1 ORG';
+                    extraKatBadges += `<div><span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #7DD3FC; font-size:8px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;" title="Paket transaksi dari 1 kunjungan pelanggan yang sama">🔗 KONSUMEN SAMA (${gIdx}/${gTot}${orgInfo})</span></div>`;
+                } else if (t.isNewCustomer === false) {
                     extraKatBadges += `<div><span style="display:inline-block; background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1; font-size:8px; font-weight:700; padding:1px 4px; border-radius:4px; margin-top:2px;" title="Transaksi Repeat Order (Tidak menambah hitungan Pelanggan Baru)">👤 REPEAT (0 ORG)</span></div>`;
                 }
                 const rowLeftBorder = isPelunasanTrx
                     ? 'border-left:3.5px solid #4F46E5; background:rgba(238,242,255,0.28);'
-                    : (isSplitActive ? 'border-left:3.5px solid #F59E0B;' : '');
+                    : (isSplitActive
+                        ? 'border-left:3.5px solid #F59E0B;'
+                        : (t.visitGroupId ? 'border-left:3.5px solid #0284C7;' : ''));
 
                 return `
                     <tr id="row-trx-${t.id}" style="${rowLeftBorder}">
