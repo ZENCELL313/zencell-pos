@@ -1047,7 +1047,7 @@
         }
         .chart-7d-detail-row:last-child { border-bottom: none; }
 
-        /* Format Seragam Kolom Waktu (Atas: HARI, JAM agak besar • Bawah: YY-DD-MM agak kecil) */
+        /* Format Seragam Kolom Waktu (Atas: HARI, JAM agak besar • Bawah: DD-MM-YY agak kecil) */
         .waktu-seragam-wrap {
             display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.25; white-space: nowrap;
         }
@@ -5213,6 +5213,11 @@
                     <span id="badgeCountPiutangLunasToday" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; display:none;">0 Lunas Hari Ini</span>
                 </div>
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:3px; background:var(--card); border:1px solid var(--border); border-radius:6px; padding:1px 6px; height:28px;">
+                        <span style="font-size:10.5px;">📅</span>
+                        <input type="date" id="piutangHeaderDatePicker" class="date-picker-input" onchange="window.syncPiutangDateFilter(this.value)" style="border:none; padding:0; font-size:10.5px; height:24px; font-weight:700;" title="Filter Tanggal Piutang">
+                        <button type="button" id="btnHeaderResetPiutangDate" onclick="window.resetFilterPiutangTgl()" style="display:none; background:none; border:none; color:#EF4444; font-size:10.5px; font-weight:800; cursor:pointer; padding:0 2px;" title="Reset Tanggal">✕</button>
+                    </div>
                     <select id="piutangFilterUmur" class="date-picker-input" onchange="renderAll()" style="height:28px; font-size:10.5px; padding:2px 7px;">
                         <option value="ALL">📅 Semua Umur Utang</option>
                         <option value="OVERDUE_3">⚠️ Lewat ≥ 3 Hari</option>
@@ -5230,7 +5235,15 @@
                 <table class="table-piutang">
                     <thead>
                         <tr>
-                            <th>TGL & WAKTU</th>
+                            <th style="min-width:130px;">
+                                <div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                                        <span>TGL & WAKTU</span>
+                                        <button type="button" id="btnResetPiutangTgl" onclick="window.resetFilterPiutangTgl()" title="Reset Filter Tanggal" style="display:none; background:none; border:none; color:#EF4444; font-size:10px; cursor:pointer; font-weight:800; padding:0 2px;">✕ Reset</button>
+                                    </div>
+                                    <input type="date" id="piutangFilterDate" onchange="window.syncPiutangDateFilter(this.value)" style="width:100%; font-size:9.5px; font-weight:800; padding:2px 4px; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer;" title="Filter Piutang menurut Tanggal">
+                                </div>
+                            </th>
                             <th style="min-width:142px;">
                                 <div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
                                     <span>NAMA PELANGGAN</span>
@@ -5283,7 +5296,15 @@
                 <table class="table-piutang">
                     <thead>
                         <tr>
-                            <th>TGL & WAKTU UTANG</th>
+                            <th style="min-width:130px;">
+                                <div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                                        <span>TGL & WAKTU UTANG</span>
+                                        <button type="button" id="btnResetPiutangArsipTgl" onclick="window.resetFilterPiutangArsipTgl()" title="Reset Filter Tanggal" style="display:none; background:none; border:none; color:#EF4444; font-size:10px; cursor:pointer; font-weight:800; padding:0 2px;">✕ Reset</button>
+                                    </div>
+                                    <input type="date" id="piutangArsipFilterDate" onchange="renderAll()" style="width:100%; font-size:9.5px; font-weight:800; padding:2px 4px; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer;" title="Filter Arsip Piutang menurut Tanggal">
+                                </div>
+                            </th>
                             <th style="min-width:142px;">
                                 <div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
                                     <span>NAMA PELANGGAN</span>
@@ -6909,18 +6930,46 @@
             }
         } catch (e) {}
 
+        window.formatTanggalDDMMYY = function(input) {
+            if (!input) return '-';
+            const s = String(input).trim();
+            if (s === '-' || s === '') return '-';
+            if (/^\d{2}-\d{2}-\d{2}$/.test(s)) return s;
+            let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+            if (m) {
+                const dd = String(m[3]).padStart(2, '0');
+                const mm = String(m[2]).padStart(2, '0');
+                const yy = String(m[1]).slice(-2);
+                return `${dd}-${mm}-${yy}`;
+            }
+            m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+            if (m) {
+                const dd = String(m[1]).padStart(2, '0');
+                const mm = String(m[2]).padStart(2, '0');
+                const yy = String(m[3]).slice(-2);
+                return `${dd}-${mm}-${yy}`;
+            }
+            const d = new Date(s);
+            if (!isNaN(d.getTime())) {
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const yy = String(d.getFullYear()).slice(-2);
+                return `${dd}-${mm}-${yy}`;
+            }
+            return s;
+        };
+
         window.formatTanggalJamPiutang = function(isoDate, waktu, tglDisplay) {
+            let iso = isoDate;
+            if (!iso && tglDisplay) {
+                const m = String(tglDisplay).match(/\d{4}-\d{2}-\d{2}/);
+                if (m) iso = m[0];
+            }
+            if (iso) {
+                return `${window.formatTanggalDDMMYY(iso)}${waktu ? ', ' + waktu : ''}`;
+            }
             if (tglDisplay) return tglDisplay;
-            if (!isoDate) return waktu || '-';
-            const parts = String(isoDate).split('-');
-            if (parts.length !== 3) return `${isoDate} ${waktu || ''}`.trim();
-            const dObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-            const hariNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const blnNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            const hari = hariNames[dObj.getDay()] || '';
-            const tgl = String(parts[2]).padStart(2, '0');
-            const bln = blnNames[Number(parts[1]) - 1] || '';
-            return `${hari}, ${tgl} ${bln}${waktu ? ', ' + waktu : ''}`;
+            return waktu || '-';
         };
 
         window.formatKolomWaktuSeragam = function(isoDateRaw, waktuRaw, fallbackText) {
@@ -6943,14 +6992,14 @@
             }
 
             if (!iso && fallbackText) {
-                const mIso = String(fallbackText).match(/(\d{4})-(\d{2})-(\d{2})/);
+                const mIso = String(fallbackText).match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
                 if (mIso) iso = mIso[0];
             }
 
             let hariTxt = '';
-            let yyddmmTxt = '-';
+            let ddmmyyTxt = '-';
 
-            const parts = iso.split('-');
+            const parts = iso.split(/[-/.]/);
             if (parts.length === 3 && parts[0].length === 4) {
                 const yyyy = Number(parts[0]);
                 const mm = String(parts[1]).padStart(2, '0');
@@ -6960,12 +7009,12 @@
                 if (!isNaN(dObj.getTime())) {
                     hariTxt = hariNames[dObj.getDay()] || '';
                 }
-                // Format bawah sesuai permintaan: YY-DD-MM (cth: 26-25-10)
-                yyddmmTxt = `${yy}-${dd}-${mm}`;
+                // Format sesuai permintaan: DD-MM-YY (cth: 04-11-26)
+                ddmmyyTxt = `${dd}-${mm}-${yy}`;
             } else if (iso) {
-                yyddmmTxt = iso;
+                ddmmyyTxt = window.formatTanggalDDMMYY(iso);
             } else if (fallbackText) {
-                yyddmmTxt = String(fallbackText);
+                ddmmyyTxt = window.formatTanggalDDMMYY(fallbackText);
             }
 
             let topLine = '';
@@ -6979,7 +7028,7 @@
                 topLine = '-';
             }
 
-            return `<div class="waktu-seragam-wrap"><span class="waktu-seragam-top">${topLine}</span><span class="waktu-seragam-bottom">${yyddmmTxt}</span></div>`;
+            return `<div class="waktu-seragam-wrap"><span class="waktu-seragam-top">${topLine}</span><span class="waktu-seragam-bottom">${ddmmyyTxt}</span></div>`;
         };
 
         window.hitungUmurHariPiutang = function(isoDateStr) {
@@ -10709,6 +10758,24 @@
                 const elNama = document.getElementById('piutangArsipSortNama');
                 if (elNama) elNama.value = 'DEFAULT';
             }
+            if (typeof window.renderAll === 'function') window.renderAll();
+        };
+
+        window.syncPiutangDateFilter = function(val) {
+            const colInput = document.getElementById('piutangFilterDate');
+            const hdrInput = document.getElementById('piutangHeaderDatePicker');
+            if (colInput && colInput.value !== val) colInput.value = val;
+            if (hdrInput && hdrInput.value !== val) hdrInput.value = val;
+            if (typeof window.renderAll === 'function') window.renderAll();
+        };
+
+        window.resetFilterPiutangTgl = function() {
+            window.syncPiutangDateFilter('');
+        };
+
+        window.resetFilterPiutangArsipTgl = function() {
+            const el = document.getElementById('piutangArsipFilterDate');
+            if (el) el.value = '';
             if (typeof window.renderAll === 'function') window.renderAll();
         };
 
@@ -14668,7 +14735,7 @@
 
                         <table style="width: 100%; font-size: 11px; margin-bottom: 10px; border: 1px solid #CBD5E1; border-collapse: collapse; background: #F8FAFC;">
                             <tr>
-                                <td style="border: 1px solid #CBD5E1; text-align: left; padding: 4px 8px; width: 50%;"><b>Tanggal Laporan:</b> ${shiftDate}</td>
+                                <td style="border: 1px solid #CBD5E1; text-align: left; padding: 4px 8px; width: 50%;"><b>Tanggal Laporan:</b> ${window.formatTanggalDDMMYY(shiftDate)}</td>
                                 <td style="border: 1px solid #CBD5E1; text-align: left; padding: 4px 8px; width: 50%;"><b>Petugas Kasir:</b> ${kasirName}</td>
                             </tr>
                             <tr>
@@ -14776,7 +14843,7 @@
                     <div style="page-break-before: always; break-before: page; padding-top: 2px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #0284C7; padding-bottom: 4px; margin-bottom: 6px;">
                             <div>
-                                <h3 style="font-size: 13px; color: #0369A1; margin: 0;">4. LAMPIRAN REKAPAN RINCIAN TRANSAKSI SHIFT (${shiftDate})</h3>
+                                <h3 style="font-size: 13px; color: #0369A1; margin: 0;">4. LAMPIRAN REKAPAN RINCIAN TRANSAKSI SHIFT (${window.formatTanggalDDMMYY(shiftDate)})</h3>
                                 <span style="font-size: 9.5px; color: #475569;">Petugas: <b>${kasirName}</b> • ${shiftName} • Total Baris: <b>${totalRows} Transaksi</b></span>
                             </div>
                             <div style="text-align:right; font-size: 9.5px; color: #334155;">
@@ -14855,7 +14922,7 @@
 
             let excelData = [];
             excelData.push(["LAPORAN PEMBUKUAN KATEGORI & TRANSAKSI - ZENCELL"]);
-            excelData.push([`Periode: ${mode === 'DAILY' ? targetDate : 'Bulan ' + targetMonth}`]);
+            excelData.push([`Periode: ${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : 'Bulan ' + targetMonth}`]);
             excelData.push([]);
             excelData.push(["KATEGORI TRANSAKSI", "JUMLAH TRX", "OMSET (Uang Masuk)", "MODAL (Uang Keluar)", "CUAN (Keuntungan)"]);
 
@@ -14871,7 +14938,7 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Pembukuan Zencell");
             
-            const fileName = `PEMBUKUAN_ZENCELL_${mode === 'DAILY' ? targetDate : targetMonth}.xlsx`;
+            const fileName = `PEMBUKUAN_ZENCELL_${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : targetMonth}.xlsx`;
             XLSX.writeFile(wb, fileName);
             window.catatLogAktivitas('EXPORT EXCEL', `Mengunduh file laporan Excel pembukuan (${fileName})`);
             alert("✅ File Excel pembukuan berhasil di-download!");
@@ -14930,7 +14997,7 @@
 
                     <table style="width: 100%; font-size: 12px; margin-bottom: 15px; border: none;">
                         <tr>
-                            <td style="border: none; text-align: left; padding: 3px;"><b>Periode Laporan:</b> ${mode === 'DAILY' ? targetDate : 'Bulan ' + targetMonth}</td>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Periode Laporan:</b> ${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : 'Bulan ' + targetMonth}</td>
                             <td style="border: none; text-align: left; padding: 3px;"><b>Waktu Cetak:</b> ${new Date().toLocaleString('id-ID')}</td>
                         </tr>
                     </table>
@@ -14976,7 +15043,7 @@
                 </div>
             `;
 
-            window.catatLogAktivitas('CETAK PDF', `Mencetak laporan PDF pembukuan periode ${mode === 'DAILY' ? targetDate : targetMonth}`);
+            window.catatLogAktivitas('CETAK PDF', `Mencetak laporan PDF pembukuan periode ${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : targetMonth}`);
             window.print();
             setTimeout(() => { printReport.style.display = 'none'; }, 1000);
         };
@@ -15409,7 +15476,7 @@
             tbody.innerHTML = list.map(o => {
                 const isLunas = o.status === 'LUNAS DIGANTI';
                 const statusBadge = isLunas
-                    ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:4px; font-weight:800; font-size:9.5px; display:inline-block;">🟢 SUDAH DIGANTI</span><br><small style="color:#16A34A; font-size:9px;">ke ${o.sumberDiganti || o.sumber || 'LACI'}${o.tglDiganti ? ' (' + o.tglDiganti + ')' : ''}</small>`
+                    ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:2px 6px; border-radius:4px; font-weight:800; font-size:9.5px; display:inline-block;">🟢 SUDAH DIGANTI</span><br><small style="color:#16A34A; font-size:9px;">ke ${o.sumberDiganti || o.sumber || 'LACI'}${o.tglDiganti ? ' (' + window.formatTanggalDDMMYY(o.tglDiganti) + ')' : ''}</small>`
                     : `<span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; padding:2px 6px; border-radius:4px; font-weight:800; font-size:9.5px; display:inline-block;">🔴 BELUM DIGANTI</span>`;
 
                 const actionBtns = isLunas
@@ -15426,7 +15493,7 @@
                 return `
                     <tr style="border-bottom:1px solid #F1F5F9; ${isLunas ? 'background:#F8FAFC;' : ''}">
                         <td style="padding:6px 8px; text-align:left; white-space:nowrap;">
-                            <b>${o.tgl || o.isoDate || '-'}</b><br>
+                            <b>${window.formatTanggalDDMMYY(o.tgl || o.isoDate)}</b><br>
                             <small style="color:#64748B;">${o.waktu || ''}</small>
                         </td>
                         <td style="padding:6px 8px; text-align:left;">
@@ -16797,7 +16864,7 @@
                         kolomStatusHtml = `
                             <div style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:4px 6px; border-radius:6px; font-size:9.5px; font-weight:800; text-align:center; line-height:1.25;">
                                 ✅ ${pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI'}<br>
-                                <span style="font-size:8.5px; font-weight:700; color:#166534;">📅 ${t.tglLunas || tglOnly}${t.waktuLunas ? ' • ' + t.waktuLunas : ''}</span>
+                                <span style="font-size:8.5px; font-weight:700; color:#166534;">📅 ${window.formatTanggalDDMMYY(t.tglLunas || tglOnly)}${t.waktuLunas ? ' • ' + t.waktuLunas : ''}</span>
                             </div>`;
                     } else if (pakaiModal) {
                         kolomStatusHtml = `
@@ -17346,7 +17413,7 @@
                 });
                 bSparepart.innerHTML = filteredService.map(s => `
                     <tr>
-                        <td>${s.isoDate || s.tgl || '-'}</td>
+                        <td>${window.formatTanggalDDMMYY(s.isoDate || s.tgl)}</td>
                         <td><b>${s.namaUnit}</b></td>
                         <td class="text-debit">${window.formatRp(s.modal)}</td>
                         <td>${s.sumber}</td>
@@ -17381,7 +17448,7 @@
                 });
                 bOperasional.innerHTML = filteredOp.map(o => `
                     <tr id="row-op-${o.id}">
-                        <td><b>${o.waktu}</b><br><small>${o.isoDate}</small></td>
+                        <td><b>${o.waktu}</b><br><small>${window.formatTanggalDDMMYY(o.isoDate)}</small></td>
                         <td><b>${o.ket}</b></td>
                         <td>${o.sumber}</td>
                         <td class="text-debit"><b>${window.formatRp(o.nominal)}</b></td>
@@ -17521,7 +17588,7 @@
                     totalBelanjaFiltered += totVal;
                     return `
                     <tr>
-                        <td><b>${r.waktu || ''}</b><br><small>${r.isoDate || r.tgl || ''}</small></td>
+                        <td><b>${r.waktu || ''}</b><br><small>${window.formatTanggalDDMMYY(r.isoDate || r.tgl)}</small></td>
                         <td><b>${r.kat || '-'}</b></td>
                         <td><b>${r.nama || r.namaBarang || '-'}</b></td>
                         <td style="text-align: center;">${r.qty || 0}</td>
@@ -17616,12 +17683,26 @@
 
             const bPiutang = document.getElementById('bodyPiutang');
             if (bPiutang) {
+                const qTglPiutang = document.getElementById('piutangFilterDate')?.value || '';
+                const btnResetTgl = document.getElementById('btnResetPiutangTgl');
+                const btnHdrResetTgl = document.getElementById('btnHeaderResetPiutangDate');
+                if (btnResetTgl) btnResetTgl.style.display = qTglPiutang ? 'inline-block' : 'none';
+                if (btnHdrResetTgl) btnHdrResetTgl.style.display = qTglPiutang ? 'inline-block' : 'none';
+
                 const filteredUtama = listPiutangUtama.filter(p => {
                     const isLunas = p.status === 'LUNAS' || p.sisa <= 0;
                     const umur = Number(p._umurHari || 0);
                     if (filterUmurPiutang === 'OVERDUE_3' && (isLunas || umur < 3)) return false;
                     if (filterUmurPiutang === 'OVERDUE_7' && (isLunas || umur < 7)) return false;
                     if (filterUmurPiutang === 'TODAY' && (isLunas || umur !== 0)) return false;
+                    if (qTglPiutang) {
+                        let pDate = p.isoDate || '';
+                        if (!pDate && p.tglDisplay) {
+                            const m = String(p.tglDisplay).match(/\d{4}-\d{2}-\d{2}/);
+                            if (m) pDate = m[0];
+                        }
+                        if (pDate !== qTglPiutang) return false;
+                    }
                     if (!qPiutangAktif) return true;
                     const hay = `${p.nama || ''} ${p.catatan || ''} ${p.gadaiBarang || ''} ${p.gadaiKelengkapan || ''} ${p.noHp || ''} ${p.kategori || ''} ${p.sumber || ''}`.toLowerCase();
                     return hay.includes(qPiutangAktif);
@@ -17665,7 +17746,7 @@
                                 <b style="font-size:11.5px; line-height:1.2; display:block;">${window.formatRp(activeSisa)}</b>
                                 ${subInfoUtangHtml}
                             </td>
-                            <td style="font-size:10px; line-height:1.25;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:1.5px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#94A3B8;">Belum dicicil</span>'}</td>
+                            <td style="font-size:10px; line-height:1.25;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:1.5px;">• <b>${window.formatTanggalDDMMYY(c.tgl)}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#94A3B8;">Belum dicicil</span>'}</td>
                             <td><span style="font-size:9.5px; font-weight:700; padding:1.5px 4.5px; border-radius:4px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
                             <td><span style="font-size:9.5px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
                             <td>
@@ -17797,7 +17878,7 @@
                     const oldestItem = sortedChildren[0];
                     const newestItem = sortedChildren[sortedChildren.length - 1];
                     const tglRangeInfo = (oldestItem.isoDate && newestItem.isoDate && oldestItem.isoDate !== newestItem.isoDate)
-                        ? `<div style="font-size:9.5px; font-weight:800; color:#B45309; line-height:1.15;">${oldestItem.isoDate.slice(2)}<br><span style="color:#64748B; font-weight:700;">s/d ${newestItem.isoDate.slice(2)}</span></div>`
+                        ? `<div style="font-size:9.5px; font-weight:800; color:#B45309; line-height:1.15;">${window.formatTanggalDDMMYY(oldestItem.isoDate)}<br><span style="color:#64748B; font-weight:700;">s/d ${window.formatTanggalDDMMYY(newestItem.isoDate)}</span></div>`
                         : window.formatKolomWaktuSeragam(newestItem.isoDate, newestItem.waktu, newestItem.tglDisplay);
 
                     const previewItemsText = sortedChildren.map((it, idx) => {
@@ -17833,7 +17914,7 @@
                             </td>
                             <td style="font-size:10px; line-height:1.25;">
                                 ${cicilanGabungan.length > 0
-                                    ? cicilanGabungan.map(c => `<div style="margin-bottom:1.5px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('')
+                                    ? cicilanGabungan.map(c => `<div style="margin-bottom:1.5px;">• <b>${window.formatTanggalDDMMYY(c.tgl)}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('')
                                     : `<span style="color:#B45309; font-weight:600; font-size:9.5px;">Belum dicicil</span>`
                                 }
                             </td>
@@ -17874,15 +17955,24 @@
                     rowsHtmlList.push(renderSinglePiutangRow(p, null, 1));
                 });
 
-                bPiutang.innerHTML = rowsHtmlList.join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada piutang aktif / lunas hari ini.</td></tr>`;
+                bPiutang.innerHTML = rowsHtmlList.join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada piutang ${qTglPiutang ? ('pada tanggal ' + window.formatTanggalDDMMYY(qTglPiutang)) : 'aktif / lunas hari ini'}.</td></tr>`;
             }
 
             const bPiutangArsip = document.getElementById('bodyPiutangLunasArsip');
             if (bPiutangArsip) {
+                const qTglArsip = document.getElementById('piutangArsipFilterDate')?.value || '';
+                const btnResetArsipTgl = document.getElementById('btnResetPiutangArsipTgl');
+                if (btnResetArsipTgl) btnResetArsipTgl.style.display = qTglArsip ? 'inline-block' : 'none';
+
                 const arsipMode = document.getElementById('piutangArsipFilterMode')?.value || '3DAYS';
                 const arsipMonth = document.getElementById('piutangArsipMonthPicker')?.value || window.getCurrentMonthIso();
                 const filteredArsip = listPiutangArsipLunas.filter(p => {
                     const tglRef = String(p.tglLunas || p.isoDate || '').trim();
+                    if (qTglArsip) {
+                        const pDate = p.isoDate || '';
+                        const lDate = p.tglLunas || '';
+                        if (pDate !== qTglArsip && lDate !== qTglArsip) return false;
+                    }
                     if (arsipMode === '3DAYS') {
                         if (tglRef && /^\d{4}-\d{2}-\d{2}$/.test(tglRef)) {
                             const umurLunas = window.hitungUmurHariPiutang(tglRef);
@@ -17924,12 +18014,12 @@
                                 <b style="font-size:11.5px; line-height:1.2; display:block;">${window.formatRp(pokokAwalP)}</b>
                                 ${tagihanJualP > pokokAwalP ? `<div style="color:#047857; font-size:9.5px; font-weight:700; line-height:1.15;">Jual: ${window.formatRp(tagihanJualP)}</div>` : ''}
                             </td>
-                            <td style="font-size:10px; line-height:1.25;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:1.5px;">• <b>${c.tgl}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#16A34A; font-weight:700;">Lunas</span>'}</td>
+                            <td style="font-size:10px; line-height:1.25;">${p.riwayatCicilan?.map(c => `<div style="margin-bottom:1.5px;">• <b>${window.formatTanggalDDMMYY(c.tgl)}</b>: <span style="color:#16A34A; font-weight:700;">${window.formatRp(c.bayarJual || c.bayar)}</span> <small style="color:#64748B;">(${c.keAkun || 'LACI'})</small></div>`).join('') || '<span style="color:#16A34A; font-weight:700;">Lunas</span>'}</td>
                             <td><span style="font-size:9.5px; font-weight:700; padding:1.5px 4.5px; border-radius:4px; background:var(--primary-light); color:var(--primary); display:inline-block;">${p.kategori || 'LAINNYA'}</span></td>
                             <td><span style="font-size:9.5px; font-weight:700; color:${sumberLabel === 'TANPA POTONG' ? '#64748B' : 'var(--text)'};">${sumberLabel}</span></td>
                             <td>
                                 <span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1.5px 5px; border-radius:999px; font-size:8.5px; font-weight:800;">✅ LUNAS</span>
-                                <div style="color:#64748B; font-weight:700; font-size:8.5px; line-height:1.1; margin-top:1px;">${p.tglLunas || '-'}</div>
+                                <div style="color:#64748B; font-weight:700; font-size:8.5px; line-height:1.1; margin-top:1px;">${window.formatTanggalDDMMYY(p.tglLunas)}</div>
                             </td>
                             <td>
                                 <div class="aksi-icon-group">
@@ -17943,7 +18033,7 @@
                             </td>
                         </tr>
                     `;
-                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada arsip piutang lunas pada periode ini.</td></tr>`;
+                }).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:16px;">Belum ada arsip piutang lunas ${qTglArsip ? ('pada tanggal ' + window.formatTanggalDDMMYY(qTglArsip)) : 'pada periode ini'}.</td></tr>`;
             }
             document.getElementById('topTotalPiutangVal').innerText = window.formatRp(totalPiutang);
 
@@ -18406,7 +18496,7 @@
                         <tr>
                             <td style="text-align:left; line-height:1.25;">
                                 <div style="font-weight:800; font-size:10.8px;">${t.waktu || '-'}</div>
-                                <div style="font-size:9.5px; color:#64748B; font-weight:700;">${t.isoDate || '-'}</div>
+                                <div style="font-size:9.5px; color:#64748B; font-weight:700;">${window.formatTanggalDDMMYY(t.isoDate)}</div>
                             </td>
                             <td style="text-align:left;">
                                 <div style="display:inline-flex; align-items:center; gap:3px; flex-wrap:wrap;">
@@ -18428,7 +18518,7 @@
                 }).join('') || `
                     <tr>
                         <td colspan="5" style="text-align:center; color:#64748B; padding:12px 8px; white-space:normal; font-size:11px;">
-                            Belum ada histori pindah saldo pada <b>${activeTfFilter === 'DAILY' ? ('tanggal ' + targetDateSidebar) : 'periode ini'}</b>.
+                            Belum ada histori pindah saldo pada <b>${activeTfFilter === 'DAILY' ? ('tanggal ' + window.formatTanggalDDMMYY(targetDateSidebar)) : 'periode ini'}</b>.
                             ${activeTfFilter === 'DAILY' && allPindahSaldoList.length > 0 ? `<br><button type="button" onclick="setSidebarTfFilter('ALL')" style="margin-top:5px; background:#E0E7FF; color:#3730A3; border:1px solid #C7D2FE; padding:3.5px 9px; border-radius:5px; font-size:10.5px; font-weight:800; cursor:pointer;">📅 Lihat Semua Histori (${allPindahSaldoList.length}x)</button>` : ''}
                         </td>
                     </tr>
@@ -18464,7 +18554,7 @@
                         <tr>
                             <td style="text-align:left; line-height:1.25;">
                                 <div style="font-weight:800; font-size:10.5px;">${k.waktu || '-'}</div>
-                                <div style="font-size:9px; color:#64748B; font-weight:700;">${k.isoDate || '-'}</div>
+                                <div style="font-size:9px; color:#64748B; font-weight:700;">${window.formatTanggalDDMMYY(k.isoDate)}</div>
                             </td>
                             <td style="text-align:left; white-space:normal; min-width:130px; line-height:1.25;">
                                 <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
@@ -18491,7 +18581,7 @@
                 }).join('') || `
                     <tr>
                         <td colspan="5" style="text-align:center; color:#64748B; padding:12px 8px; white-space:normal; font-size:11px;">
-                            Belum ada riwayat koreksi saldo pada <b>${activeKorFilter === 'DAILY' ? ('tanggal ' + targetDateSidebar) : 'periode ini'}</b>.
+                            Belum ada riwayat koreksi saldo pada <b>${activeKorFilter === 'DAILY' ? ('tanggal ' + window.formatTanggalDDMMYY(targetDateSidebar)) : 'periode ini'}</b>.
                             ${activeKorFilter === 'DAILY' && allKoreksiList.length > 0 ? `<br><button type="button" onclick="setSidebarKorFilter('ALL')" style="margin-top:5px; background:#F3E8FF; color:#6D28D9; border:1px solid #DDD6FE; padding:3.5px 9px; border-radius:5px; font-size:10.5px; font-weight:800; cursor:pointer;">📅 Lihat Semua Koreksi (${allKoreksiList.length}x)</button>` : ''}
                         </td>
                     </tr>
@@ -18507,7 +18597,7 @@
                     </tfoot>
                 ` : '';
 
-                const labelTanggalAktif = targetDateSidebar === todayIsoSb ? `HARI INI (${targetDateSidebar})` : targetDateSidebar;
+                const labelTanggalAktif = targetDateSidebar === todayIsoSb ? `HARI INI (${window.formatTanggalDDMMYY(targetDateSidebar)})` : window.formatTanggalDDMMYY(targetDateSidebar);
 
                 sidebarContent.innerHTML = `
                     <!-- 1. TABEL 5 KOLOM SALDO & MUTASI HARIAN (ALA EXCEL) -->
@@ -18687,7 +18777,7 @@
                     return `
                         <tr id="row-tf-${t.id}">
                             <td><b>${t.waktu || '-'}</b></td>
-                            <td>${t.isoDate || '-'}</td>
+                            <td>${window.formatTanggalDDMMYY(t.isoDate || t.tgl)}</td>
                             <td><span style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:2px 8px; border-radius:6px; font-weight:800; font-size:10.5px;">${t.akunKeluar1 || '-'}</span></td>
                             <td><span style="background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; padding:2px 8px; border-radius:6px; font-weight:800; font-size:10.5px;">${t.akunMasuk1 || '-'}</span></td>
                             <td class="text-kredit"><b>${window.formatRp(nom)}</b></td>
@@ -18755,7 +18845,7 @@
                     return `
                         <tr id="row-kor-${k.id}">
                             <td><b>${k.waktu || '-'}</b></td>
-                            <td>${k.isoDate || '-'}</td>
+                            <td>${window.formatTanggalDDMMYY(k.isoDate)}</td>
                             <td><span style="background:#F3E8FF; color:#6D28D9; border:1px solid #DDD6FE; padding:2px 8px; border-radius:6px; font-weight:800; font-size:10.5px;">${k.akun || '-'}</span></td>
                             <td style="color:#475569; font-weight:700;">${window.formatRp(k.saldoSistemSebelum || 0)}</td>
                             <td style="font-weight:900; color:${isPlus ? '#059669' : '#DC2626'};">${selStr}</td>
@@ -18814,7 +18904,7 @@
                 bHistoriSetor.innerHTML = listSetoran.map(s => `
                     <tr id="row-setor-${s.id}">
                         <td><b>${s.waktu || '-'}</b></td>
-                        <td><b>${s.isoDate || s.tgl || '-'}</b></td>
+                        <td><b>${window.formatTanggalDDMMYY(s.isoDate || s.tgl)}</b></td>
                         <td><span style="background:#FEE2E2; color:#991B1B; padding:2px 7px; border-radius:5px; font-weight:800; font-size:10.5px;">${s.sumber || '-'}</span></td>
                         <td class="text-debit"><b>${window.formatRp(s.nominal || 0)}</b></td>
                         <td><b>${s.catatan || '-'}</b></td>
@@ -19089,7 +19179,7 @@
                     const isEmpty = row.trx === 0 && row.profit === 0;
                     return `
                         <tr style="${isEmpty ? 'opacity:0.55;' : ''}">
-                            <td style="text-align:left;"><b>${tgl}</b></td>
+                            <td style="text-align:left;"><b>${window.formatTanggalDDMMYY(tgl)}</b></td>
                             <td style="text-align:right;" class="text-kredit">${window.formatRp(row.omset)}</td>
                             <td style="text-align:right;" class="text-cuan"><b>${window.formatRp(row.profit)}</b></td>
                             <td style="text-align:center;">${row.cust} ORG</td>
@@ -20208,7 +20298,7 @@
                         <div style="display:flex; flex-direction:column; gap:3px;">
                             ${recentLogs.map(r => `
                                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; font-size:9.5px; background:#F8FAFC; padding:3.5px 7px; border-radius:6px; border:1px solid #E2E8F0;">
-                                    <span>📅 <b>${r.isoDate}</b> (${r.waktu || '-'}) • <b>${r.akun}</b> (Awal: ${window.formatRp(r.saldoDasar)})</span>
+                                    <span>📅 <b>${window.formatTanggalDDMMYY(r.isoDate)}</b> (${r.waktu || '-'}) • <b>${r.akun}</b> (Awal: ${window.formatRp(r.saldoDasar)})</span>
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <b style="color:#059669;">+${window.formatRp(r.nominalCair)}</b>
                                         <button type="button" onclick="batalRiwayatBungaSeaBank('${r.id}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:4px; padding:1px 6px; font-size:9px; font-weight:800; cursor:pointer;">↩️ Batal</button>
@@ -21476,7 +21566,7 @@
                         <td style="text-align:left; font-weight:700;">${k.username}</td>
                         <td style="text-align:center;"><span style="padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800; ${roleBadgeColor}">${k.role}</span></td>
                         <td style="text-align:center; font-family:monospace; font-weight:bold;">${k.pin}</td>
-                        <td style="text-align:center; color:#64748B;">${k.dibuat || '-'}</td>
+                        <td style="text-align:center; color:#64748B;">${window.formatTanggalDDMMYY(k.dibuat)}</td>
                         <td style="text-align:center;">
                             <div style="display:inline-flex; gap:4px; align-items:center; justify-content:center;">
                                 <button type="button" class="btn-edit" onclick="pilihAkunUntukUbahPin('${k.username}')" title="Ubah PIN Akun ${k.username}">🔑 Ubah PIN</button>
@@ -23731,7 +23821,7 @@
                                     <b style="font-size:12px; color:var(--text);">${t.ket}</b>
                                 </div>
                                 <div style="font-size:11px; color:#64748B;">
-                                    📅 ${t.isoDate || '-'} (${t.waktu || '-'}) • Jual: <b style="color:#16A34A;">${window.formatRp(t.hargaJual)}</b> (${t.akunMasuk1 || '-'}) • Modal: <b style="color:#EF4444;">${window.formatRp(t.hargaModal)}</b> (${t.akunKeluar1 || '-'}) • Cuan: <b style="color:#D97706;">${window.formatRp(t.cuan)}</b>
+                                    📅 ${window.formatTanggalDDMMYY(t.isoDate)} (${t.waktu || '-'}) • Jual: <b style="color:#16A34A;">${window.formatRp(t.hargaJual)}</b> (${t.akunMasuk1 || '-'}) • Modal: <b style="color:#EF4444;">${window.formatRp(t.hargaModal)}</b> (${t.akunKeluar1 || '-'}) • Cuan: <b style="color:#D97706;">${window.formatRp(t.cuan)}</b>
                                 </div>
                             </div>
                             <div style="display:flex; gap:4px; flex-shrink:0;">
@@ -23775,7 +23865,7 @@
                                     <b style="font-size:12px; color:var(--text);">${o.ket}</b>
                                 </div>
                                 <div style="font-size:11px; color:#64748B;">
-                                    📅 ${o.isoDate || '-'} (${o.waktu || '-'}) • Sumber: <b>${o.sumber}</b> • Nominal: <b style="color:#EF4444;">${window.formatRp(o.nominal)}</b>
+                                    📅 ${window.formatTanggalDDMMYY(o.isoDate)} (${o.waktu || '-'}) • Sumber: <b>${o.sumber}</b> • Nominal: <b style="color:#EF4444;">${window.formatRp(o.nominal)}</b>
                                 </div>
                             </div>
                             <div style="display:flex; gap:4px; flex-shrink:0;">
@@ -25088,7 +25178,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                             <div style="display:flex; align-items:center; gap:5px;">
                                 <span class="badge-sesi-laci badge-${sesi.toLowerCase()}">${iconSesi} ${sesi}</span>
-                                <span style="font-weight:700; color:#334155; font-size:10px;">${item.waktu || ''} WIB • ${item.isoDate || ''}</span>
+                                <span style="font-weight:700; color:#334155; font-size:10px;">${item.waktu || ''} WIB • ${window.formatTanggalDDMMYY(item.isoDate)}</span>
                             </div>
                             <span style="font-size:9.5px; font-weight:800; background:#E2E8F0; color:#1E293B; padding:1px 6px; border-radius:4px;">👤 ${item.petugas || 'KASIR'}</span>
                         </div>
