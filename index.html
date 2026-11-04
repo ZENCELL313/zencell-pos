@@ -5156,9 +5156,9 @@
             <div class="stok-filter-bar">
                 <div class="stok-cat-pills" id="stokCatPillsContainer">
                     <button type="button" class="stok-cat-pill active" data-kat="ALL" onclick="setFilterKatStok('ALL')">🌐 SEMUA (<span id="cntStokAll">0</span>)</button>
-                    <button type="button" class="stok-cat-pill" data-kat="ACC" onclick="setFilterKatStok('ACC')">🎧 ACC (<span id="cntStokAcc">0</span>)</button>
-                    <button type="button" class="stok-cat-pill" data-kat="SP" onclick="setFilterKatStok('SP')">📱 SP (<span id="cntStokSp">0</span>)</button>
                     <button type="button" class="stok-cat-pill" data-kat="VOUCHER" onclick="setFilterKatStok('VOUCHER')">🎫 VOUCHER (<span id="cntStokVoucher">0</span>)</button>
+                    <button type="button" class="stok-cat-pill" data-kat="SP" onclick="setFilterKatStok('SP')">📱 SP (<span id="cntStokSp">0</span>)</button>
+                    <button type="button" class="stok-cat-pill" data-kat="ACC" onclick="setFilterKatStok('ACC')">🎧 ACC (<span id="cntStokAcc">0</span>)</button>
                 </div>
 
                 <div class="stok-search-wrap">
@@ -7166,20 +7166,68 @@
             return rule.isManual === true || rule.isSplit === true;
         };
 
+        window.parseVoucherSortKey = function(rawName) {
+            const str = String(rawName || '').trim().toUpperCase();
+            const m = str.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*[/]\s*(\d+)(.*)$/);
+            if (m) {
+                return {
+                    isPattern: true,
+                    prefix: m[1].trim(),
+                    quota: parseFloat(m[2].replace(',', '.')),
+                    days: parseInt(m[3], 10),
+                    suffix: m[4].trim(),
+                    original: str
+                };
+            }
+            return {
+                isPattern: false,
+                prefix: str,
+                days: 999999,
+                quota: 999999,
+                suffix: '',
+                original: str
+            };
+        };
+
+        window.compareVoucherNames = function(namaA, namaB) {
+            const pA = window.parseVoucherSortKey(namaA);
+            const pB = window.parseVoucherSortKey(namaB);
+
+            // 1. Urutkan provider/operator menurut abjad A-Z (misal: "V AXIS" vs "V TSEL")
+            const prefCmp = pA.prefix.localeCompare(pB.prefix, 'id', { numeric: true, sensitivity: 'base' });
+            if (prefCmp !== 0) return prefCmp;
+
+            // 2. Jika provider sama dan berpola X/Y (kuota/hari)
+            if (pA.isPattern && pB.isPattern) {
+                // Angka terakhir setelah slash (hari / masa aktif: /1, /2, /3, /5, /7, /14, /28) didahulukan
+                if (pA.days !== pB.days) return pA.days - pB.days;
+                // Jika masa aktif sama, urutkan kuota angka awal (misal 7/1 lalu 8/1)
+                if (pA.quota !== pB.quota) return pA.quota - pB.quota;
+                if (pA.suffix !== pB.suffix) return pA.suffix.localeCompare(pB.suffix, 'id', { numeric: true, sensitivity: 'base' });
+            }
+
+            return pA.original.localeCompare(pB.original, 'id', { numeric: true, sensitivity: 'base' });
+        };
+
         window.sortStokOpnameAlphabetical = function(list) {
             if (!Array.isArray(list)) return [];
-            const katOrder = { 'ACC': 1, 'SP': 2, 'VOUCHER': 3 };
+            const katOrder = { 'VOUCHER': 1, 'VCR': 1, 'SP': 2, 'ACC': 3 };
             return list.sort((a, b) => {
                 if (!a && !b) return 0;
                 if (!a) return 1;
                 if (!b) return -1;
-                const katA = String(a.kat || 'VOUCHER').toUpperCase().trim();
-                const katB = String(b.kat || 'VOUCHER').toUpperCase().trim();
+                let katA = String(a.kat || 'VOUCHER').toUpperCase().trim();
+                let katB = String(b.kat || 'VOUCHER').toUpperCase().trim();
+                if (katA === 'VCR') katA = 'VOUCHER';
+                if (katB === 'VCR') katB = 'VOUCHER';
                 const ordA = katOrder[katA] || 99;
                 const ordB = katOrder[katB] || 99;
                 if (ordA !== ordB) return ordA - ordB;
                 const namaA = String(a.nama || a.namaBarang || '').toUpperCase().trim();
                 const namaB = String(b.nama || b.namaBarang || '').toUpperCase().trim();
+                if (katA === 'VOUCHER' && katB === 'VOUCHER') {
+                    return window.compareVoucherNames(namaA, namaB);
+                }
                 return namaA.localeCompare(namaB, 'id', { numeric: true, sensitivity: 'base' });
             });
         };
@@ -13327,11 +13375,18 @@
             const dList = document.getElementById('listStokOpnameExist');
             if (!dList) return;
             const selectedKat = document.getElementById('stokKat')?.value || '';
+            const katOrder = { 'VOUCHER': 1, 'VCR': 1, 'SP': 2, 'ACC': 3 };
             const items = (window.stokOpnameItems || []).slice().sort((a, b) => {
                 const aMatch = a.kat === selectedKat ? 0 : 1;
                 const bMatch = b.kat === selectedKat ? 0 : 1;
                 if (aMatch !== bMatch) return aMatch - bMatch;
-                return String(a.nama || a.namaBarang || '').localeCompare(String(b.nama || b.namaBarang || ''));
+                const ordA = katOrder[a.kat] || 99;
+                const ordB = katOrder[b.kat] || 99;
+                if (ordA !== ordB) return ordA - ordB;
+                if (a.kat === 'VOUCHER' && b.kat === 'VOUCHER' && window.compareVoucherNames) {
+                    return window.compareVoucherNames(a.nama || a.namaBarang, b.nama || b.namaBarang);
+                }
+                return String(a.nama || a.namaBarang || '').localeCompare(String(b.nama || b.namaBarang || ''), 'id', { numeric: true, sensitivity: 'base' });
             });
             const seen = new Set();
             const opts = [];
