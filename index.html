@@ -921,6 +921,61 @@
         .sidebar-mutasi-table td:not(:first-child) {
             text-align: right;
         }
+        /* Cell Nominal Saldo Akhir yang dapat diklik untuk ditandai sudah cocok (Soft Green) */
+        .saldo-clickable-cell {
+            cursor: pointer !important;
+            user-select: none;
+            transition: all 0.15s ease-in-out;
+            position: relative;
+        }
+        .saldo-clickable-cell:hover {
+            background-color: #ECFDF5 !important;
+        }
+        body.theme-dark .saldo-clickable-cell:hover {
+            background-color: rgba(16, 185, 129, 0.15) !important;
+        }
+        body.theme-cream .saldo-clickable-cell:hover {
+            background-color: #E8F5E9 !important;
+        }
+        /* State Aktif / Soft Green ketika dicentang */
+        .saldo-checked-active {
+            background-color: #D1FAE5 !important;
+            color: #065F46 !important;
+            font-weight: 900 !important;
+            transition: all 0.18s ease-in-out;
+        }
+        body.theme-dark .saldo-checked-active {
+            background-color: rgba(16, 185, 129, 0.25) !important;
+            color: #6EE7B7 !important;
+        }
+        body.theme-cream .saldo-checked-active {
+            background-color: #DCFCE7 !important;
+            color: #14532D !important;
+        }
+        .saldo-checked-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 3px;
+            background: #A7F3D0;
+            color: #064E3B;
+            border: 1px solid #10B981;
+            padding: 1.5px 6.5px;
+            border-radius: 6px;
+            font-weight: 900;
+            font-size: 11.2px;
+            box-shadow: 0 1px 2px rgba(5, 150, 105, 0.15);
+        }
+        body.theme-dark .saldo-checked-pill {
+            background: rgba(16, 185, 129, 0.38);
+            color: #D1FAE5;
+            border-color: #34D399;
+        }
+        body.theme-cream .saldo-checked-pill {
+            background: #BBF7D0;
+            color: #14532D;
+            border-color: #22C55E;
+        }
         .sidebar-tf-filter-btn {
             border: 1px solid var(--border);
             background: var(--card);
@@ -2867,7 +2922,7 @@
         <div class="sidebar-header" style="padding: 10px 12px; gap: 8px;">
             <div style="display:flex; flex-direction:column; gap:1px; min-width:0;">
                 <span style="font-size:13px; font-weight:900; letter-spacing:0.3px;">💰 SALDO &amp; MUTASI REALTIME</span>
-                <span style="font-size:9.5px; font-weight:600; opacity:0.9;">Saldo Kemarin • Masuk/Keluar • Histori Pindah Saldo</span>
+                <span style="font-size:9.5px; font-weight:600; opacity:0.9;">Saldo Kemarin • Masuk/Keluar • <span style="background:rgba(16,185,129,0.3); color:#ECFDF5; padding:1px 5px; border-radius:4px; font-weight:800;">💡 Klik nominal = Ceklis Hijau</span></span>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
                 <button type="button" onclick="openModalTfFast()" style="background:#4F46E5; border:1px solid rgba(255,255,255,0.4); color:white; padding:5px 9px; border-radius:7px; font-size:10px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:3px; box-shadow:0 2px 5px rgba(0,0,0,0.2);">🔀 + Pindah Saldo</button>
@@ -5695,7 +5750,7 @@
                                 <th>SALDO AWAL</th>
                                 <th>MASUK</th>
                                 <th>KELUAR</th>
-                                <th>SALDO AKHIR</th>
+                                <th id="thSaldoAkhirMain">SALDO AKHIR</th>
                             </tr>
                         </thead>
                         <tbody id="bodySaldo"></tbody>
@@ -8784,6 +8839,69 @@
             window._sidebarTfFilterMode = (mode === 'ALL') ? 'ALL' : 'DAILY';
             if (typeof window.renderAll === 'function') {
                 window.renderAll();
+            }
+        };
+
+        // --- SISTEM TANDAI / CEKLIS SALDO AKHIR (SOFT GREEN) SAAT KARYAWAN MENYAMAKAN SALDO DENGAN HP ---
+        window._checkedSaldoAccounts = null;
+        window.initCheckedSaldoAccounts = function() {
+            if (!window._checkedSaldoAccounts) {
+                window._checkedSaldoAccounts = new Set();
+                try {
+                    const raw = sessionStorage.getItem('zencell_checked_saldo_accounts');
+                    if (raw) {
+                        const arr = JSON.parse(raw);
+                        if (Array.isArray(arr)) arr.forEach(a => window._checkedSaldoAccounts.add(String(a)));
+                    }
+                } catch (e) {}
+            }
+            return window._checkedSaldoAccounts;
+        };
+
+        window.isSaldoAkunChecked = function(akun) {
+            if (!akun) return false;
+            window.initCheckedSaldoAccounts();
+            return window._checkedSaldoAccounts.has(String(akun));
+        };
+
+        window.toggleCheckSaldoAkun = function(akun, event) {
+            if (event) {
+                if (typeof event.stopPropagation === 'function') event.stopPropagation();
+                if (typeof event.preventDefault === 'function') event.preventDefault();
+            }
+            if (!akun) return;
+            window.initCheckedSaldoAccounts();
+            const sAkun = String(akun);
+            const wasChecked = window._checkedSaldoAccounts.has(sAkun);
+            if (wasChecked) {
+                window._checkedSaldoAccounts.delete(sAkun);
+            } else {
+                window._checkedSaldoAccounts.add(sAkun);
+            }
+            try {
+                sessionStorage.setItem('zencell_checked_saldo_accounts', JSON.stringify(Array.from(window._checkedSaldoAccounts)));
+            } catch (e) {}
+            if (typeof window.renderAll === 'function') {
+                window.renderAll();
+            }
+        };
+
+        window.resetCheckSemuaSaldo = function(event) {
+            if (event) {
+                if (typeof event.stopPropagation === 'function') event.stopPropagation();
+                if (typeof event.preventDefault === 'function') event.preventDefault();
+            }
+            window.initCheckedSaldoAccounts();
+            const prevCount = window._checkedSaldoAccounts.size;
+            window._checkedSaldoAccounts.clear();
+            try {
+                sessionStorage.removeItem('zencell_checked_saldo_accounts');
+            } catch (e) {}
+            if (typeof window.renderAll === 'function') {
+                window.renderAll();
+            }
+            if (prevCount > 0 && typeof window.showToast === 'function') {
+                window.showToast(`✅ ${prevCount} tanda ceklis saldo berhasil direset`, 'info');
             }
         };
 
@@ -18235,8 +18353,27 @@
                                 : '')));
                 const isBlinkRow = window.isMutasiAkunBlinking && window.isMutasiAkunBlinking(s);
                 const blinkBadgeMain = isBlinkRow ? '<span class="badge-mutasi-baru">🔄 UPDATE</span>' : '';
-                return `<tr data-mutasi-akun="${s}" class="${isBlinkRow ? 'mutasi-akun-blink-slow' : ''}"><td><b>${s}</b>${labelBadge}${blinkBadgeMain}</td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td><span class="${isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam'}" title="${minLimit > 0 ? 'Batas Minimal: ' + window.formatRp(minLimit) : ''}">${window.formatRp(akhir)}</span></td></tr>`;
+                const isCheckedMain = window.isSaldoAkunChecked && window.isSaldoAkunChecked(s);
+                const checkIconMain = isCheckedMain ? '<span style="color:#047857; font-size:10px; font-weight:900; margin-right:2px;">✓ </span>' : '';
+                const cellClassMain = isCheckedMain ? 'saldo-clickable-cell saldo-checked-active' : 'saldo-clickable-cell';
+                const nomSpanClassMain = isCheckedMain
+                    ? 'saldo-checked-pill'
+                    : (isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam');
+
+                return `<tr data-mutasi-akun="${s}" class="${isBlinkRow ? 'mutasi-akun-blink-slow' : ''}"><td><b>${s}</b>${labelBadge}${blinkBadgeMain}</td><td>${window.formatRp(awal)}</td><td class="text-kredit">+${window.formatRp(masukAkun[s])}</td><td class="text-debit">-${window.formatRp(keluarAkun[s])}</td><td class="${cellClassMain}" onclick="window.toggleCheckSaldoAkun('${s}', event)" title="${isCheckedMain ? 'Sudah dicentang cocok (Klik untuk batal)' : 'Klik untuk tandai sudah dicocokkan dengan HP (soft green)'}"><span class="${nomSpanClassMain}" title="${minLimit > 0 ? 'Batas Minimal: ' + window.formatRp(minLimit) : ''}">${checkIconMain}${window.formatRp(akhir)}</span></td></tr>`;
             }).join('');
+
+            const thSaldoAkhirEl = document.getElementById('thSaldoAkhirMain');
+            if (thSaldoAkhirEl) {
+                const checkedSetMain = (window.initCheckedSaldoAccounts ? window.initCheckedSaldoAccounts() : new Set());
+                const checkedCountMain = checkedSetMain ? checkedSetMain.size : 0;
+                thSaldoAkhirEl.innerHTML = `
+                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:4px;">
+                        <span title="Klik nominal saldo di bawah untuk menandai hijau saat cek fisik HP">SALDO AKHIR</span>
+                        ${checkedCountMain > 0 ? `<button type="button" onclick="window.resetCheckSemuaSaldo(event)" title="Reset ${checkedCountMain} tanda hijau" style="background:#EF4444; color:#FFF; border:none; border-radius:4px; font-size:9px; padding:1px 5px; font-weight:800; cursor:pointer; line-height:1.2;">✕ (${checkedCountMain})</button>` : ''}
+                    </div>
+                `;
+            }
 
             const totalSemuaStokBelumCair = totalStokOpnameAkunVal + totalSparepartVal;
 
@@ -18434,6 +18571,12 @@
 
                     const isBlinkSb = window.isMutasiAkunBlinking && window.isMutasiAkunBlinking(s);
                     const blinkBadgeSb = isBlinkSb ? '<span class="badge-mutasi-baru">🔄 UPDATE</span>' : '';
+                    const isCheckedSb = window.isSaldoAkunChecked && window.isSaldoAkunChecked(s);
+                    const checkIconSb = isCheckedSb ? '<span style="color:#047857; font-size:10px; font-weight:900; margin-right:2px;">✓ </span>' : '';
+                    const cellClassSb = isCheckedSb ? 'saldo-clickable-cell saldo-checked-active' : 'saldo-clickable-cell';
+                    const nomSpanClassSb = isCheckedSb
+                        ? 'saldo-checked-pill'
+                        : (isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam');
 
                     return `
                         <tr data-mutasi-akun="${s}" class="${isBlinkSb ? 'mutasi-akun-blink-slow' : ''}" title="${minLimit > 0 ? 'Batas Minimal ' + s + ': ' + window.formatRp(minLimit) : s}">
@@ -18441,7 +18584,9 @@
                             <td style="color:#475569; font-weight:700;">${window.formatRp(kemarinRow)}</td>
                             <td class="text-kredit" style="font-weight:${masukH > 0 ? '800' : '600'}; opacity:${masukH > 0 ? '1' : '0.45'};">${masukH > 0 ? '+' + window.formatRp(masukH) : 'Rp0'}</td>
                             <td class="text-debit" style="font-weight:${keluarH > 0 ? '800' : '600'}; opacity:${keluarH > 0 ? '1' : '0.45'};">${keluarH > 0 ? '-' + window.formatRp(keluarH) : 'Rp0'}</td>
-                            <td><span class="${isBelowLimit ? 'saldo-limit-blink' : 'saldo-nom-hitam'}">${window.formatRp(akhirRow)}</span></td>
+                            <td class="${cellClassSb}" onclick="window.toggleCheckSaldoAkun('${s}', event)" title="${isCheckedSb ? 'Sudah dicentang cocok (Klik untuk batal)' : 'Klik untuk tandai sudah dicocokkan dengan HP (soft green)'}">
+                                <span class="${nomSpanClassSb}">${checkIconSb}${window.formatRp(akhirRow)}</span>
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -18598,6 +18743,8 @@
                 ` : '';
 
                 const labelTanggalAktif = targetDateSidebar === todayIsoSb ? `HARI INI (${window.formatTanggalDDMMYY(targetDateSidebar)})` : window.formatTanggalDDMMYY(targetDateSidebar);
+                const checkedSetSb = (window.initCheckedSaldoAccounts ? window.initCheckedSaldoAccounts() : new Set());
+                const checkedCountSb = checkedSetSb ? checkedSetSb.size : 0;
 
                 sidebarContent.innerHTML = `
                     <!-- 1. TABEL 5 KOLOM SALDO & MUTASI HARIAN (ALA EXCEL) -->
@@ -18614,7 +18761,14 @@
                                         <th>S. KEMARIN</th>
                                         <th>+ MASUK</th>
                                         <th>- KELUAR</th>
-                                        <th>SALDO AKHIR</th>
+                                        <th>
+                                            <div style="display:flex; align-items:center; justify-content:flex-end; gap:3px;">
+                                                <span title="Klik nominal saldo di bawah untuk menandai hijau saat cek fisik HP">SALDO AKHIR</span>
+                                                ${checkedCountSb > 0 ? `
+                                                    <button type="button" onclick="window.resetCheckSemuaSaldo(event)" title="Reset ${checkedCountSb} tanda hijau" style="background:#EF4444; color:#FFF; border:none; border-radius:4px; font-size:8.5px; padding:1px 4.5px; font-weight:800; cursor:pointer; line-height:1.1;">✕ (${checkedCountSb})</button>
+                                                ` : ''}
+                                            </div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
