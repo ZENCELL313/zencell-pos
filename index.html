@@ -1391,7 +1391,7 @@
         }
 
         .tab-content, .sub-tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
-        .tab-content.active, .sub-tab-content.active { display: block; opacity: 1; transform: translateY(0); }
+        .tab-content.active, .sub-tab-content.active { display: block; opacity: 1; transform: none; }
 
         .fab-container { position: fixed; bottom: 68px; right: 20px; z-index: 9998; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
         .fab-main {
@@ -1820,6 +1820,51 @@
 
         .filter-container { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; background: var(--primary-light); padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
         .date-picker-input { padding: 6px 8px; font-size: 11.5px; border: 1px solid var(--border); border-radius: 6px; outline: none; background: var(--card); color: var(--text); cursor: pointer; font-weight: 600; }
+
+        /* Sticky Header & Scrollable Table Khusus Menu Kasir (Jurnal Transaksi Harian + Filter + Header Kolom) */
+        .kasir-sticky-header-zone {
+            position: sticky;
+            top: var(--sticky-top-offset, 218px);
+            z-index: 8850;
+            background: var(--card);
+            padding-top: 2px;
+            padding-bottom: 6px;
+            margin-bottom: 0;
+            border-bottom: 1.5px solid var(--border);
+        }
+        .kasir-sticky-header-zone .card-header {
+            margin-bottom: 6px;
+        }
+        .kasir-sticky-header-zone .filter-container {
+            margin-bottom: 0;
+        }
+        .kasir-table-scroll-box {
+            max-height: var(--kasir-table-max-h, calc(100vh - 365px));
+            overflow-y: auto;
+            overflow-x: auto;
+            position: relative;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid var(--border);
+            border-top: none;
+        }
+        .kasir-table-scroll-box .table-jurnal thead th {
+            position: sticky;
+            top: 0;
+            z-index: 35;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            box-shadow: inset 0 1px 0 var(--border), inset 0 -1.5px 0 var(--border), 0 2px 4px rgba(15, 23, 42, 0.06);
+        }
+        body.theme-cream .kasir-table-scroll-box .table-jurnal thead th {
+            background-color: #ECFDF5 !important;
+            color: #065F46 !important;
+            box-shadow: inset 0 1px 0 #A7F3D0, inset 0 -1.5px 0 #A7F3D0, 0 2px 4px rgba(15, 23, 42, 0.05);
+        }
+        body.theme-dark .kasir-table-scroll-box .table-jurnal thead th {
+            background-color: #0F172A !important;
+            color: #34D399 !important;
+            box-shadow: inset 0 1px 0 #334155, inset 0 -1.5px 0 #334155, 0 2px 6px rgba(0, 0, 0, 0.35);
+        }
 
         .table-responsive { width: 100%; overflow-x: auto; margin-bottom: 4px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
@@ -4981,49 +5026,51 @@
 
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
         <div class="card">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <span>📖 Jurnal Transaksi Harian</span>
-                <div class="jurnal-header-actions">
-                    <button type="button" class="btn-jurnal-hdr" onclick="openRightLaporanShift()" title="Buka Panel Laporan Shift & Hitung Uang Fisik Laci di Menu Kanan">📑 Laporan Shift</button>
-                    <button type="button" class="btn-jurnal-hdr" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
-                    <button type="button" class="btn-jurnal-hdr" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
-                    <button type="button" class="btn-jurnal-hdr" onclick="openModalOperasionalFast()" title="Catat Pengeluaran Operasional Toko / Talangan" style="background:#7C3AED; color:#FFF; border-color:#6D28D9;">🏢 Operasional</button>
-                    <button type="button" class="btn-jurnal-hdr" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
-                    <button type="button" class="btn-jurnal-hdr" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
+            <div class="kasir-sticky-header-zone" id="kasirStickyHeaderZone">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <span>📖 Jurnal Transaksi Harian</span>
+                    <div class="jurnal-header-actions">
+                        <button type="button" class="btn-jurnal-hdr" onclick="openRightLaporanShift()" title="Buka Panel Laporan Shift & Hitung Uang Fisik Laci di Menu Kanan">📑 Laporan Shift</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="openModalOperasionalFast()" title="Catat Pengeluaran Operasional Toko / Talangan" style="background:#7C3AED; color:#FFF; border-color:#6D28D9;">🏢 Operasional</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
+                    </div>
+                </div>
+
+                <div class="filter-container">
+                    <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER:</span>
+                    
+                    <select id="jurnalFilterMode" class="date-picker-input" onchange="toggleFilterJurnalDate(this.value)">
+                        <option value="ALL">📅 Semua Tanggal</option>
+                        <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
+                        <option value="MONTHLY">🗓️ Per Bulan</option>
+                    </select>
+
+                    <input type="date" id="jurnalDatePicker" class="date-picker-input" onchange="renderAll()">
+                    <input type="month" id="jurnalMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
+
+                    <select id="jurnalFilterKat" class="date-picker-input" onchange="renderAll()">
+                        <option value="">-- All Kategori --</option>
+                    </select>
+
+                    <select id="jurnalFilterMasuk" class="date-picker-input" onchange="renderAll()">
+                        <option value="">-- All Akun Masuk --</option>
+                    </select>
+
+                    <select id="jurnalFilterKeluar" class="date-picker-input" onchange="renderAll()">
+                        <option value="">-- All Akun Keluar --</option>
+                    </select>
+
+                    <div style="position:relative; display:flex; align-items:center; flex:1; min-width:175px; max-width:260px;">
+                        <input type="text" id="jurnalSearchInput" class="date-picker-input" placeholder="🔍 Cari ket / nama / nominal..." oninput="renderAll()" style="width:100%; padding-right:24px;">
+                        <button type="button" id="btnClearJurnalSearch" onclick="document.getElementById('jurnalSearchInput').value=''; renderAll();" style="display:none; position:absolute; right:5px; background:none; border:none; color:#EF4444; font-weight:800; font-size:11px; cursor:pointer;" title="Bersihkan Pencarian">✕</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="filter-container">
-                <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER:</span>
-                
-                <select id="jurnalFilterMode" class="date-picker-input" onchange="toggleFilterJurnalDate(this.value)">
-                    <option value="ALL">📅 Semua Tanggal</option>
-                    <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
-                    <option value="MONTHLY">🗓️ Per Bulan</option>
-                </select>
-
-                <input type="date" id="jurnalDatePicker" class="date-picker-input" onchange="renderAll()">
-                <input type="month" id="jurnalMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
-
-                <select id="jurnalFilterKat" class="date-picker-input" onchange="renderAll()">
-                    <option value="">-- All Kategori --</option>
-                </select>
-
-                <select id="jurnalFilterMasuk" class="date-picker-input" onchange="renderAll()">
-                    <option value="">-- All Akun Masuk --</option>
-                </select>
-
-                <select id="jurnalFilterKeluar" class="date-picker-input" onchange="renderAll()">
-                    <option value="">-- All Akun Keluar --</option>
-                </select>
-
-                <div style="position:relative; display:flex; align-items:center; flex:1; min-width:175px; max-width:260px;">
-                    <input type="text" id="jurnalSearchInput" class="date-picker-input" placeholder="🔍 Cari ket / nama / nominal..." oninput="renderAll()" style="width:100%; padding-right:24px;">
-                    <button type="button" id="btnClearJurnalSearch" onclick="document.getElementById('jurnalSearchInput').value=''; renderAll();" style="display:none; position:absolute; right:5px; background:none; border:none; color:#EF4444; font-weight:800; font-size:11px; cursor:pointer;" title="Bersihkan Pencarian">✕</button>
-                </div>
-            </div>
-
-            <div class="table-responsive">
+            <div class="table-responsive kasir-table-scroll-box" id="kasirTableScrollBox">
                 <table class="table-jurnal">
                     <thead>
                         <tr>
@@ -5757,9 +5804,6 @@
                     </div>
                 </div>
                 <button type="button" class="btn" onclick="simpanPengaturanAkun()" style="background:#0284C7; margin-top:4px;">Simpan Perubahan Akun & Limit</button>
-                <div style="margin-top:8px;">
-                    <button type="button" class="btn" onclick="resetSemuaSaldoAwalKeNol()" style="background:#EF4444; font-size:11px; padding:7px 10px;">🔄 Reset Semua Saldo Awal ke Rp 0</button>
-                </div>
             </div>
 
             <div class="card">
@@ -11845,6 +11889,48 @@
             if (window.renderKasirMultiQueueUI) window.renderKasirMultiQueueUI();
         }
 
+        window.syncKasirStickyLayout = function() {
+            const stickyTopEl = document.querySelector('.sticky-top-container');
+            const kasirHeaderEl = document.getElementById('kasirStickyHeaderZone');
+            const bottomNavEl = document.querySelector('.bottom-nav');
+            const stickyTopH = stickyTopEl ? stickyTopEl.offsetHeight : 215;
+            document.documentElement.style.setProperty('--sticky-top-offset', stickyTopH + 'px');
+
+            if (kasirHeaderEl) {
+                const zoomVal = parseFloat(document.documentElement.style.zoom) || 1;
+                const rawVh = window.innerHeight || document.documentElement.clientHeight || 800;
+                const cssVh = zoomVal && zoomVal !== 1 ? Math.round(rawVh / zoomVal) : rawVh;
+                const kasirHdrH = kasirHeaderEl.offsetHeight || 100;
+                const bottomNavH = bottomNavEl ? bottomNavEl.offsetHeight : 54;
+                const availTableH = Math.max(240, cssVh - stickyTopH - kasirHdrH - bottomNavH - 36);
+                document.documentElement.style.setProperty('--kasir-table-max-h', availTableH + 'px');
+            }
+        };
+
+        window.addEventListener('resize', function() {
+            if (window.syncKasirStickyLayout) window.syncKasirStickyLayout();
+        });
+        window.addEventListener('load', function() {
+            if (window.syncKasirStickyLayout) {
+                window.syncKasirStickyLayout();
+                setTimeout(window.syncKasirStickyLayout, 250);
+            }
+        });
+
+        // Teruskan scroll roda mouse saat kursor berada di atas kartu KPI / header kasir agar langsung menggulir daftar transaksi
+        document.addEventListener('wheel', function(e) {
+            const tabKasir = document.getElementById('tab-kasir');
+            const scrollBox = document.getElementById('kasirTableScrollBox');
+            if (!tabKasir || !tabKasir.classList.contains('active') || !scrollBox) return;
+            if (e.target && (e.target.closest('.modal-overlay') || e.target.closest('.left-sidebar') || e.target.closest('.right-sidebar') || e.target.closest('#kasirTableScrollBox'))) return;
+            if (e.target && (e.target.closest('.sticky-top-container') || e.target.closest('#kasirStickyHeaderZone'))) {
+                if (scrollBox.scrollHeight > scrollBox.clientHeight) {
+                    scrollBox.scrollTop += e.deltaY;
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
         window.applyKpiCollapseUI = function(isCollapsed) {
             document.body.classList.toggle('kpi-collapsed-mode', Boolean(isCollapsed));
             const kpiEl = document.getElementById('topKpiSection');
@@ -11861,6 +11947,9 @@
                 btn.title = isCollapsed
                     ? 'Tampilkan kembali 8 Kartu Ringkasan KPI di atas'
                     : 'Sembunyikan / Lipat 8 Kartu Ringkasan KPI agar layar lebih lega';
+            }
+            if (window.syncKasirStickyLayout) {
+                requestAnimationFrame(window.syncKasirStickyLayout);
             }
         };
 
@@ -11880,6 +11969,8 @@
             document.body.classList.toggle('laporan-fullscreen-mode', tabId === 'tab-laporan');
             if (tabId === 'tab-laporan') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (tabId === 'tab-kasir' && window.syncKasirStickyLayout) {
+                requestAnimationFrame(window.syncKasirStickyLayout);
             }
         }
 
