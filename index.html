@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>POS ZENCELL 1</title>
     
-    <link id="dynamicManifest" rel="stylesheet" href="">
+    <link id="dynamicManifest" rel="manifest" href="">
+    <link id="dynamicFavicon" rel="icon" type="image/png" href="">
+    <link id="dynamicAppleTouchIcon" rel="apple-touch-icon" href="">
     <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-Title" content="POS ZENCELL">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -3138,18 +3143,47 @@
 
             <!-- TAB 1: IDENTITAS TOKO -->
             <div id="setPane-identitas" class="settings-sub-pane active">
-                <div style="text-align:center; margin-bottom:16px;">
-                    <span style="font-size:11px; font-weight:800; color:#64748B; letter-spacing:0.5px; display:block; margin-bottom:8px;">LOGO PERUSAHAAN / KONTER</span>
-                    <div class="logo-preview-box" id="boxLogoPreview">
-                        <span id="txtLogoPlaceholder" style="font-size:36px;">🏪</span>
-                        <img id="imgLogoPreview" src="" style="display:none; max-width:100%; max-height:100%; object-fit:contain;" alt="Logo Konter">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-bottom:16px;">
+                    <!-- KOLOM KIRI: LOGO TOKO (HEADER & STRUK NOTA) -->
+                    <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center;">
+                        <span style="font-size:11px; font-weight:800; color:#0F172A; letter-spacing:0.4px; display:block; margin-bottom:8px;">🏪 1. LOGO KONTER (HEADER &amp; STRUK NOTA)</span>
+                        <div class="logo-preview-box" id="boxLogoPreview" style="margin:0 auto 8px auto;">
+                            <span id="txtLogoPlaceholder" style="font-size:36px;">🏪</span>
+                            <img id="imgLogoPreview" src="" style="display:none; max-width:100%; max-height:100%; object-fit:contain;" alt="Logo Konter">
+                        </div>
+                        <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
+                            <input type="file" id="fileUploadLogoToko" accept="image/png, image/jpeg, image/jpg, image/webp" style="display:none;" onchange="handleUploadLogo(event)">
+                            <button type="button" class="btn" style="width:auto; padding:6px 12px; font-size:10.5px; background:#0284C7; font-weight:800;" onclick="document.getElementById('fileUploadLogoToko').click()">📁 Pilih Foto Logo</button>
+                            <button type="button" class="btn" style="width:auto; padding:6px 12px; font-size:10.5px; background:#EF4444; font-weight:800;" onclick="resetLogoToko()">🔄 Reset</button>
+                        </div>
+                        <small style="color:#64748B; font-size:10px; display:block; margin-top:6px; line-height:1.35;">Tampil di pojok kiri atas aplikasi, layar login, dan hasil cetak nota/struk.</small>
                     </div>
-                    <div style="display:flex; justify-content:center; gap:8px;">
-                        <input type="file" id="fileUploadLogoToko" accept="image/png, image/jpeg, image/jpg" style="display:none;" onchange="handleUploadLogo(event)">
-                        <button type="button" class="btn" style="width:auto; padding:6px 14px; font-size:11px; background:#0284C7;" onclick="document.getElementById('fileUploadLogoToko').click()">📁 Pilih Foto Logo</button>
-                        <button type="button" class="btn" style="width:auto; padding:6px 14px; font-size:11px; background:#EF4444;" onclick="resetLogoToko()">🔄 Reset</button>
+
+                    <!-- KOLOM KANAN: ICON APLIKASI SAAT DI-INSTALL (PWA HOMESCREEN HP / DESKTOP PC) -->
+                    <div style="background:linear-gradient(135deg, #ECFDF5 0%, #F0F9FF 100%); border:1.5px solid #10B981; border-radius:12px; padding:12px; text-align:center;">
+                        <span style="font-size:11px; font-weight:800; color:#065F46; letter-spacing:0.4px; display:block; margin-bottom:8px;">📱 2. ICON APLIKASI SAAT DI-INSTALL (HP / PC)</span>
+                        <div style="width:74px; height:74px; margin:0 auto 8px auto; border-radius:18px; background:#0F172A; padding:4px; box-shadow:0 4px 12px rgba(5,150,105,0.22); display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid #FFFFFF;">
+                            <img id="imgAppIconPreview" src="" style="width:100%; height:100%; object-fit:cover; border-radius:14px;" alt="Icon App">
+                        </div>
+                        <div style="display:flex; justify-content:center; gap:5px; flex-wrap:wrap; margin-bottom:6px;">
+                            <input type="file" id="fileUploadAppIcon" accept="image/png, image/jpeg, image/jpg, image/webp" style="display:none;" onchange="handleUploadAppIcon(event)">
+                            <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#059669; font-weight:800;" onclick="document.getElementById('fileUploadAppIcon').click()">📁 Upload Gambar Icon</button>
+                            <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#0284C7; font-weight:800;" onclick="gunakanLogoSebagaiAppIcon()" title="Gunakan foto Logo Konter di kiri sebagai Icon Aplikasi">🔗 Pakai Logo Kiri</button>
+                        </div>
+                        <div style="font-size:9.5px; font-weight:800; color:#334155; margin-bottom:4px;">⚡ Atau Pilih Cepat Desain Icon Konter (512x512 HD):</div>
+                        <div style="display:flex; justify-content:center; gap:4px; flex-wrap:wrap;">
+                            <button type="button" onclick="pilihPresetAppIcon('EMERALD')" style="background:#059669; color:#FFF; border:none; border-radius:6px; padding:4px 7px; font-size:9.5px; font-weight:800; cursor:pointer;" title="Icon Modern Hijau ZENCELL">🌿 Hijau ZC</button>
+                            <button type="button" onclick="pilihPresetAppIcon('GOLD')" style="background:#0F172A; color:#FBBF24; border:1px solid #F59E0B; border-radius:6px; padding:4px 7px; font-size:9.5px; font-weight:800; cursor:pointer;" title="Icon Elegan Hitam Emas ZENCELL">👑 Hitam Emas</button>
+                            <button type="button" onclick="pilihPresetAppIcon('BLUE')" style="background:#1D4ED8; color:#FFF; border:none; border-radius:6px; padding:4px 7px; font-size:9.5px; font-weight:800; cursor:pointer;" title="Icon Biru ATM & POS">💎 Biru POS</button>
+                            <button type="button" onclick="pilihPresetAppIcon('CLASSIC')" style="background:#64748B; color:#FFF; border:none; border-radius:6px; padding:4px 7px; font-size:9.5px; font-weight:800; cursor:pointer;" title="Kembalikan ke Icon Gambar HP Klasik">📱 Klasik</button>
+                        </div>
+                        <div style="margin-top:7px; padding-top:6px; border-top:1px dashed #A7F3D0; font-size:9.5px; color:#065F46; line-height:1.35;">
+                            💡 <b>Cara Ganti Icon di HP/PC yang Sudah Terinstall:</b> Setelah ganti icon di atas, <b>Hapus/Uninstall</b> shortcut aplikasi lama di layar HP/PC ➔ <b>Refresh</b> web ini 1x ➔ Klik menu browser <b>"Install Aplikasi / Tambahkan ke Layar Utama"</b>.
+                            <div style="margin-top:5px;">
+                                <button type="button" id="btnInstallPwaFromSetting" class="btn" style="width:100%; padding:5px 10px; font-size:10px; background:#0F172A; font-weight:800;" onclick="triggerInstallPwaApp()">📲 Pasang / Cek Panduan Install Aplikasi</button>
+                            </div>
+                        </div>
                     </div>
-                    <small style="color:#64748B; font-size:10.5px; display:block; margin-top:6px;">Format PNG, JPG, JPEG (Maksimal 2MB). Otomatis tampil di nota struk & header.</small>
                 </div>
 
                 <form onsubmit="simpanIdentitasToko(event)">
@@ -6630,25 +6664,173 @@
         window.addEventListener('offline', cekStatusKoneksiOnline);
         setInterval(cekStatusKoneksiOnline, 1000);
 
+        window._deferredPwaPrompt = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            window._deferredPwaPrompt = e;
+        });
+
+        window.generatePresetAppIconDataUrl = function(themeKey = 'EMERALD', size = 512) {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return "https://cdn-icons-png.flaticon.com/512/2845/2845701.png";
+
+                const p = window.pengaturanToko || {};
+                const rawName = (p.namaToko || 'POS ZENCELL 1').toUpperCase();
+                const cabangMatch = rawName.match(/\b(1|2|3)\b/);
+                const badgeNum = cabangMatch ? cabangMatch[1] : '1';
+
+                let bg1 = '#059669', bg2 = '#064E3B', accent = '#34D399', textCol = '#FFFFFF', subCol = '#A7F3D0';
+                if (themeKey === 'GOLD') {
+                    bg1 = '#1E293B'; bg2 = '#090D16'; accent = '#F59E0B'; textCol = '#FBBF24'; subCol = '#FDE68A';
+                } else if (themeKey === 'BLUE') {
+                    bg1 = '#2563EB'; bg2 = '#1E3A8A'; accent = '#38BDF8'; textCol = '#FFFFFF'; subCol = '#BAE6FD';
+                }
+
+                // Rounded rect background
+                const r = size * 0.22;
+                const grad = ctx.createLinearGradient(0, 0, size, size);
+                grad.addColorStop(0, bg1);
+                grad.addColorStop(1, bg2);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(r, 0);
+                ctx.lineTo(size - r, 0);
+                ctx.quadraticCurveTo(size, 0, size, r);
+                ctx.lineTo(size, size - r);
+                ctx.quadraticCurveTo(size, size, size - r, size);
+                ctx.lineTo(r, size);
+                ctx.quadraticCurveTo(0, size, 0, size - r);
+                ctx.lineTo(0, r);
+                ctx.quadraticCurveTo(0, 0, r, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                // Decorative inner border ring
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = size * 0.025;
+                ctx.globalAlpha = 0.35;
+                ctx.strokeRect(size * 0.07, size * 0.07, size * 0.86, size * 0.86);
+                ctx.globalAlpha = 1;
+
+                // Top pill "POS & ATM"
+                ctx.fillStyle = 'rgba(255,255,255,0.14)';
+                const pillW = size * 0.56, pillH = size * 0.12, pillX = (size - pillW) / 2, pillY = size * 0.14;
+                ctx.fillRect(pillX, pillY, pillW, pillH);
+                ctx.fillStyle = subCol;
+                ctx.font = `800 ${Math.round(size * 0.068)}px "Plus Jakarta Sans", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`POS • ATM • SERVIS`, size / 2, pillY + pillH / 2);
+
+                // Main big letters "ZC"
+                ctx.fillStyle = textCol;
+                ctx.font = `900 ${Math.round(size * 0.35)}px "Plus Jakarta Sans", sans-serif`;
+                ctx.fillText(`ZC`, size * 0.45, size * 0.54);
+
+                // Branch number badge
+                ctx.fillStyle = accent;
+                ctx.font = `900 ${Math.round(size * 0.22)}px "Plus Jakarta Sans", sans-serif`;
+                ctx.fillText(badgeNum, size * 0.80, size * 0.46);
+
+                // Bottom title "ZENCELL"
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = `800 ${Math.round(size * 0.105)}px "Plus Jakarta Sans", sans-serif`;
+                ctx.fillText(`ZENCELL ${badgeNum}`, size / 2, size * 0.82);
+
+                return canvas.toDataURL('image/png');
+            } catch (err) {
+                return "https://cdn-icons-png.flaticon.com/512/2845/2845701.png";
+            }
+        };
+
+        window.getResolvedAppIconUrl = function() {
+            const p = window.pengaturanToko || {};
+            if (p.appIconUrl === 'PRESET_EMERALD') return window.generatePresetAppIconDataUrl('EMERALD', 512);
+            if (p.appIconUrl === 'PRESET_GOLD') return window.generatePresetAppIconDataUrl('GOLD', 512);
+            if (p.appIconUrl === 'PRESET_BLUE') return window.generatePresetAppIconDataUrl('BLUE', 512);
+            if (p.appIconUrl === 'PRESET_CLASSIC') return "https://cdn-icons-png.flaticon.com/512/2845/2845701.png";
+            if (p.appIconUrl && String(p.appIconUrl).trim()) return p.appIconUrl;
+            if (p.logoUrl && String(p.logoUrl).trim()) return p.logoUrl;
+            return "https://cdn-icons-png.flaticon.com/512/2845/2845701.png";
+        };
+
         window.updateDynamicManifest = function() {
             try {
                 const p = window.pengaturanToko || {};
                 const sName = p.namaToko || "POS ZENCELL 1";
-                const short = sName.split(' ')[0] || "ZENCELL";
-                const iconSrc = p.logoUrl || "https://cdn-icons-png.flaticon.com/512/2845/2845701.png";
+                const short = sName.length <= 12 ? sName : (sName.replace(/^POS\s+/i, '').slice(0, 12) || "ZENCELL 1");
+                const iconSrc512 = window.getResolvedAppIconUrl();
+                const iconSrc192 = (p.appIconUrl && String(p.appIconUrl).startsWith('PRESET_') && p.appIconUrl !== 'PRESET_CLASSIC')
+                    ? window.generatePresetAppIconDataUrl(p.appIconUrl.replace('PRESET_', ''), 192)
+                    : iconSrc512;
+
+                // Update preview di modal Pengaturan jika ada
+                const previewAppIcon = document.getElementById('imgAppIconPreview');
+                if (previewAppIcon) {
+                    previewAppIcon.src = iconSrc512;
+                }
+
+                // Update Favicon & Apple Touch Icon di dokumen ini dan parent frame
+                const favEl = document.getElementById('dynamicFavicon');
+                if (favEl) favEl.setAttribute('href', iconSrc192);
+                const appleEl = document.getElementById('dynamicAppleTouchIcon');
+                if (appleEl) appleEl.setAttribute('href', iconSrc192);
+
+                try {
+                    if (window.parent && window.parent !== window && window.parent.document) {
+                        const pDoc = window.parent.document;
+                        let pFav = pDoc.querySelector('link[rel="icon"]');
+                        if (!pFav) {
+                            pFav = pDoc.createElement('link');
+                            pFav.setAttribute('rel', 'icon');
+                            pDoc.head.appendChild(pFav);
+                        }
+                        pFav.setAttribute('href', iconSrc192);
+
+                        let pApple = pDoc.querySelector('link[rel="apple-touch-icon"]');
+                        if (!pApple) {
+                            pApple = pDoc.createElement('link');
+                            pApple.setAttribute('rel', 'apple-touch-icon');
+                            pDoc.head.appendChild(pApple);
+                        }
+                        pApple.setAttribute('href', iconSrc192);
+                    }
+                } catch (_) {}
 
                 const manifestData = {
+                    "id": window.location.pathname || "/",
                     "name": sName,
                     "short_name": short,
-                    "start_url": ".",
+                    "description": `Aplikasi Kasir, Pembukuan & Servis ${sName}`,
+                    "start_url": window.location.href.split('?')[0] || ".",
+                    "scope": ".",
                     "display": "standalone",
                     "background_color": "#059669",
                     "theme_color": "#059669",
-                    "icons": [{
-                        "src": iconSrc,
-                        "sizes": "512x512",
-                        "type": "image/png"
-                    }]
+                    "icons": [
+                        {
+                            "src": iconSrc192,
+                            "sizes": "192x192",
+                            "type": "image/png",
+                            "purpose": "any"
+                        },
+                        {
+                            "src": iconSrc512,
+                            "sizes": "512x512",
+                            "type": "image/png",
+                            "purpose": "any"
+                        },
+                        {
+                            "src": iconSrc512,
+                            "sizes": "512x512",
+                            "type": "image/png",
+                            "purpose": "maskable"
+                        }
+                    ]
                 };
                 const stringManifest = JSON.stringify(manifestData);
                 const blob = new Blob([stringManifest], {type: 'application/manifest+json'});
@@ -19623,6 +19805,11 @@
                 txtPlaceholder.style.display = 'block';
             }
 
+            const imgAppIcon = document.getElementById('imgAppIconPreview');
+            if (imgAppIcon && window.getResolvedAppIconUrl) {
+                imgAppIcon.src = window.getResolvedAppIconUrl();
+            }
+
             const targetModalVal = Number(p.targetModalBerputar !== undefined ? p.targetModalBerputar : 250000000);
             const setTargetEl = document.getElementById('setTargetModal');
             const setTargetDispEl = document.getElementById('setTargetModalDisplay');
@@ -21669,6 +21856,96 @@
                 window.showSettingBanner("🔄 Logo toko berhasil di-reset ke logo bawaan.");
                 window.showToast("🔄 Logo toko di-reset ke default", "warn");
             }
+        };
+
+        // --- PENGATURAN ICON APLIKASI SAAT DI-INSTALL (PWA HOMESCREEN HP / DESKTOP PC) ---
+        window.handleUploadAppIcon = function(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            if (file.size > 3 * 1024 * 1024) {
+                window.showSettingBanner("⚠️ Ukuran gambar icon maksimal 3MB!", true);
+                window.showToast("Ukuran gambar icon maksimal 3MB!", "error");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    // Format otomatis ke ukuran persegi 512x512 PNG agar 100% valid di Android, iPhone, dan PC
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 512;
+                    canvas.height = 512;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, 512, 512);
+
+                    const scale = Math.max(512 / img.width, 512 / img.height);
+                    const w = img.width * scale;
+                    const h = img.height * scale;
+                    const x = (512 - w) / 2;
+                    const y = (512 - h) / 2;
+                    ctx.drawImage(img, x, y, w, h);
+
+                    const png512 = canvas.toDataURL('image/png');
+                    if (!window.pengaturanToko) window.pengaturanToko = {};
+                    window.pengaturanToko.appIconUrl = png512;
+
+                    localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+                    window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+                    window.applyPengaturanTokoKeUI();
+                    window.catatLogAktivitas('ICON APLIKASI', 'Mengunggah gambar baru untuk Icon Install Aplikasi (512x512 PNG)');
+
+                    window.showSettingBanner("✅ Icon Aplikasi baru berhasil disimpan! Jika aplikasi sudah terinstall di HP/PC, hapus shortcut lama lalu Install ulang agar icon baru tampil.");
+                    window.showToast("✅ Icon Aplikasi berhasil diperbarui!", "success");
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.gunakanLogoSebagaiAppIcon = function() {
+            const p = window.pengaturanToko || {};
+            if (!p.logoUrl) {
+                window.showSettingBanner("⚠️ Pilih / unggah Foto Logo Konter di kotak sebelah kiri terlebih dahulu!", true);
+                window.showToast("⚠️ Belum ada Foto Logo Konter di sebelah kiri!", "warn");
+                return;
+            }
+            window.pengaturanToko.appIconUrl = p.logoUrl;
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+            window.applyPengaturanTokoKeUI();
+            window.showSettingBanner("✅ Icon Aplikasi disamakan dengan Logo Konter!");
+            window.showToast("✅ Icon Aplikasi kini menggunakan Logo Konter!", "success");
+        };
+
+        window.pilihPresetAppIcon = function(themeKey) {
+            if (!window.pengaturanToko) window.pengaturanToko = {};
+            window.pengaturanToko.appIconUrl = 'PRESET_' + themeKey;
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+            window.applyPengaturanTokoKeUI();
+            window.catatLogAktivitas('ICON APLIKASI', `Mengubah desain Icon Install Aplikasi ke preset ${themeKey}`);
+            window.showSettingBanner(`✅ Desain Icon Aplikasi (${themeKey}) berhasil diterapkan! Hapus shortcut lama di HP/PC lalu Install ulang untuk melihat icon baru.`);
+            window.showToast(`✅ Icon Aplikasi diubah ke desain ${themeKey}!`, "success");
+        };
+
+        window.triggerInstallPwaApp = async function() {
+            if (window._deferredPwaPrompt) {
+                window._deferredPwaPrompt.prompt();
+                const choice = await window._deferredPwaPrompt.userChoice;
+                if (choice && choice.outcome === 'accepted') {
+                    window._deferredPwaPrompt = null;
+                    window.showToast("✅ Aplikasi sedang dipasang ke layar utama!", "success");
+                }
+                return;
+            }
+            alert(
+                "📲 PANDUAN PASANG / UPDATE ICON APLIKASI DI HP & PC:\n\n" +
+                "1. Jika aplikasi SUDAH pernah di-install sebelumnya dengan gambar lama, HAPUS / UNINSTALL dulu shortcut aplikasi lama dari layar utama HP atau Desktop PC.\n" +
+                "2. Buka aplikasi web ini di Chrome / Edge / Safari lalu tekan REFRESH (Muat Ulang) 1 kali.\n" +
+                "3. Klik titik tiga (⋮) di pojok kanan atas browser lalu pilih 'Tambahkan ke Layar Utama' / 'Install Aplikasi'.\n" +
+                "4. Aplikasi akan terpasang dengan gambar Icon baru yang sudah Anda pilih!"
+            );
         };
 
         window.simpanIdentitasToko = function(e) {
