@@ -4059,21 +4059,25 @@
 
             <div class="summary-grid">
                 <div class="summary-card kpi-c5" style="border-top: 3px solid #2563EB;">
-                    <div class="kpi-icon-box" title="Total Transaksi">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                    </div>
-                    <div class="kpi-content-box">
-                        <div class="lbl" style="color:#1D4ED8;"><span class="kpi-inline-emoji">🧾 </span>TOTAL TRX</div>
-                        <div class="val" id="topTotalTrxVal">0 TRX</div>
-                    </div>
-                </div>
-                <div class="summary-card kpi-c6" style="border-top: 3px solid #EA580C;">
-                    <div class="kpi-icon-box" title="Total Pelanggan">
+                    <div class="kpi-icon-box" title="Total Transaksi & Pelanggan">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </div>
                     <div class="kpi-content-box">
-                        <div class="lbl" style="color:#C2410C;"><span class="kpi-inline-emoji">👥 </span>PELANGGAN</div>
-                        <div class="val" id="topTotalPelangganVal">0 ORG</div>
+                        <div class="lbl" style="color:#1D4ED8;"><span class="kpi-inline-emoji">🧾 </span>TRX &amp; PELANGGAN</div>
+                        <div class="val" style="display:flex; align-items:center; gap:5px; white-space:nowrap;">
+                            <span id="topTotalTrxVal">0 TRX</span>
+                            <span style="opacity:0.65; font-weight:600;">•</span>
+                            <span id="topTotalPelangganVal">0 ORG</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-card kpi-c6 clickable" id="cardTopModalSparepart" onclick="activateMainTabById('tab-service')" title="Klik untuk buka tab Service &amp; Sparepart (Modal Sparepart Belum Cair)" style="border-top: 3px solid #0D9488;">
+                    <div class="kpi-icon-box" title="Modal Sparepart Belum Cair">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                    </div>
+                    <div class="kpi-content-box">
+                        <div class="lbl" style="color:#0D9488;"><span class="kpi-inline-emoji">🔧 </span>MODAL SPAREPART</div>
+                        <div class="val" id="topModalSparepartVal">Rp0</div>
                     </div>
                 </div>
                 <div class="summary-card kpi-c7 clickable" onclick="activateMainTabById('tab-stok')" title="Klik untuk buka tab Stok Opname" style="border-top: 3px solid #0284C7;">
@@ -4295,6 +4299,23 @@
             </div>
 
             <div id="modalSeaBankBungaBody"></div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: BEDAH DETAIL SELISIH AUDIT MODAL BERPUTAR & TOTAL HARTA -->
+    <div id="modalBedahAuditOverlay" class="modal-overlay" onclick="if(event.target === this) window.closeModalBedahAuditModal()">
+        <div class="modal-content" style="max-width: 540px; max-height: 90vh; overflow-y: auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #CBD5E1; padding-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:18px;">🔍</span>
+                    <div>
+                        <h3 style="font-size:14.5px; color:#0F172A; margin:0; font-weight:800;">BEDAH DETAIL AUDIT MODAL BERPUTAR</h3>
+                        <small style="font-size:10px; color:#64748B;">Analisis Selisih Target Modal Pokok (250 Juta) + Cuan vs Total Harta Riil</small>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeModalBedahAuditModal()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+            <div id="bodyModalBedahAudit"></div>
         </div>
     </div>
 
@@ -13882,6 +13903,10 @@
                     item.updatedAt = nowTs;
                     targetHighlightId = item.id;
                     window.markLocalEntityEdited('stok', item);
+                    if (window.masterVlookup && window.masterVlookup[nama]) {
+                        window.masterVlookup[nama].defModal = modalFinalTabel;
+                        if (jualFinalTabel > 0) window.masterVlookup[nama].defJual = jualFinalTabel;
+                    }
                     if (isAveraged) {
                         window.catatLogAktivitas('BELANJA STOK (RATA-RATA)', `Tambah stok [${kat}] ${nama} +${qty} pcs (Modal beli: ${window.formatRp(modal)} ➔ Modal rata-rata baru: ${window.formatRp(modalFinalTabel)})`);
                         toastMsg = `✅ Stok [${kat}] ${nama} +${qty} Pcs berhasil ditambah! Harga modal otomatis dirata-rata menjadi ${window.formatRp(modalFinalTabel)}/pcs.`;
@@ -13928,7 +13953,8 @@
 
             window.saveMultipleFirebaseNodes({
                 stok: window.stokOpnameItems,
-                riwayatBelanjaStok: window.riwayatBelanjaStok
+                riwayatBelanjaStok: window.riwayatBelanjaStok,
+                vlookup: window.masterVlookup
             }, false);
             window.renderAll();
 
@@ -14187,18 +14213,22 @@
             }
 
             // Deteksi apakah utang berasal dari barang Stok Opname (VOUCHER / SP / ACC)
+            // PENTING: Hanya potong stok fisik jika Saldo Keluar yang dipilih memang VOUCHER / SP / ACC (jangan pernah menimpa TIDAK POTONG SALDO atau akun kas/bank)
             const akunStokFisik = ['VOUCHER', 'SP', 'ACC'];
             let matchedStok = null;
-            if (stokIdRefInput) {
-                matchedStok = (window.stokOpnameItems || []).find(s => String(s.id) === String(stokIdRefInput));
-            }
-            if (!matchedStok && ket) {
-                const candidates = (window.stokOpnameItems || []).filter(s => {
-                    const nm = (s.nama || s.namaBarang || '').toUpperCase().trim();
-                    return nm && (nm === ket || ket.includes(nm));
-                }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
-                if (candidates.length > 0 && (akunStokFisik.includes(sumber) || akunStokFisik.includes(kat))) {
-                    matchedStok = candidates[0];
+            if (akunStokFisik.includes(sumber)) {
+                if (stokIdRefInput) {
+                    matchedStok = (window.stokOpnameItems || []).find(s => String(s.id) === String(stokIdRefInput));
+                }
+                if (!matchedStok && ket) {
+                    const candidates = (window.stokOpnameItems || []).filter(s => {
+                        const nm = (s.nama || s.namaBarang || '').toUpperCase().trim();
+                        if (!nm) return false;
+                        return ket === nm || ket.startsWith(nm + ' ') || ket.startsWith(nm + ' (') || ket.startsWith(nm + '-');
+                    }).sort((a, b) => ((b.nama || b.namaBarang || '').length - (a.nama || a.namaBarang || '').length));
+                    if (candidates.length > 0) {
+                        matchedStok = candidates[0];
+                    }
                 }
             }
 
@@ -14208,7 +14238,7 @@
 
             let idStokRef = null;
             let namaBarangStok = '';
-            if (matchedStok && (akunStokFisik.includes(sumber) || akunStokFisik.includes(kat))) {
+            if (matchedStok && akunStokFisik.includes(sumber)) {
                 idStokRef = matchedStok.id;
                 namaBarangStok = (matchedStok.nama || matchedStok.namaBarang || '').toUpperCase().trim();
                 kat = matchedStok.kat;
@@ -14287,7 +14317,12 @@
                 window.markLocalEntityEdited('piutang', p);
 
                 let initTrx = (window.transaksiJurnal || []).find(t => (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') && (t.idPiutangRef == p.id || t.id === 'trx_init_piutang_' + p.id));
-                if (initTrx) {
+                if (sumber === 'TIDAK POTONG SALDO') {
+                    if (initTrx) {
+                        window.markLocalEntityDeleted('transaksi', initTrx.id);
+                        window.transaksiJurnal = (window.transaksiJurnal || []).filter(t => t && t.id !== initTrx.id);
+                    }
+                } else if (initTrx) {
                     initTrx.idPiutangRef = p.id;
                     initTrx.idStokRef = idStokRef;
                     initTrx.namaBarangStok = namaBarangStok;
@@ -14302,7 +14337,7 @@
                     initTrx.modalSplit1 = nom;
                     initTrx.updatedAt = nowTs;
                     window.markLocalEntityEdited('transaksi', initTrx);
-                } else if (!p.isSeedAwal || sumber !== 'TIDAK POTONG SALDO') {
+                } else if (!p.isSeedAwal) {
                     const newInitTrx = {
                         id: 'trx_init_piutang_' + p.id,
                         idPiutangRef: p.id,
@@ -17184,6 +17219,11 @@
                 sp.status = isLunas ? 'LUNAS' : 'BELUM LUNAS';
             });
 
+            // AUTO-HEAL ANOMALI EDIT PIUTANG SEED LAMA (MEMULIHKAN POTONGAN GANDA 2 PCS V TSEL 7/28 MILIK ATEP & REF TG PALSU)
+            if (typeof window.autoHealCorruptedSeedPiutangStok === 'function') {
+                window.autoHealCorruptedSeedPiutangStok();
+            }
+
             // ENGINE SINKRONISASI PIUTANG 2-TAHAP (MENDUKUNG PELUNASAN SATUAN & AKUMULASI MULTI-NOTA FIFO)
             window.piutangList.forEach(p => {
                 if (!p.pokokAwal) p.pokokAwal = Number(p.sisa || 0);
@@ -18230,12 +18270,14 @@
             });
 
             let totalSparepartStok = 0;
+            let countSparepartAktif = 0;
             let totalModalSparepartAll = 0;
             window.sparepartList?.forEach(sp => {
                 const modVal = Number(sp.modal || 0);
                 totalModalSparepartAll += modVal;
                 if (sp.status !== 'LUNAS') {
                     totalSparepartStok += modVal;
+                    countSparepartAktif++;
                 }
 
                 const itemDate = sp.isoDate || sp.tgl || '';
@@ -18246,6 +18288,12 @@
                 if (masukAkun['SPAREPART'] !== undefined) masukAkun['SPAREPART'] += modVal;
             });
             const totalLunasSparepartAll = Math.max(0, totalModalSparepartAll - totalSparepartStok);
+            const elTopSparepart = document.getElementById('topModalSparepartVal');
+            if (elTopSparepart) elTopSparepart.innerText = window.formatRp(totalSparepartStok);
+            const elCardTopSparepart = document.getElementById('cardTopModalSparepart');
+            if (elCardTopSparepart) {
+                elCardTopSparepart.title = `Modal Sparepart Belum Cair: ${window.formatRp(totalSparepartStok)} (${countSparepartAktif} Part Aktif) — Klik untuk buka tab Service & Sparepart`;
+            }
 
             let totalOperasionalBelumDiganti = 0;
             let totalOperasionalAll = 0;
@@ -18596,24 +18644,36 @@
                     : null;
 
                 const auditBoxSidebarHtml = auditInfoSidebar ? `
-                    <div style="margin-top:8px; padding:8px 10px; border-radius:9px; background:${auditInfoSidebar.bgBanner}; border:1.5px solid ${auditInfoSidebar.borderBanner}; color:${auditInfoSidebar.colorBanner}; font-size:11px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                            <b style="font-size:11px;">🎯 AUDIT MODAL BERPUTAR</b>
-                            <button type="button" onclick="bukaPengaturan('modal');" style="background:rgba(15,23,42,0.12); border:none; border-radius:5px; padding:2px 7px; font-size:10px; font-weight:800; cursor:pointer; color:inherit;">⚙️ Atur</button>
+                    <div style="margin-top:8px; padding:9px 10px; border-radius:9px; background:${auditInfoSidebar.bgBanner}; border:1.5px solid ${auditInfoSidebar.borderBanner}; color:${auditInfoSidebar.colorBanner}; font-size:11px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <b style="font-size:11px; display:inline-flex; align-items:center; gap:4px;">🎯 AUDIT MODAL BERPUTAR</b>
+                            <div style="display:flex; gap:3px;">
+                                <button type="button" onclick="window.bukaModalBedahAuditModal()" style="background:rgba(15,23,42,0.12); border:none; border-radius:5px; padding:2px 6px; font-size:9.5px; font-weight:800; cursor:pointer; color:inherit;" title="Lihat rincian lengkap selisih">🔍 Bedah</button>
+                                <button type="button" onclick="bukaPengaturan('modal');" style="background:rgba(15,23,42,0.12); border:none; border-radius:5px; padding:2px 6px; font-size:9.5px; font-weight:800; cursor:pointer; color:inherit;" title="Atur modal berputar">⚙️ Atur</button>
+                            </div>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
                             <span>Target Modal Pokok:</span>
                             <b>${window.formatRp(auditInfoSidebar.targetModalPokok)}</b>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                            <span>Penambahan Profit:</span>
-                            <b>+${window.formatRp(auditInfoSidebar.penambahanProfit)}</b>
+                            <span>${auditInfoSidebar.modeAudit === 'AKUMULASI' ? 'Akumulasi Sisa Profit:' : 'Cuan Hari Ini:'}</span>
+                            <b style="color:#D97706;">+${window.formatRp(auditInfoSidebar.modeAudit === 'AKUMULASI' ? auditInfoSidebar.penambahanProfit : auditInfoSidebar.cuanHariIni)}</b>
                         </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:3px; padding-bottom:3px; border-bottom:1px dashed ${auditInfoSidebar.borderBanner};">
-                            <span>Seharusnya (Modal+Profit):</span>
+                        ${auditInfoSidebar.modeAudit === 'HARIAN' && auditInfoSidebar.setoranHariIni > 0 ? `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:2px; font-size:10px; color:#DC2626;">
+                            <span>Setoran Profit ke Owner:</span>
+                            <b>-${window.formatRp(auditInfoSidebar.setoranHariIni)}</b>
+                        </div>` : ''}
+                        <div style="display:flex; justify-content:space-between; margin-bottom:2px; padding-top:2px; border-top:1px dashed ${auditInfoSidebar.borderBanner};">
+                            <span>Seharusnya (Patokan):</span>
                             <b>${window.formatRp(auditInfoSidebar.seharusnyaTotalHarta)}</b>
                         </div>
-                        <div style="font-weight:900; font-size:11.5px; text-align:center;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:3px; padding-bottom:3px; border-bottom:1px dashed ${auditInfoSidebar.borderBanner};">
+                            <span>Total Harta Riil Konter:</span>
+                            <b style="color:#047857;">${window.formatRp(auditInfoSidebar.totalHartaAktual)}</b>
+                        </div>
+                        <div style="font-weight:900; font-size:11px; text-align:center; margin-top:2px;">
                             ${auditInfoSidebar.shortStatusText}
                         </div>
                     </div>
@@ -20077,6 +20137,242 @@
             } else {
                 window.showToast("💡 Membuka form Setoran Profit", "success");
             }
+        };
+
+        // --- AUTO-HEAL DATA PIUTANG SEED AWAL YANG TERPOTONG GANDA SAAT EDIT ---
+        window.autoHealCorruptedSeedPiutangStok = function() {
+            let changedPiutang = false;
+            let changedTrx = false;
+            const nowTs = Date.now();
+            const seedAtepIds = new Set(['1760000038', '1760000003']);
+
+            (window.piutangList || []).forEach(p => {
+                if (!p) return;
+                const pid = String(p.id);
+                // 1. Pulihkan 2 nota piutang lama ATEP (17-06-2026 & 23-10-2026) yang saat diedit tgl 05-11-2026 jam 13:46 tidak sengaja berubah sumbernya dari TIDAK POTONG SALDO menjadi VOUCHER
+                if (seedAtepIds.has(pid) && (p.sumber === 'VOUCHER' || Number(p.pokokAwal) === 36240)) {
+                    p.sumber = 'TIDAK POTONG SALDO';
+                    p.pokokAwal = 35633;
+                    p.sisa = 35633;
+                    p.idStokRef = null;
+                    p.namaBarangStok = '';
+                    p.isSeedAwal = true;
+                    p.updatedAt = nowTs;
+                    window.markLocalEntityEdited('piutang', p);
+                    changedPiutang = true;
+                }
+                // 2. Bersihkan false-match nama barang "TG" dari kata "TGL" pada piutang yang bersumber TIDAK POTONG SALDO / Kas
+                if (p.sumber !== 'VOUCHER' && p.sumber !== 'SP' && p.sumber !== 'ACC' && (p.idStokRef || p.namaBarangStok)) {
+                    p.idStokRef = null;
+                    p.namaBarangStok = '';
+                    p.updatedAt = nowTs;
+                    window.markLocalEntityEdited('piutang', p);
+                    changedPiutang = true;
+                }
+            });
+
+            const bogusInitIds = new Set(['trx_init_piutang_1760000038', 'trx_init_piutang_1760000003']);
+            const beforeLen = (window.transaksiJurnal || []).length;
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t) return;
+                if (bogusInitIds.has(String(t.id)) || (t.isPencatatanUtangAwal && seedAtepIds.has(String(t.idPiutangRef)))) {
+                    window.markLocalEntityDeleted('transaksi', t.id);
+                    changedTrx = true;
+                }
+            });
+            if (changedTrx) {
+                window.transaksiJurnal = (window.transaksiJurnal || []).filter(t => {
+                    if (!t) return false;
+                    return !(bogusInitIds.has(String(t.id)) || (t.isPencatatanUtangAwal && seedAtepIds.has(String(t.idPiutangRef))));
+                });
+            }
+
+            if ((changedPiutang || (changedTrx && window.transaksiJurnal.length !== beforeLen)) && !window._isSyncingFromFirebase) {
+                const payload = {};
+                if (changedPiutang) payload.piutang = window.piutangList;
+                if (changedTrx) payload.transaksi = window.transaksiJurnal;
+                window.saveMultipleFirebaseNodes(payload, true);
+            }
+        };
+
+        // --- SISTEM POPUP BEDAH DETAIL AUDIT MODAL BERPUTAR & KALIBRASI 1-KLIK ---
+        window.bukaModalBedahAuditModal = function() {
+            const info = window.hitungRingkasanProfitDanHarta();
+            const modal = document.getElementById('modalBedahAuditOverlay');
+            const body = document.getElementById('bodyModalBedahAudit');
+            if (!modal || !body) return;
+
+            const isPas = info.selisihAudit === 0;
+            const isMinus = info.selisihAudit < 0;
+            const badgeBg = isPas ? '#DCFCE7' : (isMinus ? '#FEE2E2' : '#E0F2FE');
+            const badgeColor = isPas ? '#166534' : (isMinus ? '#991B1B' : '#075985');
+            const badgeBorder = isPas ? '#86EFAC' : (isMinus ? '#FCA5A5' : '#7DD3FC');
+
+            const kasVal = Number(window._lastRealtimeKasCair || 0);
+            const stokVal = Number(window._lastRealtimeStok || 0);
+            const piuVal = Number(window._lastRealtimePiutang || 0);
+
+            // Hitung informasi tambahan penyebab selisih kecil (Admin Pindah Saldo & Bunga SeaBank)
+            const todayIso = info.todayIso || window.getTodayIso();
+            let adminTfHariIni = 0;
+            let adminTfAll = 0;
+            (window.transaksiJurnal || []).forEach(t => {
+                if (t && window.isTransaksiPindahSaldo(t)) {
+                    const adm = Math.max(0, Number(t.hargaModal || 0) - Number(t.hargaJual || 0));
+                    adminTfAll += adm;
+                    if (t.isoDate === todayIso) adminTfHariIni += adm;
+                }
+            });
+
+            body.innerHTML = `
+                <div style="background:${badgeBg}; border:1.5px solid ${badgeBorder}; color:${badgeColor}; border-radius:10px; padding:10px 12px; margin-bottom:12px; text-align:center;">
+                    <div style="font-size:12px; font-weight:900;">
+                        ${isPas ? '🟢 STATUS AUDIT: PAS SESUAI PROFIT (Rp 0)' : (isMinus ? `🔴 STATUS AUDIT: KURANG ${window.formatRp(info.selisihAudit)}` : `🔵 STATUS AUDIT: LEBIH +${window.formatRp(info.selisihAudit)}`)}
+                    </div>
+                    <div style="font-size:10.5px; margin-top:3px; opacity:0.95;">
+                        ${isPas 
+                            ? 'Total semua saldo & harta konter saat ini cocok 100% dengan modal pokok ditambah keuntungan!' 
+                            : (isMinus 
+                                ? `Harta aktual konter kurang ${window.formatRp(Math.abs(info.selisihAudit))} jika dibandingkan dengan patokan (${window.formatRp(info.targetModalPokok)} + Cuan).` 
+                                : `Harta aktual konter lebih +${window.formatRp(info.selisihAudit)} di atas patokan (${window.formatRp(info.targetModalPokok)} + Cuan).`)}
+                    </div>
+                </div>
+
+                <!-- TABEL MATEMATIKA PERHITUNGAN -->
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:11.5px;">
+                    <div style="font-weight:800; color:#334155; margin-bottom:8px; font-size:11px; text-transform:uppercase; letter-spacing:0.3px;">🧮 Rumus Audit Patokan vs Riil</div>
+                    
+                    <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #E2E8F0;">
+                        <span>1. Target Modal Pokok (Patokan Owner)</span>
+                        <b style="color:#0F172A;">${window.formatRp(info.targetModalPokok)}</b>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #E2E8F0;">
+                        <span>2. Keuntungan (Cuan) Hari Ini</span>
+                        <b style="color:#16A34A;">+${window.formatRp(info.cuanHariIni)}</b>
+                    </div>
+                    ${info.setoranHariIni > 0 ? `
+                    <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #E2E8F0; color:#DC2626;">
+                        <span>3. Setoran Profit yang Diambil Owner</span>
+                        <b>-${window.formatRp(info.setoranHariIni)}</b>
+                    </div>` : ''}
+                    <div style="display:flex; justify-content:space-between; padding:5px 6px; background:#FEF3C7; margin:6px -6px; border-radius:6px; font-weight:800; color:#92400E;">
+                        <span>4. Seharusnya (Patokan Modal + Sisa Cuan)</span>
+                        <span>${window.formatRp(info.seharusnyaTotalHarta)}</span>
+                    </div>
+
+                    <div style="margin-top:10px; padding-top:6px; border-top:1px dashed #CBD5E1;">
+                        <div style="display:flex; justify-content:space-between; font-weight:900; color:#047857; margin-bottom:4px;">
+                            <span>5. Total Harta Riil Konter Saat Ini</span>
+                            <span>${window.formatRp(info.totalHartaAktual)}</span>
+                        </div>
+                        <div style="font-size:10px; color:#64748B; padding-left:10px; line-height:1.5;">
+                            • Uang Kas Cair (Laci, Bank BRI/BCA/SeaBank, E-Wallet): <b>${window.formatRp(kasVal)}</b><br>
+                            • Nilai Stok Barang (Voucher, SP, ACC & Sparepart): <b>${window.formatRp(stokVal)}</b><br>
+                            • Nilai Piutang Pelanggan (Bon Belum Lunas): <b>${window.formatRp(piuVal)}</b>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; padding:6px 8px; margin-top:8px; border-radius:6px; background:${badgeBg}; color:${badgeColor}; font-weight:900; font-size:12px;">
+                        <span>SELISIH (Riil − Seharusnya):</span>
+                        <span>${(info.selisihAudit >= 0 ? '+' : '') + window.formatRp(info.selisihAudit)}</span>
+                    </div>
+                </div>
+
+                <!-- FAKTOR PENYEBAB SELISIH -->
+                <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:11px; line-height:1.5; color:#334155;">
+                    <b style="color:#0F172A; display:block; margin-bottom:4px;">💡 Catatan Audit Otomatis:</b>
+                    <ul style="margin:0; padding-left:16px;">
+                        ${adminTfHariIni > 0 ? `<li style="margin-bottom:4px;"><b>Biaya Admin Pindah Saldo Hari Ini</b>: Terdapat potongan admin transfer antar-akun sebesar <b style="color:#DC2626;">-${window.formatRp(adminTfHariIni)}</b> yang mengurangi kas bank tanpa mengurangi Cuan Harian.</li>` : ''}
+                        <li style="margin-bottom:4px;"><b>Klaim Bunga SeaBank & Pembulatan Rata-Rata Restok</b>: Pencairan bunga harian SeaBank (+Rp) atau pembulatan harga modal rata-rata stok (beberapa perak) dapat menimbulkan selisih kecil terhadap patokan Rp250 Juta.</li>
+                        <li style="margin-bottom:4px;">Gunakan tombol <b>"⚖️ Pas-kan via Koreksi LACI"</b> di bawah jika Anda ingin menyamakan Total Saldo Konter menjadi persis <b>${window.formatRp(info.seharusnyaTotalHarta)} (Rp250 Juta + Cuan Hari Ini)</b>.</li>
+                    </ul>
+                </div>
+
+                <!-- SOLUSI 1-KLIK -->
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    ${!isPas ? `
+                    <button type="button" class="btn" style="flex:1; min-width:210px; background:#7C3AED; font-weight:800; font-size:11.5px; padding:9px 12px;" onclick="window.paskanSelisihAuditKeLaciOtomatis()">
+                        ⚖️ Pas-kan via Koreksi LACI (${info.selisihAudit > 0 ? '-' : '+'}${window.formatRp(Math.abs(info.selisihAudit))}) Agar Pas 250 Jt + Cuan
+                    </button>
+                    ` : ''}
+                    <button type="button" class="btn" style="flex:1; min-width:180px; background:#059669; font-weight:800; font-size:11.5px; padding:9px 12px;" onclick="window.kalibrasiModalPokokOtomatis()">
+                        ⚡ Kalibrasi Patokan Modal Pokok
+                    </button>
+                    <button type="button" class="btn" style="background:#64748B; width:auto; padding:9px 16px; font-size:11.5px;" onclick="window.closeModalBedahAuditModal()">
+                        Tutup
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('show');
+        };
+
+        window.closeModalBedahAuditModal = function() {
+            const modal = document.getElementById('modalBedahAuditOverlay');
+            if (modal) modal.classList.remove('show');
+        };
+
+        window.paskanSelisihAuditKeLaciOtomatis = function() {
+            if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi('Penyesuaian Selisih Audit ke LACI')) {
+                return;
+            }
+            const info = window.hitungRingkasanProfitDanHarta();
+            const selisihAudit = Number(info.selisihAudit || 0);
+            if (selisihAudit === 0) {
+                window.showToast('✅ Saldo sudah PAS (Selisih Rp 0)!', 'success');
+                return;
+            }
+            const koreksiLaci = -selisihAudit; // Jika harta kelebihan +3.330 maka LACI dikurangi 3.330; jika kurang maka ditambah
+            const saldoLaciSebelum = window.getCurrentSystemBalanceForAkun ? window.getCurrentSystemBalanceForAkun('LACI', null) : Number((window._latestActualSaldoPerAkun && window._latestActualSaldoPerAkun['LACI']) || 0);
+            const saldoLaciBaru = saldoLaciSebelum + koreksiLaci;
+
+            if (!window.masterSaldoAwal) window.masterSaldoAwal = {};
+            window.masterSaldoAwal['LACI'] = Number(window.masterSaldoAwal['LACI'] || 0) + koreksiLaci;
+
+            // Pastikan targetModalBerputar tetap Rp250.000.000 (atau sesuai target saat ini)
+            if (!window.pengaturanToko) window.pengaturanToko = {};
+            if (!window.pengaturanToko.targetModalBerputar) window.pengaturanToko.targetModalBerputar = 250000000;
+
+            const korState = window.getKoreksiSaldoState ? window.getKoreksiSaldoState() : null;
+            const now = new Date();
+            const nowTs = window.getNextUniqueTs ? window.getNextUniqueTs() : Date.now();
+            if (korState && Array.isArray(korState.riwayatKoreksi)) {
+                korState.riwayatKoreksi.unshift({
+                    id: 'kor_' + nowTs,
+                    isoDate: window.getTodayIso(),
+                    waktu: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                    akun: 'LACI',
+                    saldoSistemSebelum: saldoLaciSebelum,
+                    saldoRiilBaru: saldoLaciBaru,
+                    selisih: koreksiLaci,
+                    kategoriAlasan: 'PENYESUAIAN PATOKAN 250JT + CUAN',
+                    catatan: `Penyesuaian otomatis selisih audit (${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}) agar Total Saldo = Patokan Modal + Cuan Hari Ini`,
+                    modalAdjusted: false,
+                    oleh: 'OWNER',
+                    updatedAt: nowTs
+                });
+            }
+
+            window.catatLogAktivitas('KOREKSI SALDO', `Menyesuaikan saldo LACI (${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}) agar Total Saldo Konter pas dengan Rp250 Juta + Cuan Hari Ini`);
+            window.saveMultipleFirebaseNodes({
+                saldoAwal: window.masterSaldoAwal,
+                pengaturan: window.pengaturanToko
+            }, false);
+            window.renderAll();
+            window.closeModalBedahAuditModal();
+            window.showToast(`✅ Saldo LACI disesuaikan ${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}. Total Saldo Konter kini PAS 100% dengan Rp250 Juta + Cuan Hari Ini!`, 'success');
+        };
+
+        window.kalibrasiModalPokokOtomatis = function() {
+            const info = window.hitungRingkasanProfitDanHarta();
+            const modalMurni = Math.max(0, info.totalHartaAktual - info.sisaProfitHariIni);
+            if (!window.pengaturanToko) window.pengaturanToko = {};
+            window.pengaturanToko.targetModalBerputar = modalMurni;
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+            window.renderAll();
+            window.closeModalBedahAuditModal();
+            window.showToast(`✅ Modal Pokok berhasil dikalibrasi menjadi ${window.formatRp(modalMurni)}. Status Audit kini PAS (Selisih Rp 0)!`, 'success');
         };
 
         // =========================================================================
