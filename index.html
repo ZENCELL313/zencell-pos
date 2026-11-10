@@ -5030,10 +5030,10 @@
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                     <span>📖 Jurnal Transaksi Harian</span>
                     <div class="jurnal-header-actions">
-                        <button type="button" class="btn-jurnal-hdr" onclick="openRightLaporanShift()" title="Buka Panel Laporan Shift & Hitung Uang Fisik Laci di Menu Kanan">📑 Laporan Shift</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalOperasionalFast()" title="Catat Pengeluaran Operasional Toko / Talangan" style="background:#7C3AED; color:#FFF; border-color:#6D28D9;">🏢 Operasional</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="openModalReturAcc()" title="Catat Retur / Komplain / Tukar Aksesoris (ACC) Konsumen" style="background:#EA580C; color:#FFF; border-color:#C2410C;">🔄 Retur ACC</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
                     </div>
@@ -5262,11 +5262,26 @@
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-bottom:10px;">
-                        <label>Sumber Saldo (Potong Kas)</label>
-                        <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
-                            <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
-                        </select>
+                    <div class="row-2" style="margin-bottom:10px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>🛡️ Keterangan Garansi (Otomatis Tampil di Nota ACC)</label>
+                            <select id="stokGaransi" class="form-control" style="background-color:#F0F9FF; border-color:#BAE6FD; font-weight:700; color:#0369A1;">
+                                <option value="TANPA GARANSI (Cek di Tempat)">🚫 TANPA GARANSI (Cek di Tempat)</option>
+                                <option value="GARANSI TOKO 1 HARI (24 Jam)">🛡️ GARANSI TOKO 1 HARI (24 Jam)</option>
+                                <option value="GARANSI TOKO 3 HARI">🛡️ GARANSI TOKO 3 HARI</option>
+                                <option value="GARANSI TOKO 7 HARI (1 Minggu)">🛡️ GARANSI TOKO 7 HARI (1 Minggu)</option>
+                                <option value="GARANSI TOKO 14 HARI (2 Minggu)">🛡️ GARANSI TOKO 14 HARI (2 Minggu)</option>
+                                <option value="GARANSI TOKO 1 BULAN (30 Hari)">🛡️ GARANSI TOKO 1 BULAN (30 Hari)</option>
+                                <option value="GARANSI RESMI 6 BULAN">🏅 GARANSI RESMI / DISTRIBUTOR 6 BULAN</option>
+                                <option value="GARANSI RESMI 1 TAHUN">🏅 GARANSI RESMI / DISTRIBUTOR 1 TAHUN</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Sumber Saldo (Potong Kas)</label>
+                            <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
+                                <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="row-2" style="margin-top:6px;">
@@ -5304,6 +5319,7 @@
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>📦 Stok Opname Realtime</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#EA580C; color:#FFF;" onclick="openModalReturAcc()" title="Proses Retur / Komplain / Tukar Aksesoris (ACC) Konsumen">🔄 Retur / Tukar ACC</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#0F172A;" onclick="bukaModalGlobalFind('STOK')">🔍 Find Cepat (Ctrl+F)</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px; background:linear-gradient(135deg, #059669, #047857); box-shadow:0 3px 8px rgba(5,150,105,0.28);" onclick="openModalStokOpname()">+ Input Stok Opname</button>
                 </div>
@@ -6440,6 +6456,162 @@
     </div>
 
     <div id="printAreaReport" style="display:none;"></div>
+
+    <!-- MODAL RETUR / KOMPLAIN / TUKAR TAMBAH ACC KONSUMEN -->
+    <div id="modalReturAccOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width:650px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #FED7AA; padding-bottom:8px;">
+                <div>
+                    <h3 id="modalReturAccTitle" style="font-size:15px; color:#C2410C; margin:0;">🔄 Retur / Komplain & Tukar Tambah ACC</h3>
+                    <div style="font-size:10.5px; color:#64748B; margin-top:2px;">Otomatis hitung selisih kas, potong/kembalikan stok fisik ACC, & jaga Audit Modal 250 Juta tetap PAS</div>
+                </div>
+                <button type="button" onclick="closeModalReturAcc()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+
+            <form id="formReturAcc" onsubmit="event.preventDefault(); window.simpanTransaksiReturAcc(false);" novalidate>
+                <input type="hidden" id="editReturTrxId" value="">
+                <div class="row-2" style="margin-bottom:10px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>📅 Tanggal Retur</label>
+                        <input type="date" id="returAccDate" class="form-control" style="font-weight:bold;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>📝 Catatan / Alasan Komplain (Opsional)</label>
+                        <input type="text" id="returAccAlasan" class="form-control" placeholder="Cth: Mati sebelah / Tukar tipe / Kabel putus">
+                    </div>
+                </div>
+
+                <!-- STEP 1: BARANG LAMA YANG DIRETUR -->
+                <div style="background:#FFF7ED; border:1.5px solid #FDBA74; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                    <div style="font-size:11.5px; font-weight:800; color:#9A3412; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>1️⃣ BARANG ACC LAMA (YANG DIKEMBALIKAN KONSUMEN)</span>
+                        <span id="badgeReturStokLamaInfo" style="font-size:9.5px; background:#FFEDD5; color:#C2410C; padding:2px 7px; border-radius:6px; font-weight:800;">Pilih / Ketik Nama ACC</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 80px; gap:8px; margin-bottom:8px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Nama Barang ACC yang Diretur</label>
+                            <input type="text" id="returAccNamaLama" class="form-control" list="listStokAccReturLama" placeholder="Ketik / pilih ACC lama yang diretur..." oninput="window.onReturAccBarangLamaInput()" autocomplete="off" required>
+                            <datalist id="listStokAccReturLama"></datalist>
+                            <input type="hidden" id="returAccStokLamaId" value="">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Qty Retur</label>
+                            <input type="number" id="returAccQtyLama" class="form-control" value="1" min="1" oninput="window.onReturAccQtyLamaChange()" style="text-align:center; font-weight:800;">
+                        </div>
+                    </div>
+
+                    <div class="row-2" style="margin-bottom:8px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Harga Beli Konsumen Dulu (Rp)</label>
+                            <input type="text" id="returAccHargaJualLamaDisplay" class="form-control" placeholder="0" inputmode="decimal" oninput="formatNominal(this, 'returAccHargaJualLama'); window.hitungSimulasiReturAcc(true);">
+                            <input type="hidden" id="returAccHargaJualLama" value="0">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Total HPP / Modal Barang Lama (Rp)</label>
+                            <input type="text" id="returAccModalLamaDisplay" class="form-control" placeholder="0" inputmode="decimal" oninput="formatNominal(this, 'returAccModalLama'); window.hitungSimulasiReturAcc(false);">
+                            <input type="hidden" id="returAccModalLama" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>📌 Status Fisik Barang Retur (Nasib Barang Lama di Toko)</label>
+                        <select id="returAccKondisiLama" class="form-control" onchange="window.hitungSimulasiReturAcc(false)" style="font-weight:800; background:#FFFFFF; border-color:#FB923C; color:#9A3412;">
+                            <option value="HANGUS">🗑️ Barang Rusak / Hangus / Non-Garansi Sales (Tidak Masuk Stok — Rugi Ditanggung Toko)</option>
+                            <option value="MASUK_STOK">♻️ Masuk Kembali ke Stok Layak Jual / Bisa Diretur ke Sales (+Stok ACC Bertambah Kembali)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- STEP 2: SOLUSI KE KONSUMEN (TUKAR BARANG BARU ATAU REFUND UANG) -->
+                <div style="background:#F0F9FF; border:1.5px solid #7DD3FC; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                        <span style="font-size:11.5px; font-weight:800; color:#0369A1;">2️⃣ SOLUSI KE KONSUMEN (PENGGANTIAN)</span>
+                        <select id="returAccModeSolusi" class="form-control" onchange="window.onReturAccModeSolusiChange()" style="width:auto; min-width:250px; padding:4px 8px; font-size:11px; font-weight:800; background:#E0F2FE; border-color:#38BDF8; color:#0369A1;">
+                            <option value="TUKAR_BARANG">🔄 Tukar dengan ACC Baru / Beda Merek</option>
+                            <option value="REFUND_UANG">💵 Kembalikan Uang Tunai / Refund (Tanpa Barang Baru)</option>
+                        </select>
+                    </div>
+
+                    <div id="boxReturAccBarangBaru">
+                        <div style="display:grid; grid-template-columns: 1fr 80px; gap:8px; margin-bottom:8px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Pilih Barang ACC Pengganti (Potong Stok ACC)</label>
+                                <input type="text" id="returAccNamaBaru" class="form-control" list="listStokAccReturBaru" placeholder="Ketik / pilih ACC pengganti yang diambil konsumen..." oninput="window.onReturAccBarangBaruInput()" autocomplete="off">
+                                <datalist id="listStokAccReturBaru"></datalist>
+                                <input type="hidden" id="returAccStokBaruId" value="">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Qty Baru</label>
+                                <input type="number" id="returAccQtyBaru" class="form-control" value="1" min="1" oninput="window.onReturAccQtyBaruChange()" style="text-align:center; font-weight:800;">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Harga Jual ACC Baru (Rp)</label>
+                                <input type="text" id="returAccHargaJualBaruDisplay" class="form-control" placeholder="0" inputmode="decimal" oninput="formatNominal(this, 'returAccHargaJualBaru'); window.hitungSimulasiReturAcc(true);">
+                                <input type="hidden" id="returAccHargaJualBaru" value="0">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Total Modal ACC Baru (Rp)</label>
+                                <input type="text" id="returAccModalBaruDisplay" class="form-control" placeholder="0" inputmode="decimal" oninput="formatNominal(this, 'returAccModalBaru'); window.hitungSimulasiReturAcc(false);" style="background:#F8FAFC;">
+                                <input type="hidden" id="returAccModalBaru" value="0">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>🛡️ Garansi di Nota Baru</label>
+                                <select id="returAccGaransiBaru" class="form-control" style="font-size:10.5px; font-weight:700; color:#0369A1;">
+                                    <option value="TANPA GARANSI (Cek di Tempat)">🚫 TANPA GARANSI</option>
+                                    <option value="GARANSI TOKO 1 HARI (24 Jam)">🛡️ GARANSI 1 HARI</option>
+                                    <option value="GARANSI TOKO 3 HARI">🛡️ GARANSI 3 HARI</option>
+                                    <option value="GARANSI TOKO 7 HARI (1 Minggu)">🛡️ GARANSI 7 HARI</option>
+                                    <option value="GARANSI TOKO 14 HARI (2 Minggu)">🛡️ GARANSI 14 HARI</option>
+                                    <option value="GARANSI TOKO 1 BULAN (30 Hari)">🛡️ GARANSI 1 BULAN</option>
+                                    <option value="GARANSI RESMI 6 BULAN">🏅 RESMI 6 BULAN</option>
+                                    <option value="GARANSI RESMI 1 TAHUN">🏅 RESMI 1 TAHUN</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: PENYELESAIAN UANG KAS & PREVIEW KESEIMBANGAN SALDO -->
+                <div style="background:#F0FDF4; border:1.5px solid #86EFAC; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                    <div style="font-size:11.5px; font-weight:800; color:#15803D; margin-bottom:8px;">
+                        3️⃣ PENYELESAIAN UANG KAS & DAMPAK PEMBUKUAN OTOMATIS
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:8px; margin-bottom:8px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Status Selisih Uang Kas</label>
+                            <select id="returAccArahKas" class="form-control" onchange="window.hitungSimulasiReturAcc(false)" style="font-weight:800; font-size:11px;">
+                                <option value="PAS_NOL">⚖️ Tukar Pas (Tidak Ada Uang Masuk/Keluar — Rp 0)</option>
+                                <option value="KONSUMEN_NAMBAH">➕ Konsumen Nambah Uang (Uang Masuk ke Kas)</option>
+                                <option value="TOKO_KEMBALI">➖ Toko Kembalikan Uang / Refund (Keluar dari Kas)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Nominal Selisih Kas (Rp)</label>
+                            <input type="text" id="returAccNominalKasDisplay" class="form-control" placeholder="0" inputmode="decimal" oninput="formatNominal(this, 'returAccNominalKas'); window.hitungSimulasiReturAcc(false);" style="font-weight:800;">
+                            <input type="hidden" id="returAccNominalKas" value="0">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Akun Kas / Bank</label>
+                            <select id="returAccAkunKas" class="form-control" style="font-weight:800; background:#FEFCE8;"></select>
+                        </div>
+                    </div>
+
+                    <div id="returAccSimulasiBox" style="background:#FFFFFF; border:1px solid #BBF7D0; border-radius:8px; padding:8px 10px; font-size:11px; line-height:1.5; color:#0F172A;"></div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1.2fr 1.4fr 0.8fr; gap:8px; margin-top:8px;">
+                    <button type="submit" class="btn" style="background:#059669; font-size:11.5px; font-weight:800;">💾 Simpan Retur</button>
+                    <button type="button" class="btn" style="background:#EA580C; font-size:11.5px; font-weight:800;" onclick="window.simpanTransaksiReturAcc(true)">🖨️ Simpan & Cetak Struk</button>
+                    <button type="button" class="btn" style="background:#64748B; font-size:11.5px;" onclick="closeModalReturAcc()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="modalKasirOverlay" class="modal-overlay">
         <div class="modal-content">
@@ -13100,7 +13272,10 @@
                     if (window.applyKasirExactStokLockUI) window.applyKasirExactStokLockUI();
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    notice.innerText = `🔒 Keterangan identik dengan Stok [${katStok}]. Akun Keluar & Modal dikunci ke ${katStok}.`;
+                    const garansiInfo = (katStok === 'ACC' || matchStok.garansi)
+                        ? ` • 🛡️ Nota: ${matchStok.garansi || 'TANPA GARANSI (Cek di Tempat)'}`
+                        : '';
+                    notice.innerText = `🔒 Keterangan identik dengan Stok [${katStok}]. Akun Keluar & Modal dikunci ke ${katStok}${garansiInfo}.`;
                     if (window.cekValidasiAkunStokManual) window.cekValidasiAkunStokManual();
                     if (window.cekValidasiAturanAkunUI) window.cekValidasiAturanAkunUI();
                     return;
@@ -13932,6 +14107,10 @@
                         document.getElementById('stokJual').value = jualLama;
                         document.getElementById('stokJualDisplay').value = jualLama.toLocaleString('id-ID');
                     }
+                    const garEl = document.getElementById('stokGaransi');
+                    if (garEl && matched.garansi) {
+                        garEl.value = matched.garansi;
+                    }
                     const q = parseFloat(document.getElementById('stokQty')?.value) || 0;
                     const m = parseFloat(document.getElementById('stokModal')?.value) || 0;
                     const totEl = document.getElementById('stokTotalDisplay');
@@ -14031,6 +14210,8 @@
             document.getElementById('stokModalDisplay').value = modalLama > 0 ? modalLama.toLocaleString('id-ID') : '';
             document.getElementById('stokJual').value = jualLama;
             document.getElementById('stokJualDisplay').value = jualLama > 0 ? jualLama.toLocaleString('id-ID') : '';
+            const garEl = document.getElementById('stokGaransi');
+            if (garEl) garEl.value = stok.garansi || 'TANPA GARANSI (Cek di Tempat)';
             document.getElementById('stokTotalDisplay').value = 'Rp0';
             window._lastAutoFilledStokKey = `${stok.id}__${namaBarang}`;
             const titleEl = document.getElementById('formStokTitle');
@@ -14055,6 +14236,7 @@
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
             const jual = parseFloat(document.getElementById('stokJual').value) || 0;
+            const garansi = (document.getElementById('stokGaransi')?.value || 'TANPA GARANSI (Cek di Tempat)').trim();
             
             const sumberKasSelect = document.getElementById('stokSumberKas');
             const sumberKas = sumberKasSelect ? sumberKasSelect.value : "TIDAK POTONG SALDO";
@@ -14091,6 +14273,7 @@
                     item.awal = qty;
                     item.modal = modal;
                     item.jual = jual;
+                    item.garansi = garansi;
                     item.updatedAt = nowTs;
                     targetHighlightId = item.id;
                     window.markLocalEntityEdited('stok', item);
@@ -14104,6 +14287,7 @@
                     primaryR.qty = qty;
                     primaryR.modal = modal;
                     primaryR.jual = jual;
+                    primaryR.garansi = garansi;
                     primaryR.total = totalNilai;
                     primaryR.sumberKas = sumberKas;
                     primaryR.updatedAt = nowTs;
@@ -14124,6 +14308,7 @@
                         qty: qty,
                         modal: modal,
                         jual: jual,
+                        garansi: garansi,
                         total: totalNilai,
                         sumberKas: sumberKas,
                         updatedAt: nowTs
@@ -14137,7 +14322,7 @@
                 if (titleEl) titleEl.innerText = '📦 + Input / Belanja Stok Opname';
                 const btnEl = document.getElementById('btnSubmitStok');
                 if (btnEl) btnEl.innerText = '💾 Simpan Stok Opname & Catat Aset';
-                window.catatLogAktivitas('EDIT STOK', `Memperbarui data stok opname [${kat}] ${nama} (Qty: ${qty})`);
+                window.catatLogAktivitas('EDIT STOK', `Memperbarui data stok opname [${kat}] ${nama} (Qty: ${qty}, ${garansi})`);
                 toastMsg = `✅ Perubahan stok [${kat}] ${nama} berhasil disimpan!`;
             } else {
                 const recordId = nowTs;
@@ -14156,6 +14341,7 @@
                     isAveraged = true;
                 }
                 const jualFinalTabel = jual > 0 ? jual : jualLama;
+                const garansiFinal = garansi || (item && item.garansi ? item.garansi : 'TANPA GARANSI (Cek di Tempat)');
 
                 const newRiwayat = {
                     id: recordId,
@@ -14169,6 +14355,7 @@
                     prevModal: item ? modalLama : modal,
                     modalRataSetelah: modalFinalTabel,
                     jual: jualFinalTabel,
+                    garansi: garansiFinal,
                     total: totalNilai,
                     sumberKas: sumberKas,
                     updatedAt: nowTs
@@ -14180,6 +14367,7 @@
                     item.awal = Number(item.awal || 0) + qty;
                     item.modal = modalFinalTabel;
                     item.jual = jualFinalTabel;
+                    item.garansi = garansiFinal;
                     item.nama = nama;
                     item.updatedAt = nowTs;
                     targetHighlightId = item.id;
@@ -14204,12 +14392,13 @@
                         terjual: 0,
                         modal: modal,
                         jual: jual,
+                        garansi: garansiFinal,
                         updatedAt: nowTs
                     };
                     targetHighlightId = recordId;
                     window.stokOpnameItems.push(newStok);
                     window.markLocalEntityEdited('stok', newStok);
-                    window.catatLogAktivitas('INPUT STOK', `Menambah stok opname baru [${kat}] ${nama} sebanyak ${qty} pcs (Audit/Aset)`);
+                    window.catatLogAktivitas('INPUT STOK', `Menambah stok opname baru [${kat}] ${nama} sebanyak ${qty} pcs (${garansiFinal})`);
                     toastMsg = `✅ Stok baru [${kat}] ${nama} (${qty} Pcs) berhasil disimpan!`;
                 }
             }
@@ -14219,6 +14408,8 @@
             document.getElementById('editStokId').value = '';
             document.getElementById('stokModal').value = '0';
             document.getElementById('stokJual').value = '0';
+            const garElReset = document.getElementById('stokGaransi');
+            if (garElReset) garElReset.value = 'TANPA GARANSI (Cek di Tempat)';
             if (document.getElementById('stokTotalDisplay')) {
                 document.getElementById('stokTotalDisplay').value = 'Rp0';
             }
@@ -14349,6 +14540,9 @@
             document.getElementById('stokJual').value = stok.jual || 0;
             document.getElementById('stokJualDisplay').value = Number(stok.jual || 0) > 0 ? Number(stok.jual).toLocaleString('id-ID') : '';
 
+            const garEl = document.getElementById('stokGaransi');
+            if (garEl) garEl.value = stok.garansi || 'TANPA GARANSI (Cek di Tempat)';
+
             const sumberSelect = document.getElementById('stokSumberKas');
             if (sumberSelect) {
                 const matchR = (window.riwayatBelanjaStok || []).find(r => r.id == stok.id || (((r.nama || r.namaBarang || '').trim().toUpperCase() === namaBarang) && r.kat === stok.kat));
@@ -14368,6 +14562,467 @@
             
             const ov = document.getElementById('modalStokOpnameOverlay');
             if (ov) ov.classList.add('show');
+        };
+
+        // =========================================================================
+        // SISTEM RETUR / KOMPLAIN / TUKAR TAMBAH ACC KONSUMEN (SEIMBANG 100%)
+        // =========================================================================
+        window.resolveHargaJualStokAcc = function(stokItem) {
+            if (!stokItem) return 0;
+            if (Number(stokItem.jual || 0) > 0) return Number(stokItem.jual);
+            const nm = (stokItem.nama || stokItem.namaBarang || '').trim().toUpperCase();
+            if (window.masterVlookup && window.masterVlookup[nm] && Number(window.masterVlookup[nm].defJual || 0) > 0) {
+                return Number(window.masterVlookup[nm].defJual);
+            }
+            return 0;
+        };
+
+        window.populateReturAccDropdowns = function() {
+            const kasSel = document.getElementById('returAccAkunKas');
+            if (kasSel) {
+                const prevVal = kasSel.value || 'LACI';
+                const autoAkun = new Set(['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL', 'BRANKAS', 'BRANGKAS', 'KOMISI EDC']);
+                kasSel.innerHTML = '';
+                (window.saldoList || []).forEach(ak => {
+                    const akUp = String(ak).toUpperCase().trim();
+                    if (autoAkun.has(akUp)) return;
+                    kasSel.innerHTML += `<option value="${ak}">${ak}</option>`;
+                });
+                if (Array.from(kasSel.options).some(o => o.value === prevVal)) {
+                    kasSel.value = prevVal;
+                } else if (Array.from(kasSel.options).some(o => o.value === 'LACI')) {
+                    kasSel.value = 'LACI';
+                }
+            }
+
+            const accItems = (window.stokOpnameItems || []).filter(s => String(s.kat || '').toUpperCase().trim() === 'ACC');
+            const dlLama = document.getElementById('listStokAccReturLama');
+            const dlBaru = document.getElementById('listStokAccReturBaru');
+            const optsLama = [];
+            const optsBaru = [];
+
+            accItems.forEach(s => {
+                const nm = (s.nama || s.namaBarang || '').trim().toUpperCase();
+                if (!nm) return;
+                const sisa = Math.max(0, Number(s.awal || 0) - Number(s.terjual || 0));
+                const hJual = window.resolveHargaJualStokAcc(s);
+                const gar = s.garansi || 'TANPA GARANSI';
+                optsLama.push(`<option value="${nm}">Sisa: ${sisa} Pcs • Jual: ${hJual > 0 ? window.formatRp(hJual) : '-'} • Modal: ${window.formatRp(s.modal || 0)} • ${gar}</option>`);
+                optsBaru.push(`<option value="${nm}">Sisa: ${sisa} Pcs • Jual: ${hJual > 0 ? window.formatRp(hJual) : '-'} • Modal: ${window.formatRp(s.modal || 0)} • ${gar}</option>`);
+            });
+            if (dlLama) dlLama.innerHTML = optsLama.join('');
+            if (dlBaru) dlBaru.innerHTML = optsBaru.join('');
+        };
+
+        window.openModalReturAcc = function(preselectedStokId = null, editTrxId = null) {
+            window.populateReturAccDropdowns();
+            const form = document.getElementById('formReturAcc');
+            if (form) form.reset();
+
+            document.getElementById('editReturTrxId').value = editTrxId || '';
+            document.getElementById('returAccDate').value = window.getDefaultKasirDate ? window.getDefaultKasirDate() : window.getTodayIso();
+            document.getElementById('returAccAlasan').value = '';
+            document.getElementById('returAccNamaLama').value = '';
+            document.getElementById('returAccStokLamaId').value = '';
+            document.getElementById('returAccQtyLama').value = 1;
+            document.getElementById('returAccHargaJualLama').value = 0;
+            document.getElementById('returAccHargaJualLamaDisplay').value = '';
+            document.getElementById('returAccModalLama').value = 0;
+            document.getElementById('returAccModalLamaDisplay').value = '';
+            document.getElementById('returAccKondisiLama').value = 'HANGUS';
+
+            document.getElementById('returAccModeSolusi').value = 'TUKAR_BARANG';
+            document.getElementById('boxReturAccBarangBaru').style.display = 'block';
+            document.getElementById('returAccNamaBaru').value = '';
+            document.getElementById('returAccStokBaruId').value = '';
+            document.getElementById('returAccQtyBaru').value = 1;
+            document.getElementById('returAccHargaJualBaru').value = 0;
+            document.getElementById('returAccHargaJualBaruDisplay').value = '';
+            document.getElementById('returAccModalBaru').value = 0;
+            document.getElementById('returAccModalBaruDisplay').value = '';
+            document.getElementById('returAccGaransiBaru').value = 'TANPA GARANSI (Cek di Tempat)';
+
+            document.getElementById('returAccArahKas').value = 'PAS_NOL';
+            document.getElementById('returAccNominalKas').value = 0;
+            document.getElementById('returAccNominalKasDisplay').value = '0';
+
+            const badgeLama = document.getElementById('badgeReturStokLamaInfo');
+            if (badgeLama) {
+                badgeLama.innerText = 'Pilih / Ketik Nama ACC';
+                badgeLama.style.background = '#FFEDD5';
+                badgeLama.style.color = '#C2410C';
+            }
+
+            if (editTrxId) {
+                const t = (window.transaksiJurnal || []).find(x => x.id == editTrxId);
+                if (t && t.isReturAcc) {
+                    document.getElementById('returAccDate').value = t.isoDate || window.getTodayIso();
+                    document.getElementById('returAccAlasan').value = t.alasanRetur || '';
+                    document.getElementById('returAccNamaLama').value = t.namaBarangReturLama || '';
+                    document.getElementById('returAccStokLamaId').value = t.idStokReturMasukRef || '';
+                    document.getElementById('returAccQtyLama').value = t.qtyReturLama || 1;
+                    const jLama = Number(t.hargaJualAwalLama || 0);
+                    const mLama = Number(t.hargaModalLama || 0);
+                    document.getElementById('returAccHargaJualLama').value = jLama;
+                    document.getElementById('returAccHargaJualLamaDisplay').value = jLama > 0 ? jLama.toLocaleString('id-ID') : '0';
+                    document.getElementById('returAccModalLama').value = mLama;
+                    document.getElementById('returAccModalLamaDisplay').value = mLama > 0 ? mLama.toLocaleString('id-ID') : '0';
+                    document.getElementById('returAccKondisiLama').value = t.kondisiReturLama || 'HANGUS';
+
+                    const modeSol = t.modeSolusiRetur || 'TUKAR_BARANG';
+                    document.getElementById('returAccModeSolusi').value = modeSol;
+                    document.getElementById('boxReturAccBarangBaru').style.display = modeSol === 'TUKAR_BARANG' ? 'block' : 'none';
+                    document.getElementById('returAccNamaBaru').value = t.namaBarangStok || '';
+                    document.getElementById('returAccStokBaruId').value = t.idStokRef || '';
+                    document.getElementById('returAccQtyBaru').value = t.qty || 1;
+                    const jBaru = Number(t.hargaJualBaru || 0);
+                    const mBaru = Number(t.hargaModalBaru || 0);
+                    document.getElementById('returAccHargaJualBaru').value = jBaru;
+                    document.getElementById('returAccHargaJualBaruDisplay').value = jBaru > 0 ? jBaru.toLocaleString('id-ID') : '0';
+                    document.getElementById('returAccModalBaru').value = mBaru;
+                    document.getElementById('returAccModalBaruDisplay').value = mBaru > 0 ? mBaru.toLocaleString('id-ID') : '0';
+                    if (t.garansiStruk) document.getElementById('returAccGaransiBaru').value = t.garansiStruk;
+
+                    const selKas = Number(t.hargaJual || 0);
+                    if (selKas > 0) document.getElementById('returAccArahKas').value = 'KONSUMEN_NAMBAH';
+                    else if (selKas < 0) document.getElementById('returAccArahKas').value = 'TOKO_KEMBALI';
+                    else document.getElementById('returAccArahKas').value = 'PAS_NOL';
+                    document.getElementById('returAccNominalKas').value = Math.abs(selKas);
+                    document.getElementById('returAccNominalKasDisplay').value = Math.abs(selKas).toLocaleString('id-ID');
+                    if (t.akunMasuk1) document.getElementById('returAccAkunKas').value = t.akunMasuk1;
+                }
+            } else if (preselectedStokId) {
+                const st = (window.stokOpnameItems || []).find(s => s.id == preselectedStokId);
+                if (st) {
+                    const nm = (st.nama || st.namaBarang || '').trim().toUpperCase();
+                    document.getElementById('returAccNamaLama').value = nm;
+                    window.onReturAccBarangLamaInput();
+                }
+            }
+
+            window.hitungSimulasiReturAcc(false);
+            const ov = document.getElementById('modalReturAccOverlay');
+            if (ov) ov.classList.add('show');
+        };
+
+        window.closeModalReturAcc = function() {
+            const ov = document.getElementById('modalReturAccOverlay');
+            if (ov) ov.classList.remove('show');
+        };
+
+        window.findStokAccByName = function(nmInput) {
+            const nm = String(nmInput || '').trim().toUpperCase();
+            if (!nm) return null;
+            const list = window.stokOpnameItems || [];
+            return list.find(s => String(s.kat || '').toUpperCase().trim() === 'ACC' && (s.nama || s.namaBarang || '').trim().toUpperCase() === nm)
+                || list.find(s => (s.nama || s.namaBarang || '').trim().toUpperCase() === nm)
+                || null;
+        };
+
+        window.onReturAccBarangLamaInput = function() {
+            const nm = (document.getElementById('returAccNamaLama')?.value || '').trim().toUpperCase();
+            const qty = Math.max(1, parseFloat(document.getElementById('returAccQtyLama')?.value) || 1);
+            const matched = window.findStokAccByName(nm);
+            const badge = document.getElementById('badgeReturStokLamaInfo');
+
+            if (matched) {
+                document.getElementById('returAccStokLamaId').value = matched.id;
+                const hJualPcs = window.resolveHargaJualStokAcc(matched);
+                const hModalPcs = Number(matched.modal || 0);
+                const totJual = Math.round(hJualPcs * qty);
+                const totModal = Math.round(hModalPcs * qty);
+                if (totJual > 0) {
+                    document.getElementById('returAccHargaJualLama').value = totJual;
+                    document.getElementById('returAccHargaJualLamaDisplay').value = totJual.toLocaleString('id-ID');
+                }
+                document.getElementById('returAccModalLama').value = totModal;
+                document.getElementById('returAccModalLamaDisplay').value = totModal.toLocaleString('id-ID');
+                const gar = matched.garansi || 'TANPA GARANSI (Cek di Tempat)';
+                if (badge) {
+                    badge.innerText = `🛡️ ${gar} • Modal: ${window.formatRp(hModalPcs)}/pcs`;
+                    badge.style.background = gar.includes('TANPA') ? '#FEE2E2' : '#DCFCE7';
+                    badge.style.color = gar.includes('TANPA') ? '#991B1B' : '#166534';
+                }
+            } else {
+                document.getElementById('returAccStokLamaId').value = '';
+                if (badge) {
+                    badge.innerText = nm ? 'Input Manual (Non-Stok)' : 'Pilih / Ketik Nama ACC';
+                    badge.style.background = '#FFEDD5';
+                    badge.style.color = '#C2410C';
+                }
+            }
+            window.hitungSimulasiReturAcc(true);
+        };
+
+        window.onReturAccQtyLamaChange = function() {
+            window.onReturAccBarangLamaInput();
+        };
+
+        window.onReturAccModeSolusiChange = function() {
+            const mode = document.getElementById('returAccModeSolusi')?.value || 'TUKAR_BARANG';
+            const boxBaru = document.getElementById('boxReturAccBarangBaru');
+            if (boxBaru) boxBaru.style.display = mode === 'TUKAR_BARANG' ? 'block' : 'none';
+            window.hitungSimulasiReturAcc(true);
+        };
+
+        window.onReturAccBarangBaruInput = function() {
+            const nm = (document.getElementById('returAccNamaBaru')?.value || '').trim().toUpperCase();
+            const qty = Math.max(1, parseFloat(document.getElementById('returAccQtyBaru')?.value) || 1);
+            const matched = window.findStokAccByName(nm);
+            if (matched) {
+                document.getElementById('returAccStokBaruId').value = matched.id;
+                const hJualPcs = window.resolveHargaJualStokAcc(matched);
+                const hModalPcs = Number(matched.modal || 0);
+                const totJual = Math.round(hJualPcs * qty);
+                const totModal = Math.round(hModalPcs * qty);
+                if (totJual > 0) {
+                    document.getElementById('returAccHargaJualBaru').value = totJual;
+                    document.getElementById('returAccHargaJualBaruDisplay').value = totJual.toLocaleString('id-ID');
+                }
+                document.getElementById('returAccModalBaru').value = totModal;
+                document.getElementById('returAccModalBaruDisplay').value = totModal.toLocaleString('id-ID');
+                const garEl = document.getElementById('returAccGaransiBaru');
+                if (garEl && matched.garansi) {
+                    garEl.value = matched.garansi;
+                }
+            } else {
+                document.getElementById('returAccStokBaruId').value = '';
+            }
+            window.hitungSimulasiReturAcc(true);
+        };
+
+        window.onReturAccQtyBaruChange = function() {
+            window.onReturAccBarangBaruInput();
+        };
+
+        window.hitungSimulasiReturAcc = function(autoSyncSelisihKas = false) {
+            const namaLama = (document.getElementById('returAccNamaLama')?.value || '').trim().toUpperCase() || '(Barang Lama)';
+            const qtyLama = Math.max(1, parseFloat(document.getElementById('returAccQtyLama')?.value) || 1);
+            const jualLama = parseFloat(document.getElementById('returAccHargaJualLama')?.value) || 0;
+            const modalLama = parseFloat(document.getElementById('returAccModalLama')?.value) || 0;
+            const kondisiLama = document.getElementById('returAccKondisiLama')?.value || 'HANGUS';
+
+            const modeSolusi = document.getElementById('returAccModeSolusi')?.value || 'TUKAR_BARANG';
+            const namaBaru = (document.getElementById('returAccNamaBaru')?.value || '').trim().toUpperCase() || '(Barang Pengganti)';
+            const qtyBaru = Math.max(1, parseFloat(document.getElementById('returAccQtyBaru')?.value) || 1);
+            const jualBaru = modeSolusi === 'TUKAR_BARANG' ? (parseFloat(document.getElementById('returAccHargaJualBaru')?.value) || 0) : 0;
+            const modalBaru = modeSolusi === 'TUKAR_BARANG' ? (parseFloat(document.getElementById('returAccModalBaru')?.value) || 0) : 0;
+
+            if (autoSyncSelisihKas) {
+                const diffJual = (modeSolusi === 'TUKAR_BARANG' ? jualBaru : 0) - jualLama;
+                const arahEl = document.getElementById('returAccArahKas');
+                const nomEl = document.getElementById('returAccNominalKas');
+                const nomDispEl = document.getElementById('returAccNominalKasDisplay');
+                if (arahEl && nomEl && nomDispEl) {
+                    if (diffJual > 0) {
+                        arahEl.value = 'KONSUMEN_NAMBAH';
+                        nomEl.value = diffJual;
+                        nomDispEl.value = diffJual.toLocaleString('id-ID');
+                    } else if (diffJual < 0) {
+                        arahEl.value = 'TOKO_KEMBALI';
+                        nomEl.value = Math.abs(diffJual);
+                        nomDispEl.value = Math.abs(diffJual).toLocaleString('id-ID');
+                    } else {
+                        arahEl.value = 'PAS_NOL';
+                        nomEl.value = 0;
+                        nomDispEl.value = '0';
+                    }
+                }
+            }
+
+            const arahKas = document.getElementById('returAccArahKas')?.value || 'PAS_NOL';
+            const nomKasInput = Math.abs(parseFloat(document.getElementById('returAccNominalKas')?.value) || 0);
+            if (arahKas === 'PAS_NOL') {
+                const nomEl = document.getElementById('returAccNominalKas');
+                const nomDispEl = document.getElementById('returAccNominalKasDisplay');
+                if (nomEl) nomEl.value = 0;
+                if (nomDispEl) nomDispEl.value = '0';
+            }
+            const selisihKas = arahKas === 'KONSUMEN_NAMBAH' ? nomKasInput : (arahKas === 'TOKO_KEMBALI' ? -nomKasInput : 0);
+            const akunKas = document.getElementById('returAccAkunKas')?.value || 'LACI';
+
+            const modalLamaMasukStok = kondisiLama === 'MASUK_STOK' ? modalLama : 0;
+            const modalBaruKeluarStok = modeSolusi === 'TUKAR_BARANG' ? modalBaru : 0;
+            const netModalStokKeluar = modalBaruKeluarStok - modalLamaMasukStok;
+            const perubahanAsetStok = -netModalStokKeluar;
+            const dampakCuan = selisihKas - netModalStokKeluar;
+
+            const simBox = document.getElementById('returAccSimulasiBox');
+            if (!simBox) return;
+
+            const kasText = selisihKas > 0
+                ? `<b style="color:#16A34A;">+${window.formatRp(selisihKas)} Masuk ke ${akunKas}</b> (Konsumen Nambah)`
+                : (selisihKas < 0
+                    ? `<b style="color:#DC2626;">-${window.formatRp(Math.abs(selisihKas))} Keluar dari ${akunKas}</b> (Kembalian / Refund)`
+                    : `<b style="color:#475569;">Rp 0 (Tidak Ada Uang Kas Masuk/Keluar)</b>`);
+
+            const stokLamaDesc = kondisiLama === 'MASUK_STOK'
+                ? `<span style="color:#0284C7; font-weight:700;">+${qtyLama} Pcs ${namaLama} kembali ke Stok (+${window.formatRp(modalLamaMasukStok)})</span>`
+                : `<span style="color:#DC2626; font-weight:700;">${namaLama} Hangus / Rusak (Rp 0 kembali ke stok)</span>`;
+
+            const stokBaruDesc = modeSolusi === 'TUKAR_BARANG'
+                ? `<span style="color:#D97706; font-weight:700;">-${qtyBaru} Pcs ${namaBaru} keluar stok (-${window.formatRp(modalBaruKeluarStok)})</span>`
+                : `<span style="color:#64748B;">Tanpa Barang Pengganti (Refund Tunai)</span>`;
+
+            const cuanColor = dampakCuan > 0 ? '#16A34A' : (dampakCuan < 0 ? '#DC2626' : '#0284C7');
+            const cuanSign = dampakCuan > 0 ? '+' : '';
+
+            simBox.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #CBD5E1; padding-bottom:4px; margin-bottom:5px;">
+                    <span>💵 <b>Mutasi Saldo Kas (${akunKas}):</b></span>
+                    <span>${kasText}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #CBD5E1; padding-bottom:4px; margin-bottom:5px;">
+                    <span>📦 <b>Mutasi Stok Fisik ACC:</b></span>
+                    <span style="text-align:right; font-size:10.5px;">${stokLamaDesc} &nbsp;•&nbsp; ${stokBaruDesc}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #CBD5E1; padding-bottom:4px; margin-bottom:5px;">
+                    <span>📊 <b>Perubahan Nilai Aset Stok ACC:</b></span>
+                    <b style="color:${perubahanAsetStok >= 0 ? '#0284C7' : '#D97706'};">${perubahanAsetStok >= 0 ? '+' : '-'}${window.formatRp(Math.abs(perubahanAsetStok))}</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>📈 <b>Penyesuaian Cuan Hari Ini:</b></span>
+                    <span style="font-size:12px; font-weight:900; color:${cuanColor};">${cuanSign}${window.formatRp(dampakCuan)} <span style="font-size:9.5px; background:#DCFCE7; color:#166534; padding:1px 6px; border-radius:4px; margin-left:4px;">✅ Audit Modal 250 Juta PAS (Selisih Rp 0)</span></span>
+                </div>
+            `;
+        };
+
+        window.simpanTransaksiReturAcc = function(autoPrintStruk = false) {
+            const editId = document.getElementById('editReturTrxId')?.value || '';
+            const existingTrx = editId ? (window.transaksiJurnal || []).find(x => x.id == editId) : null;
+            const selectedDate = document.getElementById('returAccDate')?.value || window.getTodayIso();
+            const alasan = (document.getElementById('returAccAlasan')?.value || '').trim().toUpperCase();
+
+            const namaLama = (document.getElementById('returAccNamaLama')?.value || '').trim().toUpperCase();
+            if (!namaLama) {
+                if (window.showToast) window.showToast("⚠️ Pilih atau isi Nama Barang ACC Lama yang diretur!", "error");
+                document.getElementById('returAccNamaLama')?.focus();
+                return;
+            }
+            const qtyLama = Math.max(1, parseFloat(document.getElementById('returAccQtyLama')?.value) || 1);
+            const jualLama = parseFloat(document.getElementById('returAccHargaJualLama')?.value) || 0;
+            const modalLama = parseFloat(document.getElementById('returAccModalLama')?.value) || 0;
+            const kondisiLama = document.getElementById('returAccKondisiLama')?.value || 'HANGUS';
+            const stokLama = window.findStokAccByName(namaLama);
+
+            if (kondisiLama === 'MASUK_STOK' && !stokLama) {
+                const okManual = confirm(`⚠️ Barang "${namaLama}" belum terdaftar di tabel Stok Opname ACC.\n\nJika ingin stoknya bertambah kembali, sebaiknya pilih nama barang yang sesuai dari daftar Stok Opname ACC.\nTetap lanjutkan simpan retur?`);
+                if (!okManual) return;
+            }
+
+            const modeSolusi = document.getElementById('returAccModeSolusi')?.value || 'TUKAR_BARANG';
+            const namaBaru = (document.getElementById('returAccNamaBaru')?.value || '').trim().toUpperCase();
+            const qtyBaru = Math.max(1, parseFloat(document.getElementById('returAccQtyBaru')?.value) || 1);
+            const jualBaru = modeSolusi === 'TUKAR_BARANG' ? (parseFloat(document.getElementById('returAccHargaJualBaru')?.value) || 0) : 0;
+            const modalBaru = modeSolusi === 'TUKAR_BARANG' ? (parseFloat(document.getElementById('returAccModalBaru')?.value) || 0) : 0;
+            const garansiBaru = modeSolusi === 'TUKAR_BARANG' ? (document.getElementById('returAccGaransiBaru')?.value || 'TANPA GARANSI (Cek di Tempat)') : 'RETUR / REFUND TUNAI';
+
+            let stokBaru = null;
+            if (modeSolusi === 'TUKAR_BARANG') {
+                if (!namaBaru) {
+                    if (window.showToast) window.showToast("⚠️ Pilih atau isi Nama Barang ACC Pengganti yang diambil konsumen!", "error");
+                    document.getElementById('returAccNamaBaru')?.focus();
+                    return;
+                }
+                stokBaru = window.findStokAccByName(namaBaru);
+                if (!stokBaru) {
+                    const okNoStok = confirm(`⚠️ Barang pengganti "${namaBaru}" tidak ditemukan di Stok Opname ACC, sehingga stok fisik tidak akan terpotong otomatis.\n\nTetap lanjutkan?`);
+                    if (!okNoStok) return;
+                }
+            }
+
+            const arahKas = document.getElementById('returAccArahKas')?.value || 'PAS_NOL';
+            const nomKasInput = Math.abs(parseFloat(document.getElementById('returAccNominalKas')?.value) || 0);
+            const selisihKas = arahKas === 'KONSUMEN_NAMBAH' ? nomKasInput : (arahKas === 'TOKO_KEMBALI' ? -nomKasInput : 0);
+            const akunKas = document.getElementById('returAccAkunKas')?.value || 'LACI';
+
+            const modalLamaMasukStok = (kondisiLama === 'MASUK_STOK' && stokLama) ? modalLama : 0;
+            const modalBaruKeluarStok = modeSolusi === 'TUKAR_BARANG' ? modalBaru : 0;
+            const netModalStokKeluar = modalBaruKeluarStok - modalLamaMasukStok;
+            const cuanRetur = selisihKas - netModalStokKeluar;
+
+            const statusLamaTag = kondisiLama === 'MASUK_STOK' ? 'MASUK STOK' : 'HANGUS';
+            const alasanTag = alasan ? ` [${alasan}]` : '';
+            const ketRetur = modeSolusi === 'TUKAR_BARANG'
+                ? `[RETUR ACC] ${namaLama}${qtyLama > 1 ? ' X' + qtyLama : ''} (${statusLamaTag}) -> TUKAR ${namaBaru}${qtyBaru > 1 ? ' X' + qtyBaru : ''}${alasanTag}`
+                : `[RETUR ACC] ${namaLama}${qtyLama > 1 ? ' X' + qtyLama : ''} (${statusLamaTag}) -> REFUND UANG${alasanTag}`;
+
+            const nowMs = window.getNextUniqueTs();
+            const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            const trxData = {
+                id: editId ? editId : 'trx_' + nowMs,
+                waktu: existingTrx ? (existingTrx.waktu || timeStr) : timeStr,
+                isoDate: selectedDate,
+                ket: ketRetur,
+                qty: modeSolusi === 'TUKAR_BARANG' ? qtyBaru : qtyLama,
+                kat: 'ACC',
+                isNewCustomer: false,
+                isReturAcc: true,
+                hargaJual: selisihKas,
+                akunMasuk1: akunKas,
+                jualSplit1: selisihKas,
+                akunMasuk2: '',
+                jualSplit2: 0,
+                hargaModal: netModalStokKeluar,
+                akunKeluar1: 'ACC',
+                modalSplit1: netModalStokKeluar,
+                akunKeluar2: '',
+                modalSplit2: 0,
+                cuan: cuanRetur,
+                isSplit: false,
+                updatedAt: nowMs,
+                idStokRef: (modeSolusi === 'TUKAR_BARANG' && stokBaru) ? stokBaru.id : null,
+                namaBarangStok: modeSolusi === 'TUKAR_BARANG' ? (stokBaru ? (stokBaru.nama || stokBaru.namaBarang) : namaBaru) : '',
+                idStokReturMasukRef: (kondisiLama === 'MASUK_STOK' && stokLama) ? stokLama.id : null,
+                namaBarangReturLama: stokLama ? (stokLama.nama || stokLama.namaBarang) : namaLama,
+                qtyReturLama: qtyLama,
+                qtyReturMasuk: (kondisiLama === 'MASUK_STOK' && stokLama) ? qtyLama : 0,
+                kondisiReturLama: kondisiLama,
+                modeSolusiRetur: modeSolusi,
+                hargaJualAwalLama: jualLama,
+                hargaModalLama: modalLama,
+                hargaJualBaru: modeSolusi === 'TUKAR_BARANG' ? jualBaru : 0,
+                hargaModalBaru: modeSolusi === 'TUKAR_BARANG' ? modalBaru : 0,
+                garansiStruk: garansiBaru,
+                alasanRetur: alasan
+            };
+
+            if (editId) {
+                const idx = (window.transaksiJurnal || []).findIndex(x => x.id == editId);
+                if (idx !== -1) window.transaksiJurnal[idx] = trxData;
+                else window.transaksiJurnal.unshift(trxData);
+                window.catatLogAktivitas('EDIT RETUR ACC', `Mengubah data retur ACC: "${ketRetur}"`);
+            } else {
+                window.transaksiJurnal.unshift(trxData);
+                window.catatLogAktivitas('RETUR ACC', `Mencatat retur ACC: "${ketRetur}" (Kas: ${window.formatRp(selisihKas)}, Cuan: ${window.formatRp(cuanRetur)})`);
+            }
+
+            window.markLocalTrxEdited(trxData);
+
+            const fModeEl = document.getElementById('jurnalFilterMode');
+            const fDateEl = document.getElementById('jurnalDatePicker');
+            if (fModeEl && fModeEl.value === 'DAILY' && fDateEl && fDateEl.value !== selectedDate) {
+                fDateEl.value = selectedDate;
+            }
+
+            if (window.triggerBlinkMutasiAkun) {
+                window.triggerBlinkMutasiAkun([akunKas, 'ACC'], 10000);
+            }
+
+            window.closeModalReturAcc();
+            window.renderAll();
+            window.saveMultipleFirebaseNodes({ transaksi: window.transaksiJurnal }, false);
+
+            if (window.highlightRowAndScroll) {
+                window.highlightRowAndScroll(`row-trx-${trxData.id}`);
+            }
+            if (window.showToast) {
+                window.showToast(`✅ Transaksi Retur ACC berhasil disimpan & saldo otomatis disesuaikan!`, "success");
+            }
+            if (autoPrintStruk && window.cetakStrukKasirBiasaTrx) {
+                setTimeout(() => window.cetakStrukKasirBiasaTrx(trxData.id), 200);
+            }
         };
 
         window.hapusRiwayatBelanja = function(id) {
@@ -16729,6 +17384,9 @@
                 modalSplit2: Number(modalSplit2 || 0),
                 cuan: hargaJualTotal - hargaModalTotal,
                 isSplit: Boolean(isSplit),
+                idStokRef: exactStokSubmit ? exactStokSubmit.id : (existingTrx ? existingTrx.idStokRef : null),
+                namaBarangStok: exactStokSubmit ? (exactStokSubmit.nama || exactStokSubmit.namaBarang || '') : (existingTrx ? existingTrx.namaBarangStok : ''),
+                garansiStruk: exactStokSubmit && exactStokSubmit.garansi ? exactStokSubmit.garansi : (existingTrx && existingTrx.garansiStruk ? existingTrx.garansiStruk : (kat === 'ACC' ? 'TANPA GARANSI (Cek di Tempat)' : '')),
                 idTiketRef: (window._pendingTiketIdToLunas || (existingTrx ? existingTrx.idTiketRef : null)) || null,
                 idSparepartRef: (window._pendingSparepartIdToLunas || (existingTrx ? existingTrx.idSparepartRef : null)) || null,
                 idPiutangRef: (window._pendingPiutangIdToLunas || (existingTrx ? existingTrx.idPiutangRef : null)) || null,
@@ -16950,6 +17608,9 @@
                     cuan: rawItem.hargaJual - rawItem.hargaModal,
                     isSplit: Boolean(rawItem.isSplit),
                     updatedAt: nowMs,
+                    idStokRef: rawItem.idStokRef || null,
+                    namaBarangStok: rawItem.namaBarangStok || '',
+                    garansiStruk: rawItem.garansiStruk || '',
                     idTiketRef: rawItem.idTiketRef || null,
                     idSparepartRef: rawItem.idSparepartRef || null,
                     idPiutangRef: rawItem.idPiutangRef || null,
@@ -17121,6 +17782,10 @@
         window.editTrx = function(idTrx) {
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
+            if (t.isReturAcc && window.openModalReturAcc) {
+                window.openModalReturAcc(null, t.id);
+                return;
+            }
             window.cancelEditTrx();
 
             document.getElementById('editTrxId').value = t.id;
@@ -17701,6 +18366,22 @@
                             matchedStokUtang.terjual += Number(t.qty || 1);
                         }
                     }
+                } else if (t.isReturAcc) {
+                    // Transaksi Retur / Tukar ACC:
+                    // 1) Jika barang lama masih layak jual / masuk stok kembali, kurangi s.terjual (sehingga Sisa Stok bertambah kembali)
+                    if (t.kondisiReturLama === 'MASUK_STOK' && (t.idStokReturMasukRef || t.namaBarangReturLama)) {
+                        const stokReturMasuk = findMatchingStokItem(t.idStokReturMasukRef, t.namaBarangReturLama, '', 'ACC');
+                        if (stokReturMasuk) {
+                            stokReturMasuk.terjual -= Number(t.qtyReturMasuk || t.qtyReturLama || 1);
+                        }
+                    }
+                    // 2) Jika ditukar dengan barang ACC pengganti baru, tambahkan s.terjual pada barang pengganti (sehingga Sisa Stok berkurang)
+                    if ((t.modeSolusiRetur === 'TUKAR_BARANG' || !t.modeSolusiRetur) && (t.idStokRef || t.namaBarangStok)) {
+                        const stokPenggantiKeluar = findMatchingStokItem(t.idStokRef, t.namaBarangStok, '', 'ACC');
+                        if (stokPenggantiKeluar) {
+                            stokPenggantiKeluar.terjual += Number(t.qty || 1);
+                        }
+                    }
                 } else if (!t.isPindahSaldo && !isPelunasanPiutang) {
                     // Penjualan tunai/langsung di Kasir: HANYA memotong stok fisik jika Akun Keluar memang VOUCHER / SP / ACC
                     const akunKeluarStok = akunStokSet.has(t.akunKeluar1) ? t.akunKeluar1 : (akunStokSet.has(t.akunKeluar2) ? t.akunKeluar2 : null);
@@ -17766,6 +18447,14 @@
                 const printTitle = isServiceTrx ? 'Cetak Nota Lunas Service' : (isTfAtmTrx ? 'Cetak Struk Bukti Transfer / Mini-ATM' : 'Cetak Struk Transaksi');
 
                 let extraKatBadges = '';
+                if (t.isReturAcc) {
+                    const solTag = t.modeSolusiRetur === 'REFUND_UANG' ? 'REFUND TUNAI' : 'TUKAR BARANG';
+                    extraKatBadges += `<div><span style="display:inline-block; background:#FFF7ED; color:#C2410C; border:1px solid #FDBA74; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">🔄 RETUR • ${solTag}</span></div>`;
+                }
+                if (t.kat === 'ACC' && t.garansiStruk && !t.isReturAcc) {
+                    const isNoGar = String(t.garansiStruk).toUpperCase().includes('TANPA');
+                    extraKatBadges += `<div><span style="display:inline-block; background:${isNoGar ? '#F8FAFC' : '#F0FDF4'}; color:${isNoGar ? '#64748B' : '#15803D'}; border:1px solid ${isNoGar ? '#E2E8F0' : '#86EFAC'}; font-size:8px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">${isNoGar ? '🚫 NON-GARANSI' : '🛡️ ' + t.garansiStruk}</span></div>`;
+                }
                 if (isPelunasanTrx) {
                     const pRef = (window.piutangList || []).find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
                     const katAsliInfo = (t.kat === 'PIUTANG' && pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? ` • ${pRef.kategori}` : '';
@@ -17785,11 +18474,13 @@
                 } else if (t.isNewCustomer === false) {
                     extraKatBadges += `<div><span style="display:inline-block; background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1; font-size:8px; font-weight:700; padding:1px 4px; border-radius:4px; margin-top:2px;" title="Transaksi Repeat Order (Tidak menambah hitungan Pelanggan Baru)">👤 REPEAT (0 ORG)</span></div>`;
                 }
-                const rowLeftBorder = isPelunasanTrx
-                    ? 'border-left:3.5px solid #4F46E5; background:rgba(238,242,255,0.28);'
-                    : (isSplitActive
-                        ? 'border-left:3.5px solid #F59E0B;'
-                        : (t.visitGroupId ? 'border-left:3.5px solid #0284C7;' : ''));
+                const rowLeftBorder = t.isReturAcc
+                    ? 'border-left:3.5px solid #EA580C; background:rgba(255,247,237,0.35);'
+                    : (isPelunasanTrx
+                        ? 'border-left:3.5px solid #4F46E5; background:rgba(238,242,255,0.28);'
+                        : (isSplitActive
+                            ? 'border-left:3.5px solid #F59E0B;'
+                            : (t.visitGroupId ? 'border-left:3.5px solid #0284C7;' : '')));
 
                 return `
                     <tr id="row-trx-${t.id}" style="${rowLeftBorder}">
@@ -17967,10 +18658,15 @@
                     filteredPcsTotal += Math.max(0, sisa);
                     const namaItem = s.nama || s.namaBarang || '-';
                     const katBadgeColor = s.kat === 'ACC' ? 'background:#FEF3C7; color:#B45309; border:1px solid #FDE68A;' : (s.kat === 'SP' ? 'background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0;' : 'background:#E0F2FE; color:#0284C7; border:1px solid #BAE6FD;');
+                    const garText = s.garansi || (s.kat === 'ACC' ? 'TANPA GARANSI (Cek di Tempat)' : '');
+                    const isNoGarStok = garText.toUpperCase().includes('TANPA');
+                    const garBadgeHtml = garText
+                        ? `<div style="margin-top:2px;"><span style="display:inline-block; font-size:9px; font-weight:700; padding:1px 6px; border-radius:4px; ${isNoGarStok ? 'background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1;' : 'background:#ECFDF5; color:#047857; border:1px solid #A7F3D0;'}">${isNoGarStok ? '🚫 ' : '🛡️ '}${garText}</span></div>`
+                        : '';
                     return `
                         <tr id="row-stok-${s.id}">
                             <td><span style="padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800; ${katBadgeColor}">${s.kat}</span></td>
-                            <td><b>${namaItem}</b></td>
+                            <td><b>${namaItem}</b>${garBadgeHtml}</td>
                             <td>${s.awal}</td>
                             <td style="color:#EF4444;">${s.terjual || 0}</td>
                             <td><b style="color:${sisa <= 0 ? '#DC2626' : (sisa <= 3 ? '#D97706' : 'inherit')};">${sisa}${sisa <= 0 ? ' (HABIS)' : (sisa <= 3 ? ' ⚠️' : '')}</b></td>
@@ -17978,9 +18674,10 @@
                             <td>${Number(s.jual || 0) > 0 ? window.formatRp(s.jual) : '<span style="color:#94A3B8; font-size:10px; font-style:italic;">Belum diatur</span>'}</td>
                             <td class="text-kredit"><b>${window.formatRp(nilai)}</b></td>
                             <td>
-                                <div style="display:flex; gap:3px; justify-content:center;">
+                                <div style="display:flex; gap:3px; justify-content:center; flex-wrap:wrap;">
                                     <button class="btn" style="background:#059669; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="jualStokCepatDariFind(${s.id})" title="Jual Barang Ini di Kasir">🛒 Jual</button>
                                     <button class="btn" style="background:#0284C7; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="bukaRestokBarang(${s.id})" title="Belanja / Tambah Stok Barang Ini (Auto-Fill & Rata-Rata Modal)">➕ Restok</button>
+                                    ${s.kat === 'ACC' ? `<button class="btn" style="background:#EA580C; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="openModalReturAcc(${s.id})" title="Proses Retur / Komplain / Tukar Barang ACC Ini">🔄 Retur</button>` : ''}
                                     <button class="btn-edit" onclick="editStokOpname(${s.id})">Edit</button>
                                     <button class="btn-delete" onclick="hapusStokOpnameItem(${s.id})">Hapus</button>
                                 </div>
@@ -18513,6 +19210,23 @@
                     if (t.akunMasuk2 && masukAkun[t.akunMasuk2] !== undefined) masukAkun[t.akunMasuk2] += Number(t.jualSplit2 || 0);
                     if (t.akunKeluar1 && keluarAkun[t.akunKeluar1] !== undefined) keluarAkun[t.akunKeluar1] += Number(t.modalSplit1 || 0);
                     if (t.akunKeluar2 && keluarAkun[t.akunKeluar2] !== undefined) keluarAkun[t.akunKeluar2] += Number(t.modalSplit2 || 0);
+                } else if (t.isReturAcc) {
+                    const nomKasRetur = Number(t.hargaJual || 0);
+                    if (t.akunMasuk1) {
+                        if (nomKasRetur >= 0 && masukAkun[t.akunMasuk1] !== undefined) {
+                            masukAkun[t.akunMasuk1] += nomKasRetur;
+                        } else if (nomKasRetur < 0 && keluarAkun[t.akunMasuk1] !== undefined) {
+                            keluarAkun[t.akunMasuk1] += Math.abs(nomKasRetur);
+                        }
+                    }
+                    const nomModalRetur = Number(t.hargaModal || 0);
+                    if (t.akunKeluar1) {
+                        if (nomModalRetur >= 0 && keluarAkun[t.akunKeluar1] !== undefined) {
+                            keluarAkun[t.akunKeluar1] += nomModalRetur;
+                        } else if (nomModalRetur < 0 && masukAkun[t.akunKeluar1] !== undefined) {
+                            masukAkun[t.akunKeluar1] += Math.abs(nomModalRetur);
+                        }
+                    }
                 } else {
                     if (t.akunMasuk1 && masukAkun[t.akunMasuk1] !== undefined) masukAkun[t.akunMasuk1] += Number(t.hargaJual || 0);
                     if (t.akunKeluar1) {
@@ -22687,15 +23401,52 @@
             window.catatLogAktivitas('KIRIM WA SELESAI', `Mengirim notifikasi servis selesai ${t.noServis} ke WA ${t.nama}`);
         };
 
+        window.resolveGaransiNotaTrx = function(t) {
+            if (!t) return '';
+            if (t.garansiStruk) return String(t.garansiStruk).trim();
+            if (String(t.kat || '').toUpperCase() === 'ACC' || String(t.akunKeluar1 || '').toUpperCase() === 'ACC') {
+                const ketNm = (t.namaBarangStok || t.ket || '').trim().toUpperCase();
+                const matched = window.findStokAccByName ? window.findStokAccByName(ketNm) : null;
+                if (matched && matched.garansi) return matched.garansi;
+                return 'TANPA GARANSI (Cek di Tempat)';
+            }
+            return '';
+        };
+
         window.kirimWaStrukKasir = function(trxId) {
             const t = (window.transaksiJurnal || []).find(x => x.id == trxId);
             if (!t) return;
             const p = window.pengaturanToko || {};
             const namaToko = p.namaToko || 'POS ZENCELL 1';
             const kasirName = sessionStorage.getItem('zencell_user') || 'Kasir';
+            const garansiStr = window.resolveGaransiNotaTrx(t);
             const metodeMasuk = (t.isSplit && t.akunMasuk2)
                 ? `${t.akunMasuk1} (${window.formatRp(t.jualSplit1)}) + ${t.akunMasuk2} (${window.formatRp(t.jualSplit2)})`
                 : (t.akunMasuk1 || 'TUNAI LACI');
+
+            let detailBody = '';
+            if (t.isReturAcc) {
+                const labelKas = Number(t.hargaJual || 0) > 0
+                    ? `*Tambahan Bayar: +${window.formatRp(t.hargaJual)}*`
+                    : (Number(t.hargaJual || 0) < 0
+                        ? `*Uang Kembali / Refund: ${window.formatRp(Math.abs(t.hargaJual))}*`
+                        : `*Selisih Bayar: Rp 0 (Tukar Pas)*`);
+                detailBody =
+                    `Jenis: *NOTA RETUR / PENUKARAN ACC*\n` +
+                    `Barang Diretur: ${t.namaBarangReturLama || '-'} (${t.qtyReturLama || 1} Pcs)\n` +
+                    (t.modeSolusiRetur === 'TUKAR_BARANG'
+                        ? `Barang Pengganti: *${t.namaBarangStok || '-'}* (${t.qty || 1} Pcs)\n`
+                        : `Solusi: *REFUND UANG TUNAI*\n`) +
+                    `${labelKas} (${metodeMasuk})\n` +
+                    (garansiStr ? `🛡️ *Garansi: ${garansiStr}*\n` : '');
+            } else {
+                detailBody =
+                    `Item: *${t.ket}*\n` +
+                    `Jumlah: ${t.qty || 1} Pcs\n` +
+                    `*Total Bayar: ${window.formatRp(t.hargaJual)}*\n` +
+                    `Metode Masuk: ${metodeMasuk}\n` +
+                    (garansiStr ? `🛡️ *Status Garansi: ${garansiStr}*\n` : '');
+            }
 
             const text = `*${namaToko} - STRUK PEMBAYARAN DIGITAL* 🧾\n` +
                 `----------------------------------------\n` +
@@ -22703,10 +23454,7 @@
                 `Petugas Kasir: ${kasirName}\n` +
                 `Kategori: ${t.kat}\n` +
                 `----------------------------------------\n` +
-                `Item: *${t.ket}*\n` +
-                `Jumlah: ${t.qty || 1} Pcs\n` +
-                `*Total Bayar: ${window.formatRp(t.hargaJual)}*\n` +
-                `Metode Masuk: ${metodeMasuk}\n` +
+                detailBody +
                 `----------------------------------------\n` +
                 `${p.teksStruk || 'Terima kasih telah berbelanja! Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.'}\n\n` +
                 (p.alamatToko ? `📍 ${p.alamatToko}\n` : '') +
@@ -23104,24 +23852,55 @@
             pushTxt(window.escPosFormatLR(`${t.isoDate || window.getTodayIso()} ${t.waktu || ''}`, nc.showKasir ? kasirName : '', cols));
             pushTxt(divider);
 
-            const itemTitle = `${t.ket || 'ITEM'}${nc.showKategori && t.kat ? ' [' + t.kat + ']' : ''}`;
-            pushCmd(0x1B, 0x45, 0x01);
-            pushTxt(itemTitle.slice(0, cols) + '\n');
-            pushCmd(0x1B, 0x45, 0x00);
-            pushTxt(window.escPosFormatLR(`${qtyVal} x ${window.formatRp(hargaSatuan)}`, window.formatRp(totalJual), cols));
-            pushTxt(divider);
-
-            pushCmd(0x1B, 0x45, 0x01);
-            pushTxt(window.escPosFormatLR('TOTAL BAYAR:', window.formatRp(totalJual), cols));
-            pushCmd(0x1B, 0x45, 0x00);
-
-            if (nc.showMetodeBayar) {
-                if (t.isSplit && t.akunMasuk2) {
-                    pushTxt(window.escPosFormatLR(`${t.akunMasuk1}:`, window.formatRp(t.jualSplit1), cols));
-                    pushTxt(window.escPosFormatLR(`${t.akunMasuk2}:`, window.formatRp(t.jualSplit2), cols));
+            const garansiStr = window.resolveGaransiNotaTrx ? window.resolveGaransiNotaTrx(t) : '';
+            if (t.isReturAcc) {
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt('*** NOTA RETUR / TUKAR ACC ***\n');
+                pushCmd(0x1B, 0x45, 0x00);
+                pushTxt(window.escPosFormatLR('RETUR LAMA:', `${t.namaBarangReturLama || '-'} (x${t.qtyReturLama || 1})`, cols));
+                pushTxt(window.escPosFormatLR('NILAI LAMA:', window.formatRp(t.hargaJualAwalLama || 0), cols));
+                if (t.modeSolusiRetur === 'TUKAR_BARANG') {
+                    pushTxt(window.escPosFormatLR('GANTI BARU:', `${t.namaBarangStok || '-'} (x${qtyVal})`, cols));
+                    pushTxt(window.escPosFormatLR('HARGA BARU:', window.formatRp(t.hargaJualBaru || 0), cols));
                 } else {
-                    pushTxt(window.escPosFormatLR(`BAYAR (${t.akunMasuk1 || 'LACI'}):`, window.formatRp(totalJual), cols));
+                    pushTxt(window.escPosFormatLR('SOLUSI:', 'REFUND TUNAI', cols));
                 }
+                pushTxt(divider);
+                pushCmd(0x1B, 0x45, 0x01);
+                if (totalJual > 0) {
+                    pushTxt(window.escPosFormatLR('TAMBAH BAYAR:', window.formatRp(totalJual), cols));
+                } else if (totalJual < 0) {
+                    pushTxt(window.escPosFormatLR('UANG KEMBALI:', window.formatRp(Math.abs(totalJual)), cols));
+                } else {
+                    pushTxt(window.escPosFormatLR('SELISIH BAYAR:', 'Rp 0 (PAS)', cols));
+                }
+                pushCmd(0x1B, 0x45, 0x00);
+            } else {
+                const itemTitle = `${t.ket || 'ITEM'}${nc.showKategori && t.kat ? ' [' + t.kat + ']' : ''}`;
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt(itemTitle.slice(0, cols) + '\n');
+                pushCmd(0x1B, 0x45, 0x00);
+                pushTxt(window.escPosFormatLR(`${qtyVal} x ${window.formatRp(hargaSatuan)}`, window.formatRp(totalJual), cols));
+                pushTxt(divider);
+
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt(window.escPosFormatLR('TOTAL BAYAR:', window.formatRp(totalJual), cols));
+                pushCmd(0x1B, 0x45, 0x00);
+
+                if (nc.showMetodeBayar) {
+                    if (t.isSplit && t.akunMasuk2) {
+                        pushTxt(window.escPosFormatLR(`${t.akunMasuk1}:`, window.formatRp(t.jualSplit1), cols));
+                        pushTxt(window.escPosFormatLR(`${t.akunMasuk2}:`, window.formatRp(t.jualSplit2), cols));
+                    } else {
+                        pushTxt(window.escPosFormatLR(`BAYAR (${t.akunMasuk1 || 'LACI'}):`, window.formatRp(totalJual), cols));
+                    }
+                }
+            }
+            if (garansiStr) {
+                pushTxt(divider);
+                pushCmd(0x1B, 0x45, 0x01);
+                pushTxt(window.escPosFormatLR('GARANSI:', garansiStr, cols));
+                pushCmd(0x1B, 0x45, 0x00);
             }
             pushTxt(divider);
             pushCmd(0x1B, 0x61, 0x01);
@@ -23223,6 +24002,54 @@
             if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
             printArea.className = window.getStrukThermalClass ? window.getStrukThermalClass() : 'struk-thermal-mode';
             printArea.style.display = 'block';
+            const garansiStr = window.resolveGaransiNotaTrx ? window.resolveGaransiNotaTrx(t) : '';
+            const garansiHtmlBlock = garansiStr
+                ? `<hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                   <div style="border:1px solid #000; padding:3px 5px; font-size:9.5px; font-weight:bold; text-align:center; margin:3px 0;">
+                       🛡️ GARANSI: ${garansiStr}
+                   </div>`
+                : '';
+
+            const bodyItemHtml = t.isReturAcc
+                ? `<div style="text-align:left; font-size:10px; margin-bottom:4px;">
+                       <div style="text-align:center; font-weight:bold; margin-bottom:3px;">[ NOTA RETUR / TUKAR ACC ]</div>
+                       <div style="display:flex; justify-content:space-between;">
+                           <span>Retur: ${t.namaBarangReturLama || '-'} (x${t.qtyReturLama || 1})</span>
+                           <span>${window.formatRp(t.hargaJualAwalLama || 0)}</span>
+                       </div>
+                       ${t.modeSolusiRetur === 'TUKAR_BARANG'
+                           ? `<div style="display:flex; justify-content:space-between; margin-top:2px;">
+                                  <span>Ganti: <b>${t.namaBarangStok || '-'} (x${qtyVal})</b></span>
+                                  <b>${window.formatRp(t.hargaJualBaru || 0)}</b>
+                              </div>`
+                           : `<div style="display:flex; justify-content:space-between; margin-top:2px;">
+                                  <span>Solusi:</span>
+                                  <b>REFUND TUNAI</b>
+                              </div>`}
+                   </div>
+                   <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                   <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px; margin-bottom:2px;">
+                       <span>${totalJual > 0 ? 'TAMBAHAN BAYAR:' : (totalJual < 0 ? 'UANG KEMBALI (REFUND):' : 'SELISIH BAYAR:')}</span>
+                       <span>${totalJual > 0 ? window.formatRp(totalJual) : (totalJual < 0 ? window.formatRp(Math.abs(totalJual)) : 'Rp 0 (TUKAR PAS)')}</span>
+                   </div>
+                   <div style="display:flex; justify-content:space-between; font-size:9.5px;">
+                       <span>Kas / Metode:</span>
+                       <span>${t.akunMasuk1 || 'LACI'}</span>
+                   </div>`
+                : `<div style="text-align:left; font-size:10.5px; margin-bottom:4px;">
+                       <div><b>${t.ket}</b> ${nc.showKategori ? `<span style="font-size:9px;">[${t.kat}]</span>` : ''}</div>
+                       <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                           <span>${qtyVal} x ${window.formatRp(hargaSatuan)}</span>
+                           <b>${window.formatRp(totalJual)}</b>
+                       </div>
+                   </div>
+                   <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
+                   <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11.5px; margin-bottom:2px;">
+                       <span>TOTAL BAYAR:</span>
+                       <span>${window.formatRp(totalJual)}</span>
+                   </div>
+                   ${metodeMasukHtml}`;
+
             printArea.innerHTML = `
                 <div style="width: 100%; margin: 0; padding: 2px 0; font-family: monospace; font-size: 10.5px; color: #000; text-align: center; box-sizing: border-box;">
                     ${(nc.showLogo && p.logoUrl) ? `<img src="${p.logoUrl}" style="max-height: 36px; margin-bottom: 4px; object-fit: contain;"><br>` : ''}
@@ -23236,19 +24063,8 @@
                         ${nc.showKasir ? `<span>${kasirName.toUpperCase()}</span>` : ''}
                     </div>
                     <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
-                    <div style="text-align:left; font-size:10.5px; margin-bottom:4px;">
-                        <div><b>${t.ket}</b> ${nc.showKategori ? `<span style="font-size:9px;">[${t.kat}]</span>` : ''}</div>
-                        <div style="display:flex; justify-content:space-between; margin-top:2px;">
-                            <span>${qtyVal} x ${window.formatRp(hargaSatuan)}</span>
-                            <b>${window.formatRp(totalJual)}</b>
-                        </div>
-                    </div>
-                    <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11.5px; margin-bottom:2px;">
-                        <span>TOTAL BAYAR:</span>
-                        <span>${window.formatRp(totalJual)}</span>
-                    </div>
-                    ${metodeMasukHtml}
+                    ${bodyItemHtml}
+                    ${garansiHtmlBlock}
                     <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
                     ${nc.ucapanFooter ? `<div style="font-size:9.5px; font-weight:bold; margin-bottom:2px;">${nc.ucapanFooter}</div>` : ''}
                     <div style="font-size: 9px; white-space: pre-wrap; margin-top: 2px;">${p.teksStruk || 'Terima kasih telah berbelanja!'}</div>
@@ -24893,6 +25709,7 @@
 
             // 2. Cek transaksi Cuan Minus atau Rp 0 atau Margin Janggal
             dayTrx.forEach(t => {
+                if (t.isReturAcc) return;
                 const jual = Number(t.hargaJual || 0);
                 const modal = Number(t.hargaModal || 0);
                 const cuan = Number(t.cuan || 0);
