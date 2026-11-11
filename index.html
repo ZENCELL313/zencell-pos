@@ -5716,15 +5716,20 @@
         <div id="sub-pembukuan-saldo" class="sub-tab-content active">
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-                    <span>📊 Pembukuan Kategori &amp; Transaksi</span>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span>📊 Pembukuan Kategori, Laba Bersih &amp; Closing</span>
+                        <span id="rekapPeriodeRangeBadge" style="font-size:10.5px; font-weight:800; background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; padding:2px 8px; border-radius:999px;">Hari Ini</span>
+                    </div>
                     <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <span style="font-size:10.5px; font-weight:700; opacity:0.85;">Mode Rekap:</span>
-                        <select id="rekapModeSelect" class="date-picker-input" onchange="toggleRekapMode(this.value)" style="padding:4px 8px; font-size:11px;">
+                        <span style="font-size:10.5px; font-weight:700; opacity:0.85;">Mode Laporan:</span>
+                        <select id="rekapModeSelect" class="date-picker-input" onchange="toggleRekapMode(this.value)" style="padding:4px 8px; font-size:11px; font-weight:800;">
                             <option value="DAILY" selected>📅 Per Hari (Harian)</option>
-                            <option value="MONTHLY">📆 Per Bulan (Bulanan)</option>
+                            <option value="WEEKLY">🗓️ Per Minggu (7 Hari)</option>
+                            <option value="MONTHLY">🏆 Per Bulan &amp; Closing Akhir Bulan</option>
                         </select>
                         <input type="date" id="rekapDatePicker" class="date-picker-input" onchange="renderAll()" style="padding:4px 8px; font-size:11px;">
                         <input type="month" id="rekapMonthPicker" class="date-picker-input" style="display:none; padding:4px 8px; font-size:11px;" onchange="renderAll()">
+                        <button type="button" class="btn" onclick="kirimLaporanClosingWaOwner()" style="background:#059669; padding:5px 10px; font-size:10.5px; width:auto;" title="Kirim Rapor Laba Bersih &amp; Closing ke WhatsApp Owner">📲 Kirim WA Closing</button>
                         <button type="button" class="btn" onclick="exportLaporanExcel()" style="background:#16A34A; padding:5px 10px; font-size:10.5px; width:auto;">📊 Download Excel</button>
                         <button type="button" class="btn" onclick="exportLaporanPDF()" style="background:#0284C7; padding:5px 10px; font-size:10.5px; width:auto;">📄 Cetak PDF Laporan</button>
                     </div>
@@ -5734,18 +5739,48 @@
                     <div class="summary-card" style="background:#FEF3C7; border-color:#FCD34D;">
                         <div class="lbl" id="lblRekapCuanTotal">TOTAL CUAN HARIAN</div>
                         <div class="val text-cuan" id="valRekapCuanTotal">Rp0</div>
+                        <div id="subRekapCuanTotal" style="font-size:9.5px; color:#92400E; font-weight:700; margin-top:2px;">0 Transaksi</div>
                     </div>
                     <div class="summary-card" style="background:var(--primary-light); border-color:var(--border);">
                         <div class="lbl">CUAN ATM LINK</div>
                         <div class="val" id="valRekapCuanAtm" style="color:var(--primary);">Rp0</div>
+                        <div id="subRekapCuanAtm" style="font-size:9.5px; color:#047857; font-weight:700; margin-top:2px;">0% dari total cuan</div>
                     </div>
                     <div class="summary-card" style="background:#F0FDF4; border-color:#BBF7D0;">
                         <div class="lbl">CUAN KONTER</div>
                         <div class="val text-kredit" id="valRekapCuanKonter">Rp0</div>
+                        <div id="subRekapCuanKonter" style="font-size:9.5px; color:#15803D; font-weight:700; margin-top:2px;">0% dari total cuan</div>
                     </div>
                     <div class="summary-card" style="background:#FAF5FF; border-color:#E9D5FF;" colspan="2">
                         <div class="lbl">CUAN SERVICE</div>
                         <div class="val" id="valRekapCuanService" style="color:#9333EA;">Rp0</div>
+                        <div id="subRekapCuanService" style="font-size:9.5px; color:#7E22CE; font-weight:700; margin-top:2px;">0% dari total cuan</div>
+                    </div>
+                </div>
+
+                <!-- PANEL RAPOR LABA BERSIH, OPERASIONAL & CLOSING AKHIR BULAN (KEMBALI KE MODAL POKOK) -->
+                <div id="panelRaporClosingLaporan" style="margin-bottom:12px; padding:12px 14px; border-radius:12px; background:linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%); border:1.5px solid #BFDBFE; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #93C5FD;">
+                        <div>
+                            <div id="lblJudulPanelClosing" style="font-size:12.5px; font-weight:900; color:#1E3A8A; display:flex; align-items:center; gap:6px;">
+                                🏆 RAPOR LABA BERSIH, OPERASIONAL &amp; KALKULATOR CLOSING (KEMBALI KE MODAL POKOK)
+                            </div>
+                            <div id="lblSubJudulPanelClosing" style="font-size:10.5px; color:#475569; font-weight:600; margin-top:2px;">
+                                Menghitung otomatis Cuan Kotor dikurangi Biaya Operasional, Setoran Profit Owner, dan Sisa Profit yang siap ditarik agar kembali ke Modal Pokok.
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button type="button" class="btn" onclick="bukaTarikProfitClosingCepat()" style="background:#D97706; color:#FFF; padding:5px 10px; font-size:10.5px; font-weight:800; width:auto; border-radius:7px;" title="Catat Penarikan Sisa Profit oleh Owner">
+                                💸 Tarik / Setor Sisa Profit
+                            </button>
+                            <button type="button" class="btn" onclick="window.bukaModalBedahAuditModal()" style="background:#1E40AF; color:#FFF; padding:5px 10px; font-size:10.5px; font-weight:800; width:auto; border-radius:7px;" title="Lihat Bedah Detail Neraca Harta &amp; Modal Berputar">
+                                🔍 Bedah Neraca Modal
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="bodyPanelRaporClosingGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:10px;">
+                        <!-- Diisi otomatis oleh renderAll() -->
                     </div>
                 </div>
 
@@ -5761,6 +5796,7 @@
                             </tr>
                         </thead>
                         <tbody id="bodyRekapKategori"></tbody>
+                        <tfoot id="footRekapKategori"></tfoot>
                     </table>
                 </div>
             </div>
@@ -7271,9 +7307,9 @@
         ];
         window.STANDARD_SALDO_ORDER_Z2 = [
             'LACI', 'SEA ELSA', 'BCA YUNI', 'BRI YUNI', 'BRI AA', 'QRIS', 'PIUTANG', 'OPERASIONAL',
-            'DANA ELSA', 'OVO ZIYAD', 'GOPAY ZIYAD',
+            'DANA PIPIT', 'OVO ZIYAD', 'GOPAY ZIYAD',
             'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
-            'VOUCHER', 'SP', 'ACC', 'SPAREPART'
+            'VOUCHER', 'SP', 'ACC', 'SPAREPART', 'KOMISI EDC'
         ];
         window.STANDARD_SALDO_ORDER = window.ACTIVE_CABANG === '2'
             ? window.STANDARD_SALDO_ORDER_Z2.slice()
@@ -7288,7 +7324,7 @@
             }
             const cleaned = rawList
                 .map(s => String(s || '').trim().toUpperCase())
-                .map(s => s === 'AMARTHA' ? 'KOMISI EDC' : s)
+                .map(s => s === 'AMARTHA' ? 'KOMISI EDC' : (window.ACTIVE_CABANG === '2' && s === 'DANA ELSA' ? 'DANA PIPIT' : s))
                 .filter(Boolean);
 
             const standardOrder = window.STANDARD_SALDO_ORDER.slice();
@@ -7297,11 +7333,12 @@
             const isMatch = (cand, target) => {
                 if (cand === target) return true;
                 if ((cand === 'QRIS' && target === 'QRIS (PIPIT)') || (cand === 'QRIS (PIPIT)' && target === 'QRIS')) return true;
+                if ((cand === 'DANA PIPIT' && target === 'DANA ELSA') || (cand === 'DANA ELSA' && target === 'DANA PIPIT')) return true;
                 return false;
             };
 
             // Akun inti / sistem yang TIDAK BOLEH digantikan oleh akun custom
-            const CORE_LOCKED_ACCOUNTS = new Set(['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART']);
+            const CORE_LOCKED_ACCOUNTS = new Set(['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART', 'KOMISI EDC']);
 
             // Deteksi akun custom (bukan bagian dari standard order dan bukan akun yang dihapus permanen)
             const customAccounts = cleaned.filter(s => {
@@ -7330,7 +7367,7 @@
                 customIdx++;
             }
 
-            // Garansi mutlak: akun PIUTANG dan OPERASIONAL wajib selalu ada di daftar saldo
+            // Garansi mutlak: akun PIUTANG, OPERASIONAL, dan KOMISI EDC (di urutan paling akhir) wajib selalu ada di daftar saldo
             if (!result.includes('PIUTANG')) {
                 const idxLaci = result.indexOf('LACI');
                 if (idxLaci !== -1) result.splice(idxLaci + 1, 0, 'PIUTANG');
@@ -7341,6 +7378,11 @@
                 if (idxPiu !== -1) result.splice(idxPiu + 1, 0, 'OPERASIONAL');
                 else result.push('OPERASIONAL');
             }
+            const idxEdc = result.indexOf('KOMISI EDC');
+            if (idxEdc !== -1) {
+                result.splice(idxEdc, 1);
+            }
+            result.push('KOMISI EDC');
 
             return result;
         };
@@ -7376,16 +7418,16 @@
 
         window.DEFAULT_SALDO_AWAL_Z2 = {
             'LACI': 12765700,
-            'SEA ELSA': 2792182,
+            'SEA ELSA': 2793795,
             'BCA YUNI': 8864434,
             'BRI YUNI': 3173106,
-            'BRI AA': 68546,
-            'QRIS': 4880859,
-            'QRIS (PIPIT)': 4880859,
+            'BRI AA': -332434,
+            'QRIS': 1747000,
+            'QRIS (PIPIT)': 1747000,
             'PIUTANG': 0,
             'OPERASIONAL': 0,
             'DANA ELSA': 0,
-            'DANA PIPIT': 0,
+            'DANA PIPIT': 3131513,
             'OVO ZIYAD': 297480,
             'GOPAY ZIYAD': 1016527,
             'O KUOTA': 924272,
@@ -7397,38 +7439,39 @@
             'VOUCHER': 0,
             'SP': 0,
             'ACC': 0,
-            'SPAREPART': 0
+            'SPAREPART': 0,
+            'KOMISI EDC': 0
         };
 
         window.Z2_SEED_VERSION = '2026_10_31_v1';
 
         window.DEFAULT_STOK_Z2 = [
-            // DATA STOK VOUCHER (VCR) - 26 ITEM
-            { id: 20261031001, kat: 'VOUCHER', nama: 'V AXIS 8/1', awal: 10, terjual: 0, modal: 7085, jual: 10000, updatedAt: 1761868800001 },
-            { id: 20261031002, kat: 'VOUCHER', nama: 'V AXIS 3/3', awal: 3, terjual: 0, modal: 10284, jual: 14000, updatedAt: 1761868800002 },
-            { id: 20261031003, kat: 'VOUCHER', nama: 'V AXIS 5/3', awal: 5, terjual: 0, modal: 11918, jual: 15000, updatedAt: 1761868800003 },
-            { id: 20261031004, kat: 'VOUCHER', nama: 'V AXIS 5/2', awal: 6, terjual: 0, modal: 9465, jual: 12000, updatedAt: 1761868800004 },
-            { id: 20261031005, kat: 'VOUCHER', nama: 'V AXIS 5/5', awal: 2, terjual: 0, modal: 13630, jual: 17000, updatedAt: 1761868800005 },
+            // DATA STOK VOUCHER (VCR)
+            { id: 20261031001, kat: 'VOUCHER', nama: 'V AXIS 8/1', awal: 20, terjual: 11, modal: 7276, jual: 10000, updatedAt: 1794280966547 },
+            { id: 20261031002, kat: 'VOUCHER', nama: 'V AXIS 3/3', awal: 13, terjual: 2, modal: 10389, jual: 14000, updatedAt: 1793848567802 },
+            { id: 20261031003, kat: 'VOUCHER', nama: 'V AXIS 5/3', awal: 20, terjual: 8, modal: 11911, jual: 15000, updatedAt: 1794373658495 },
+            { id: 20261031004, kat: 'VOUCHER', nama: 'V AXIS 5/2', awal: 6, terjual: 1, modal: 9465, jual: 12000, updatedAt: 1761868800004 },
+            { id: 20261031005, kat: 'VOUCHER', nama: 'V AXIS 5/5', awal: 12, terjual: 4, modal: 13701, jual: 17000, updatedAt: 1793848800222 },
             { id: 20261031006, kat: 'VOUCHER', nama: 'V AXIS 6/5', awal: 5, terjual: 0, modal: 14560, jual: 18000, updatedAt: 1761868800006 },
             { id: 20261031007, kat: 'VOUCHER', nama: 'V XL 4/3', awal: 0, terjual: 0, modal: 12175, jual: 15000, updatedAt: 1761868800007 },
             { id: 20261031008, kat: 'VOUCHER', nama: 'V XL 4/5', awal: 0, terjual: 0, modal: 14050, jual: 18000, updatedAt: 1761868800008 },
             { id: 20261031009, kat: 'VOUCHER', nama: 'V SMART 4/3', awal: 0, terjual: 0, modal: 9250, jual: 15000, updatedAt: 1761868800009 },
             { id: 20261031010, kat: 'VOUCHER', nama: 'V SMART 6/7', awal: 0, terjual: 0, modal: 15080, jual: 20000, updatedAt: 1761868800010 },
             { id: 20261031011, kat: 'VOUCHER', nama: 'V SMART 4/14', awal: 0, terjual: 0, modal: 19140, jual: 23000, updatedAt: 1761868800011 },
-            { id: 20261031012, kat: 'VOUCHER', nama: 'V IM3 6/2', awal: 7, terjual: 0, modal: 9144, jual: 13000, updatedAt: 1761868800012 },
-            { id: 20261031013, kat: 'VOUCHER', nama: 'V IM3 5/5', awal: 7, terjual: 0, modal: 13124, jual: 16000, updatedAt: 1761868800013 },
+            { id: 20261031012, kat: 'VOUCHER', nama: 'V IM3 6/2', awal: 7, terjual: 1, modal: 9144, jual: 13000, updatedAt: 1761868800012 },
+            { id: 20261031013, kat: 'VOUCHER', nama: 'V IM3 5/5', awal: 7, terjual: 3, modal: 13124, jual: 16000, updatedAt: 1761868800013 },
             { id: 20261031014, kat: 'VOUCHER', nama: 'V IM3 6/5', awal: 0, terjual: 0, modal: 14890, jual: 18000, updatedAt: 1761868800014 },
             { id: 20261031015, kat: 'VOUCHER', nama: 'V IM3 9/5', awal: 0, terjual: 0, modal: 16915, jual: 20000, updatedAt: 1761868800015 },
             { id: 20261031016, kat: 'VOUCHER', nama: 'V IM3 3/28', awal: 0, terjual: 0, modal: 23250, jual: 28000, updatedAt: 1761868800016 },
-            { id: 20261031017, kat: 'VOUCHER', nama: 'V TSEL 4/1', awal: 1, terjual: 0, modal: 7823, jual: 10000, updatedAt: 1761868800017 },
-            { id: 20261031018, kat: 'VOUCHER', nama: 'V TSEL 6/2', awal: 6, terjual: 0, modal: 8441, jual: 13000, updatedAt: 1761868800018 },
+            { id: 20261031017, kat: 'VOUCHER', nama: 'V TSEL 4/1', awal: 16, terjual: 7, modal: 8096, jual: 10000, updatedAt: 1794106837212 },
+            { id: 20261031018, kat: 'VOUCHER', nama: 'V TSEL 6/2', awal: 11, terjual: 4, modal: 8433, jual: 13000, updatedAt: 1794106880576 },
             { id: 20261031019, kat: 'VOUCHER', nama: 'V TSEL 4/5', awal: 0, terjual: 0, modal: 12650, jual: 17000, updatedAt: 1761868800019 },
-            { id: 20261031020, kat: 'VOUCHER', nama: 'V TSEL 7/5', awal: 1, terjual: 0, modal: 14780, jual: 18000, updatedAt: 1761868800020 },
-            { id: 20261031021, kat: 'VOUCHER', nama: 'V TRI 6/1', awal: 6, terjual: 0, modal: 7572, jual: 10000, updatedAt: 1761868800021 },
+            { id: 20261031020, kat: 'VOUCHER', nama: 'V TSEL 7/5', awal: 21, terjual: 17, modal: 15237, jual: 18000, updatedAt: 1794106918666 },
+            { id: 20261031021, kat: 'VOUCHER', nama: 'V TRI 6/1', awal: 11, terjual: 5, modal: 7559, jual: 10000, updatedAt: 1793848918512 },
             { id: 20261031022, kat: 'VOUCHER', nama: 'V TRI 7/2', awal: 0, terjual: 0, modal: 9690, jual: 13000, updatedAt: 1761868800022 },
-            { id: 20261031023, kat: 'VOUCHER', nama: 'V TRI 5/3', awal: 3, terjual: 0, modal: 12170, jual: 15000, updatedAt: 1761868800023 },
-            { id: 20261031024, kat: 'VOUCHER', nama: 'V TRI 7/5', awal: 4, terjual: 0, modal: 14730, jual: 18000, updatedAt: 1761868800024 },
-            { id: 20261031025, kat: 'VOUCHER', nama: 'V TSEL 10/28', awal: 2, terjual: 0, modal: 41170, jual: 52000, updatedAt: 1761868800025 },
+            { id: 20261031023, kat: 'VOUCHER', nama: 'V TRI 5/3', awal: 10, terjual: 7, modal: 12378, jual: 15000, updatedAt: 1793849018178 },
+            { id: 20261031024, kat: 'VOUCHER', nama: 'V TRI 7/5', awal: 4, terjual: 1, modal: 14730, jual: 18000, updatedAt: 1761868800024 },
+            { id: 20261031025, kat: 'VOUCHER', nama: 'V TSEL 10/28', awal: 2, terjual: 2, modal: 41170, jual: 52000, updatedAt: 1761868800025 },
             { id: 20261031026, kat: 'VOUCHER', nama: 'V TSEL 7/28', awal: 0, terjual: 0, modal: 0, jual: 42000, updatedAt: 1761868800026 },
             // DATA STOK KARTU PERDANA (SP) - 10 ITEM
             { id: 20261031027, kat: 'SP', nama: 'SP AXIS REG', awal: 0, terjual: 0, modal: 0, jual: 20000, updatedAt: 1761868800027 },
@@ -7436,8 +7479,8 @@
             { id: 20261031029, kat: 'SP', nama: 'SP AXIS 3GB A', awal: 2, terjual: 0, modal: 23200, jual: 50000, updatedAt: 1761868800029 },
             { id: 20261031030, kat: 'SP', nama: 'SP XL REG', awal: 0, terjual: 0, modal: 3000, jual: 20000, updatedAt: 1761868800030 },
             { id: 20261031031, kat: 'SP', nama: 'SP XL 3GB', awal: 2, terjual: 0, modal: 13700, jual: 35000, updatedAt: 1761868800031 },
-            { id: 20261031032, kat: 'SP', nama: 'SP TRI 3GB', awal: 3, terjual: 0, modal: 15133, jual: 35000, updatedAt: 1761868800032 },
-            { id: 20261031033, kat: 'SP', nama: 'SP IM3 3GB', awal: 0, terjual: 0, modal: 14771, jual: 35000, updatedAt: 1761868800033 },
+            { id: 20261031032, kat: 'SP', nama: 'SP TRI 3GB', awal: 3, terjual: 1, modal: 15133, jual: 35000, updatedAt: 1761868800032 },
+            { id: 20261031033, kat: 'SP', nama: 'SP IM3 3GB', awal: 2, terjual: 0, modal: 14961, jual: 35000, updatedAt: 1793502482036 },
             { id: 20261031034, kat: 'SP', nama: 'SP BYU 3GB', awal: 2, terjual: 0, modal: 22000, jual: 35000, updatedAt: 1761868800034 },
             { id: 20261031035, kat: 'SP', nama: 'SP TSEL 3GB', awal: 2, terjual: 0, modal: 24910, jual: 35000, updatedAt: 1761868800035 },
             { id: 20261031036, kat: 'SP', nama: 'SP SMART 3 GB', awal: 0, terjual: 0, modal: 0, jual: 35000, updatedAt: 1761868800036 },
@@ -7452,7 +7495,7 @@
             { id: 20261031044, kat: 'ACC', nama: 'KABEL L ROBOT RCOL100', awal: 4, terjual: 0, modal: 11950, jual: 0, updatedAt: 1761868800044 },
             { id: 20261031045, kat: 'ACC', nama: 'KABEL C TO L ROBOT RGCL 100S', awal: 3, terjual: 0, modal: 19750, jual: 0, updatedAt: 1761868800045 },
             { id: 20261031046, kat: 'ACC', nama: 'CHARGER M ROBOT RT-K7', awal: 1, terjual: 0, modal: 23000, jual: 0, updatedAt: 1761868800046 },
-            { id: 20261031047, kat: 'ACC', nama: 'CHARGER M ROBOT RT-K7S', awal: 3, terjual: 0, modal: 24000, jual: 0, updatedAt: 1761868800047 },
+            { id: 20261031047, kat: 'ACC', nama: 'CHARGER M ROBOT RT-K7S', awal: 3, terjual: 1, modal: 24000, jual: 0, updatedAt: 1761868800047 },
             { id: 20261031048, kat: 'ACC', nama: 'CHARGER M VIVAN POWER OVAL 2S', awal: 1, terjual: 0, modal: 36000, jual: 0, updatedAt: 1761868800048 },
             { id: 20261031049, kat: 'ACC', nama: 'CHARGER C ROBOT RT-K7SC', awal: 0, terjual: 0, modal: 24000, jual: 0, updatedAt: 1761868800049 },
             { id: 20261031050, kat: 'ACC', nama: 'CHARGER CTC VIVAN POWER C20C', awal: 0, terjual: 0, modal: 51000, jual: 0, updatedAt: 1761868800050 },
@@ -7460,22 +7503,22 @@
             { id: 20261031052, kat: 'ACC', nama: 'CHARGER L ORAIMO OCW-1111E+L53', awal: 0, terjual: 0, modal: 35000, jual: 0, updatedAt: 1761868800052 },
             { id: 20261031053, kat: 'ACC', nama: 'CHARGER L ORAIMO OCW-5183E+L53', awal: 0, terjual: 0, modal: 48000, jual: 0, updatedAt: 1761868800053 },
             { id: 20261031054, kat: 'ACC', nama: 'CHARGER M FOOMEE CK12S-M', awal: 7, terjual: 0, modal: 33000, jual: 0, updatedAt: 1761868800054 },
-            { id: 20261031055, kat: 'ACC', nama: 'ADAPTOR ROBOT RT-K8S', awal: 2, terjual: 0, modal: 19300, jual: 0, updatedAt: 1761868800055 },
+            { id: 20261031055, kat: 'ACC', nama: 'ADAPTOR ROBOT RT-K8S', awal: 1, terjual: 0, modal: 19300, jual: 0, updatedAt: 1793459118745 },
             { id: 20261031056, kat: 'ACC', nama: 'ADAPTOR RT-K8', awal: 0, terjual: 0, modal: 19000, jual: 0, updatedAt: 1761868800056 },
             { id: 20261031057, kat: 'ACC', nama: 'ADAPTOR RT-K8 PLUS', awal: 0, terjual: 0, modal: 24000, jual: 0, updatedAt: 1761868800057 },
             { id: 20261031058, kat: 'ACC', nama: 'ADAPTOR ROBOT RT-P18', awal: 0, terjual: 0, modal: 37000, jual: 0, updatedAt: 1761868800058 },
             { id: 20261031059, kat: 'ACC', nama: 'ADAPTOR DAP D-AT5', awal: 14, terjual: 0, modal: 15000, jual: 0, updatedAt: 1761868800059 },
-            { id: 20261031060, kat: 'ACC', nama: 'ADAPTOR DAP D-AQ5', awal: 19, terjual: 0, modal: 30000, jual: 0, updatedAt: 1761868800060 },
+            { id: 20261031060, kat: 'ACC', nama: 'ADAPTOR DAP D-AQ5', awal: 19, terjual: 1, modal: 30000, jual: 0, updatedAt: 1761868800060 },
             { id: 20261031061, kat: 'ACC', nama: 'ADAPTOR FANTECH CW2-QO2', awal: 5, terjual: 0, modal: 50000, jual: 0, updatedAt: 1761868800061 },
             { id: 20261031062, kat: 'ACC', nama: 'CHARGER DEKSTOP', awal: 0, terjual: 0, modal: 9500, jual: 0, updatedAt: 1761868800062 },
             { id: 20261031063, kat: 'ACC', nama: 'CAR CHARGER DAP D-CC1N', awal: 4, terjual: 0, modal: 18000, jual: 0, updatedAt: 1761868800063 },
             { id: 20261031064, kat: 'ACC', nama: 'ADAPTOR FANTECH CW2-QO1', awal: 2, terjual: 0, modal: 50000, jual: 0, updatedAt: 1761868800064 },
             { id: 20261031065, kat: 'ACC', nama: 'CAR CHARGER ROBOT RT-C06', awal: 0, terjual: 0, modal: 36000, jual: 0, updatedAt: 1761868800065 },
             { id: 20261031066, kat: 'ACC', nama: 'HF ROBOT RE20', awal: 13, terjual: 0, modal: 13000, jual: 0, updatedAt: 1761868800066 },
-            { id: 20261031067, kat: 'ACC', nama: 'HF ROBOT RE50', awal: 27, terjual: 0, modal: 13000, jual: 0, updatedAt: 1761868800067 },
+            { id: 20261031067, kat: 'ACC', nama: 'HF ROBOT RE50', awal: 27, terjual: 1, modal: 13000, jual: 0, updatedAt: 1761868800067 },
             { id: 20261031068, kat: 'ACC', nama: 'HF RE40', awal: 0, terjual: 0, modal: 18600, jual: 0, updatedAt: 1761868800068 },
             { id: 20261031069, kat: 'ACC', nama: 'HF FANTECH ES2', awal: 7, terjual: 0, modal: 10000, jual: 0, updatedAt: 1761868800069 },
-            { id: 20261031070, kat: 'ACC', nama: 'HF FANTECH ES3', awal: 14, terjual: 0, modal: 10000, jual: 0, updatedAt: 1761868800070 },
+            { id: 20261031070, kat: 'ACC', nama: 'HF FANTECH ES3', awal: 14, terjual: 1, modal: 10000, jual: 0, updatedAt: 1761868800070 },
             { id: 20261031071, kat: 'ACC', nama: 'TWS ORAIMO OTW-323', awal: 0, terjual: 0, modal: 115000, jual: 0, updatedAt: 1761868800071 },
             { id: 20261031072, kat: 'ACC', nama: 'HF PHILIPS JB-08', awal: 24, terjual: 0, modal: 6500, jual: 0, updatedAt: 1761868800072 },
             { id: 20261031073, kat: 'ACC', nama: 'HF JB-03', awal: 6, terjual: 0, modal: 6500, jual: 0, updatedAt: 1761868800073 },
@@ -7490,33 +7533,34 @@
             { id: 20261031082, kat: 'ACC', nama: 'FD SANDISK 64GB', awal: 0, terjual: 0, modal: 70000, jual: 0, updatedAt: 1761868800082 },
             { id: 20261031083, kat: 'ACC', nama: 'MEMORY VGEN 64GB CLASS 10', awal: 1, terjual: 0, modal: 85000, jual: 0, updatedAt: 1761868800083 },
             { id: 20261031084, kat: 'ACC', nama: 'MEMORY ADT VGEN 64GB CLASS 1', awal: 1, terjual: 0, modal: 87000, jual: 0, updatedAt: 1761868800084 },
-            { id: 20261031085, kat: 'ACC', nama: 'MEMORY ADT VGEN 32GB CLASS 1', awal: 2, terjual: 0, modal: 56500, jual: 0, updatedAt: 1761868800085 },
+            { id: 20261031085, kat: 'ACC', nama: 'MEMORY ADT VGEN 32GB CLASS 1', awal: 2, terjual: 1, modal: 56500, jual: 0, updatedAt: 1761868800085 },
             { id: 20261031086, kat: 'ACC', nama: 'MEMORY VGEN 32GB CLASS 10', awal: 1, terjual: 0, modal: 53000, jual: 0, updatedAt: 1761868800086 },
             { id: 20261031087, kat: 'ACC', nama: 'MEMORY VGEN 8GB CLASS 10', awal: 0, terjual: 0, modal: 50000, jual: 0, updatedAt: 1761868800087 },
             { id: 20261031088, kat: 'ACC', nama: 'MEMORY VGEN 32GB CLASS 6', awal: 3, terjual: 0, modal: 47000, jual: 0, updatedAt: 1761868800088 },
             { id: 20261031089, kat: 'ACC', nama: 'MEMORY VGEN 8GB CLASS 6', awal: 1, terjual: 0, modal: 36000, jual: 0, updatedAt: 1761868800089 },
-            { id: 20261031090, kat: 'ACC', nama: 'POWERBANK ORAIMO OPB-1101', awal: 2, terjual: 0, modal: 95000, jual: 0, updatedAt: 1761868800090 },
+            { id: 20261031090, kat: 'ACC', nama: 'POWERBANK ORAIMO OPB-1101', awal: 2, terjual: 1, modal: 95000, jual: 0, updatedAt: 1761868800090 },
             { id: 20261031091, kat: 'ACC', nama: 'OFC AUDIO 3M', awal: 6, terjual: 0, modal: 8900, jual: 0, updatedAt: 1761868800091 },
             { id: 20261031092, kat: 'ACC', nama: 'OFC AUDIO 1,5M', awal: 3, terjual: 0, modal: 4790, jual: 0, updatedAt: 1761868800092 },
             { id: 20261031093, kat: 'ACC', nama: 'WIRELESS USB', awal: 1, terjual: 0, modal: 23000, jual: 0, updatedAt: 1761868800093 },
             { id: 20261031094, kat: 'ACC', nama: 'MINI WIFI', awal: 0, terjual: 0, modal: 15000, jual: 0, updatedAt: 1761868800094 },
             { id: 20261031095, kat: 'ACC', nama: 'HDD CADDY', awal: 0, terjual: 0, modal: 25000, jual: 0, updatedAt: 1761868800095 },
-            { id: 20261031096, kat: 'ACC', nama: 'TG', awal: 8, terjual: 0, modal: 3000, jual: 0, updatedAt: 1761868800096 },
-            { id: 20261031097, kat: 'ACC', nama: 'HYDROGEL GLOSY', awal: 14, terjual: 0, modal: 11500, jual: 0, updatedAt: 1761868800097 },
-            { id: 20261031098, kat: 'ACC', nama: 'HYDROGEL MATTE', awal: 20, terjual: 0, modal: 14500, jual: 0, updatedAt: 1761868800098 }
+            { id: 20261031096, kat: 'ACC', nama: 'TG', awal: 8, terjual: 2, modal: 3000, jual: 0, updatedAt: 1761868800096 },
+            { id: 20261031097, kat: 'ACC', nama: 'HYDROGEL GLOSY', awal: 14, terjual: 3, modal: 11500, jual: 0, updatedAt: 1761868800097 },
+            { id: 20261031098, kat: 'ACC', nama: 'HYDROGEL MATTE', awal: 20, terjual: 1, modal: 14500, jual: 0, updatedAt: 1761868800098 },
+            { id: 1793589645098, kat: 'ACC', nama: 'MATERAI', awal: 12, terjual: 0, modal: 10000, jual: 12000, updatedAt: 1793589645098 },
+            { id: 1793669017162, kat: 'VOUCHER', nama: 'V TSEL 7/3', awal: 4, terjual: 1, modal: 12776, jual: 16000, updatedAt: 1793669017162 }
         ];
 
         window.DEFAULT_PIUTANG_Z2 = [
-            { id: 20261031101, isoDate: '2026-10-30', waktu: '19:15', tglDisplay: 'Jumat, 30 Okt, 19:15', nama: 'BU DENI', noHp: '', qty: 1, sisa: 100000, pokokAwal: 100000, tagihanJual: 100000, sisaTagihanJual: 100000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800101 },
-            { id: 20261031102, isoDate: '2026-10-30', waktu: '19:14', tglDisplay: 'Jumat, 30 Okt, 19:14', nama: 'PIPIT', noHp: '', qty: 1, sisa: 19862, pokokAwal: 19862, tagihanJual: 19862, sisaTagihanJual: 19862, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800102 },
-            { id: 20261031103, isoDate: '2026-10-30', waktu: '18:03', tglDisplay: 'Jumat, 30 Okt, 18:03', nama: 'ZIYAD', noHp: '', qty: 1, sisa: 34750, pokokAwal: 34750, tagihanJual: 34750, sisaTagihanJual: 34750, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800103 },
-            { id: 20261031104, isoDate: '2026-10-30', waktu: '13:57', tglDisplay: 'Jumat, 30 Okt, 13:57', nama: 'SENDI', noHp: '', qty: 1, sisa: 1800000, pokokAwal: 1800000, tagihanJual: 1800000, sisaTagihanJual: 1800000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800104 },
-            { id: 20261031105, isoDate: '2026-10-28', waktu: '13:29', tglDisplay: 'Rabu, 28 Okt, 13:29', nama: 'PIPIT', noHp: '', qty: 1, sisa: 100000, pokokAwal: 100000, tagihanJual: 100000, sisaTagihanJual: 100000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800105 },
-            { id: 20261031106, isoDate: '2026-10-27', waktu: '12:59', tglDisplay: 'Selasa, 27 Okt, 12:59', nama: 'ALAM', noHp: '', qty: 1, sisa: 80000, pokokAwal: 80000, tagihanJual: 80000, sisaTagihanJual: 80000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800106 },
+            { id: 20261031101, isoDate: '2026-10-30', waktu: '19:15', tglDisplay: 'Jumat, 30 Okt, 19:15', nama: 'BU DENI', noHp: '', qty: 1, sisa: 0, pokokAwal: 100000, tagihanJual: 100000, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800101 },
+            { id: 20261031102, isoDate: '2026-10-30', waktu: '19:14', tglDisplay: 'Jumat, 30 Okt, 19:14', nama: 'PIPIT', noHp: '', qty: 1, sisa: 0, pokokAwal: 19862, tagihanJual: 19862, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800102 },
+            { id: 20261031103, isoDate: '2026-10-30', waktu: '18:03', tglDisplay: 'Jumat, 30 Okt, 18:03', nama: 'ZIYAD', noHp: '', qty: 1, sisa: 0, pokokAwal: 34750, tagihanJual: 34750, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800103 },
+            { id: 20261031104, isoDate: '2026-10-30', waktu: '13:57', tglDisplay: 'Jumat, 30 Okt, 13:57', nama: 'SENDI', noHp: '', qty: 1, sisa: 0, pokokAwal: 1800000, tagihanJual: 1800000, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800104 },
+            { id: 20261031105, isoDate: '2026-10-28', waktu: '13:29', tglDisplay: 'Rabu, 28 Okt, 13:29', nama: 'PIPIT', noHp: '', qty: 1, sisa: 0, pokokAwal: 100000, tagihanJual: 100000, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800105 },
+            { id: 20261031106, isoDate: '2026-10-27', waktu: '12:59', tglDisplay: 'Selasa, 27 Okt, 12:59', nama: 'ALAM', noHp: '', qty: 1, sisa: 0, pokokAwal: 80000, tagihanJual: 80000, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800106 },
             { id: 20261031107, isoDate: '2026-10-26', waktu: '15:48', tglDisplay: 'Senin, 26 Okt, 15:48', nama: 'ZIYAD', noHp: '', qty: 1, sisa: 69000, pokokAwal: 69000, tagihanJual: 69000, sisaTagihanJual: 69000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800107 },
-            { id: 20261031108, isoDate: '2026-10-13', waktu: '18:38', tglDisplay: 'Selasa, 13 Okt, 18:38', nama: 'ELSA', noHp: '', qty: 1, sisa: 5000000, pokokAwal: 5000000, tagihanJual: 5000000, sisaTagihanJual: 5000000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800108 },
-            { id: 20261031109, isoDate: '2026-10-08', waktu: '17:49', tglDisplay: 'Kamis, 08 Okt, 17:49', nama: 'ECA', noHp: '', qty: 1, sisa: 48000, pokokAwal: 48000, tagihanJual: 48000, sisaTagihanJual: 48000, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800109 },
-            { id: 20261031110, isoDate: '2026-10-01', waktu: '13:56', tglDisplay: 'Kamis, 01 Okt, 13:56', nama: 'PIPIT', noHp: '', qty: 1, sisa: 14100, pokokAwal: 14100, tagihanJual: 14100, sisaTagihanJual: 14100, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'BELUM LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800110 }
+            { id: 20261031109, isoDate: '2026-10-08', waktu: '17:49', tglDisplay: 'Kamis, 08 Okt, 17:49', nama: 'ECA', noHp: '', qty: 1, sisa: 0, pokokAwal: 48000, tagihanJual: 48000, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800109 },
+            { id: 20261031110, isoDate: '2026-10-01', waktu: '13:56', tglDisplay: 'Kamis, 01 Okt, 13:56', nama: 'PIPIT', noHp: '', qty: 1, sisa: 0, pokokAwal: 14100, tagihanJual: 14100, sisaTagihanJual: 0, kategori: 'TOPUP', sumber: 'TIDAK POTONG SALDO', catatan: '-', status: 'LUNAS', riwayatCicilan: [], isSeedAwal: true, updatedAt: 1761868800110 }
         ];
 
         window.DEFAULT_SALDO_AWAL = window.ACTIVE_CABANG === '2'
@@ -8287,7 +8331,12 @@
 
             const lastResetTs = Number(data.lastResetTimestamp || 0);
             const needsResyncMap = {};
-            const isZ2InitialSeedNeeded = (window.ACTIVE_CABANG === '2' && data.seedVersionZ2 !== window.Z2_SEED_VERSION);
+            const hasExistingZ2Data = Boolean(
+                (data.transaksi && Object.keys(data.transaksi).length > 0) ||
+                (data.stok && Object.keys(data.stok).length > 0) ||
+                (data.saldoAwal && window.hasNonZeroSaldoAwal(data.saldoAwal))
+            );
+            const isZ2InitialSeedNeeded = (window.ACTIVE_CABANG === '2' && !hasExistingZ2Data && data.seedVersionZ2 !== window.Z2_SEED_VERSION);
 
             if (data.vlookup && typeof data.vlookup === 'object') {
                 let loadedVlookup = {};
@@ -8302,15 +8351,65 @@
                     }
                 });
                 window.masterVlookup = loadedVlookup;
-                localStorage.setItem('zencell_vlookup', JSON.stringify(window.masterVlookup));
             } else if (!data.vlookup) {
                 window.masterVlookup = {};
-                localStorage.setItem('zencell_vlookup', '{}');
             }
+            // Pastikan VLOOKUP "T EDC" selalu tersedia dengan alur KOMISI EDC yang sesuai cabang
+            if (!window.masterVlookup['T EDC']) {
+                const defaultTedcRule = window.ACTIVE_CABANG === '2'
+                    ? {
+                        origKey: 'T EDC',
+                        isManual: true,
+                        kat: 'EDC',
+                        akunMasuk: 'BRI AA',
+                        akunMasuk2: 'KOMISI EDC',
+                        akunKeluar: 'LACI',
+                        akunKeluar2: '',
+                        defJual: 1500,
+                        defModal: 0,
+                        isSplit: true,
+                        jualSplit1: 0,
+                        jualSplit2: 1500,
+                        modalSplit1: 0,
+                        modalSplit2: 0
+                    }
+                    : {
+                        origKey: 'T EDC',
+                        isManual: true,
+                        kat: 'EDC',
+                        akunMasuk: 'NOBU',
+                        akunMasuk2: 'KOMISI EDC',
+                        akunKeluar: 'LACI',
+                        akunKeluar2: '',
+                        defJual: 1500,
+                        defModal: 0,
+                        isSplit: true,
+                        jualSplit1: 0,
+                        jualSplit2: 1500,
+                        modalSplit1: 0,
+                        modalSplit2: 0
+                    };
+                window.masterVlookup['T EDC'] = window.normalizeVlookupRuleObject
+                    ? window.normalizeVlookupRuleObject(defaultTedcRule, 'T EDC')
+                    : defaultTedcRule;
+            }
+            localStorage.setItem('zencell_vlookup', JSON.stringify(window.masterVlookup));
 
             if (isZ2InitialSeedNeeded) {
-                window.saldoList = window.STANDARD_SALDO_ORDER_Z2.slice();
-                window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2);
+                window.saldoList = data.saldoListCustom
+                    ? window.normalizeSaldoListOrder(data.saldoListCustom)
+                    : window.STANDARD_SALDO_ORDER_Z2.slice();
+                window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2, data.saldoAwal || {}, {
+                    VOUCHER: 0,
+                    SP: 0,
+                    ACC: 0,
+                    SPAREPART: 0,
+                    PIUTANG: 0,
+                    OPERASIONAL: 0
+                });
+                if (window.masterSaldoAwal['KOMISI EDC'] === undefined) {
+                    window.masterSaldoAwal['KOMISI EDC'] = 0;
+                }
                 needsResyncMap.saldoListCustom = true;
                 needsResyncMap.saldoAwal = true;
                 needsResyncMap.seedVersionZ2 = true;
@@ -8325,7 +8424,7 @@
                     window.saldoList = window.STANDARD_SALDO_ORDER.slice();
                 }
 
-                // Self-healing otomatis untuk akun OPERASIONAL & PIUTANG di POS ZENCELL 1 & 2
+                // Self-healing otomatis untuk akun OPERASIONAL, PIUTANG & KOMISI EDC di POS ZENCELL 1 & 2
                 if (!window.saldoList.includes('PIUTANG')) {
                     const idxLaci = window.saldoList.indexOf('LACI');
                     if (idxLaci !== -1) {
@@ -8342,6 +8441,11 @@
                     } else {
                         window.saldoList.push('OPERASIONAL');
                     }
+                    needsResyncMap.saldoListCustom = true;
+                }
+                if (!window.saldoList.includes('KOMISI EDC') || window.saldoList.indexOf('KOMISI EDC') !== window.saldoList.length - 1) {
+                    window.saldoList = window.saldoList.filter(s => s !== 'KOMISI EDC');
+                    window.saldoList.push('KOMISI EDC');
                     needsResyncMap.saldoListCustom = true;
                 }
 
@@ -8372,12 +8476,19 @@
                 if (window.masterSaldoAwal) {
                     window.masterSaldoAwal['OPERASIONAL'] = 0;
                     window.masterSaldoAwal['PIUTANG'] = 0;
+                    if (window.masterSaldoAwal['KOMISI EDC'] === undefined) {
+                        window.masterSaldoAwal['KOMISI EDC'] = Number(window.DEFAULT_SALDO_AWAL['KOMISI EDC'] || 0);
+                    }
                 }
             }
             if (data.batasMinSaldo) window.masterBatasMinSaldo = data.batasMinSaldo;
 
-            // Self-healing otomatis untuk akun QRIS di ZENCELL 2 (jika sebelumnya sempat hilang/tersembunyi karena filter nama)
+            // Self-healing otomatis untuk akun QRIS, DANA PIPIT & KOMISI EDC di ZENCELL 2
             if (window.ACTIVE_CABANG === '2') {
+                if (window.saldoList.includes('DANA ELSA')) {
+                    window.saldoList = window.saldoList.map(s => s === 'DANA ELSA' ? 'DANA PIPIT' : s);
+                    needsResyncMap.saldoListCustom = true;
+                }
                 if (!window.saldoList.includes('QRIS') && !window.saldoList.includes('QRIS (PIPIT)')) {
                     const idxPiutang = window.saldoList.indexOf('PIUTANG');
                     if (idxPiutang !== -1) {
@@ -8387,10 +8498,18 @@
                     }
                     needsResyncMap.saldoListCustom = true;
                 }
+                if (!window.saldoList.includes('KOMISI EDC') || window.saldoList.indexOf('KOMISI EDC') !== window.saldoList.length - 1) {
+                    window.saldoList = window.saldoList.filter(s => s !== 'KOMISI EDC');
+                    window.saldoList.push('KOMISI EDC');
+                    needsResyncMap.saldoListCustom = true;
+                }
                 if (window.masterSaldoAwal) {
-                    const qrisAwal = Number(window.masterSaldoAwal['QRIS'] || window.masterSaldoAwal['QRIS (PIPIT)'] || 4880859);
+                    const qrisAwal = Number(window.masterSaldoAwal['QRIS'] !== undefined ? window.masterSaldoAwal['QRIS'] : (window.masterSaldoAwal['QRIS (PIPIT)'] !== undefined ? window.masterSaldoAwal['QRIS (PIPIT)'] : 1747000));
                     window.masterSaldoAwal['QRIS'] = qrisAwal;
                     window.masterSaldoAwal['QRIS (PIPIT)'] = qrisAwal;
+                    if (window.masterSaldoAwal['KOMISI EDC'] === undefined) {
+                        window.masterSaldoAwal['KOMISI EDC'] = 0;
+                    }
                 }
             }
 
@@ -8475,12 +8594,7 @@
                 window.DEFAULT_STOK_Z2.forEach(seedS => {
                     const key = `${seedS.kat}__${seedS.nama}`;
                     const exist = byKatNama.get(key);
-                    if (exist) {
-                        exist.awal = seedS.awal;
-                        exist.modal = seedS.modal;
-                        exist.jual = seedS.jual;
-                        exist.updatedAt = Math.max(Number(exist.updatedAt || 0), seedS.updatedAt);
-                    } else {
+                    if (!exist) {
                         window.stokOpnameItems.push(JSON.parse(JSON.stringify(seedS)));
                     }
                 });
@@ -8830,68 +8944,60 @@
             if (window._z2BgSeedChecked || window.ACTIVE_CABANG === '2') return;
             window._z2BgSeedChecked = true;
             try {
-                const snapSeed = await get(ref(db, 'zencell2Nodes/seedVersionZ2'));
-                if (snapSeed && snapSeed.exists() && snapSeed.val() === window.Z2_SEED_VERSION) {
-                    return;
-                }
                 const snapZ2 = await get(ref(db, 'zencell2Nodes'));
-                const existingZ2 = (snapZ2 && snapZ2.exists()) ? (snapZ2.val() || {}) : {};
-                let stokZ2 = existingZ2.stok ? (Array.isArray(existingZ2.stok) ? existingZ2.stok.slice() : Object.values(existingZ2.stok)) : [];
-                const byKatNama = new Map();
-                stokZ2.forEach(s => {
-                    if (s && (s.nama || s.namaBarang)) {
-                        byKatNama.set(`${s.kat || 'VOUCHER'}__${(s.nama || s.namaBarang).trim().toUpperCase()}`, s);
-                    }
-                });
-                window.DEFAULT_STOK_Z2.forEach(seedS => {
-                    const key = `${seedS.kat}__${seedS.nama}`;
-                    const exist = byKatNama.get(key);
-                    if (exist) {
-                        exist.awal = seedS.awal;
-                        exist.modal = seedS.modal;
-                        exist.jual = seedS.jual;
-                        exist.updatedAt = Math.max(Number(exist.updatedAt || 0), seedS.updatedAt);
-                    } else {
-                        stokZ2.push(JSON.parse(JSON.stringify(seedS)));
-                    }
-                });
+                if (!snapZ2 || !snapZ2.exists()) return;
+                const existingZ2 = snapZ2.val() || {};
+                const updatePayloadZ2 = {};
 
-                let piutangZ2 = existingZ2.piutang ? (Array.isArray(existingZ2.piutang) ? existingZ2.piutang.slice() : Object.values(existingZ2.piutang)) : [];
-                const existingPiutangIds = new Set(piutangZ2.filter(Boolean).map(p => String(p.id)));
-                const existingPiutangSigs = new Set(piutangZ2.filter(Boolean).map(p => `${(p.nama || '').trim().toUpperCase()}__${p.isoDate || ''}__${p.waktu || ''}__${Number(p.pokokAwal || p.sisa || 0)}`));
-                window.DEFAULT_PIUTANG_Z2.forEach(seedP => {
-                    const sig = `${seedP.nama}__${seedP.isoDate}__${seedP.waktu}__${seedP.pokokAwal}`;
-                    if (!existingPiutangIds.has(String(seedP.id)) && !existingPiutangSigs.has(sig)) {
-                        piutangZ2.push(JSON.parse(JSON.stringify(seedP)));
-                    }
-                });
-
-                const updatePayloadZ2 = {
-                    stok: stokZ2,
-                    piutang: piutangZ2,
-                    seedVersionZ2: window.Z2_SEED_VERSION
-                };
-                let z2SaldoList = existingZ2.saldoListCustom
-                    ? window.normalizeSaldoListOrder(existingZ2.saldoListCustom)
+                let z2SaldoList = Array.isArray(existingZ2.saldoListCustom) && existingZ2.saldoListCustom.length > 0
+                    ? existingZ2.saldoListCustom.map(s => String(s || '').trim().toUpperCase()).filter(Boolean)
                     : window.STANDARD_SALDO_ORDER_Z2.slice();
+                const origListStr = JSON.stringify(z2SaldoList);
+                z2SaldoList = z2SaldoList.map(s => s === 'DANA ELSA' ? 'DANA PIPIT' : s);
+                if (!z2SaldoList.includes('PIUTANG')) {
+                    const idxLaci = z2SaldoList.indexOf('LACI');
+                    if (idxLaci !== -1) z2SaldoList.splice(idxLaci + 1, 0, 'PIUTANG');
+                    else z2SaldoList.unshift('PIUTANG');
+                }
                 if (!z2SaldoList.includes('OPERASIONAL')) {
                     const idxPiu = z2SaldoList.indexOf('PIUTANG');
                     if (idxPiu !== -1) z2SaldoList.splice(idxPiu + 1, 0, 'OPERASIONAL');
                     else z2SaldoList.push('OPERASIONAL');
                 }
-                updatePayloadZ2.saldoListCustom = z2SaldoList;
+                z2SaldoList = z2SaldoList.filter(s => s !== 'KOMISI EDC');
+                z2SaldoList.push('KOMISI EDC');
+                if (JSON.stringify(z2SaldoList) !== origListStr) {
+                    updatePayloadZ2.saldoListCustom = z2SaldoList;
+                }
 
-                const z2SaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2, existingZ2.saldoAwal || {}, {
-                    VOUCHER: 0,
-                    SP: 0,
-                    ACC: 0,
-                    SPAREPART: 0,
-                    PIUTANG: 0,
-                    OPERASIONAL: 0
-                });
-                updatePayloadZ2.saldoAwal = z2SaldoAwal;
+                if (existingZ2.saldoAwal && existingZ2.saldoAwal['KOMISI EDC'] === undefined) {
+                    updatePayloadZ2['saldoAwal/KOMISI EDC'] = 0;
+                }
 
-                await update(ref(db, 'zencell2Nodes'), updatePayloadZ2);
+                const existingVlookupZ2 = Object.assign({}, existingZ2.vlookup || {});
+                if (!existingVlookupZ2['T_EDC'] && !existingVlookupZ2['T EDC']) {
+                    existingVlookupZ2['T_EDC'] = {
+                        origKey: 'T EDC',
+                        isManual: true,
+                        kat: 'EDC',
+                        akunMasuk: 'BRI AA',
+                        akunMasuk2: 'KOMISI EDC',
+                        akunKeluar: 'LACI',
+                        akunKeluar2: '',
+                        defJual: 1500,
+                        defModal: 0,
+                        isSplit: true,
+                        jualSplit1: 0,
+                        jualSplit2: 1500,
+                        modalSplit1: 0,
+                        modalSplit2: 0
+                    };
+                    updatePayloadZ2.vlookup = existingVlookupZ2;
+                }
+
+                if (Object.keys(updatePayloadZ2).length > 0) {
+                    await update(ref(db, 'zencell2Nodes'), updatePayloadZ2);
+                }
             } catch (e) {
                 window._z2BgSeedChecked = false;
             }
@@ -12298,6 +12404,238 @@
             if (evt) evt.currentTarget.classList.add('active');
         }
 
+        window.getRekapPeriodeMeta = function(modeRaw, targetDateRaw, targetMonthRaw) {
+            const mode = modeRaw || document.getElementById('rekapModeSelect')?.value || 'DAILY';
+            const targetDate = targetDateRaw || document.getElementById('rekapDatePicker')?.value || window.getTodayIso();
+            const targetMonth = targetMonthRaw || document.getElementById('rekapMonthPicker')?.value || window.getCurrentMonthIso();
+            let startIso = targetDate;
+            let endIso = targetDate;
+            let labelPeriode = window.formatTanggalDDMMYY(targetDate);
+            let badgeText = `📅 Harian: ${labelPeriode}`;
+            let fileSlug = labelPeriode.replace(/\//g, '-');
+
+            if (mode === 'WEEKLY') {
+                const dObj = new Date(targetDate + 'T12:00:00');
+                if (!isNaN(dObj.getTime())) {
+                    const sObj = new Date(dObj.getTime() - (6 * 24 * 60 * 60 * 1000));
+                    startIso = `${sObj.getFullYear()}-${String(sObj.getMonth() + 1).padStart(2, '0')}-${String(sObj.getDate()).padStart(2, '0')}`;
+                }
+                const sFmt = window.formatTanggalDDMMYY(startIso);
+                const eFmt = window.formatTanggalDDMMYY(endIso);
+                labelPeriode = `${sFmt} s/d ${eFmt} (7 Hari)`;
+                badgeText = `🗓️ Mingguan: ${sFmt} - ${eFmt}`;
+                fileSlug = `MINGGUAN_${sFmt.replace(/\//g, '-')}_SD_${eFmt.replace(/\//g, '-')}`;
+            } else if (mode === 'MONTHLY') {
+                startIso = `${targetMonth}-01`;
+                endIso = `${targetMonth}-31`;
+                labelPeriode = `Bulan ${targetMonth} (Closing Bulanan)`;
+                badgeText = `🏆 Closing Bulan: ${targetMonth}`;
+                fileSlug = `BULANAN_${targetMonth}`;
+            }
+            return { mode, targetDate, targetMonth, startIso, endIso, labelPeriode, badgeText, fileSlug };
+        };
+
+        window.isIsoDateInRekapPeriod = function(isoDate, mode, targetDate, targetMonth) {
+            if (!isoDate) return false;
+            if (mode === 'DAILY') return isoDate === targetDate;
+            if (mode === 'MONTHLY') return isoDate.startsWith(targetMonth);
+            if (mode === 'WEEKLY') {
+                const meta = window.getRekapPeriodeMeta('WEEKLY', targetDate, targetMonth);
+                return isoDate >= meta.startIso && isoDate <= meta.endIso;
+            }
+            return isoDate === targetDate;
+        };
+
+        window.hitungRaporPeriodeLaporan = function(modeRaw, targetDateRaw, targetMonthRaw) {
+            const meta = window.getRekapPeriodeMeta(modeRaw, targetDateRaw, targetMonthRaw);
+            const { mode, targetDate, targetMonth } = meta;
+
+            const rekapMap = {};
+            (window.kategoriList || []).filter(k => k !== 'PIUTANG' && k !== 'PINDAH_SALDO').forEach(k => {
+                rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+            });
+
+            let totalTrx = 0, totalOmset = 0, totalModal = 0, totalCuan = 0;
+            let cuanAtm = 0, cuanKonter = 0, cuanService = 0;
+            const activeDaysSet = new Set();
+
+            (window.transaksiJurnal || []).forEach(t => {
+                if (!t || t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
+                if (window.isIsoDateInRekapPeriod(t.isoDate, mode, targetDate, targetMonth)) {
+                    const countWeight = Number(t.archivedCount || 1);
+                    if (t.isoDate) activeDaysSet.add(t.isoDate);
+                    if (window.isTransaksiPelunasanPiutang(t)) {
+                        const cuanPiutang = Number(t.cuan || 0);
+                        const pRef = (window.piutangList || []).find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
+                        if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                        rekapMap[katAsli].count += countWeight;
+                        totalTrx += countWeight;
+                        if (cuanPiutang > 0) {
+                            rekapMap[katAsli].cuan += cuanPiutang;
+                            totalCuan += cuanPiutang;
+                            if (window.katAtm.includes(katAsli)) cuanAtm += cuanPiutang;
+                            else if (window.katKonter.includes(katAsli)) cuanKonter += cuanPiutang;
+                            else if (window.katService.includes(katAsli)) cuanService += cuanPiutang;
+                        }
+                        return;
+                    }
+                    if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
+                    const jVal = Number(t.hargaJual || 0);
+                    const mVal = Number(t.hargaModal || 0);
+                    const cVal = Number(t.cuan || 0);
+                    rekapMap[t.kat].omset += jVal;
+                    rekapMap[t.kat].modal += mVal;
+                    rekapMap[t.kat].cuan += cVal;
+                    rekapMap[t.kat].count += countWeight;
+
+                    totalTrx += countWeight;
+                    totalOmset += jVal;
+                    totalModal += mVal;
+                    totalCuan += cVal;
+                    if (window.katAtm.includes(t.kat)) cuanAtm += cVal;
+                    if (window.katKonter.includes(t.kat)) cuanKonter += cVal;
+                    if (window.katService.includes(t.kat)) cuanService += cVal;
+                }
+            });
+
+            let totalOperasional = 0, countOperasional = 0;
+            (window.operasionalList || []).forEach(op => {
+                if (!op) return;
+                const d = op.isoDate || op.tgl || '';
+                if (window.isIsoDateInRekapPeriod(d, mode, targetDate, targetMonth)) {
+                    totalOperasional += Number(op.nominal || 0);
+                    countOperasional += 1;
+                }
+            });
+
+            let totalSetoranOwner = 0, countSetoranOwner = 0;
+            (window.setoranOwnerList || []).forEach(s => {
+                if (!s) return;
+                const d = s.isoDate || s.tgl || '';
+                if (window.isIsoDateInRekapPeriod(d, mode, targetDate, targetMonth)) {
+                    totalSetoranOwner += Number(s.nominal || 0);
+                    countSetoranOwner += 1;
+                }
+            });
+
+            const labaBersihMurni = totalCuan - totalOperasional;
+            const sisaLabaBersihPeriode = labaBersihMurni - totalSetoranOwner;
+            const activeDaysCount = Math.max(1, activeDaysSet.size);
+            const avgCuanPerHari = Math.round(totalCuan / activeDaysCount);
+            const avgLabaBersihPerHari = Math.round(labaBersihMurni / activeDaysCount);
+            const infoHarta = window.hitungRingkasanProfitDanHarta ? window.hitungRingkasanProfitDanHarta() : {
+                totalHartaAktual: 0,
+                kasCairAktual: 0,
+                targetModalPokok: 250000000,
+                seharusnyaTotalHarta: 250000000,
+                selisihAudit: 0,
+                jatahProfitSiapSetor: 0
+            };
+
+            return {
+                meta,
+                rekapMap,
+                totalTrx,
+                totalOmset,
+                totalModal,
+                totalCuan,
+                cuanAtm,
+                cuanKonter,
+                cuanService,
+                activeDaysCount: activeDaysSet.size,
+                avgCuanPerHari,
+                avgLabaBersihPerHari,
+                totalOperasional,
+                countOperasional,
+                labaBersihMurni,
+                totalSetoranOwner,
+                countSetoranOwner,
+                sisaLabaBersihPeriode,
+                infoHarta
+            };
+        };
+
+        window.bukaTarikProfitClosingCepat = function(preferPeriodSisa = false) {
+            const r = window.hitungRaporPeriodeLaporan();
+            const nomTarget = preferPeriodSisa
+                ? Math.max(0, r.sisaLabaBersihPeriode)
+                : Math.max(0, r.infoHarta.jatahProfitSiapSetor > 0 ? r.infoHarta.jatahProfitSiapSetor : r.sisaLabaBersihPeriode);
+            window.openModalSetorFast(false);
+            if (nomTarget > 0) {
+                const nomEl = document.getElementById('setorNom');
+                const dispEl = document.getElementById('setorNomDisplay');
+                const ketEl = document.getElementById('setorKet');
+                if (nomEl) nomEl.value = nomTarget;
+                if (dispEl) dispEl.value = nomTarget.toLocaleString('id-ID');
+                if (ketEl) {
+                    ketEl.value = r.meta.mode === 'MONTHLY'
+                        ? `CLOSING PROFIT BULAN ${r.meta.targetMonth}`
+                        : (r.meta.mode === 'WEEKLY' ? `SETOR PROFIT MINGGUAN (${r.meta.labelPeriode})` : `SETOR PROFIT HARIAN (${r.meta.labelPeriode})`);
+                }
+                window.showToast(`⚡ Form Setoran Profit siap diisi: ${window.formatRp(nomTarget)}`, 'success');
+            }
+        };
+
+        window.kirimLaporanClosingWaOwner = function() {
+            const r = window.hitungRaporPeriodeLaporan();
+            const cabangNama = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+            const judulMode = r.meta.mode === 'MONTHLY'
+                ? '🏆 LAPORAN CLOSING AKHIR BULAN'
+                : (r.meta.mode === 'WEEKLY' ? '🗓️ LAPORAN REKAP MINGGUAN (7 HARI)' : '📅 LAPORAN REKAP HARIAN');
+            const stokDanPart = Number(window._lastRealtimeStok || 0);
+            const piutangAktif = Number(window._lastRealtimePiutang || 0);
+            const statusAuditStr = r.infoHarta.selisihAudit === 0
+                ? '🟢 PAS / BALANCE (Rp 0)'
+                : (r.infoHarta.selisihAudit < 0 ? `🔴 KURANG ${window.formatRp(r.infoHarta.selisihAudit)}` : `🔵 LEBIH +${window.formatRp(r.infoHarta.selisihAudit)}`);
+
+            const lines = [
+                `*${judulMode} - ${cabangNama}*`,
+                `Periode: *${r.meta.labelPeriode}*`,
+                `--------------------------------`,
+                `📊 *RINGKASAN OMSET & CUAN KOTOR*`,
+                `• Total Transaksi: *${r.totalTrx} TRX* (${r.activeDaysCount || 1} Hari Aktif)`,
+                `• Total Omset Masuk: *${window.formatRp(r.totalOmset)}*`,
+                `• Cuan ATM Link: *${window.formatRp(r.cuanAtm)}*`,
+                `• Cuan Konter: *${window.formatRp(r.cuanKonter)}*`,
+                `• Cuan Service: *${window.formatRp(r.cuanService)}*`,
+                `🔥 *TOTAL CUAN KOTOR: ${window.formatRp(r.totalCuan)}*`,
+                `--------------------------------`,
+                `🧮 *PERHITUNGAN LABA BERSIH & CLOSING*`,
+                `• (+) Total Cuan Kotor: ${window.formatRp(r.totalCuan)}`,
+                `• (-) Biaya Operasional (${r.countOperasional}x): -${window.formatRp(r.totalOperasional)}`,
+                `💰 *LABA BERSIH MURNI TOKO: ${window.formatRp(r.labaBersihMurni)}*`,
+                `• Sudah Disetor ke Owner (${r.countSetoranOwner}x): -${window.formatRp(r.totalSetoranOwner)}`,
+                `💵 *Sisa Laba Bersih Periode Ini: ${window.formatRp(r.sisaLabaBersihPeriode)}*`,
+                `--------------------------------`,
+                `🏦 *POSISI HARTA & MODAL POKOK SAAT INI*`,
+                `• Kas & Bank Cair: ${window.formatRp(r.infoHarta.kasCairAktual)}`,
+                `• Stok Fisik & Sparepart: ${window.formatRp(stokDanPart)}`,
+                `• Piutang Pelanggan: ${window.formatRp(piutangAktif)}`,
+                `• *Total Harta Riil Konter: ${window.formatRp(r.infoHarta.totalHartaAktual)}*`,
+                `• *Target Modal Pokok: ${window.formatRp(r.infoHarta.targetModalPokok)}*`,
+                `• *Jatah Profit Siap Tarik (Kembali ke Modal Pokok): ${window.formatRp(r.infoHarta.jatahProfitSiapSetor)}*`,
+                `• Status Audit: *${statusAuditStr}*`
+            ];
+
+            const textWa = encodeURIComponent(lines.join('\n'));
+            const noWaRaw = String((window.pengaturanToko && window.pengaturanToko.waOwner) || '').replace(/[^0-9]/g, '');
+            const noWa = noWaRaw.startsWith('0') ? ('62' + noWaRaw.slice(1)) : noWaRaw;
+            const waUrl = noWa ? `https://wa.me/${noWa}?text=${textWa}` : `https://wa.me/?text=${textWa}`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(lines.join('\n')).catch(() => {});
+            }
+            const a = document.createElement('a');
+            a.href = waUrl;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.showToast('✅ Ringkasan Laporan & Closing disalin & siap dikirim ke WhatsApp!', 'success');
+        };
+
         window.toggleRekapMode = function(mode) {
             document.getElementById('rekapDatePicker').style.display = mode === 'MONTHLY' ? 'none' : 'inline-block';
             document.getElementById('rekapMonthPicker').style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
@@ -12788,21 +13126,22 @@
 
         window.findMasterVlookupRule = function(rawKet) {
             const val = String(rawKet || '').toUpperCase().trim();
-            if (!val || !window.masterVlookup) return null;
+            if (!val) return null;
+            const vMap = window.masterVlookup || {};
             const valSlash = val.replace(/[\/-]/g, '/');
             const valDash = val.replace(/\//g, '-');
             const valSan = sanitizeKey(val);
 
-            let direct = window.masterVlookup[val]
-                || window.masterVlookup[valSan]
-                || window.masterVlookup[valSlash]
-                || window.masterVlookup[valDash];
+            let direct = vMap[val]
+                || vMap[valSan]
+                || vMap[valSlash]
+                || vMap[valDash];
             if (direct) return window.normalizeVlookupRuleObject(direct, val);
 
-            const allKeys = Object.keys(window.masterVlookup);
+            const allKeys = Object.keys(vMap);
             for (let i = 0; i < allKeys.length; i++) {
                 const k = allKeys[i];
-                const item = window.masterVlookup[k];
+                const item = vMap[k];
                 if (!item) continue;
                 const kUp = String(k).toUpperCase().trim();
                 const origUp = String(item.origKey || '').toUpperCase().trim();
@@ -12815,6 +13154,19 @@
                 ) {
                     return window.normalizeVlookupRuleObject(item, origUp || kUp);
                 }
+            }
+            if (window.isKeteranganT_EDC && window.isKeteranganT_EDC(val)) {
+                const tedcBase = vMap['T EDC'] || vMap['T_EDC'] || {
+                    origKey: 'T EDC',
+                    isManual: true,
+                    kat: 'EDC',
+                    akunMasuk: 'KOMISI EDC',
+                    akunKeluar: '',
+                    defJual: 0,
+                    defModal: 0,
+                    isSplit: false
+                };
+                return window.normalizeVlookupRuleObject(tedcBase, 'T EDC');
             }
             return null;
         };
@@ -16110,45 +16462,13 @@
         }
 
         window.exportLaporanExcel = function() {
-            const mode = document.getElementById('rekapModeSelect').value;
-            const targetDate = document.getElementById('rekapDatePicker').value;
-            const targetMonth = document.getElementById('rekapMonthPicker').value;
-
-            let rekapMap = {};
-            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'PINDAH_SALDO').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
-
-            let totalOmset = 0, totalModal = 0, totalCuan = 0;
-
-            window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
-                if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
-                    if (window.isTransaksiPelunasanPiutang(t)) {
-                        const cuanPiutang = Number(t.cuan || 0);
-                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
-                        if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
-                        rekapMap[katAsli].count += Number(t.archivedCount || 1);
-                        if (cuanPiutang > 0) {
-                            rekapMap[katAsli].cuan += cuanPiutang;
-                            totalCuan += cuanPiutang;
-                        }
-                        return;
-                    }
-                    if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
-                    rekapMap[t.kat].omset += Number(t.hargaJual || 0);
-                    rekapMap[t.kat].modal += Number(t.hargaModal || 0);
-                    rekapMap[t.kat].cuan += Number(t.cuan || 0);
-                    rekapMap[t.kat].count += 1;
-
-                    totalOmset += Number(t.hargaJual || 0);
-                    totalModal += Number(t.hargaModal || 0);
-                    totalCuan += Number(t.cuan || 0);
-                }
-            });
+            const rapor = window.hitungRaporPeriodeLaporan();
+            const { meta, rekapMap, totalTrx, totalOmset, totalModal, totalCuan } = rapor;
+            const cabangNama = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
 
             let excelData = [];
-            excelData.push(["LAPORAN PEMBUKUAN KATEGORI & TRANSAKSI - ZENCELL"]);
-            excelData.push([`Periode: ${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : 'Bulan ' + targetMonth}`]);
+            excelData.push([`LAPORAN PEMBUKUAN, LABA BERSIH & CLOSING - ${cabangNama}`]);
+            excelData.push([`Periode: ${meta.labelPeriode}`]);
             excelData.push([]);
             excelData.push(["KATEGORI TRANSAKSI", "JUMLAH TRX", "OMSET (Uang Masuk)", "MODAL (Uang Keluar)", "CUAN (Keuntungan)"]);
 
@@ -16158,54 +16478,34 @@
             });
 
             excelData.push([]);
-            excelData.push(["TOTAL KESELURUHAN", "", totalOmset, totalModal, totalCuan]);
+            excelData.push(["TOTAL KESELURUHAN", totalTrx, totalOmset, totalModal, totalCuan]);
+            excelData.push([]);
+            excelData.push(["RAPOR LABA BERSIH, OPERASIONAL & CLOSING (KEMBALI KE MODAL POKOK)", "NILAI (RP)", "KETERANGAN"]);
+            excelData.push(["(+) Total Cuan Kotor (ATM + Konter + Service)", rapor.totalCuan, `${rapor.totalTrx} Transaksi (${rapor.activeDaysCount || 1} Hari Aktif)`]);
+            excelData.push(["(-) Biaya Operasional Toko", -rapor.totalOperasional, `${rapor.countOperasional} Pengeluaran Operasional`]);
+            excelData.push(["(=) LABA BERSIH MURNI TOKO", rapor.labaBersihMurni, `Rata-rata Rp ${rapor.avgLabaBersihPerHari.toLocaleString('id-ID')} / hari aktif`]);
+            excelData.push(["(-) Sudah Disetor / Ditarik Owner", -rapor.totalSetoranOwner, `${rapor.countSetoranOwner}x Penarikan Profit`]);
+            excelData.push(["(=) Sisa Laba Bersih Periode Ini (Belum Ditarik)", rapor.sisaLabaBersihPeriode, ""]);
+            excelData.push(["Total Harta Riil Konter Saat Ini", rapor.infoHarta.totalHartaAktual, `Kas Cair: Rp ${rapor.infoHarta.kasCairAktual.toLocaleString('id-ID')}`]);
+            excelData.push(["Target Modal Pokok Konter", rapor.infoHarta.targetModalPokok, "Patokan Modal Berputar"]);
+            excelData.push(["Jatah Profit Siap Tarik Saat Closing (Kembali ke Modal Pokok)", rapor.infoHarta.jatahProfitSiapSetor, "Nominal yang bisa ditarik agar kembali pas ke Modal Pokok"]);
 
             const ws = XLSX.utils.aoa_to_sheet(excelData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Pembukuan Zencell");
             
-            const fileName = `PEMBUKUAN_ZENCELL_${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : targetMonth}.xlsx`;
+            const fileName = `PEMBUKUAN_${cabangNama.replace(/\s+/g, '_')}_${meta.fileSlug}.xlsx`;
             XLSX.writeFile(wb, fileName);
             window.catatLogAktivitas('EXPORT EXCEL', `Mengunduh file laporan Excel pembukuan (${fileName})`);
-            alert("✅ File Excel pembukuan berhasil di-download!");
+            window.showToast("✅ File Excel pembukuan & closing berhasil di-download!", "success");
         };
 
         window.exportLaporanPDF = function() {
-            const mode = document.getElementById('rekapModeSelect').value;
-            const targetDate = document.getElementById('rekapDatePicker').value;
-            const targetMonth = document.getElementById('rekapMonthPicker').value;
-
-            let rekapMap = {};
-            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'PINDAH_SALDO').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
-
-            let totalOmset = 0, totalModal = 0, totalCuan = 0;
-
-            window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
-                if ((mode === 'DAILY' && t.isoDate === targetDate) || (mode === 'MONTHLY' && t.isoDate?.startsWith(targetMonth))) {
-                    if (window.isTransaksiPelunasanPiutang(t)) {
-                        const cuanPiutang = Number(t.cuan || 0);
-                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
-                        if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
-                        rekapMap[katAsli].count += Number(t.archivedCount || 1);
-                        if (cuanPiutang > 0) {
-                            rekapMap[katAsli].cuan += cuanPiutang;
-                            totalCuan += cuanPiutang;
-                        }
-                        return;
-                    }
-                    if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
-                    rekapMap[t.kat].omset += Number(t.hargaJual || 0);
-                    rekapMap[t.kat].modal += Number(t.hargaModal || 0);
-                    rekapMap[t.kat].cuan += Number(t.cuan || 0);
-                    rekapMap[t.kat].count += 1;
-
-                    totalOmset += Number(t.hargaJual || 0);
-                    totalModal += Number(t.hargaModal || 0);
-                    totalCuan += Number(t.cuan || 0);
-                }
-            });
+            const rapor = window.hitungRaporPeriodeLaporan();
+            const { meta, rekapMap, totalTrx, totalOmset, totalModal, totalCuan } = rapor;
+            const cabangNama = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+            const stokDanPart = Number(window._lastRealtimeStok || 0);
+            const piutangAktif = Number(window._lastRealtimePiutang || 0);
 
             const printReport = document.getElementById('printAreaReport');
             const printService = document.getElementById('printAreaServiceNota');
@@ -16215,50 +16515,82 @@
             if (window.setPrintPageMode) window.setPrintPageMode('REPORT_A4');
             printReport.style.display = 'block';
             printReport.innerHTML = `
-                <div style="font-family: sans-serif; color: #000; max-width: 700px; margin: 0 auto; padding: 15px;">
-                    <div style="text-align: center; border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 15px;">
-                        <h2 style="color: #059669; margin: 0; font-size: 20px;">POS ZENCELL 1 - LAPORAN PEMBUKUAN KEUANGAN</h2>
+                <div style="font-family: sans-serif; color: #000; max-width: 720px; margin: 0 auto; padding: 14px;">
+                    <div style="text-align: center; border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 12px;">
+                        <h2 style="color: #059669; margin: 0; font-size: 19px;">${cabangNama} - LAPORAN PEMBUKUAN &amp; CLOSING KEUANGAN</h2>
                         <p style="font-size: 11px; margin: 3px 0; color: #555;">Nanggerang, Jalaksana, Kabupaten Kuningan, Jawa Barat</p>
                     </div>
 
-                    <table style="width: 100%; font-size: 12px; margin-bottom: 15px; border: none;">
+                    <table style="width: 100%; font-size: 11.5px; margin-bottom: 12px; border: none;">
                         <tr>
-                            <td style="border: none; text-align: left; padding: 3px;"><b>Periode Laporan:</b> ${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : 'Bulan ' + targetMonth}</td>
-                            <td style="border: none; text-align: left; padding: 3px;"><b>Waktu Cetak:</b> ${new Date().toLocaleString('id-ID')}</td>
+                            <td style="border: none; text-align: left; padding: 3px;"><b>Periode Laporan:</b> ${meta.labelPeriode}</td>
+                            <td style="border: none; text-align: right; padding: 3px;"><b>Waktu Cetak:</b> ${new Date().toLocaleString('id-ID')}</td>
                         </tr>
                     </table>
 
-                    <h3 style="font-size: 13px; background: #E0F2FE; color: #0369A1; padding: 6px 10px; margin-bottom: 8px; border-radius: 4px;">REKAPITULASI KATEGORI TRANSAKSI</h3>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 15px;">
+                    <h3 style="font-size: 12.5px; background: #E0F2FE; color: #0369A1; padding: 6px 10px; margin-bottom: 8px; border-radius: 4px;">1. REKAPITULASI KATEGORI TRANSAKSI</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 14px;">
                         <thead>
                             <tr style="background:#F1F5F9;">
-                                <th style="text-align:left; padding:6px;">Kategori</th>
-                                <th style="text-align:center; padding:6px;">Trx</th>
-                                <th style="text-align:right; padding:6px;">Omset</th>
-                                <th style="text-align:right; padding:6px;">Modal</th>
-                                <th style="text-align:right; padding:6px;">Cuan</th>
+                                <th style="text-align:left; padding:5px 6px; border:1px solid #CBD5E1;">Kategori</th>
+                                <th style="text-align:center; padding:5px 6px; border:1px solid #CBD5E1;">Trx</th>
+                                <th style="text-align:right; padding:5px 6px; border:1px solid #CBD5E1;">Omset</th>
+                                <th style="text-align:right; padding:5px 6px; border:1px solid #CBD5E1;">Modal</th>
+                                <th style="text-align:right; padding:5px 6px; border:1px solid #CBD5E1;">Cuan</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${Object.keys(rekapMap).map(k => `
                                 <tr>
-                                    <td style="padding:5px;"><b>${k}</b></td>
-                                    <td style="text-align:center; padding:5px;">${rekapMap[k].count} TRX</td>
-                                    <td style="text-align:right; padding:5px; color:#16A34A;">${window.formatRp(rekapMap[k].omset)}</td>
-                                    <td style="text-align:right; padding:5px; color:#EF4444;">${window.formatRp(rekapMap[k].modal)}</td>
-                                    <td style="text-align:right; padding:5px; color:#D97706; font-weight:bold;">${window.formatRp(rekapMap[k].cuan)}</td>
+                                    <td style="padding:4px 6px; border:1px solid #CBD5E1;"><b>${k}</b></td>
+                                    <td style="text-align:center; padding:4px 6px; border:1px solid #CBD5E1;">${rekapMap[k].count} TRX</td>
+                                    <td style="text-align:right; padding:4px 6px; border:1px solid #CBD5E1; color:#16A34A;">${window.formatRp(rekapMap[k].omset)}</td>
+                                    <td style="text-align:right; padding:4px 6px; border:1px solid #CBD5E1; color:#EF4444;">${window.formatRp(rekapMap[k].modal)}</td>
+                                    <td style="text-align:right; padding:4px 6px; border:1px solid #CBD5E1; color:#D97706; font-weight:bold;">${window.formatRp(rekapMap[k].cuan)}</td>
                                 </tr>
                             `).join('')}
                             <tr style="background:#FEF3C7; font-weight:bold;">
-                                <td style="padding:6px;" colspan="2">TOTAL KESELURUHAN</td>
-                                <td style="text-align:right; padding:6px; color:#16A34A;">${window.formatRp(totalOmset)}</td>
-                                <td style="text-align:right; padding:6px; color:#EF4444;">${window.formatRp(totalModal)}</td>
-                                <td style="text-align:right; padding:6px; color:#D97706;">${window.formatRp(totalCuan)}</td>
+                                <td style="padding:6px; border:1px solid #CBD5E1;">TOTAL KESELURUHAN</td>
+                                <td style="padding:6px; border:1px solid #CBD5E1; text-align:center;">${totalTrx} TRX</td>
+                                <td style="text-align:right; padding:6px; border:1px solid #CBD5E1; color:#16A34A;">${window.formatRp(totalOmset)}</td>
+                                <td style="text-align:right; padding:6px; border:1px solid #CBD5E1; color:#EF4444;">${window.formatRp(totalModal)}</td>
+                                <td style="text-align:right; padding:6px; border:1px solid #CBD5E1; color:#D97706;">${window.formatRp(totalCuan)}</td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <table style="width: 100%; font-size: 12px; margin-top: 40px; border: none; text-align: center;">
+                    <h3 style="font-size: 12.5px; background: #DCFCE7; color: #166534; padding: 6px 10px; margin-bottom: 8px; border-radius: 4px;">2. RAPOR LABA BERSIH, OPERASIONAL &amp; CLOSING (KEMBALI KE MODAL POKOK)</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 14px;">
+                        <tbody>
+                            <tr>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1;"><b>(+) Total Cuan Kotor (ATM + Konter + Service)</b></td>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1; text-align:right; font-weight:bold; color:#D97706;">${window.formatRp(rapor.totalCuan)}</td>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1; font-size:10px; color:#475569;">ATM: ${window.formatRp(rapor.cuanAtm)} • Konter: ${window.formatRp(rapor.cuanKonter)} • Service: ${window.formatRp(rapor.cuanService)}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1;"><b>(-) Biaya Operasional Toko (${rapor.countOperasional}x)</b></td>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1; text-align:right; font-weight:bold; color:#DC2626;">-${window.formatRp(rapor.totalOperasional)}</td>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1; font-size:10px; color:#475569;">Pengeluaran operasional pada periode ini</td>
+                            </tr>
+                            <tr style="background:#ECFDF5;">
+                                <td style="padding:6px 8px; border:1px solid #CBD5E1;"><b>(=) LABA BERSIH MURNI TOKO</b></td>
+                                <td style="padding:6px 8px; border:1px solid #CBD5E1; text-align:right; font-weight:900; color:#047857; font-size:12px;">${window.formatRp(rapor.labaBersihMurni)}</td>
+                                <td style="padding:6px 8px; border:1px solid #CBD5E1; font-size:10px; color:#065F46;">Rata-rata: ${window.formatRp(rapor.avgLabaBersihPerHari)} / hari aktif (${rapor.activeDaysCount || 1} hari)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1;"><b>(-) Sudah Disetor / Ditarik Owner (${rapor.countSetoranOwner}x)</b></td>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1; text-align:right; font-weight:bold; color:#DC2626;">-${window.formatRp(rapor.totalSetoranOwner)}</td>
+                                <td style="padding:5px 8px; border:1px solid #CBD5E1; font-size:10px; color:#475569;">Sisa Laba Bersih Periode Ini: <b>${window.formatRp(rapor.sisaLabaBersihPeriode)}</b></td>
+                            </tr>
+                            <tr style="background:#FEF3C7;">
+                                <td style="padding:6px 8px; border:1px solid #CBD5E1;"><b>JATAH PROFIT SIAP TARIK SAAT CLOSING (KEMBALI KE MODAL POKOK)</b></td>
+                                <td style="padding:6px 8px; border:1px solid #CBD5E1; text-align:right; font-weight:900; color:#B45309; font-size:12px;">${window.formatRp(rapor.infoHarta.jatahProfitSiapSetor)}</td>
+                                <td style="padding:6px 8px; border:1px solid #CBD5E1; font-size:10px; color:#78350F;">Harta Riil: ${window.formatRp(rapor.infoHarta.totalHartaAktual)} • Modal Pokok: ${window.formatRp(rapor.infoHarta.targetModalPokok)} (Kas: ${window.formatRp(rapor.infoHarta.kasCairAktual)}, Stok: ${window.formatRp(stokDanPart)}, Piutang: ${window.formatRp(piutangAktif)})</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table style="width: 100%; font-size: 12px; margin-top: 28px; border: none; text-align: center;">
                         <tr>
                             <td style="border: none; width: 100%; padding: 10px; text-align: right;">
                                 Mengetahui (Owner Zencell),<br><br><br><br>
@@ -16269,7 +16601,7 @@
                 </div>
             `;
 
-            window.catatLogAktivitas('CETAK PDF', `Mencetak laporan PDF pembukuan periode ${mode === 'DAILY' ? window.formatTanggalDDMMYY(targetDate) : targetMonth}`);
+            window.catatLogAktivitas('CETAK PDF', `Mencetak laporan PDF pembukuan periode ${meta.labelPeriode}`);
             window.print();
             setTimeout(() => { printReport.style.display = 'none'; }, 1000);
         };
@@ -20396,57 +20728,136 @@
                 }
             }
 
-            // 2. HITUNG METRIK UNTUK TAB LAPORAN (rekapMap)
-            const rMode = document.getElementById('rekapModeSelect')?.value || 'DAILY';
-            const rDate = document.getElementById('rekapDatePicker')?.value || window.getTodayIso();
-            const rMonth = document.getElementById('rekapMonthPicker')?.value || window.getCurrentMonthIso();
+            // 2. HITUNG METRIK UNTUK TAB LAPORAN (rekapMap, Laba Bersih, Operasional & Closing Akhir Bulan)
+            const rapor = window.hitungRaporPeriodeLaporan();
+            const { meta, rekapMap, totalTrx: rTotalTrx, totalOmset: rTotalOmset, totalModal: rTotalModal, totalCuan: rCuanTotal, cuanAtm: rCuanAtm, cuanKonter: rCuanKonter, cuanService: rCuanService } = rapor;
 
-            let rekapMap = {};
-            window.kategoriList.filter(k => k !== 'PIUTANG' && k !== 'PINDAH_SALDO').forEach(k => { rekapMap[k] = { count: 0, omset: 0, modal: 0, cuan: 0 }; });
+            const elBadgePeriode = document.getElementById('rekapPeriodeRangeBadge');
+            if (elBadgePeriode) elBadgePeriode.innerText = meta.badgeText;
 
-            let rCuanTotal = 0, rCuanAtm = 0, rCuanKonter = 0, rCuanService = 0;
-
-            window.transaksiJurnal.forEach(t => {
-                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT' || window.isTransaksiPindahSaldo(t)) return;
-                if ((rMode === 'DAILY' && t.isoDate === rDate) || (rMode === 'MONTHLY' && t.isoDate?.startsWith(rMonth))) {
-                    const countWeight = Number(t.archivedCount || 1);
-                    if (window.isTransaksiPelunasanPiutang(t)) {
-                        const cuanPiutang = Number(t.cuan || 0);
-                        const pRef = window.piutangList.find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
-                        const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
-                        if (!rekapMap[katAsli]) rekapMap[katAsli] = { count: 0, omset: 0, modal: 0, cuan: 0 };
-                        rekapMap[katAsli].count += countWeight;
-                        if (cuanPiutang > 0) {
-                            rekapMap[katAsli].cuan += cuanPiutang;
-                            rCuanTotal += cuanPiutang;
-                            if (window.katAtm.includes(katAsli)) rCuanAtm += cuanPiutang;
-                            else if (window.katKonter.includes(katAsli)) rCuanKonter += cuanPiutang;
-                            else if (window.katService.includes(katAsli)) rCuanService += cuanPiutang;
-                        }
-                        return;
-                    }
-                    if (!rekapMap[t.kat]) rekapMap[t.kat] = { count: 0, omset: 0, modal: 0, cuan: 0 };
-                    rekapMap[t.kat].omset += Number(t.hargaJual || 0);
-                    rekapMap[t.kat].modal += Number(t.hargaModal || 0);
-                    rekapMap[t.kat].cuan += Number(t.cuan || 0);
-
-                    rCuanTotal += Number(t.cuan || 0);
-                    if (window.katAtm.includes(t.kat)) rCuanAtm += Number(t.cuan || 0);
-                    if (window.katKonter.includes(t.kat)) rCuanKonter += Number(t.cuan || 0);
-                    if (window.katService.includes(t.kat)) rCuanService += Number(t.cuan || 0);
-
-                    rekapMap[t.kat].count += countWeight;
-                }
-            });
+            const elLblRekapTotal = document.getElementById('lblRekapCuanTotal');
+            if (elLblRekapTotal) {
+                elLblRekapTotal.innerText = meta.mode === 'MONTHLY'
+                    ? 'TOTAL CUAN BULANAN (KOTOR)'
+                    : (meta.mode === 'WEEKLY' ? 'TOTAL CUAN MINGGUAN (7 HARI)' : 'TOTAL CUAN HARIAN');
+            }
 
             const elValRekapTotal = document.getElementById('valRekapCuanTotal');
             if (elValRekapTotal) elValRekapTotal.innerText = window.formatRp(rCuanTotal);
+            const elSubRekapTotal = document.getElementById('subRekapCuanTotal');
+            if (elSubRekapTotal) {
+                elSubRekapTotal.innerText = meta.mode === 'DAILY'
+                    ? `${rTotalTrx} Transaksi • Omset ${window.formatRp(rTotalOmset)}`
+                    : `${rTotalTrx} Trx (${rapor.activeDaysCount || 1} Hari Aktif • Rata2 ${window.formatRp(rapor.avgCuanPerHari)}/hr)`;
+            }
+
+            const pctAtm = rCuanTotal > 0 ? ((rCuanAtm / rCuanTotal) * 100).toFixed(1) : '0.0';
+            const pctKonter = rCuanTotal > 0 ? ((rCuanKonter / rCuanTotal) * 100).toFixed(1) : '0.0';
+            const pctService = rCuanTotal > 0 ? ((rCuanService / rCuanTotal) * 100).toFixed(1) : '0.0';
+
             const elValRekapAtm = document.getElementById('valRekapCuanAtm');
             if (elValRekapAtm) elValRekapAtm.innerText = window.formatRp(rCuanAtm);
+            const elSubRekapAtm = document.getElementById('subRekapCuanAtm');
+            if (elSubRekapAtm) elSubRekapAtm.innerText = `${pctAtm}% dari total cuan`;
+
             const elValRekapKonter = document.getElementById('valRekapCuanKonter');
             if (elValRekapKonter) elValRekapKonter.innerText = window.formatRp(rCuanKonter);
+            const elSubRekapKonter = document.getElementById('subRekapCuanKonter');
+            if (elSubRekapKonter) elSubRekapKonter.innerText = `${pctKonter}% dari total cuan`;
+
             const elValRekapService = document.getElementById('valRekapCuanService');
             if (elValRekapService) elValRekapService.innerText = window.formatRp(rCuanService);
+            const elSubRekapService = document.getElementById('subRekapCuanService');
+            if (elSubRekapService) elSubRekapService.innerText = `${pctService}% dari total cuan`;
+
+            // Render Panel Rapor Laba Bersih, Operasional & Closing Akhir Bulan
+            const elJudulClosing = document.getElementById('lblJudulPanelClosing');
+            if (elJudulClosing) {
+                elJudulClosing.innerHTML = meta.mode === 'MONTHLY'
+                    ? `🏆 RAPOR CLOSING AKHIR BULAN (${meta.targetMonth}) &amp; KALKULATOR KEMBALI KE MODAL POKOK`
+                    : (meta.mode === 'WEEKLY'
+                        ? `🗓️ EVALUASI MINGGUAN (7 HARI: ${meta.labelPeriode}) &amp; POSISI MODAL POKOK`
+                        : `📅 RINGKASAN LABA BERSIH HARIAN (${meta.labelPeriode}) &amp; POSISI MODAL POKOK`);
+            }
+            const elGridClosing = document.getElementById('bodyPanelRaporClosingGrid');
+            if (elGridClosing) {
+                const stokDanPart = Number(window._lastRealtimeStok || 0);
+                const piutangAktif = Number(window._lastRealtimePiutang || 0);
+                const selAudit = rapor.infoHarta.selisihAudit;
+                const badgeAuditHtml = selAudit === 0
+                    ? `<span style="background:#DCFCE7; color:#166534; border:1px solid #86EFAC; padding:2px 7px; border-radius:6px; font-weight:900; font-size:10px;">🟢 PAS / BALANCE (Rp 0)</span>`
+                    : (selAudit < 0
+                        ? `<span style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:2px 7px; border-radius:6px; font-weight:900; font-size:10px;">🔴 KURANG ${window.formatRp(selAudit)}</span>`
+                        : `<span style="background:#E0F2FE; color:#075985; border:1px solid #7DD3FC; padding:2px 7px; border-radius:6px; font-weight:900; font-size:10px;">🔵 LEBIH +${window.formatRp(selAudit)}</span>`);
+
+                elGridClosing.innerHTML = `
+                    <!-- KOTAK 1: LABA BERSIH MURNI TOKO -->
+                    <div style="background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; padding:10px 12px;">
+                        <div style="font-size:10.5px; font-weight:900; color:#0F172A; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>🧮 1. PERHITUNGAN LABA BERSIH TOKO</span>
+                            <span style="font-size:9.5px; color:#64748B; font-weight:700;">${rapor.activeDaysCount || 1} Hari Aktif</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                            <span style="color:#475569;">(+) Total Cuan Kotor (${rTotalTrx} Trx):</span>
+                            <b style="color:#D97706;">${window.formatRp(rCuanTotal)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px; padding-bottom:6px; border-bottom:1px dashed #CBD5E1;">
+                            <span style="color:#475569;">(-) Biaya Operasional (${rapor.countOperasional}x):</span>
+                            <b style="color:#DC2626;">-${window.formatRp(rapor.totalOperasional)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#ECFDF5; border:1px solid #A7F3D0; padding:6px 8px; border-radius:7px;">
+                            <div>
+                                <div style="font-size:10px; font-weight:900; color:#065F46;">💰 LABA BERSIH MURNI</div>
+                                <div style="font-size:9px; color:#047857; font-weight:700;">Rata2: ${window.formatRp(rapor.avgLabaBersihPerHari)} / hari</div>
+                            </div>
+                            <div style="font-size:14px; font-weight:900; color:#047857;">${window.formatRp(rapor.labaBersihMurni)}</div>
+                        </div>
+                    </div>
+
+                    <!-- KOTAK 2: REKAP SETORAN OWNER & SISA PROFIT SIAP TARIK -->
+                    <div style="background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; padding:10px 12px;">
+                        <div style="font-size:10.5px; font-weight:900; color:#0F172A; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>💸 2. PENARIKAN PROFIT &amp; JATAH CLOSING</span>
+                            <span style="font-size:9.5px; color:#B45309; font-weight:800;">Siap Tarik Owner</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                            <span style="color:#475569;">Sudah Ditarik Owner (${rapor.countSetoranOwner}x):</span>
+                            <b style="color:#DC2626;">-${window.formatRp(rapor.totalSetoranOwner)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px; padding-bottom:6px; border-bottom:1px dashed #CBD5E1;">
+                            <span style="color:#475569;">Sisa Laba Bersih Periode Ini:</span>
+                            <b style="color:#0284C7;">${window.formatRp(rapor.sisaLabaBersihPeriode)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#FEF3C7; border:1px solid #FCD34D; padding:6px 8px; border-radius:7px;">
+                            <div>
+                                <div style="font-size:10px; font-weight:900; color:#92400E;">🏆 JATAH SIAP TARIK CLOSING</div>
+                                <div style="font-size:9px; color:#B45309; font-weight:700;">Agar kembali pas ke Modal Pokok</div>
+                            </div>
+                            <div style="font-size:14px; font-weight:900; color:#B45309;">${window.formatRp(rapor.infoHarta.jatahProfitSiapSetor)}</div>
+                        </div>
+                    </div>
+
+                    <!-- KOTAK 3: POSISI NERACA HARTA KONTER VS MODAL POKOK -->
+                    <div style="background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; padding:10px 12px;">
+                        <div style="font-size:10.5px; font-weight:900; color:#0F172A; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap;">
+                            <span>🏦 3. NERACA HARTA VS MODAL POKOK</span>
+                            ${badgeAuditHtml}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:10.5px; margin-bottom:3px; color:#334155;">
+                            <span>Kas &amp; Bank Cair + Stok + Piutang:</span>
+                            <b>${window.formatRp(rapor.infoHarta.kasCairAktual)} + ${window.formatRp(stokDanPart)} + ${window.formatRp(piutangAktif)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                            <span style="color:#475569;">Total Harta Riil Konter Saat Ini:</span>
+                            <b style="color:#047857;">${window.formatRp(rapor.infoHarta.totalHartaAktual)}</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; padding-top:4px; border-top:1px dashed #CBD5E1;">
+                            <span style="color:#475569;">Target Modal Pokok Konter:</span>
+                            <b style="color:#1E3A8A;">${window.formatRp(rapor.infoHarta.targetModalPokok)}</b>
+                        </div>
+                    </div>
+                `;
+            }
 
             const elBodyRekap = document.getElementById('bodyRekapKategori');
             if (elBodyRekap) {
@@ -20459,6 +20870,18 @@
                         <td class="text-cuan"><b>${window.formatRp(rekapMap[k].cuan)}</b></td>
                     </tr>
                 `).join('');
+            }
+            const elFootRekap = document.getElementById('footRekapKategori');
+            if (elFootRekap) {
+                elFootRekap.innerHTML = `
+                    <tr style="background:#FEF3C7; font-weight:900; border-top:2px solid #F59E0B;">
+                        <td><b>TOTAL KESELURUHAN (${meta.mode === 'MONTHLY' ? 'BULANAN' : (meta.mode === 'WEEKLY' ? '7 HARI' : 'HARIAN')})</b></td>
+                        <td style="text-align:center;"><b>${rTotalTrx} TRX</b></td>
+                        <td class="text-kredit"><b>${window.formatRp(rTotalOmset)}</b></td>
+                        <td class="text-debit"><b>${window.formatRp(rTotalModal)}</b></td>
+                        <td class="text-cuan"><b>${window.formatRp(rCuanTotal)}</b></td>
+                    </tr>
+                `;
             }
         };
 
