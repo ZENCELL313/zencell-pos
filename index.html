@@ -12406,15 +12406,19 @@
             const content = overlay
                 ? overlay.querySelector('.modal-content')
                 : (targetEl.classList && targetEl.classList.contains('modal-content') ? targetEl : null);
-            if (overlay) {
+            if (overlay && overlay.classList.contains('is-modal-dragged')) {
                 overlay.classList.remove('is-modal-dragged');
             }
             if (content) {
-                content.classList.remove('is-dragging');
-                content.dataset.dragX = '0';
-                content.dataset.dragY = '0';
-                content.style.setProperty('--drag-x', '0px');
-                content.style.setProperty('--drag-y', '0px');
+                if (content.classList.contains('is-dragging')) {
+                    content.classList.remove('is-dragging');
+                }
+                if (content.dataset.dragX !== '0' || content.dataset.dragY !== '0') {
+                    content.dataset.dragX = '0';
+                    content.dataset.dragY = '0';
+                    content.style.setProperty('--drag-x', '0px');
+                    content.style.setProperty('--drag-y', '0px');
+                }
             }
         };
 
@@ -12515,9 +12519,10 @@
                 activeContent.style.setProperty('--drag-y', clampedY + 'px');
 
                 if (activeOverlay) {
-                    if (Math.abs(clampedX) > 8 || Math.abs(clampedY) > 8) {
+                    const shouldBeDragged = Math.abs(clampedX) > 8 || Math.abs(clampedY) > 8;
+                    if (shouldBeDragged && !activeOverlay.classList.contains('is-modal-dragged')) {
                         activeOverlay.classList.add('is-modal-dragged');
-                    } else {
+                    } else if (!shouldBeDragged && activeOverlay.classList.contains('is-modal-dragged')) {
                         activeOverlay.classList.remove('is-modal-dragged');
                     }
                 }
@@ -12579,11 +12584,17 @@
                 }
             }, true);
 
-            // Observer otomatis: setiap kali modal dibuka atau ditutup, reset posisinya kembali ke tengah (default awal)
+            // Observer otomatis: hanya reset posisi saat status buka/tutup (.show) benar-benar berubah (bebas loop)
             const modalAttrObserver = new MutationObserver(function(mutations) {
                 mutations.forEach(function(m) {
-                    if (m.type === 'attributes' && m.target && m.target.classList && m.target.classList.contains('modal-overlay')) {
-                        window.resetModalDragPosition(m.target);
+                    const ov = m.target;
+                    if (m.type === 'attributes' && ov && ov.classList && ov.classList.contains('modal-overlay')) {
+                        const isNowOpen = ov.classList.contains('show');
+                        const wasOpen = ov.dataset.modalWasOpen === '1';
+                        if (isNowOpen !== wasOpen) {
+                            ov.dataset.modalWasOpen = isNowOpen ? '1' : '0';
+                            window.resetModalDragPosition(ov);
+                        }
                     }
                 });
             });
@@ -12593,7 +12604,8 @@
                 document.querySelectorAll('.modal-overlay').forEach(function(ov) {
                     if (!ov.dataset.dragResetObserved) {
                         ov.dataset.dragResetObserved = '1';
-                        modalAttrObserver.observe(ov, { attributes: true, attributeFilter: ['class', 'style'] });
+                        ov.dataset.modalWasOpen = ov.classList.contains('show') ? '1' : '0';
+                        modalAttrObserver.observe(ov, { attributes: true, attributeFilter: ['class'] });
                     }
                 });
             }
