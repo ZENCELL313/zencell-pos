@@ -2009,17 +2009,62 @@
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(15, 23, 42, 0.65); display: flex; justify-content: center; align-items: center; 
-            z-index: 99996; opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 99996; opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s ease, background 0.2s ease;
         }
         .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-overlay.show.is-modal-dragged { background: rgba(15, 23, 42, 0.28); }
         
         .modal-content { 
+            --drag-x: 0px;
+            --drag-y: 0px;
+            position: relative;
             background: var(--card); color: var(--text); width: 95%; max-width: 500px; padding: 20px; 
             border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; 
-            border: 1px solid var(--border); transform: scale(0.85); transition: transform 0.25s ease;
+            border: 1px solid var(--border);
+            transform: translate3d(var(--drag-x, 0px), var(--drag-y, 0px), 0) scale(0.85);
+            transition: transform 0.25s ease, box-shadow 0.2s ease;
             margin: auto;
         }
-        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-overlay.show .modal-content {
+            transform: translate3d(var(--drag-x, 0px), var(--drag-y, 0px), 0) scale(1);
+        }
+        .modal-content.is-dragging {
+            transition: none !important;
+            user-select: none !important;
+            cursor: grabbing !important;
+            box-shadow: 0 22px 48px rgba(15, 23, 42, 0.45) !important;
+        }
+        .modal-drag-pill {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2px 0 6px 0;
+            margin-top: -8px;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+        .modal-drag-pill span {
+            width: 42px;
+            height: 4.5px;
+            border-radius: 999px;
+            background: #CBD5E1;
+            transition: background 0.15s ease, width 0.15s ease;
+        }
+        .modal-drag-pill:hover span,
+        .modal-content.is-dragging .modal-drag-pill span {
+            background: var(--primary);
+            width: 54px;
+        }
+        .modal-content > div:first-of-type {
+            cursor: grab;
+            touch-action: none;
+        }
+        .modal-content.is-dragging > div:first-of-type,
+        .modal-content.is-dragging .modal-drag-pill {
+            cursor: grabbing !important;
+        }
 
         .modal-content.modal-settings { max-width: 780px; width: 95%; max-height: 92vh; padding: 20px 24px; }
         .settings-nav-tabs { display: flex; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -2067,9 +2112,9 @@
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
-                max-width: 210mm !important;
-                height: 148mm !important;
-                max-height: 100vh !important;
+                max-width: 202mm !important;
+                height: 134mm !important;
+                max-height: 134mm !important;
                 margin: 0 auto !important;
                 padding: 0 !important;
                 background: #FFFFFF !important;
@@ -2078,7 +2123,9 @@
                 font-size: 10.5px !important;
                 box-sizing: border-box !important;
                 page-break-after: avoid !important;
+                page-break-before: avoid !important;
                 page-break-inside: avoid !important;
+                break-after: avoid !important;
                 break-inside: avoid !important;
                 overflow: hidden !important;
             }
@@ -2106,23 +2153,25 @@
             }
         }
 
-        /* TATA LETAK NOTA SERVICE A5 (210mm x 148mm) DIBAGI 2 PRESISI & SENTRAL (2 x A6 PORTRAIT) */
+        /* TATA LETAK NOTA SERVICE A5 (SAFE PRINTABLE AREA 202mm x 134mm AGAR 1 HALAMAN MURNI DI PRINTER HP 415 / INKJET) */
         .nota-a5-sheet {
             display: grid;
             grid-template-columns: 50% 50%;
             width: 100%;
-            height: 148mm;
-            max-height: 100vh;
+            max-width: 202mm;
+            height: 134mm;
+            max-height: 134mm;
             margin: 0 auto;
             box-sizing: border-box;
             background: #FFFFFF;
             align-items: stretch;
+            overflow: hidden;
         }
         .nota-half {
             width: 100%;
             height: 100%;
             min-width: 0;
-            padding: 4.5mm 5mm;
+            padding: 2mm 3.5mm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -2150,7 +2199,7 @@
             height: 100%;
             border: 1.5px solid #047857;
             border-radius: 8px;
-            padding: 8px 10px;
+            padding: 6px 9px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -2276,14 +2325,14 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 4px;
-            margin: 2px 0;
+            gap: 3px;
+            margin: 1px 0;
             min-height: 0;
         }
         .nota-section {
             border: 1px solid #CBD5E1;
             border-radius: 6px;
-            padding: 5px 8px;
+            padding: 4px 7px;
             background: #FFFFFF;
             box-sizing: border-box;
         }
@@ -2357,7 +2406,7 @@
             min-width: 105px;
         }
         .nota-sign-space {
-            height: 24px;
+            height: 18px;
         }
         .nota-bottom-banner {
             text-align: center;
@@ -10290,7 +10339,7 @@
                 document.head.appendChild(styleEl);
             }
             if (mode === 'NOTA_A5') {
-                styleEl.innerHTML = '@page { size: A5 landscape; margin: 0mm; }';
+                styleEl.innerHTML = '@page { size: A5 landscape; margin: 0mm; } @media print { html, body { width: 100% !important; height: 134mm !important; max-height: 134mm !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; } }';
             } else if (mode === 'REPORT_A4') {
                 styleEl.innerHTML = '@page { size: A4 portrait; margin: 7mm 8mm; } @media print { #printAreaReport { padding: 2mm !important; } }';
             } else {
@@ -12347,6 +12396,215 @@
                 }
             }
         }, { passive: false });
+
+        // FITUR GESER SEMUA POPUP / MODAL (DRAGGABLE) & RESET OTOMATIS KE POSISI AWAL SAAT DIBUKA KEMBALI
+        window.resetModalDragPosition = function(targetEl) {
+            if (!targetEl) return;
+            const overlay = targetEl.classList && targetEl.classList.contains('modal-overlay')
+                ? targetEl
+                : targetEl.closest ? targetEl.closest('.modal-overlay') : null;
+            const content = overlay
+                ? overlay.querySelector('.modal-content')
+                : (targetEl.classList && targetEl.classList.contains('modal-content') ? targetEl : null);
+            if (overlay) {
+                overlay.classList.remove('is-modal-dragged');
+            }
+            if (content) {
+                content.classList.remove('is-dragging');
+                content.dataset.dragX = '0';
+                content.dataset.dragY = '0';
+                content.style.setProperty('--drag-x', '0px');
+                content.style.setProperty('--drag-y', '0px');
+            }
+        };
+
+        (function initUniversalDraggableModals() {
+            let activeContent = null;
+            let activeOverlay = null;
+            let startClientX = 0;
+            let startClientY = 0;
+            let initialDragX = 0;
+            let initialDragY = 0;
+            let hasMoved = false;
+            let suppressOverlayClickUntil = 0;
+
+            function ensureModalDragHandles() {
+                document.querySelectorAll('.modal-overlay .modal-content').forEach(function(content) {
+                    if (!content.querySelector(':scope > .modal-drag-pill')) {
+                        const pill = document.createElement('div');
+                        pill.className = 'modal-drag-pill';
+                        pill.title = 'Tahan & geser untuk memindahkan popup (Klik 2x untuk kembali ke posisi tengah)';
+                        pill.innerHTML = '<span></span>';
+                        pill.addEventListener('dblclick', function(ev) {
+                            ev.stopPropagation();
+                            window.resetModalDragPosition(content);
+                        });
+                        content.insertBefore(pill, content.firstChild);
+                    }
+                    const headerFirst = content.querySelector(':scope > div:not(.modal-drag-pill)');
+                    if (headerFirst && !headerFirst.dataset.dblClickResetBound) {
+                        headerFirst.dataset.dblClickResetBound = '1';
+                        headerFirst.addEventListener('dblclick', function(ev) {
+                            if (ev.target && ev.target.closest('button, input, select, textarea, a')) return;
+                            window.resetModalDragPosition(content);
+                        });
+                    }
+                });
+            }
+
+            function canStartModalDrag(target, content) {
+                if (!target || !content) return false;
+                if (target.closest('.modal-drag-pill')) return true;
+                // Jangan mulai drag jika klik pada elemen input / kontrol interaktif
+                if (target.closest('input, select, textarea, button, a, label, [contenteditable="true"], .settings-nav-tabs, table, datalist, option')) {
+                    return false;
+                }
+                // Jangan mulai drag jika klik tepat pada scrollbar kanan modal-content
+                const rect = content.getBoundingClientRect();
+                if (content.scrollHeight > content.clientHeight && (rect.right - (window._lastDownClientX || 0)) < 18) {
+                    return false;
+                }
+                return true;
+            }
+
+            function onPointerStart(clientX, clientY, target, e) {
+                const content = target && target.closest ? target.closest('.modal-overlay.show .modal-content') : null;
+                if (!content) return;
+                window._lastDownClientX = clientX;
+                if (!canStartModalDrag(target, content)) return;
+
+                activeContent = content;
+                activeOverlay = content.closest('.modal-overlay');
+                startClientX = clientX;
+                startClientY = clientY;
+                initialDragX = parseFloat(content.dataset.dragX || '0') || 0;
+                initialDragY = parseFloat(content.dataset.dragY || '0') || 0;
+                hasMoved = false;
+                content.classList.add('is-dragging');
+                if (e && target.closest('.modal-drag-pill') && e.cancelable) {
+                    e.preventDefault();
+                }
+            }
+
+            function onPointerMove(clientX, clientY, e) {
+                if (!activeContent) return;
+                const zoomVal = parseFloat(document.documentElement.style.zoom) || 1;
+                const dx = (clientX - startClientX) / zoomVal;
+                const dy = (clientY - startClientY) / zoomVal;
+
+                if (!hasMoved && Math.hypot(dx, dy) < 3) return;
+                hasMoved = true;
+
+                if (e && e.cancelable) e.preventDefault();
+
+                const rawX = initialDragX + dx;
+                const rawY = initialDragY + dy;
+
+                // Batasi agar popup tidak hilang sepenuhnya keluar layar
+                const vw = (window.innerWidth || document.documentElement.clientWidth || 1024) / zoomVal;
+                const vh = (window.innerHeight || document.documentElement.clientHeight || 768) / zoomVal;
+                const maxOffsetX = Math.max(220, vw * 0.46);
+                const maxOffsetY = Math.max(160, vh * 0.44);
+
+                const clampedX = Math.max(-maxOffsetX, Math.min(maxOffsetX, Math.round(rawX)));
+                const clampedY = Math.max(-maxOffsetY, Math.min(maxOffsetY, Math.round(rawY)));
+
+                activeContent.dataset.dragX = String(clampedX);
+                activeContent.dataset.dragY = String(clampedY);
+                activeContent.style.setProperty('--drag-x', clampedX + 'px');
+                activeContent.style.setProperty('--drag-y', clampedY + 'px');
+
+                if (activeOverlay) {
+                    if (Math.abs(clampedX) > 8 || Math.abs(clampedY) > 8) {
+                        activeOverlay.classList.add('is-modal-dragged');
+                    } else {
+                        activeOverlay.classList.remove('is-modal-dragged');
+                    }
+                }
+            }
+
+            function onPointerEnd() {
+                if (!activeContent) return;
+                activeContent.classList.remove('is-dragging');
+                if (hasMoved) {
+                    suppressOverlayClickUntil = Date.now() + 120;
+                }
+                activeContent = null;
+                activeOverlay = null;
+                hasMoved = false;
+            }
+
+            document.addEventListener('mousedown', function(e) {
+                if (e.button !== 0) return;
+                onPointerStart(e.clientX, e.clientY, e.target, e);
+            }, true);
+
+            window.addEventListener('mousemove', function(e) {
+                if (!activeContent) return;
+                onPointerMove(e.clientX, e.clientY, e);
+            }, { passive: false });
+
+            window.addEventListener('mouseup', function() {
+                onPointerEnd();
+            }, true);
+
+            document.addEventListener('touchstart', function(e) {
+                if (!e.touches || e.touches.length !== 1) return;
+                const t = e.touches[0];
+                // Pada layar sentuh, geser popup dari bagian atas / header / pill agar scroll isi form tetap lancar
+                const target = e.target;
+                const content = target && target.closest ? target.closest('.modal-overlay.show .modal-content') : null;
+                if (!content) return;
+                const headerDiv = content.querySelector(':scope > div:not(.modal-drag-pill)');
+                const isHeaderOrPill = target.closest('.modal-drag-pill') || (headerDiv && headerDiv.contains(target));
+                if (!isHeaderOrPill) return;
+                onPointerStart(t.clientX, t.clientY, target, e);
+            }, { passive: false });
+
+            window.addEventListener('touchmove', function(e) {
+                if (!activeContent || !e.touches || e.touches.length !== 1) return;
+                const t = e.touches[0];
+                onPointerMove(t.clientX, t.clientY, e);
+            }, { passive: false });
+
+            window.addEventListener('touchend', function() {
+                onPointerEnd();
+            }, true);
+
+            // Cegah klik penutup overlay tidak sengaja tepat setelah selesai menggeser popup
+            document.addEventListener('click', function(e) {
+                if (Date.now() < suppressOverlayClickUntil && e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }
+            }, true);
+
+            // Observer otomatis: setiap kali modal dibuka atau ditutup, reset posisinya kembali ke tengah (default awal)
+            const modalAttrObserver = new MutationObserver(function(mutations) {
+                mutations.forEach(function(m) {
+                    if (m.type === 'attributes' && m.target && m.target.classList && m.target.classList.contains('modal-overlay')) {
+                        window.resetModalDragPosition(m.target);
+                    }
+                });
+            });
+
+            function bindAllModalOverlays() {
+                ensureModalDragHandles();
+                document.querySelectorAll('.modal-overlay').forEach(function(ov) {
+                    if (!ov.dataset.dragResetObserved) {
+                        ov.dataset.dragResetObserved = '1';
+                        modalAttrObserver.observe(ov, { attributes: true, attributeFilter: ['class', 'style'] });
+                    }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindAllModalOverlays);
+            } else {
+                bindAllModalOverlays();
+            }
+            window.addEventListener('load', bindAllModalOverlays);
+        })();
 
         window.applyKpiCollapseUI = function(isCollapsed) {
             document.body.classList.toggle('kpi-collapsed-mode', Boolean(isCollapsed));
