@@ -4193,8 +4193,10 @@
                         <span class="find-btn-label">CARI</span>
                         <span class="kbd-shortcut">Ctrl+F</span>
                     </button>
-                    <button class="btn-icon-hdr" id="btnUndo" onclick="doUndo()" title="Undo (Batal Langkah)" disabled>↩️</button>
-                    <button class="btn-icon-hdr" id="btnRedo" onclick="doRedo()" title="Redo (Ulang Langkah)" disabled>↪️</button>
+                    <button class="btn-icon-hdr" id="btnHeaderDashboardGabungan" onclick="window.openModalDashboardGabunganOwner()" title="Dashboard Ringkasan Gabungan: POS ZENCELL 1 + POS ZENCELL 2 (Khusus Owner)" style="display:none; background:linear-gradient(135deg, #059669, #0D9488); border:1px solid #6EE7B7; color:#FFFFFF; font-weight:900; font-size:10.5px; align-items:center; gap:3px; padding:0 8px;">
+                        <span>📊</span>
+                        <span>Z1+Z2</span>
+                    </button>
                     <button class="btn-icon-hdr" id="btnHeaderBranchSwitch" onclick="window.toggleSwitchCabangCepat()" title="Saklar Pindah Cabang Cepat: POS ZENCELL 1 ⇄ POS ZENCELL 2 (Khusus Owner)" style="display:none; background:rgba(15,23,42,0.38); border:1px solid rgba(125,211,252,0.75); color:#E0F2FE; font-weight:900; font-size:10.5px; align-items:center; gap:3px; padding:0 7px;">
                         <span>🏢</span>
                         <span id="lblHeaderBranchSwitch">Z1</span>
@@ -5200,6 +5202,246 @@
         </div>
     </div>
 
+    <!-- MODAL POPUP PREVIEW & CETAK NOTA THERMAL KHUSUS ACC / STOK OPNAME (OTOMATIS GABUNG MULTI-BARANG 1 KONSUMEN) -->
+    <div id="modalStrukAccOverlay" class="modal-overlay">
+        <div class="modal-box" style="max-width:740px;">
+            <div class="modal-header" style="background:linear-gradient(135deg, #D97706, #B45309);">
+                <div class="modal-title">🎧 Cetak Nota Thermal Pembelian &amp; Garansi ACC / Stok</div>
+                <button type="button" class="modal-close" onclick="closeModalStrukAcc()">✕</button>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1.18fr 0.82fr; gap:14px; align-items:start;">
+                <!-- KOLOM KIRI: DAFTAR BARANG ACC 1 KONSUMEN, GARANSI & OPSI GABUNG -->
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <input type="hidden" id="sacc_primaryTrxId" value="">
+                    <div id="sacc_groupAutoInfoBanner" style="background:#FFFBEB; border:1.5px solid #F59E0B; border-radius:9px; padding:8px 10px; font-size:10.5px; color:#92400E; line-height:1.35;">
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Nama Pembeli (Opsional di Nota)</label>
+                            <input type="text" id="sacc_namaPembeli" class="form-control" placeholder="Contoh: KAK RINA / UMUM" oninput="updateLivePreviewStrukAcc()">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Judul Nota Thermal</label>
+                            <input type="text" id="sacc_judulStruk" class="form-control" value="NOTA PEMBELIAN & GARANSI ACC" oninput="updateLivePreviewStrukAcc()">
+                        </div>
+                    </div>
+
+                    <!-- DAFTAR ITEM YANG TERCETAK DI NOTA INI -->
+                    <div style="background:#F8FAFC; border:1.5px solid #CBD5E1; border-radius:9px; padding:8px 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:6px; flex-wrap:wrap;">
+                            <span style="font-size:11px; font-weight:900; color:#0F172A;">🛒 Daftar Barang di Dalam 1 Nota Ini:</span>
+                            <span id="sacc_badgeCountItems" style="background:#FEF3C7; color:#B45309; border:1px solid #F59E0B; padding:1.5px 8px; border-radius:999px; font-size:10px; font-weight:900;">1 Barang</span>
+                        </div>
+                        <div id="sacc_selectedItemsList" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;"></div>
+                    </div>
+
+                    <!-- OPSI TAMBAH ITEM ACC LAIN DI HARI YANG SAMA (JIKA KASIR INPUT TERPISAH) -->
+                    <div id="sacc_otherSameDayWrap" style="display:none; background:#F1F5F9; border:1px dashed #94A3B8; border-radius:9px; padding:7px 10px;">
+                        <div style="font-size:10px; font-weight:800; color:#334155; margin-bottom:5px;">
+                            ➕ Gabungkan Transaksi ACC Lain di Tanggal yang Sama (Jika Kasir Input Terpisah):
+                        </div>
+                        <div id="sacc_otherSameDayList" style="display:flex; flex-direction:column; gap:4px; max-height:110px; overflow-y:auto;"></div>
+                    </div>
+
+                    <div class="form-group" style="margin:0;">
+                        <label>Catatan Garansi / Pesan Bawah Nota</label>
+                        <input type="text" id="sacc_catatanFooter" class="form-control" value="Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus." oninput="updateLivePreviewStrukAcc()">
+                    </div>
+                </div>
+
+                <!-- KOLOM KANAN: LIVE PREVIEW STRUK THERMAL ACC & TOMBOL CETAK -->
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="background:#F8FAFC; border:1.5px solid #CBD5E1; border-radius:12px; padding:12px; text-align:center;">
+                        <div style="font-size:10.5px; font-weight:800; color:#475569; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>👁️ PREVIEW NOTA THERMAL ACC</span>
+                            <span id="lblPreviewUkuranStrukAcc" style="background:#FEF3C7; color:#92400E; padding:1px 7px; border-radius:999px; font-size:9.5px; font-weight:800;">58mm</span>
+                        </div>
+                        <div id="livePreviewStrukAccBox" style="background:#FFFFFF; border:1px dashed #64748B; padding:12px; margin:0 auto; max-width:290px; text-align:left; font-family:monospace; font-size:11px; color:#000000; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+                        </div>
+                    </div>
+
+                    <div style="background:#EFF6FF; border:1.5px solid #93C5FD; border-radius:10px; padding:8px 10px; font-size:10.5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
+                            <span id="btPrinterStatusBadgeModalAcc" style="font-weight:800; color:#1E40AF; font-size:10px;">🔴 Bluetooth: Cek Status</span>
+                            <button type="button" onclick="window.connectBluetoothPrinter()" style="background:#2563EB; color:#FFF; border:none; border-radius:6px; padding:3px 8px; font-size:9.5px; font-weight:800; cursor:pointer;">
+                                🔵 Pilih Printer BT
+                            </button>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                            <div>
+                                <label style="font-size:9px; font-weight:700; color:#475569; display:block; margin-bottom:2px;">Ukuran Kertas</label>
+                                <select id="sacc_quickPrinterUkuran" class="form-control" style="padding:4px 6px; font-size:10px; font-weight:800; height:auto;" onchange="window.onChangeQuickPrinterUkuran(this.value); window.updateLivePreviewStrukAcc();">
+                                    <option value="58mm">📏 Thermal 58mm</option>
+                                    <option value="80mm">📏 Thermal 80mm</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:9px; font-weight:700; color:#475569; display:block; margin-bottom:2px;">Mode Cetak HP/PC</label>
+                                <select id="sacc_quickPrinterMetode" class="form-control" style="padding:4px 6px; font-size:10px; font-weight:800; height:auto;" onchange="window.onChangeQuickPrinterMetode(this.value)">
+                                    <option value="OTOMATIS">⚡ Otomatis (BT/USB)</option>
+                                    <option value="BLUETOOTH_DIRECT">🔵 BT Langsung</option>
+                                    <option value="RAWBT_ANDROID">🤖 App RawBT HP</option>
+                                    <option value="BROWSER_PRINT">🖥️ Print Browser/USB</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn" style="background:linear-gradient(135deg, #D97706, #B45309); font-size:12.5px; font-weight:900; padding:11px; box-shadow:0 4px 12px rgba(217,119,6,0.35);" onclick="cetakStrukAccSekarang()">
+                        🖨️ CETAK NOTA ACC SEKARANG
+                    </button>
+
+                    <button type="button" class="btn" style="background:#16A34A; font-size:11px; font-weight:800; padding:9px;" onclick="kirimWaStrukAccGabungan()">
+                        📲 Kirim Nota ACC Ini ke WhatsApp
+                    </button>
+
+                    <button type="button" class="btn" style="background:#64748B; font-size:11px; padding:8px;" onclick="closeModalStrukAcc()">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP CEK FISIK STOK ETALASE SIMPEL (VOUCHER / SP / ACC) -->
+    <div id="modalCekFisikStokOverlay" class="modal-overlay">
+        <div class="modal-box" style="max-width:760px;">
+            <div class="modal-header" style="background:linear-gradient(135deg, #0284C7, #0369A1);">
+                <div class="modal-title">📋 Cek Fisik Stok Etalase (Audit Cepat Rak vs Sistem)</div>
+                <button type="button" class="modal-close" onclick="closeModalCekFisikStok()">✕</button>
+            </div>
+
+            <div style="background:#F0F9FF; border:1px solid #BAE6FD; border-radius:9px; padding:8px 11px; margin-bottom:10px; font-size:10.5px; color:#0C4A6E; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <div>💡 <b>Simpel &amp; Aman:</b> Ketik jumlah fisik di etalase pada kolom <b>Fisik Rak</b>. Sistem langsung menghitung mana yang <b>Pas ✅</b>, <b>Kurang 🔴</b>, atau <b>Lebih 🔵</b> tanpa mengubah database.</div>
+                <button type="button" onclick="isiOtomatisSemuaFisikSesuaiSistem()" style="background:#0284C7; color:#FFF; border:none; border-radius:6px; padding:4px 9px; font-size:10px; font-weight:800; cursor:pointer; white-space:nowrap;">⚡ Isi Semua = Sistem</button>
+            </div>
+
+            <!-- Bar Filter Kategori & Pencarian Cek Fisik -->
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                <div style="display:flex; gap:5px; flex-wrap:wrap;" id="cekFisikKatPills">
+                    <button type="button" class="stok-cat-pill active" data-cfkat="VOUCHER" onclick="setFilterCekFisikKat('VOUCHER')">🎫 VOUCHER</button>
+                    <button type="button" class="stok-cat-pill" data-cfkat="SP" onclick="setFilterCekFisikKat('SP')">📱 SP</button>
+                    <button type="button" class="stok-cat-pill" data-cfkat="ACC" onclick="setFilterCekFisikKat('ACC')">🎧 ACC</button>
+                    <button type="button" class="stok-cat-pill" data-cfkat="ALL" onclick="setFilterCekFisikKat('ALL')">🌐 SEMUA</button>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <select id="cekFisikFilterStatus" class="date-picker-input" onchange="renderTabelCekFisikStok()" style="padding:5px 8px; font-size:10.5px;">
+                        <option value="ALL">📊 Semua Barang</option>
+                        <option value="SELISIH">🔴 Hanya yang Selisih</option>
+                        <option value="SUDAH_CEK">✅ Sudah Diisi</option>
+                        <option value="BELUM_CEK">⏳ Belum Diisi</option>
+                    </select>
+                    <input type="text" id="cekFisikSearchInput" class="date-picker-input" placeholder="🔍 Cari barang..." oninput="renderTabelCekFisikStok()" style="width:155px; padding:5px 8px; font-size:10.5px;">
+                </div>
+            </div>
+
+            <!-- Ringkasan Cepat Cek Fisik -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(125px, 1fr)); gap:7px; margin-bottom:10px;">
+                <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:6px 9px;">
+                    <div style="font-size:9.5px; font-weight:800; color:#64748B;">SUDAH DICEK</div>
+                    <div id="valCekFisikProgress" style="font-size:13px; font-weight:900; color:#0F172A;">0 / 0 Barang</div>
+                </div>
+                <div style="background:#F0FDF4; border:1px solid #86EFAC; border-radius:8px; padding:6px 9px;">
+                    <div style="font-size:9.5px; font-weight:800; color:#166534;">✅ COCOK / PAS</div>
+                    <div id="valCekFisikPas" style="font-size:13px; font-weight:900; color:#15803D;">0 Barang</div>
+                </div>
+                <div style="background:#FEF2F2; border:1px solid #FCA5A5; border-radius:8px; padding:6px 9px;">
+                    <div style="font-size:9.5px; font-weight:800; color:#991B1B;">🔴 KURANG / HILANG</div>
+                    <div id="valCekFisikKurang" style="font-size:13px; font-weight:900; color:#DC2626;">0 Barang (Rp0)</div>
+                </div>
+                <div style="background:#EFF6FF; border:1px solid #93C5FD; border-radius:8px; padding:6px 9px;">
+                    <div style="font-size:9.5px; font-weight:800; color:#1E40AF;">🔵 LEBIH / SURPLUS</div>
+                    <div id="valCekFisikLebih" style="font-size:13px; font-weight:900; color:#2563EB;">0 Barang (Rp0)</div>
+                </div>
+            </div>
+
+            <div class="table-responsive" style="max-height:330px; overflow-y:auto; border:1px solid #CBD5E1; border-radius:8px;">
+                <table style="font-size:11px;">
+                    <thead style="position:sticky; top:0; z-index:2;">
+                        <tr>
+                            <th style="width:70px;">KAT</th>
+                            <th style="text-align:left;">NAMA BARANG</th>
+                            <th style="width:85px;">HARGA MODAL</th>
+                            <th style="width:75px;">DI SISTEM</th>
+                            <th style="width:115px;">FISIK RAK</th>
+                            <th style="width:130px;">STATUS / SELISIH</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyTabelCekFisikStok"></tbody>
+                </table>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px;">
+                <button type="button" class="btn" style="width:auto; background:#EF4444; padding:8px 12px; font-size:11px;" onclick="resetSemuaInputCekFisikStok()">🗑️ Reset Angka Cek</button>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" class="btn" style="width:auto; background:#16A34A; padding:8px 14px; font-size:11.5px; font-weight:900;" onclick="kirimWaHasilCekFisikStok()">📲 Kirim Laporan Cek Fisik ke WA</button>
+                    <button type="button" class="btn" style="width:auto; background:#64748B; padding:8px 14px; font-size:11.5px;" onclick="closeModalCekFisikStok()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP DASHBOARD RINGKASAN GABUNGAN OWNER (POS ZENCELL 1 + POS ZENCELL 2) -->
+    <div id="modalDashboardGabunganOwnerOverlay" class="modal-overlay">
+        <div class="modal-box" style="max-width:860px;">
+            <div class="modal-header" style="background:linear-gradient(135deg, #065F46, #0284C7);">
+                <div class="modal-title">📊 Dashboard Eksekutif Gabungan Owner (POS ZENCELL 1 + POS ZENCELL 2)</div>
+                <button type="button" class="modal-close" onclick="closeModalDashboardGabunganOwner()">✕</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:9px; padding:8px 11px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:11px; font-weight:900; color:#0F172A;">📅 Periode Rapor:</span>
+                    <select id="gabunganFilterMode" class="date-picker-input" onchange="onChangeFilterDashboardGabungan()" style="font-size:11px; font-weight:800;">
+                        <option value="TODAY">📆 Hari Ini</option>
+                        <option value="YESTERDAY">⏮️ Kemarin</option>
+                        <option value="MONTHLY" selected>🗓️ Bulan Ini (Berjalan)</option>
+                        <option value="CUSTOM_DATE">📅 Pilih Tanggal</option>
+                        <option value="CUSTOM_MONTH">🗓️ Pilih Bulan</option>
+                    </select>
+                    <input type="date" id="gabunganDatePicker" class="date-picker-input" style="display:none; font-size:11px;" onchange="renderDashboardGabunganOwner()">
+                    <input type="month" id="gabunganMonthPicker" class="date-picker-input" style="display:none; font-size:11px;" onchange="renderDashboardGabunganOwner()">
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <span id="lblStatusSyncGabungan" style="font-size:10px; font-weight:800; color:#047857;">🟢 Live Cloud</span>
+                    <button type="button" onclick="muatDanRenderDashboardGabunganOwner(true)" style="background:#0284C7; color:#FFF; border:none; border-radius:6px; padding:5px 10px; font-size:10.5px; font-weight:800; cursor:pointer;">🔄 Segarkan</button>
+                    <button type="button" onclick="kirimWaDashboardGabunganOwner()" style="background:#16A34A; color:#FFF; border:none; border-radius:6px; padding:5px 10px; font-size:10.5px; font-weight:800; cursor:pointer;">📲 Kirim WA</button>
+                </div>
+            </div>
+
+            <!-- 3 KARTU UTAMA GABUNGAN (Z1 + Z2) -->
+            <div id="boxKartuUtamaGabunganOwner" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:10px; margin-bottom:12px;">
+            </div>
+
+            <!-- TABEL KOMPARASI DETAIL ZENCELL 1 VS ZENCELL 2 VS TOTAL GABUNGAN -->
+            <div class="table-responsive" style="border:1.5px solid #CBD5E1; border-radius:10px;">
+                <table style="font-size:11.5px;">
+                    <thead>
+                        <tr style="background:#0F172A; color:#FFFFFF;">
+                            <th style="text-align:left; padding:8px 10px;">INDIKATOR KEUANGAN &amp; ASET KONTER</th>
+                            <th style="text-align:right; padding:8px 10px; background:#065F46;">🏢 POS ZENCELL 1</th>
+                            <th style="text-align:right; padding:8px 10px; background:#1E40AF;">🏢 POS ZENCELL 2</th>
+                            <th style="text-align:right; padding:8px 10px; background:#4C1D95;">🏆 TOTAL GABUNGAN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyTabelDashboardGabunganOwner">
+                        <tr><td colspan="4" style="text-align:center; padding:18px; color:#64748B;">⏳ Memuat data langsung dari Cloud Zencell 1 &amp; Zencell 2...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button type="button" class="btn" style="width:auto; background:#059669; padding:7px 12px; font-size:10.5px; font-weight:800;" onclick="switchCabangZencell('1')">🏢 Buka POS ZENCELL 1</button>
+                    <button type="button" class="btn" style="width:auto; background:#0284C7; padding:7px 12px; font-size:10.5px; font-weight:800;" onclick="switchCabangZencell('2')">🏢 Buka POS ZENCELL 2</button>
+                </div>
+                <button type="button" class="btn" style="width:auto; background:#64748B; padding:7px 16px; font-size:11px;" onclick="closeModalDashboardGabunganOwner()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
         <div class="card">
             <div class="kasir-sticky-header-zone" id="kasirStickyHeaderZone">
@@ -5240,7 +5482,7 @@
                     </select>
 
                     <div style="position:relative; display:flex; align-items:center; flex:1; min-width:175px; max-width:260px;">
-                        <input type="text" id="jurnalSearchInput" class="date-picker-input" placeholder="🔍 Cari ket / nama / nominal..." oninput="renderAll()" style="width:100%; padding-right:24px;">
+                        <input type="text" id="jurnalSearchInput" class="date-picker-input" placeholder="🔍 Cari ket / nama / nominal..." oninput="window.debouncedRenderAll()" style="width:100%; padding-right:24px;">
                         <button type="button" id="btnClearJurnalSearch" onclick="document.getElementById('jurnalSearchInput').value=''; renderAll();" style="display:none; position:absolute; right:5px; background:none; border:none; color:#EF4444; font-weight:800; font-size:11px; cursor:pointer;" title="Bersihkan Pencarian">✕</button>
                     </div>
                 </div>
@@ -5309,7 +5551,7 @@
                     </select>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                    <input type="text" id="tiketSearchInput" class="date-picker-input" placeholder="🔍 Cari pelanggan / HP / no tiket..." oninput="renderAll()" style="min-width:190px; cursor:text;">
+                    <input type="text" id="tiketSearchInput" class="date-picker-input" placeholder="🔍 Cari pelanggan / HP / no tiket..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="min-width:190px; cursor:text;">
                 </div>
             </div>
 
@@ -5347,7 +5589,7 @@
                     </select>
                     <input type="date" id="tiketArsipDatePicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
                     <input type="month" id="tiketArsipMonthPicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
-                    <input type="text" id="tiketArsipSearchInput" class="form-control" placeholder="🔍 Cari arsip service lunas..." oninput="renderAll()" style="width:185px; padding:4px 9px; font-size:11px; height:28px;">
+                    <input type="text" id="tiketArsipSearchInput" class="form-control" placeholder="🔍 Cari arsip service lunas..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="width:185px; padding:4px 9px; font-size:11px; height:28px;">
                 </div>
             </div>
             <div class="table-responsive">
@@ -5645,6 +5887,7 @@
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>📦 Stok Opname Realtime</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:linear-gradient(135deg, #0D9488, #0F766E); color:#FFF; font-weight:800;" onclick="openModalCekFisikStok()" title="Cek &amp; Cocokkan Hitungan Fisik Rak Etalase dengan Stok Sistem (Tanpa Mengubah Stok)">📋 Cek Fisik Etalase</button>
                     <button type="button" id="btnOpenMutasiStokCabang" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:linear-gradient(135deg, #4F46E5, #3730A3); color:#FFF; font-weight:800;" onclick="openModalMutasiStokCabang()" title="Kirim / Mutasi Stok ke Cabang Sebelah (Bisa Banyak Barang Sekaligus, Non-Omset)">📤 Kirim Stok ke Cabang</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#7C3AED; color:#FFF; font-weight:800;" onclick="document.getElementById('cardRekapMutasiStokCabang')?.scrollIntoView({behavior:'smooth'})" title="Lihat Tabel Rekapitulasi &amp; Riwayat Mutasi Stok Antar Cabang">📋 Rekap Mutasi Cabang</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#EA580C; color:#FFF;" onclick="openModalReturAcc()" title="Proses Retur / Komplain / Tukar Aksesoris (ACC) Konsumen">🔄 Retur / Tukar ACC</button>
@@ -5687,7 +5930,7 @@
 
                     <div class="stok-search-input-box">
                         <span class="stok-search-icon">🔍</span>
-                        <input type="text" id="stokSearchInput" placeholder="CARI NAMA BARANG / HARGA..." oninput="renderAll()" autocomplete="off">
+                        <input type="text" id="stokSearchInput" placeholder="CARI NAMA BARANG / HARGA..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" autocomplete="off">
                         <button type="button" id="btnClearStokSearch" class="stok-search-clear" onclick="resetFilterStokOpname()" title="Bersihkan Pencarian">✕</button>
                     </div>
                 </div>
@@ -5815,7 +6058,7 @@
                         <option value="OVERDUE_7">🔥 Lewat ≥ 7 Hari (Lama)</option>
                         <option value="TODAY">🆕 Utang Hari Ini</option>
                     </select>
-                    <input type="text" id="piutangAktifSearchInput" class="form-control" placeholder="🔍 Cari nama / ket..." oninput="renderAll()" style="width:165px; padding:4px 9px; font-size:11px; height:28px;">
+                    <input type="text" id="piutangAktifSearchInput" class="form-control" placeholder="🔍 Cari nama / ket..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="width:165px; padding:4px 9px; font-size:11px; height:28px;">
                     <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px;" onclick="openModalInputPiutang()">+ Catat Utang Baru</button>
                 </div>
             </div>
@@ -5880,7 +6123,7 @@
                         <option value="ALL">🌐 Semua Data</option>
                     </select>
                     <input type="month" id="piutangArsipMonthPicker" class="date-picker-input" style="display:none; padding:4px 8px; font-size:10.5px; height:28px;" onchange="renderAll()">
-                    <input type="text" id="piutangLunasSearchInput" class="form-control" placeholder="🔍 Cari arsip lunas..." oninput="renderAll()" style="width:165px; padding:4px 9px; font-size:11px; height:28px;">
+                    <input type="text" id="piutangLunasSearchInput" class="form-control" placeholder="🔍 Cari arsip lunas..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="width:165px; padding:4px 9px; font-size:11px; height:28px;">
                 </div>
             </div>
             <div class="table-responsive">
@@ -6109,7 +6352,7 @@
                                 <option value="SP">📱 SP (Perdana)</option>
                                 <option value="VOUCHER">🎫 VOUCHER</option>
                             </select>
-                            <input type="text" id="riwayatStokSearchInput" class="date-picker-input" placeholder="KETIK NAMA BARANG..." oninput="renderAll()" style="min-width:170px;">
+                            <input type="text" id="riwayatStokSearchInput" class="date-picker-input" placeholder="KETIK NAMA BARANG..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="min-width:170px;">
                         </div>
                         <span id="txtRiwayatStokSummary" style="font-size:11px; font-weight:800; color:var(--primary);">Total: Rp0</span>
                     </div>
@@ -6509,7 +6752,7 @@
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                     <span>📖 Database Master VLOOKUP (Khusus Input Manual)</span>
                     <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <input type="text" id="vlookupSearchInput" class="date-picker-input" placeholder="🔍 CARI KATA KUNCI / KATEGORI..." oninput="renderAll()" style="min-width:190px; padding:4px 8px; font-size:10.5px;">
+                        <input type="text" id="vlookupSearchInput" class="date-picker-input" placeholder="🔍 CARI KATA KUNCI / KATEGORI..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="min-width:190px; padding:4px 8px; font-size:10.5px;">
                         <span id="badgeCountMasterVlookup" style="font-size:10px; background:var(--primary); color:#FFF; padding:3px 8px; border-radius:999px; font-weight:800;">0 Kata Kunci</span>
                     </div>
                 </div>
@@ -9691,22 +9934,42 @@
         };
 
         window.saveLocalBackup = function() {
-            localStorage.setItem('zencell_transaksi', JSON.stringify(window.transaksiJurnal));
-            localStorage.setItem('zencell_stok', JSON.stringify(window.stokOpnameItems));
-            localStorage.setItem('zencell_piutang', JSON.stringify(window.piutangList));
-            localStorage.setItem('zencell_setoran', JSON.stringify(window.setoranOwnerList));
-            localStorage.setItem('zencell_sparepart', JSON.stringify(window.sparepartList));
-            localStorage.setItem('zencell_tiket_servis', JSON.stringify(window.tiketServisList));
-            localStorage.setItem('zencell_riwayat_belanja', JSON.stringify(window.riwayatBelanjaStok));
-            localStorage.setItem('zencell_operasional', JSON.stringify(window.operasionalList));
-            localStorage.setItem('zencell_log_aktivitas', JSON.stringify(window.logAktivitasList));
-            localStorage.setItem('zencell_riwayat_cek_laci', JSON.stringify(window.riwayatCekLaciList || []));
-            localStorage.setItem('zencell_batas_min', JSON.stringify(window.masterBatasMinSaldo));
-            localStorage.setItem('zencell_saldo_awal', JSON.stringify(window.masterSaldoAwal));
-            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
-            localStorage.setItem('zencell_karyawan', JSON.stringify(window.daftarKaryawan));
-            localStorage.setItem('zencell_vlookup', JSON.stringify(window.masterVlookup || {}));
-        }
+            const safeSetLs = (key, val) => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(val));
+                } catch (e) {
+                    // Jika kuota localStorage browser penuh di perangkat ini, pastikan TIDAK menghentikan sinkronisasi ke Firebase Cloud
+                    try {
+                        localStorage.removeItem('zencell_log_aktivitas');
+                        localStorage.setItem(key, JSON.stringify(val));
+                    } catch (_) {}
+                }
+            };
+            safeSetLs('zencell_transaksi', window.transaksiJurnal);
+            safeSetLs('zencell_stok', window.stokOpnameItems);
+            safeSetLs('zencell_piutang', window.piutangList);
+            safeSetLs('zencell_setoran', window.setoranOwnerList);
+            safeSetLs('zencell_sparepart', window.sparepartList);
+            safeSetLs('zencell_tiket_servis', window.tiketServisList);
+            safeSetLs('zencell_riwayat_belanja', window.riwayatBelanjaStok);
+            safeSetLs('zencell_operasional', window.operasionalList);
+            safeSetLs('zencell_log_aktivitas', window.logAktivitasList);
+            safeSetLs('zencell_riwayat_cek_laci', window.riwayatCekLaciList || []);
+            safeSetLs('zencell_batas_min', window.masterBatasMinSaldo);
+            safeSetLs('zencell_saldo_awal', window.masterSaldoAwal);
+            safeSetLs('zencell_pengaturan', window.pengaturanToko);
+            safeSetLs('zencell_karyawan', window.daftarKaryawan);
+            safeSetLs('zencell_vlookup', window.masterVlookup || {});
+        };
+
+        window._debounceRenderTimer = null;
+        window.debouncedRenderAll = function(delayMs = 120) {
+            if (window._debounceRenderTimer) clearTimeout(window._debounceRenderTimer);
+            window._debounceRenderTimer = setTimeout(() => {
+                window._debounceRenderTimer = null;
+                if (typeof window.renderAll === 'function') window.renderAll();
+            }, delayMs);
+        };
 
         function onFirebaseWriteComplete() {
             window.pendingFirebaseWrites = Math.max(0, (window.pendingFirebaseWrites || 1) - 1);
@@ -10758,8 +11021,43 @@
             return grandTotal;
         };
 
+        window.tandaiMutasiCabangAsalSudahDiterima = async function(packetObj) {
+            if (!packetObj) return;
+            try {
+                const fromBranch = String(packetObj.fromCabang || (window.ACTIVE_CABANG === '2' ? '1' : '2'));
+                const fromRoot = fromBranch === '2' ? 'zencell2Nodes' : 'zencellNodes';
+                const rawIds = Array.isArray(packetObj.sourceTrxIds)
+                    ? packetObj.sourceTrxIds
+                    : (packetObj.sourceTrxId ? [packetObj.sourceTrxId] : []);
+                const idSet = new Set(rawIds.map(x => String(x)));
+                if (idSet.size === 0) return;
+
+                const snap = await get(ref(db, `${fromRoot}/transaksi`));
+                if (!snap || !snap.exists()) return;
+                const rawTrx = snap.val();
+                const list = Array.isArray(rawTrx) ? rawTrx : Object.values(rawTrx || {});
+                let changed = false;
+                const nowTs = Date.now();
+                const waktuTerimaStr = `${window.getTodayIso()} ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+                list.forEach(t => {
+                    if (t && idSet.has(String(t.id))) {
+                        t.mutasiStatusDiterima = true;
+                        t.mutasiWaktuDiterima = waktuTerimaStr;
+                        t.updatedAt = nowTs;
+                        changed = true;
+                    }
+                });
+                if (changed) {
+                    await set(ref(db, `${fromRoot}/transaksi`), cleanForFirebase(list));
+                }
+            } catch (err) {
+                console.warn('Gagal menandai status diterima pada cabang pengirim:', err);
+            }
+        };
+
         window.prosesSimpanTerimaPaketCabang = async function() {
             const packetId = document.getElementById('terimaPaketBatchId')?.value || '';
+            const pktObj = (window.antreanKirimanStokList || []).find(item => String(item.id) === String(packetId)) || null;
             const rows = document.querySelectorAll('#bodyTabelTerimaPaketCabang tr[data-terima-idx]');
             if (rows.length === 0) return;
 
@@ -10864,6 +11162,9 @@
             );
 
             window.closeModalTerimaPaketCabang();
+            if (pktObj && window.tandaiMutasiCabangAsalSudahDiterima) {
+                await window.tandaiMutasiCabangAsalSudahDiterima(pktObj);
+            }
             if (packetId && window.hapusPaketAntreanStokCabang) {
                 await window.hapusPaketAntreanStokCabang(packetId, window.FIREBASE_ROOT_NODE);
             }
@@ -10976,6 +11277,10 @@
                 const katBadge = t.kat === 'ACC'
                     ? 'background:#FEF3C7; color:#B45309; border:1px solid #FDE68A;'
                     : (t.kat === 'SP' ? 'background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0;' : 'background:#E0F2FE; color:#0284C7; border:1px solid #BAE6FD;');
+                const isDiterima = Boolean(t.mutasiStatusDiterima);
+                const statusBadge = isDiterima
+                    ? `<div style="margin-top:3px;"><span style="display:inline-block; background:#DCFCE7; color:#166534; border:1px solid #86EFAC; padding:1.5px 6px; border-radius:4px; font-size:9px; font-weight:800;" title="Stok sudah diterima & masuk ke Stok Opname cabang tujuan (${t.mutasiWaktuDiterima || ''})">🔒 DITERIMA CABANG</span></div>`
+                    : `<div style="margin-top:3px;"><span style="display:inline-block; background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; padding:1.5px 6px; border-radius:4px; font-size:9px; font-weight:800;">⏳ MENUNGGU DITERIMA</span></div>`;
                 return `
                     <tr>
                         <td><b>${t.waktu || '-'}</b><br><small>${window.formatTanggalDDMMYY(t.isoDate)}</small></td>
@@ -10983,6 +11288,7 @@
                         <td>
                             <b style="color:#1E1B4B;">${t.namaBarangStok || t.ket}</b>
                             <div style="font-size:10px; color:#6D28D9; font-weight:700;">${t.ket}</div>
+                            ${statusBadge}
                         </td>
                         <td style="text-align:center;"><b>${qty} Pcs</b></td>
                         <td style="text-align:right;">${window.formatRp(modalPcs)}</td>
@@ -10992,8 +11298,8 @@
                         </td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:4px; justify-content:center;">
-                                <button type="button" class="btn-edit" onclick="editTrx('${t.id}')" title="Edit Mutasi">Edit</button>
-                                <button type="button" class="btn-delete" onclick="hapusJurnalTrx('${t.id}')" title="Hapus Mutasi & Kembalikan Stok">Hapus</button>
+                                <button type="button" class="btn-edit" onclick="editTrx('${t.id}')" title="${isDiterima ? 'Terkunci (Sudah Diterima Cabang)' : 'Edit Mutasi'}" style="${isDiterima ? 'opacity:0.55;' : ''}">${isDiterima ? '🔒 Edit' : 'Edit'}</button>
+                                <button type="button" class="btn-delete" onclick="hapusJurnalTrx('${t.id}')" title="${isDiterima ? 'Terkunci (Sudah Diterima Cabang)' : 'Hapus Mutasi & Kembalikan Stok'}" style="${isDiterima ? 'opacity:0.55;' : ''}">${isDiterima ? '🔒 Hapus' : 'Hapus'}</button>
                             </div>
                         </td>
                     </tr>
@@ -13208,12 +13514,16 @@
                 const userObj = staffList.find(k => k.username.toUpperCase() === activeUser.toUpperCase());
                 const isOwner = (userObj && userObj.role === 'OWNER') || activeUser.toUpperCase() === 'OWNER';
 
-                // Menu Pengaturan & Saklar Cabang hanya untuk akun OWNER
+                // Menu Pengaturan, Dashboard Gabungan Z1+Z2 & Saklar Cabang hanya untuk akun OWNER
+                const btnGabunganHdr = document.getElementById('btnHeaderDashboardGabungan');
                 if (btnSetting) {
                     btnSetting.style.display = isOwner ? 'flex' : 'none';
                 }
                 if (btnBranchHdr) {
                     btnBranchHdr.style.display = isOwner ? 'inline-flex' : 'none';
+                }
+                if (btnGabunganHdr) {
+                    btnGabunganHdr.style.display = isOwner ? 'inline-flex' : 'none';
                 }
 
                 if (shiftKasirInput && activeUser.toUpperCase() !== 'TAMU') {
@@ -13231,6 +13541,8 @@
                 document.getElementById('loginOverlay').style.display = 'flex';
                 if (btnSetting) btnSetting.style.display = 'none';
                 if (btnBranchHdr) btnBranchHdr.style.display = 'none';
+                const btnGabunganHdr = document.getElementById('btnHeaderDashboardGabungan');
+                if (btnGabunganHdr) btnGabunganHdr.style.display = 'none';
                 window.renderLoginUserOptions();
                 window.clearLoginPinInputSafe();
                 setTimeout(window.clearLoginPinInputSafe, 80);
@@ -14166,58 +14478,14 @@
             window.renderAll();
         }
 
-        window.saveStateSnapshot = function(forceBaseline = false) {
-            if (window.isUndoRedoAction) return;
-            if (!window.hasInitialCloudLoaded && !forceBaseline) return;
-            const safeSaldoAwal = window.hasNonZeroSaldoAwal(window.masterSaldoAwal)
-                ? window.masterSaldoAwal
-                : Object.assign({}, window.DEFAULT_SALDO_AWAL);
-            const snap = JSON.stringify({
-                masterVlookup: window.masterVlookup, transaksiJurnal: window.transaksiJurnal,
-                stokOpnameItems: window.stokOpnameItems, piutangList: window.piutangList,
-                setoranOwnerList: window.setoranOwnerList, sparepartList: window.sparepartList, tiketServisList: window.tiketServisList,
-                riwayatBelanjaStok: window.riwayatBelanjaStok, operasionalList: window.operasionalList,
-                logAktivitasList: window.logAktivitasList,
-                masterSaldoAwal: safeSaldoAwal, saldoList: window.saldoList, masterBatasMinSaldo: window.masterBatasMinSaldo
-            });
-            if (window.undoStack.length === 0 || window.undoStack[window.undoStack.length - 1] !== snap) {
-                window.undoStack.push(snap);
-                if (window.undoStack.length > 25) window.undoStack.shift();
-                window.redoStack = [];
-            }
-            window.updateUndoRedoBtnState();
-        }
-
-        window.updateUndoRedoBtnState = function() {
-            const btnU = document.getElementById('btnUndo');
-            const btnR = document.getElementById('btnRedo');
-            if (btnU) btnU.disabled = (window.undoStack.length <= 1);
-            if (btnR) btnR.disabled = (window.redoStack.length === 0);
-        }
-
-        window.doUndo = function() {
-            if (!window.hasInitialCloudLoaded) return;
-            if (window.undoStack.length > 1) {
-                if (!confirm("⚠️ KONFIRMASI UNDO:\nApakah Anda yakin ingin membatalkan langkah / transaksi terakhir (Undo)?")) return;
-                window.redoStack.push(window.undoStack.pop());
-                window.applyStateSnapshot(window.undoStack[window.undoStack.length - 1]);
-                window.updateUndoRedoBtnState();
-                window.catatLogAktivitas('UNDO', 'Membatalkan langkah terakhir (Undo)');
-                if (window.showToast) window.showToast("↩️ Langkah terakhir berhasil dibatalkan (Undo).", "warn");
-            }
-        }
-        window.doRedo = function() {
-            if (!window.hasInitialCloudLoaded) return;
-            if (window.redoStack.length > 0) {
-                if (!confirm("⚠️ KONFIRMASI REDO:\nApakah Anda yakin ingin mengulangi kembali langkah yang baru dibatalkan (Redo)?")) return;
-                const nextSnap = window.redoStack.pop();
-                window.undoStack.push(nextSnap);
-                window.applyStateSnapshot(nextSnap);
-                window.updateUndoRedoBtnState();
-                window.catatLogAktivitas('REDO', 'Mengulang kembali langkah (Redo)');
-                if (window.showToast) window.showToast("↪️ Langkah berhasil dikembalikan (Redo).", "info");
-            }
-        }
+        // Fungsi Undo/Redo dinonaktifkan sesuai persetujuan Owner agar tidak membebani RAM (25x kloning penuh) & mencegah konflik multi-device
+        window.saveStateSnapshot = function() {
+            window.undoStack = [];
+            window.redoStack = [];
+        };
+        window.updateUndoRedoBtnState = function() {};
+        window.doUndo = function() {};
+        window.doRedo = function() {};
         window.applyStateSnapshot = function(snapStr) {
             window.isUndoRedoAction = true;
             const state = JSON.parse(snapStr);
@@ -16227,6 +16495,7 @@
                 let item = window.stokOpnameItems.find(i => i.id == editId || ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
                 const oldNama = item ? (item.nama || item.namaBarang || '').trim().toUpperCase() : nama;
                 const oldKat = item ? item.kat : kat;
+                const oldId = item ? item.id : editId;
 
                 if (item) {
                     item.kat = kat;
@@ -16240,8 +16509,63 @@
                     window.markLocalEntityEdited('stok', item);
                 }
 
+                // JAGA LINK TRANSAKSI LAMA & PIUTANG SAAT NAMA/KATEGORI STOK DIEDIT (Tanpa Mengubah Harga Jual/Modal/Cuan Transaksi Lama!)
+                if (item && (oldNama !== nama || oldKat !== kat)) {
+                    const oldSlash = oldNama.replace(/[\/-]/g, '/');
+                    let trxLinkedCount = 0;
+                    (window.transaksiJurnal || []).forEach(t => {
+                        if (!t) return;
+                        const tNamaRef = String(t.namaBarangStok || '').toUpperCase().trim();
+                        const tKetUpper = String(t.ket || '').toUpperCase().trim();
+                        const isMatchById = t.idStokRef && String(t.idStokRef) === String(oldId);
+                        const isMatchByName = (t.akunKeluar1 === oldKat || t.akunKeluar2 === oldKat || t.kat === oldKat) && (
+                            tNamaRef === oldNama ||
+                            tNamaRef.replace(/[\/-]/g, '/') === oldSlash ||
+                            tKetUpper === oldNama ||
+                            tKetUpper.replace(/[\/-]/g, '/') === oldSlash
+                        );
+                        if (isMatchById || isMatchByName) {
+                            t.idStokRef = item.id;
+                            t.namaBarangStok = nama;
+                            t.updatedAt = nowTs;
+                            window.markLocalTrxEdited(t);
+                            trxLinkedCount++;
+                        }
+                    });
+                    let piuLinkedCount = 0;
+                    (window.piutangList || []).forEach(p => {
+                        if (!p) return;
+                        const pNamaRef = String(p.namaBarangStok || '').toUpperCase().trim();
+                        const pCatUpper = String(p.catatan || '').toUpperCase().trim();
+                        const isMatchPById = p.idStokRef && String(p.idStokRef) === String(oldId);
+                        const isMatchPByName = p.sumber === oldKat && (
+                            pNamaRef === oldNama ||
+                            pNamaRef.replace(/[\/-]/g, '/') === oldSlash ||
+                            pCatUpper === oldNama ||
+                            pCatUpper.replace(/[\/-]/g, '/') === oldSlash
+                        );
+                        if (isMatchPById || isMatchPByName) {
+                            p.idStokRef = item.id;
+                            p.namaBarangStok = nama;
+                            p.updatedAt = nowTs;
+                            window.markLocalEntityEdited('piutang', p);
+                            piuLinkedCount++;
+                        }
+                    });
+                    if (window.masterVlookup && window.masterVlookup[oldNama] && !window.masterVlookup[nama]) {
+                        window.masterVlookup[nama] = Object.assign({}, window.masterVlookup[oldNama], { origKey: nama });
+                        delete window.masterVlookup[oldNama];
+                    }
+                    if (trxLinkedCount > 0) {
+                        window._stokEditTouchedTrx = true;
+                    }
+                    if (piuLinkedCount > 0) {
+                        window._stokEditTouchedPiutang = true;
+                    }
+                }
+
                 const matchingRiwayat = window.riwayatBelanjaStok.filter(r => r.id == editId || (((r.nama || r.namaBarang || '').trim().toUpperCase() === oldNama) && r.kat === oldKat));
-                if (matchingRiwayat.length > 0) {
+                if (matchingRiwayat.length === 1) {
                     const primaryR = matchingRiwayat[0];
                     primaryR.kat = kat;
                     primaryR.nama = nama;
@@ -16253,11 +16577,15 @@
                     primaryR.sumberKas = sumberKas;
                     primaryR.updatedAt = nowTs;
                     window.markLocalEntityEdited('riwayatBelanjaStok', primaryR);
-                    if (matchingRiwayat.length > 1) {
-                        const extraIds = new Set(matchingRiwayat.slice(1).map(r => r.id));
-                        extraIds.forEach(eid => window.markLocalEntityDeleted('riwayatBelanjaStok', eid));
-                        window.riwayatBelanjaStok = window.riwayatBelanjaStok.filter(r => !extraIds.has(r.id));
-                    }
+                } else if (matchingRiwayat.length > 1) {
+                    // PENTING: Jangan hapus riwayat restok tambahan agar histori pemotongan saldo kas (LACI/BCA/dll) masa lalu TIDAK berubah!
+                    matchingRiwayat.forEach(rItem => {
+                        rItem.kat = kat;
+                        rItem.nama = nama;
+                        rItem.garansi = garansi;
+                        rItem.updatedAt = nowTs;
+                        window.markLocalEntityEdited('riwayatBelanjaStok', rItem);
+                    });
                 } else {
                     const newR = {
                         id: item ? item.id : nowTs,
@@ -16386,6 +16714,10 @@
             window.closeModalStokOpname();
 
             if (receivedPacketId && window.hapusPaketAntreanStokCabang) {
+                const pktSingle = (window.antreanKirimanStokList || []).find(item => String(item.id) === String(receivedPacketId));
+                if (pktSingle && window.tandaiMutasiCabangAsalSudahDiterima) {
+                    window.tandaiMutasiCabangAsalSudahDiterima(pktSingle);
+                }
                 window.hapusPaketAntreanStokCabang(receivedPacketId, window.FIREBASE_ROOT_NODE);
                 toastMsg = `📥 Kiriman stok cabang [${kat}] ${nama} (${qty} Pcs) berhasil diterima & masuk ke Stok Opname!`;
             }
@@ -16394,11 +16726,20 @@
                 window.sortStokOpnameAlphabetical(window.stokOpnameItems);
             }
 
-            window.saveMultipleFirebaseNodes({
+            const saveNodesPayload = {
                 stok: window.stokOpnameItems,
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 vlookup: window.masterVlookup
-            }, false);
+            };
+            if (window._stokEditTouchedTrx) {
+                saveNodesPayload.transaksi = window.transaksiJurnal;
+                window._stokEditTouchedTrx = false;
+            }
+            if (window._stokEditTouchedPiutang) {
+                saveNodesPayload.piutang = window.piutangList;
+                window._stokEditTouchedPiutang = false;
+            }
+            window.saveMultipleFirebaseNodes(saveNodesPayload, false);
             window.renderAll();
 
             if (targetHighlightId && window.highlightRowAndScroll) {
@@ -17052,9 +17393,36 @@
             const target = (window.stokOpnameItems || []).find(s => s.id == id);
             if (!target) return;
             const namaItem = (target.nama || target.namaBarang || '').trim().toUpperCase();
-            if (confirm(`Hapus stok "${namaItem}" (${target.kat}) dari daftar Stok Opname?`)) {
-                window.markLocalEntityDeleted('stok', id);
-                window.stokOpnameItems = (window.stokOpnameItems || []).filter(s => s.id != id);
+            const terjualCount = Number(target.terjual || 0);
+            const matchingRiwayatPotongKas = (window.riwayatBelanjaStok || []).filter(r => {
+                const rNama = (r.nama || r.namaBarang || '').trim().toUpperCase();
+                const isMatch = (r.id == id || (rNama === namaItem && r.kat === target.kat));
+                return isMatch && r.sumberKas && r.sumberKas !== 'TIDAK POTONG SALDO';
+            });
+
+            if (!confirm(`Hapus stok "${namaItem}" (${target.kat}) dari daftar Tabel Stok Opname?`)) return;
+
+            // KEAMANAN SALDO HISTORIS:
+            // Jika barang ini sudah pernah terjual (terjual > 0) atau memiliki riwayat belanja yang memotong kas (LACI/BCA/dll),
+            // jangan langsung menghapus riwayatBelanjaStok tanpa konfirmasi, karena menghapus riwayatBelanjaStok akan mengembalikan saldo kas lama!
+            let hapusRiwayatJuga = true;
+            if (matchingRiwayatPotongKas.length > 0) {
+                if (terjualCount > 0) {
+                    hapusRiwayatJuga = false;
+                } else {
+                    hapusRiwayatJuga = confirm(
+                        `💡 KONFIRMASI SALDO KAS BELANJA STOK:\n\n` +
+                        `Barang "${namaItem}" memiliki catatan belanja stok yang memotong saldo (${matchingRiwayatPotongKas.map(x => x.sumberKas).join(', ')}).\n\n` +
+                        `• Klik [OK] jika ini SALAH INPUT BARU dan Anda ingin MEMBATALKAN belanja & MENGEMBALIKAN saldo kas.\n` +
+                        `• Klik [Cancel / Batal] jika Anda hanya ingin menghapus baris stok dari tabel TANPA mengubah saldo kas historis.`
+                    );
+                }
+            }
+
+            window.markLocalEntityDeleted('stok', id);
+            window.stokOpnameItems = (window.stokOpnameItems || []).filter(s => s.id != id);
+
+            if (hapusRiwayatJuga) {
                 (window.riwayatBelanjaStok || []).forEach(r => {
                     const rNama = (r.nama || r.namaBarang || '').trim().toUpperCase();
                     if (r.id == id || (rNama === namaItem && r.kat === target.kat)) {
@@ -17066,13 +17434,14 @@
                     const rNama = (r.nama || r.namaBarang || '').trim().toUpperCase();
                     return !(rNama === namaItem && r.kat === target.kat);
                 });
-                window.catatLogAktivitas('HAPUS STOK', `Menghapus item stok opname [${target.kat}] ${namaItem}`);
-                window.saveMultipleFirebaseNodes({
-                    stok: window.stokOpnameItems,
-                    riwayatBelanjaStok: window.riwayatBelanjaStok
-                }, false);
-                window.renderAll();
             }
+
+            window.catatLogAktivitas('HAPUS STOK', `Menghapus item stok opname [${target.kat}] ${namaItem}${hapusRiwayatJuga ? '' : ' (Riwayat Kas Tetap Aman)'}`);
+            window.saveMultipleFirebaseNodes({
+                stok: window.stokOpnameItems,
+                riwayatBelanjaStok: window.riwayatBelanjaStok
+            }, false);
+            window.renderAll();
         };
 
         window.simpanPiutang = function(e) {
@@ -17940,7 +18309,12 @@
 
             window.catatLogAktivitas('CETAK LAPORAN SHIFT', `Mencetak laporan akhir shift ${shiftName} oleh ${kasirName}`);
             window.print();
-            setTimeout(() => { printReport.style.display = 'none'; }, 1000);
+            setTimeout(() => {
+                printReport.style.display = 'none';
+                if (window.tawarkanBackupSetelahLaporanShift) {
+                    window.tawarkanBackupSetelahLaporanShift('Cetak Laporan Shift PDF');
+                }
+            }, 1200);
         }
 
         window.exportLaporanExcel = function() {
@@ -18559,6 +18933,16 @@
         window.hapusJurnalTrx = function(idTrx) {
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
+            if (t.mutasiStatusDiterima) {
+                const roleNow = sessionStorage.getItem('zencell_role') || 'KASIR';
+                if (roleNow !== 'OWNER') {
+                    window.showToast(`🔒 Kiriman stok "${t.ket}" sudah DITERIMA oleh cabang tujuan! Hanya OWNER yang dapat menghapus transaksi ini.`, "error");
+                    return;
+                }
+                if (!confirm(`⚠️ PERINGATAN MUTASI ANTAR CABANG:\n\nBarang pada transaksi "${t.ket}" tercatat SUDAH DITERIMA oleh cabang tujuan (${t.mutasiDiterimaOleh || 'Cabang Tujuan'}).\n\nMenghapus transaksi ini di cabang pengirim dapat menyebabkan selisih stok antar cabang jika stok di cabang penerima tidak disesuaikan.\n\nTetap lanjutkan hapus sebagai OWNER?`)) {
+                    return;
+                }
+            }
             if (confirm(`Hapus transaksi "${t.ket}"?`)) {
                 const nowTs = window.getNextUniqueTs();
                 const nodesToSave = { transaksi: null };
@@ -19748,6 +20132,16 @@
         window.editTrx = function(idTrx) {
             const t = window.transaksiJurnal.find(item => item.id == idTrx);
             if (!t) return;
+            if (t.mutasiStatusDiterima) {
+                const roleNow = sessionStorage.getItem('zencell_role') || 'KASIR';
+                if (roleNow !== 'OWNER') {
+                    window.showToast(`🔒 Kiriman stok "${t.ket}" sudah DITERIMA oleh cabang tujuan! Hanya OWNER yang dapat mengedit transaksi ini.`, "error");
+                    return;
+                }
+                if (!confirm(`⚠️ PERINGATAN MUTASI ANTAR CABANG:\n\nBarang pada transaksi "${t.ket}" tercatat SUDAH DITERIMA oleh cabang tujuan (${t.mutasiDiterimaOleh || 'Cabang Tujuan'}).\n\nMengubah transaksi ini di cabang pengirim tidak otomatis mengubah stok yang sudah diterima cabang tujuan.\n\nTetap lanjutkan edit sebagai OWNER?`)) {
+                    return;
+                }
+            }
             if (t.isReturAcc && window.openModalReturAcc) {
                 window.openModalReturAcc(null, t.id);
                 return;
@@ -20289,36 +20683,53 @@
             window.stokOpnameItems.forEach(s => { s.terjual = 0; });
 
             const akunStokSet = new Set(['VOUCHER', 'SP', 'ACC']);
+            // O(1) Lookup Index untuk mencegah aplikasi lemot saat ribuan transaksi dicocokkan dengan ratusan stok
+            const stokByIdMap = new Map();
+            const stokByKatNameMap = new Map();
+            const stokByKatSlashMap = new Map();
+            const stokByAnyNameMap = new Map();
+            const stokByAnySlashMap = new Map();
+
+            window.stokOpnameItems.forEach(s => {
+                if (s.id !== undefined && s.id !== null) {
+                    stokByIdMap.set(String(s.id), s);
+                }
+                const nm = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
+                if (!nm) return;
+                const nmSlash = nm.replace(/[\/-]/g, '/');
+                const katKey = `${s.kat || ''}||${nm}`;
+                const katSlashKey = `${s.kat || ''}||${nmSlash}`;
+                if (!stokByKatNameMap.has(katKey)) stokByKatNameMap.set(katKey, s);
+                if (!stokByKatSlashMap.has(katSlashKey)) stokByKatSlashMap.set(katSlashKey, s);
+                if (!stokByAnyNameMap.has(nm)) stokByAnyNameMap.set(nm, s);
+                if (!stokByAnySlashMap.has(nmSlash)) stokByAnySlashMap.set(nmSlash, s);
+            });
+
             const findMatchingStokItem = (idStokRef, namaStokRef, ketUpper, filterKat) => {
-                if (idStokRef) {
-                    const byId = window.stokOpnameItems.find(s => String(s.id) === String(idStokRef));
+                if (idStokRef !== undefined && idStokRef !== null && idStokRef !== '') {
+                    const byId = stokByIdMap.get(String(idStokRef));
                     if (byId) return byId;
                 }
                 if (namaStokRef) {
                     const cleanNamaRef = String(namaStokRef).toUpperCase().trim();
-                    const cleanSlashRef = cleanNamaRef.replace(/[\/-]/g, '/');
-                    const byExactName = window.stokOpnameItems.find(s => {
-                        if (filterKat && s.kat !== filterKat) return false;
-                        const nm = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
-                        return nm === cleanNamaRef || nm.replace(/[\/-]/g, '/') === cleanSlashRef;
-                    });
-                    if (byExactName) return byExactName;
-                }
-                const ketSlash = String(ketUpper || '').replace(/[\/-]/g, '/');
-                let bestStokMatch = null;
-                let bestLen = 0;
-                window.stokOpnameItems.forEach(s => {
-                    if (filterKat && s.kat !== filterKat) return;
-                    const namaUpper = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
-                    const namaSlash = namaUpper.replace(/[\/-]/g, '/');
-                    if (namaUpper && (ketUpper === namaUpper || ketSlash === namaSlash)) {
-                        if (namaUpper.length > bestLen) {
-                            bestLen = namaUpper.length;
-                            bestStokMatch = s;
+                    if (cleanNamaRef) {
+                        const cleanSlashRef = cleanNamaRef.replace(/[\/-]/g, '/');
+                        if (filterKat) {
+                            const m1 = stokByKatNameMap.get(`${filterKat}||${cleanNamaRef}`) || stokByKatSlashMap.get(`${filterKat}||${cleanSlashRef}`);
+                            if (m1) return m1;
+                        } else {
+                            const m2 = stokByAnyNameMap.get(cleanNamaRef) || stokByAnySlashMap.get(cleanSlashRef);
+                            if (m2) return m2;
                         }
                     }
-                });
-                return bestStokMatch;
+                }
+                const cleanKet = String(ketUpper || '').toUpperCase().trim();
+                if (!cleanKet) return null;
+                const ketSlash = cleanKet.replace(/[\/-]/g, '/');
+                if (filterKat) {
+                    return stokByKatNameMap.get(`${filterKat}||${cleanKet}`) || stokByKatSlashMap.get(`${filterKat}||${ketSlash}`) || null;
+                }
+                return stokByAnyNameMap.get(cleanKet) || stokByAnySlashMap.get(ketSlash) || null;
             };
 
             let filteredTrx = [];
@@ -20380,9 +20791,16 @@
             });
 
             // Fallback pengaman: jika ada data di piutangList bersumber dari VOUCHER/SP/ACC yang belum punya transaksi init di transaksiJurnal
+            const piutangInitIdSet = new Set();
+            window.transaksiJurnal.forEach(t => {
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') {
+                    if (t.id !== undefined) piutangInitIdSet.add(String(t.id));
+                    if (t.idPiutangRef !== undefined) piutangInitIdSet.add(String(t.idPiutangRef));
+                }
+            });
             (window.piutangList || []).forEach(p => {
                 if (!akunStokSet.has(p.sumber)) return;
-                const hasInitJurnal = window.transaksiJurnal.some(t => (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') && (t.id == p.id || t.idPiutangRef == p.id));
+                const hasInitJurnal = piutangInitIdSet.has(String(p.id));
                 if (!hasInitJurnal) {
                     const ketUpperP = (p.catatan || '').toUpperCase().trim();
                     const matchedStokP = findMatchingStokItem(p.idStokRef, p.namaBarangStok, ketUpperP, p.sumber);
@@ -20392,7 +20810,12 @@
                 }
             });
 
-            document.getElementById('bodyJurnal').innerHTML = filteredTrx.map((item, idx) => {
+            // Batasi render baris HTML tabel Jurnal saat mode Bulanan/Semua Data jika > 250 baris (perhitungan angka di atas tetap 100% penuh)
+            const MAX_INITIAL_JURNAL_ROWS = 250;
+            const shouldCapRows = (fMode !== 'DAILY' && !fSearchRaw && !window._jurnalShowAllRows && filteredTrx.length > MAX_INITIAL_JURNAL_ROWS);
+            const rowsToRender = shouldCapRows ? filteredTrx.slice(0, MAX_INITIAL_JURNAL_ROWS) : filteredTrx;
+
+            let jurnalRowsHtml = rowsToRender.map((item, idx) => {
                 const t = item.data;
                 const isSplitActive = Boolean(t.isSplit && (t.akunMasuk2 || t.akunKeluar2));
                 const isPelunasanTrx = window.isTransaksiPelunasanPiutang(t);
@@ -20411,8 +20834,13 @@
                     : (t.akunKeluar1 || '-');
 
                 const isServiceTrx = t.kat === 'SERVICE';
+                const isAccTrx = (t.kat === 'ACC' && !t.isReturAcc && !(window.isTransaksiMutasiCabang && window.isTransaksiMutasiCabang(t)));
                 const isTfAtmTrx = window.isTransaksiTransferAtm ? window.isTransaksiTransferAtm(t) : (['TRANSFER', 'TOPUP', 'TARIK TUNAI', 'EDC'].includes(t.kat));
-                const printTitle = isServiceTrx ? 'Cetak Nota Lunas Service' : (isTfAtmTrx ? 'Cetak Struk Bukti Transfer / Mini-ATM' : 'Cetak Struk Transaksi');
+                const printTitle = isServiceTrx
+                    ? 'Cetak Nota Lunas Service'
+                    : (isAccTrx
+                        ? 'Cetak Nota Thermal Khusus ACC (Otomatis Gabung 1 Nota jika Konsumen Beli Beberapa ACC)'
+                        : (isTfAtmTrx ? 'Cetak Struk Bukti Transfer / Mini-ATM' : 'Cetak Struk Transaksi'));
 
                 let extraKatBadges = '';
                 if (t.isReturAcc) {
@@ -20436,7 +20864,10 @@
                 }
                 const isMutasiCabTrx = Boolean(window.isTransaksiMutasiCabang && window.isTransaksiMutasiCabang(t));
                 if (isMutasiCabTrx) {
-                    extraKatBadges += `<div><span style="display:inline-block; background:#F5F3FF; color:#6D28D9; border:1px solid #C4B5FD; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;" title="Mutasi Stok Antar Cabang (Potong Stok & Ganti Kas Modal, Tidak Masuk Omset/TRX/Pelanggan)">🏢 MUTASI CABANG (NON-OMSET)</span></div>`;
+                    const lockBadge = t.mutasiStatusDiterima
+                        ? `<span style="display:inline-block; background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:8px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px; margin-left:3px;" title="Sudah diterima di cabang tujuan (${t.mutasiDiterimaOleh || ''})">🔒 DITERIMA</span>`
+                        : '';
+                    extraKatBadges += `<div><span style="display:inline-block; background:#F5F3FF; color:#6D28D9; border:1px solid #C4B5FD; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;" title="Mutasi Stok Antar Cabang (Potong Stok & Ganti Kas Modal, Tidak Masuk Omset/TRX/Pelanggan)">🏢 MUTASI CABANG</span>${lockBadge}</div>`;
                 } else if (t.visitGroupId) {
                     const gIdx = Number(t.visitGroupIndex || 1);
                     const gTot = Number(t.visitGroupTotal || 2);
@@ -20503,7 +20934,24 @@
                         </td>
                     </tr>
                 `;
-            }).join('') || `<tr><td colspan="11" style="text-align:center; color:#94A3B8;">Tidak ada transaksi.</td></tr>`;
+            }).join('');
+
+            if (shouldCapRows) {
+                jurnalRowsHtml += `
+                    <tr>
+                        <td colspan="11" style="text-align:center; padding:12px; background:#F8FAFC;">
+                            <div style="font-size:11px; color:#475569; margin-bottom:6px; font-weight:700;">
+                                ⚡ Menampilkan <b>${MAX_INITIAL_JURNAL_ROWS}</b> dari <b>${filteredTrx.length}</b> transaksi agar aplikasi tetap ringan & cepat (Perhitungan Saldo, Omset & Cuan sudah 100% dihitung penuh).
+                            </div>
+                            <button type="button" class="btn-filter" onclick="window._jurnalShowAllRows = true; window.renderAll();" style="background:#0284C7; color:#FFFFFF; border:none; padding:6px 14px; font-weight:800; border-radius:8px; cursor:pointer;">
+                                👇 Tampilkan Semua ${filteredTrx.length} Transaksi
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById('bodyJurnal').innerHTML = jurnalRowsHtml || `<tr><td colspan="11" style="text-align:center; color:#94A3B8;">Tidak ada transaksi.</td></tr>`;
 
             const bSparepart = document.getElementById('bodySparepartList');
             if (bSparepart) {
@@ -25488,8 +25936,16 @@
         window.kirimWaStrukKasir = function(trxId) {
             const t = (window.transaksiJurnal || []).find(x => x.id == trxId);
             if (!t) return;
+            // Jika transaksi adalah penjualan ACC (bukan retur/mutasi) dan punya teman ACC dalam 1 kunjungan (visitGroupId), buka Modal Struk ACC agar bisa kirim WA gabungan
+            if (t.kat === 'ACC' && !t.isReturAcc && !(window.isTransaksiMutasiCabang && window.isTransaksiMutasiCabang(t)) && t.visitGroupId && window.openModalStrukAcc) {
+                const siblingAccCount = (window.transaksiJurnal || []).filter(x => x.visitGroupId === t.visitGroupId && x.kat === 'ACC' && !x.isReturAcc && !(window.isTransaksiMutasiCabang && window.isTransaksiMutasiCabang(x))).length;
+                if (siblingAccCount > 1) {
+                    window.openModalStrukAcc(trxId);
+                    return;
+                }
+            }
             const p = window.pengaturanToko || {};
-            const namaToko = p.namaToko || 'POS ZENCELL 1';
+            const namaToko = p.namaToko || (window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1');
             const kasirName = sessionStorage.getItem('zencell_user') || 'Kasir';
             const garansiStr = window.resolveGaransiNotaTrx(t);
             const metodeMasuk = (t.isSplit && t.akunMasuk2)
@@ -25549,6 +26005,10 @@
             if (!t) return;
             if (t.kat === 'SERVICE') {
                 window.cetakNotaLunasServiceTrx(trxId);
+                return;
+            }
+            if (t.kat === 'ACC' && !t.isReturAcc && !(window.isTransaksiMutasiCabang && window.isTransaksiMutasiCabang(t)) && window.openModalStrukAcc) {
+                window.openModalStrukAcc(trxId);
                 return;
             }
             if (window.isTransaksiTransferAtm(t)) {
@@ -26311,10 +26771,15 @@
                 `*Catatan Kasir:*\n` +
                 `"${catatan}"\n` +
                 `----------------------------------------\n` +
-                `Laporan otomatis dari POS ZENCELL 1.`;
+                `Laporan otomatis dari ${window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1'}.`;
 
             window.kirimPesanWa(waOwner, text);
             window.catatLogAktivitas('KIRIM LAPORAN SHIFT WA', `Mengirim laporan shift kasir ${kasirName} ke WA Owner`);
+            setTimeout(() => {
+                if (window.tawarkanBackupSetelahLaporanShift) {
+                    window.tawarkanBackupSetelahLaporanShift('Kirim Laporan Shift WA');
+                }
+            }, 900);
         };
 
         // =========================================================================
@@ -27136,11 +27601,14 @@
         };
 
         window.backupJSON = function() {
+            const cabangCode = window.ACTIVE_CABANG === '2' ? 'ZENCELL2' : 'ZENCELL1';
+            const cabangName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
             const data = {
-                app: "POS ZENCELL 1",
+                app: cabangName,
+                cabang: window.ACTIVE_CABANG || '1',
                 backupDate: new Date().toISOString(),
                 exportBy: sessionStorage.getItem('zencell_user') || 'Owner',
-                version: "2.5",
+                version: "2.8",
                 pengaturanToko: window.pengaturanToko,
                 daftarKaryawan: window.daftarKaryawan,
                 transaksiJurnal: window.transaksiJurnal,
@@ -27155,16 +27623,33 @@
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 operasionalList: window.operasionalList,
                 setoranOwnerList: window.setoranOwnerList,
-                logAktivitasList: window.logAktivitasList
+                logAktivitasList: window.logAktivitasList,
+                riwayatCekLaciList: window.riwayatCekLaciList || [],
+                antreanKirimanStokList: window.antreanKirimanStokList || [],
+                arsipTransaksiDetail: window.arsipTransaksiDetail || []
             };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
             const dl = document.createElement('a');
-            dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2)));
-            dl.setAttribute("download", `BACKUP_ZENCELL_TOTAL_${window.getTodayIso()}.json`);
-            dl.click(); dl.remove();
+            dl.href = url;
+            dl.setAttribute("download", `BACKUP_${cabangCode}_LENGKAP_${window.getTodayIso()}.json`);
+            document.body.appendChild(dl);
+            dl.click();
+            dl.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
 
-            window.catatLogAktivitas('BACKUP JSON', 'Mengunduh file cadangan database lengkap (.JSON) mencakup seluruh 14 modul data');
-            window.showSettingBanner("📥 File backup database JSON lengkap berhasil diunduh ke perangkat!");
-            window.showToast("📥 File backup JSON lengkap berhasil diunduh!", "success");
+            window.catatLogAktivitas('BACKUP JSON', `Mengunduh file cadangan database lengkap (${cabangName}) mencakup seluruh 17 modul data`);
+            window.showSettingBanner(`📥 File backup database JSON lengkap (${cabangName}) berhasil diunduh ke perangkat!`);
+            window.showToast(`📥 File backup JSON ${cabangName} berhasil diunduh!`, "success");
+        };
+
+        window.tawarkanBackupSetelahLaporanShift = function(sumberAksi) {
+            const cabangName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+            setTimeout(() => {
+                if (confirm(`💾 TAWARAN BACKUP OTOMATIS (${cabangName})\n\nLaporan shift (${sumberAksi || 'Akhir Shift'}) selesai diproses.\nApakah Anda ingin sekalian mengunduh File Backup Cadangan Database (.JSON) hari ini ke perangkat agar data 100% aman?`)) {
+                    window.backupJSON();
+                }
+            }, 300);
         };
 
         window.restoreJSON = function(e) {
@@ -27174,6 +27659,13 @@
             r.onload = function(evt) {
                 try {
                     const d = JSON.parse(evt.target.result);
+                    const cabangAktifNama = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+                    if (d.cabang && String(d.cabang) !== String(window.ACTIVE_CABANG || '1')) {
+                        if (!confirm(`⚠️ PERINGATAN BEDA CABANG:\n\nFile backup ini berasal dari cabang "${d.app || ('Cabang ' + d.cabang)}", sedangkan Anda sedang membuka "${cabangAktifNama}".\n\nApakah Anda yakin tetap ingin memulihkan file ini ke ${cabangAktifNama}?`)) {
+                            e.target.value = '';
+                            return;
+                        }
+                    }
                     if (d.pengaturanToko) window.pengaturanToko = d.pengaturanToko;
                     if (d.daftarKaryawan) window.daftarKaryawan = d.daftarKaryawan;
                     if (d.transaksiJurnal) window.transaksiJurnal = d.transaksiJurnal;
@@ -27189,6 +27681,15 @@
                     if (d.operasionalList) window.operasionalList = d.operasionalList;
                     if (d.setoranOwnerList) window.setoranOwnerList = d.setoranOwnerList;
                     if (d.logAktivitasList) window.logAktivitasList = d.logAktivitasList;
+                    if (Array.isArray(d.riwayatCekLaciList)) window.riwayatCekLaciList = d.riwayatCekLaciList;
+                    if (Array.isArray(d.antreanKirimanStokList)) window.antreanKirimanStokList = d.antreanKirimanStokList;
+                    if (Array.isArray(d.arsipTransaksiDetail)) {
+                        window.arsipTransaksiDetail = d.arsipTransaksiDetail;
+                        const dbRef = window.getDatabaseRef ? window.getDatabaseRef() : null;
+                        if (dbRef && window.zencellNodes && window.zencellNodes.arsipTransaksiDetail) {
+                            dbRef.ref(window.zencellNodes.arsipTransaksiDetail).set(window.arsipTransaksiDetail);
+                        }
+                    }
 
                     window.clearAllEntityProtection();
                     window.saveAllToFirebase(false, true);
@@ -27197,7 +27698,7 @@
                     if (window.renderDaftarKaryawanSettings) window.renderDaftarKaryawanSettings();
                     window.renderLoginUserOptions();
                     window.renderAll();
-                    window.catatLogAktivitas('RESTORE JSON', 'Melakukan pemulihan database lengkap dari file JSON');
+                    window.catatLogAktivitas('RESTORE JSON', `Melakukan pemulihan database lengkap (${cabangAktifNama}) dari file JSON`);
                     window.showSettingBanner("✅ Database JSON lengkap berhasil dipulihkan & disinkronkan!");
                     window.showToast("✅ Database JSON lengkap berhasil dipulihkan!", "success");
                 } catch(err) { 
@@ -27206,6 +27707,1026 @@
                 }
             };
             r.readAsText(file);
+        };
+
+        // =========================================================================
+        // SISTEM STRUK THERMAL KHUSUS PENJUALAN ACC / STOK OPNAME (AUTO GABUNG 1 NOTA)
+        // =========================================================================
+        window._strukAccAnchorTrxId = null;
+        window._strukAccSelectedIds = new Set();
+        window._strukAccCandidateList = [];
+
+        window.isEligibleAccSaleForStruk = function(t) {
+            if (!t) return false;
+            if (t.kat !== 'ACC') return false;
+            if (t.isReturAcc) return false;
+            if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') return false;
+            if (window.isTransaksiMutasiCabang && window.isTransaksiMutasiCabang(t)) return false;
+            return true;
+        };
+
+        window.openModalStrukAcc = function(trxId) {
+            const anchorTrx = (window.transaksiJurnal || []).find(x => String(x.id) === String(trxId));
+            if (!anchorTrx) return;
+
+            window._strukAccAnchorTrxId = String(anchorTrx.id);
+            window._strukAccSelectedIds = new Set([String(anchorTrx.id)]);
+
+            const targetDate = anchorTrx.isoDate || window.getTodayIso();
+            const targetVisitGroup = anchorTrx.visitGroupId || '';
+
+            // Kumpulkan semua transaksi penjualan ACC pada tanggal yang sama
+            const allAccSameDay = (window.transaksiJurnal || []).filter(x => {
+                if (!window.isEligibleAccSaleForStruk(x)) return false;
+                return (x.isoDate || '') === targetDate;
+            });
+
+            // Jika transaksi yang diklik berada dalam 1 paket kunjungan (visitGroupId), otomatis centang semua ACC di dalam grup kunjungan tersebut (dan abaikan VOUCHER/TRANSFER/dll)
+            let autoGroupedCount = 0;
+            if (targetVisitGroup) {
+                allAccSameDay.forEach(x => {
+                    if (x.visitGroupId === targetVisitGroup) {
+                        window._strukAccSelectedIds.add(String(x.id));
+                        autoGroupedCount++;
+                    }
+                });
+            }
+
+            // Urutkan agar item dalam grup kunjungan yang sama atau yang diklik berada paling atas
+            allAccSameDay.sort((a, b) => {
+                const aIsAnchor = String(a.id) === String(anchorTrx.id) ? 1 : 0;
+                const bIsAnchor = String(b.id) === String(anchorTrx.id) ? 1 : 0;
+                if (aIsAnchor !== bIsAnchor) return bIsAnchor - aIsAnchor;
+                const aSameGroup = (targetVisitGroup && a.visitGroupId === targetVisitGroup) ? 1 : 0;
+                const bSameGroup = (targetVisitGroup && b.visitGroupId === targetVisitGroup) ? 1 : 0;
+                if (aSameGroup !== bSameGroup) return bSameGroup - aSameGroup;
+                return Number(b.id || 0) - Number(a.id || 0);
+            });
+
+            window._strukAccCandidateList = allAccSameDay;
+
+            // Isi form default dari anchor transaksi
+            const noNota = `ACC-${String(anchorTrx.id).slice(-6)}`;
+            const elNoRef = document.getElementById('strukAccNoRef');
+            if (elNoRef) elNoRef.value = noNota;
+            const elPelanggan = document.getElementById('strukAccNamaPelanggan');
+            if (elPelanggan) elPelanggan.value = anchorTrx.namaPelanggan || '';
+            const elPotongan = document.getElementById('strukAccPotongan');
+            if (elPotongan) elPotongan.value = '';
+            const elUangBayar = document.getElementById('strukAccUangBayar');
+            if (elUangBayar) elUangBayar.value = '';
+            const elCatatan = document.getElementById('strukAccCatatanGaransi');
+            if (elCatatan) elCatatan.value = '';
+
+            // Tampilkan info banner jika terdeteksi otomatis gabung dari 1 kunjungan konsumen
+            const bannerEl = document.getElementById('strukAccGroupBanner');
+            if (bannerEl) {
+                if (targetVisitGroup && autoGroupedCount > 1) {
+                    const nonAccInVisit = (window.transaksiJurnal || []).filter(x => x.visitGroupId === targetVisitGroup && !window.isEligibleAccSaleForStruk(x));
+                    const infoSkip = nonAccInVisit.length > 0
+                        ? ` (Mengecualikan ${nonAccInVisit.length} item non-ACC: ${nonAccInVisit.map(n => n.kat).join(', ')})`
+                        : '';
+                    bannerEl.innerHTML = `🔗 <b>Otomatis Gabung ${autoGroupedCount} Barang ACC (1 Konsumen Sama)!</b>${infoSkip}<br><span style="font-weight:600; font-size:10px;">Anda juga bisa mencentang/melepas centang barang ACC lain di bawah bila diperlukan.</span>`;
+                } else {
+                    bannerEl.innerHTML = `💡 <b>Tips Nota Gabungan ACC:</b> Jika pelanggan ini membeli beberapa barang ACC sekaligus (walaupun diinput terpisah baris), cukup <b>centang barang-barang ACC tersebut di bawah</b> agar tercetak dalam 1 nota thermal.`;
+                }
+            }
+
+            window.renderStrukAccItemListUI();
+            window.updateLivePreviewStrukAcc();
+
+            const modal = document.getElementById('modalStrukAccOverlay');
+            if (modal) modal.style.display = 'flex';
+            if (window.refreshBtPrinterStatusUI) window.refreshBtPrinterStatusUI();
+        };
+
+        window.closeModalStrukAcc = function() {
+            const modal = document.getElementById('modalStrukAccOverlay');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.renderStrukAccItemListUI = function() {
+            const container = document.getElementById('strukAccItemListContainer');
+            if (!container) return;
+            const anchorTrx = (window.transaksiJurnal || []).find(x => String(x.id) === String(window._strukAccAnchorTrxId));
+            const targetVisitGroup = anchorTrx ? (anchorTrx.visitGroupId || '') : '';
+
+            if (!window._strukAccCandidateList || window._strukAccCandidateList.length === 0) {
+                container.innerHTML = `<div style="padding:10px; text-align:center; color:#94A3B8; font-size:11px;">Tidak ada item ACC ditemukan.</div>`;
+                return;
+            }
+
+            container.innerHTML = window._strukAccCandidateList.map(item => {
+                const idStr = String(item.id);
+                const isChecked = window._strukAccSelectedIds.has(idStr);
+                const isAnchor = idStr === String(window._strukAccAnchorTrxId);
+                const isSameGroup = Boolean(targetVisitGroup && item.visitGroupId === targetVisitGroup);
+                const qty = Math.max(1, Number(item.qty || 1));
+                const subtotal = Number(item.hargaJual || 0);
+                const hargaSatuan = Math.round(subtotal / qty);
+                const garansi = window.resolveGaransiNotaTrx ? window.resolveGaransiNotaTrx(item) : (item.garansiStruk || '');
+
+                return `
+                    <label style="display:flex; align-items:flex-start; gap:8px; padding:7px 9px; border-radius:8px; border:1px solid ${isChecked ? '#6EE7B7' : '#E2E8F0'}; background:${isChecked ? '#ECFDF5' : '#FFFFFF'}; cursor:pointer; transition:all 0.15s;">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window.toggleItemStrukAccSelection('${idStr}', this.checked)" style="margin-top:3px; width:15px; height:15px; accent-color:#059669; cursor:pointer;">
+                        <div style="flex:1; min-width:0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                                <span style="font-size:11.5px; font-weight:800; color:#0F172A; word-break:break-word;">${item.namaBarangStok || item.ket || 'ACC'}</span>
+                                <span style="font-size:11.5px; font-weight:900; color:#059669; white-space:nowrap;">${window.formatRp(subtotal)}</span>
+                            </div>
+                            <div style="display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-top:2px; font-size:10px; color:#64748B;">
+                                <span>🕒 ${item.waktu || '-'}</span>
+                                <span>• <b>${qty} Pcs</b> @ ${window.formatRp(hargaSatuan)}</span>
+                                <span>• ${item.akunMasuk1 || 'TUNAI'}</span>
+                                ${garansi ? `<span style="background:#DCFCE7; color:#15803D; font-weight:800; padding:0 5px; border-radius:4px;">🛡️ ${garansi}</span>` : ''}
+                                ${isAnchor ? `<span style="background:#DBEAFE; color:#1D4ED8; font-weight:800; padding:0 5px; border-radius:4px;">📌 DIKLIK</span>` : ''}
+                                ${(!isAnchor && isSameGroup) ? `<span style="background:#E0F2FE; color:#0369A1; font-weight:800; padding:0 5px; border-radius:4px;">🔗 1 KONSUMEN SAMA</span>` : ''}
+                            </div>
+                        </div>
+                    </label>
+                `;
+            }).join('');
+        };
+
+        window.toggleItemStrukAccSelection = function(idStr, checked) {
+            if (checked) {
+                window._strukAccSelectedIds.add(String(idStr));
+            } else {
+                if (window._strukAccSelectedIds.size <= 1) {
+                    window.showToast("⚠️ Minimal harus ada 1 barang ACC yang dipilih pada nota!", "error");
+                    window.renderStrukAccItemListUI();
+                    return;
+                }
+                window._strukAccSelectedIds.delete(String(idStr));
+            }
+            window.renderStrukAccItemListUI();
+            window.updateLivePreviewStrukAcc();
+        };
+
+        window.pilihSemuaAccHariIniStruk = function() {
+            (window._strukAccCandidateList || []).forEach(x => {
+                window._strukAccSelectedIds.add(String(x.id));
+            });
+            window.renderStrukAccItemListUI();
+            window.updateLivePreviewStrukAcc();
+        };
+
+        window.resetHanyaGrupKunjunganStrukAcc = function() {
+            const anchorTrx = (window.transaksiJurnal || []).find(x => String(x.id) === String(window._strukAccAnchorTrxId));
+            window._strukAccSelectedIds = new Set();
+            if (anchorTrx) {
+                window._strukAccSelectedIds.add(String(anchorTrx.id));
+                if (anchorTrx.visitGroupId) {
+                    (window._strukAccCandidateList || []).forEach(x => {
+                        if (x.visitGroupId === anchorTrx.visitGroupId) {
+                            window._strukAccSelectedIds.add(String(x.id));
+                        }
+                    });
+                }
+            }
+            window.renderStrukAccItemListUI();
+            window.updateLivePreviewStrukAcc();
+        };
+
+        window.getSelectedStrukAccData = function() {
+            const p = window.pengaturanToko || {};
+            const defaultCabangName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+            const namaToko = p.namaToko || defaultCabangName;
+            const alamatToko = p.alamatToko || 'Pusat Layanan Aksesoris, Gadget & Servis HP';
+            const kontakToko = p.kontakToko || '';
+            const kasirName = sessionStorage.getItem('zencell_user') || 'KASIR';
+
+            const selectedItems = (window._strukAccCandidateList || []).filter(x => window._strukAccSelectedIds.has(String(x.id)));
+            const firstItem = selectedItems[0] || (window.transaksiJurnal || []).find(x => String(x.id) === String(window._strukAccAnchorTrxId)) || {};
+
+            const noNota = (document.getElementById('strukAccNoRef')?.value || `ACC-${String(firstItem.id || Date.now()).slice(-6)}`).trim();
+            const pelanggan = (document.getElementById('strukAccNamaPelanggan')?.value || '').trim();
+            const potongan = window.parseAngkaRp ? window.parseAngkaRp(document.getElementById('strukAccPotongan')?.value || '0') : 0;
+            const uangBayarInput = window.parseAngkaRp ? window.parseAngkaRp(document.getElementById('strukAccUangBayar')?.value || '0') : 0;
+            const catatanGaransi = (document.getElementById('strukAccCatatanGaransi')?.value || '').trim();
+
+            let totalQty = 0;
+            let subtotalGross = 0;
+            const metodeSet = new Set();
+
+            const mappedItems = selectedItems.map((item, idx) => {
+                const qty = Math.max(1, Number(item.qty || 1));
+                const sub = Number(item.hargaJual || 0);
+                const satuan = Math.round(sub / qty);
+                const garansi = window.resolveGaransiNotaTrx ? window.resolveGaransiNotaTrx(item) : (item.garansiStruk || '');
+                totalQty += qty;
+                subtotalGross += sub;
+                if (item.isSplit && item.akunMasuk2) {
+                    metodeSet.add(`${item.akunMasuk1}+${item.akunMasuk2}`);
+                } else if (item.akunMasuk1) {
+                    metodeSet.add(item.akunMasuk1);
+                }
+                return {
+                    no: idx + 1,
+                    id: item.id,
+                    nama: item.namaBarangStok || item.ket || 'ACC',
+                    ket: item.ket || '',
+                    qty,
+                    satuan,
+                    subtotal: sub,
+                    garansi
+                };
+            });
+
+            const grandTotal = Math.max(0, subtotalGross - potongan);
+            const uangBayar = uangBayarInput > 0 ? uangBayarInput : grandTotal;
+            const kembalian = Math.max(0, uangBayar - grandTotal);
+            const metodeBayar = Array.from(metodeSet).join(', ') || 'TUNAI LACI';
+
+            return {
+                namaToko,
+                alamatToko,
+                kontakToko,
+                kasirName,
+                noNota,
+                pelanggan,
+                waktu: firstItem.waktu || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                isoDate: firstItem.isoDate || window.getTodayIso(),
+                items: mappedItems,
+                totalJenis: mappedItems.length,
+                totalQty,
+                subtotalGross,
+                potongan,
+                grandTotal,
+                uangBayar,
+                uangBayarInput,
+                kembalian,
+                metodeBayar,
+                catatanGaransi,
+                footerToko: p.teksStruk || 'Terima kasih telah berbelanja! Simpan struk ini sebagai bukti garansi aksesoris.'
+            };
+        };
+
+        window.buildStrukAccThermalHtml = function(d) {
+            const itemRowsHtml = d.items.map(it => `
+                <div style="margin-bottom:5px; padding-bottom:4px; border-bottom:1px dotted #CBD5E1;">
+                    <div style="font-weight:800; font-size:11.5px; color:#000; word-break:break-word;">${it.no}. ${it.nama}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#1E293B; margin-top:1px;">
+                        <span>${it.qty} Pcs x ${window.formatRp(it.satuan)}</span>
+                        <span style="font-weight:800; color:#000;">${window.formatRp(it.subtotal)}</span>
+                    </div>
+                    ${it.garansi ? `<div style="font-size:9.5px; font-weight:700; color:#0F172A; margin-top:1px;">🛡️ Garansi: ${it.garansi}</div>` : ''}
+                </div>
+            `).join('');
+
+            return `
+                <div style="font-family:'Courier New', Courier, monospace; color:#000; line-height:1.35;">
+                    <div style="text-align:center;">
+                        <div style="font-size:15px; font-weight:900; letter-spacing:0.5px;">${d.namaToko}</div>
+                        <div style="font-size:10px;">${d.alamatToko}</div>
+                        ${d.kontakToko ? `<div style="font-size:10px;">WA/Telp: ${d.kontakToko}</div>` : ''}
+                        <div style="display:inline-block; margin-top:4px; padding:2px 8px; border:1px solid #000; font-size:10px; font-weight:900;">
+                            NOTA PENJUALAN ACC & GARANSI
+                        </div>
+                    </div>
+
+                    <div style="border-top:1px dashed #000; margin:7px 0;"></div>
+
+                    <div style="font-size:10.5px;">
+                        <div style="display:flex; justify-content:space-between;"><span>No. Nota</span><b>${d.noNota}</b></div>
+                        <div style="display:flex; justify-content:space-between;"><span>Tanggal</span><span>${d.isoDate} ${d.waktu}</span></div>
+                        <div style="display:flex; justify-content:space-between;"><span>Kasir</span><span>${d.kasirName}</span></div>
+                        ${d.pelanggan ? `<div style="display:flex; justify-content:space-between;"><span>Pelanggan</span><b>${d.pelanggan}</b></div>` : ''}
+                    </div>
+
+                    <div style="border-top:1px dashed #000; margin:7px 0;"></div>
+
+                    <div>
+                        ${itemRowsHtml}
+                    </div>
+
+                    <div style="border-top:1px dashed #000; margin:7px 0;"></div>
+
+                    <div style="font-size:11px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Total Barang (${d.totalJenis} Jenis)</span>
+                            <b>${d.totalQty} Pcs</b>
+                        </div>
+                        ${d.potongan > 0 ? `
+                            <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                                <span>Subtotal</span>
+                                <span>${window.formatRp(d.subtotalGross)}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                                <span>Potongan / Diskon</span>
+                                <span>- ${window.formatRp(d.potongan)}</span>
+                            </div>
+                        ` : ''}
+                        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:900; margin-top:4px; padding-top:4px; border-top:1px solid #000;">
+                            <span>TOTAL BAYAR</span>
+                            <span>${window.formatRp(d.grandTotal)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:3px; font-size:10.5px;">
+                            <span>Metode Bayar</span>
+                            <b>${d.metodeBayar}</b>
+                        </div>
+                        ${d.uangBayarInput > 0 ? `
+                            <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:10.5px;">
+                                <span>Uang Diterima</span>
+                                <span>${window.formatRp(d.uangBayar)}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:11px; font-weight:800;">
+                                <span>Kembalian</span>
+                                <span>${window.formatRp(d.kembalian)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${d.catatanGaransi ? `
+                        <div style="border-top:1px dashed #000; margin:7px 0;"></div>
+                        <div style="font-size:10px; font-weight:700;">
+                            📌 Catatan Garansi:<br>${d.catatanGaransi}
+                        </div>
+                    ` : ''}
+
+                    <div style="border-top:1px dashed #000; margin:7px 0;"></div>
+
+                    <div style="text-align:center; font-size:9.5px; line-height:1.35;">
+                        ${d.footerToko}<br>
+                        <span style="font-weight:700;">* Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/rusak fisik *</span>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.updateLivePreviewStrukAcc = function() {
+            const box = document.getElementById('strukAccLivePreviewBox');
+            if (!box) return;
+            const d = window.getSelectedStrukAccData();
+            box.innerHTML = window.buildStrukAccThermalHtml(d);
+        };
+
+        window.buildEscPosStrukAccBytes = function(d) {
+            const b = new window.EscPosBuilder();
+            b.init()
+             .align(1).bold(true).size(1, 1).line(d.namaToko)
+             .size(0, 0).bold(false).line(d.alamatToko);
+            if (d.kontakToko) b.line('WA/Telp: ' + d.kontakToko);
+            b.bold(true).line('[ NOTA PENJUALAN ACC & GARANSI ]').bold(false)
+             .hr('=')
+             .align(0)
+             .twoCol('No. Nota', d.noNota)
+             .twoCol('Tanggal', `${d.isoDate} ${d.waktu}`)
+             .twoCol('Kasir', d.kasirName);
+            if (d.pelanggan) b.twoCol('Pelanggan', d.pelanggan);
+            b.hr('-');
+
+            d.items.forEach(it => {
+                b.bold(true).line(`${it.no}. ${it.nama}`).bold(false);
+                b.twoCol(`  ${it.qty} Pcs x ${window.formatRp(it.satuan)}`, window.formatRp(it.subtotal));
+                if (it.garansi) {
+                    b.line(`  Garansi: ${it.garansi}`);
+                }
+            });
+
+            b.hr('-')
+             .twoCol(`Total Barang (${d.totalJenis} Jenis)`, `${d.totalQty} Pcs`);
+            if (d.potongan > 0) {
+                b.twoCol('Subtotal', window.formatRp(d.subtotalGross));
+                b.twoCol('Potongan/Diskon', '- ' + window.formatRp(d.potongan));
+            }
+            b.bold(true).twoCol('TOTAL BAYAR', window.formatRp(d.grandTotal)).bold(false)
+             .twoCol('Metode Bayar', d.metodeBayar);
+            if (d.uangBayarInput > 0) {
+                b.twoCol('Uang Diterima', window.formatRp(d.uangBayar));
+                b.bold(true).twoCol('Kembalian', window.formatRp(d.kembalian)).bold(false);
+            }
+            if (d.catatanGaransi) {
+                b.hr('-').line('Catatan: ' + d.catatanGaransi);
+            }
+            b.hr('-')
+             .align(1)
+             .line(d.footerToko)
+             .line('* Klaim garansi wajib bawa nota ini *')
+             .feed(4)
+             .cut();
+            return b.toUint8Array();
+        };
+
+        window.cetakStrukAccSekarang = async function(modeOverride) {
+            const d = window.getSelectedStrukAccData();
+            if (!d.items || d.items.length === 0) {
+                window.showToast("⚠️ Pilih minimal 1 barang ACC untuk dicetak!", "error");
+                return;
+            }
+            const htmlNota = window.buildStrukAccThermalHtml(d);
+            const escBytes = window.buildEscPosStrukAccBytes(d);
+            await window.eksekusiCetakThermalUniversal(escBytes, htmlNota, `Struk ACC (${d.items.length} Barang)`, modeOverride);
+            window.catatLogAktivitas('CETAK STRUK ACC', `Mencetak nota thermal ACC (${d.items.length} jenis barang, Total ${window.formatRp(d.grandTotal)})`);
+        };
+
+        window.kirimWaStrukAccSekarang = function() {
+            const d = window.getSelectedStrukAccData();
+            if (!d.items || d.items.length === 0) {
+                window.showToast("⚠️ Pilih minimal 1 barang ACC untuk dikirim ke WA!", "error");
+                return;
+            }
+            const itemLines = d.items.map(it => {
+                const gar = it.garansi ? `\n   🛡️ _Garansi: ${it.garansi}_` : '';
+                return `*${it.no}. ${it.nama}*\n   ${it.qty} Pcs x ${window.formatRp(it.satuan)} = *${window.formatRp(it.subtotal)}*${gar}`;
+            }).join('\n\n');
+
+            const text =
+                `*${d.namaToko} - NOTA PENJUALAN ACC & GARANSI* 🛍️\n` +
+                `----------------------------------------\n` +
+                `No. Nota: *${d.noNota}*\n` +
+                `Waktu: ${d.waktu} | ${d.isoDate}\n` +
+                `Kasir: ${d.kasirName}\n` +
+                (d.pelanggan ? `Pelanggan: *${d.pelanggan}*\n` : '') +
+                `----------------------------------------\n` +
+                `${itemLines}\n` +
+                `----------------------------------------\n` +
+                `Total Item: *${d.totalJenis} Jenis (${d.totalQty} Pcs)*\n` +
+                (d.potongan > 0 ? `Subtotal: ${window.formatRp(d.subtotalGross)}\nPotongan: -${window.formatRp(d.potongan)}\n` : '') +
+                `*TOTAL BAYAR: ${window.formatRp(d.grandTotal)}*\n` +
+                `Metode Bayar: ${d.metodeBayar}\n` +
+                (d.uangBayarInput > 0 ? `Uang Diterima: ${window.formatRp(d.uangBayar)}\nKembalian: *${window.formatRp(d.kembalian)}*\n` : '') +
+                (d.catatanGaransi ? `\n📌 *Catatan Garansi:* ${d.catatanGaransi}\n` : '') +
+                `----------------------------------------\n` +
+                `${d.footerToko}\n` +
+                `_Simpan struk digital ini sebagai bukti klaim garansi._`;
+
+            window.kirimPesanWa('', text);
+            window.catatLogAktivitas('KIRIM WA STRUK ACC', `Mengirim nota WA ACC (${d.items.length} jenis barang, Total ${window.formatRp(d.grandTotal)})`);
+        };
+
+        window.cetakStrukBiasaSatuanDariModalAcc = function() {
+            const idTrx = window._strukAccAnchorTrxId;
+            window.closeModalStrukAcc();
+            if (idTrx && window.cetakStrukKasirBiasaTrx) {
+                window.cetakStrukKasirBiasaTrx(idTrx);
+            }
+        };
+
+        // =========================================================================
+        // FITUR MODE CEK FISIK STOK ETALase SIMPEL (AUDIT TANPA MERUSAK DATA)
+        // =========================================================================
+        window._cekFisikKatFilter = 'ALL';
+        window._cekFisikInputMap = {};
+
+        window.openModalCekFisikStok = function() {
+            const modal = document.getElementById('modalCekFisikStokOverlay');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            window.renderTabelCekFisikStok();
+        };
+
+        window.closeModalCekFisikStok = function() {
+            const modal = document.getElementById('modalCekFisikStokOverlay');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.setFilterKatCekFisik = function(kat) {
+            window._cekFisikKatFilter = kat || 'ALL';
+            ['ALL', 'ACC', 'VOUCHER', 'SP'].forEach(k => {
+                const btn = document.getElementById('btnCekFisikKat_' + k);
+                if (!btn) return;
+                if (k === window._cekFisikKatFilter) {
+                    btn.style.background = '#0D9488';
+                    btn.style.color = '#FFFFFF';
+                    btn.style.borderColor = '#0D9488';
+                } else {
+                    btn.style.background = '#F1F5F9';
+                    btn.style.color = '#334155';
+                    btn.style.borderColor = '#CBD5E1';
+                }
+            });
+            window.renderTabelCekFisikStok();
+        };
+
+        window.onInputQtyCekFisik = function(stokId, rawVal) {
+            const idKey = String(stokId);
+            if (rawVal === '' || rawVal === null || rawVal === undefined) {
+                delete window._cekFisikInputMap[idKey];
+            } else {
+                const num = parseInt(rawVal, 10);
+                if (!isNaN(num) && num >= 0) {
+                    window._cekFisikInputMap[idKey] = num;
+                } else {
+                    delete window._cekFisikInputMap[idKey];
+                }
+            }
+            window.renderTabelCekFisikStok();
+        };
+
+        window.isiOtomatisCekFisikSesuaiSistem = function() {
+            const items = window.getFilteredCekFisikItems();
+            items.forEach(s => {
+                const sisa = Number(s.stokAwal || 0) + Number(s.stokMasuk || 0) - Number(s.terjual || 0);
+                window._cekFisikInputMap[String(s.id)] = Math.max(0, sisa);
+            });
+            window.renderTabelCekFisikStok();
+            window.showToast("✅ Semua item yang tampil diisi sesuai stok sistem! Silakan ubah hanya barang yang selisih.", "success");
+        };
+
+        window.resetInputCekFisikStok = function() {
+            if (Object.keys(window._cekFisikInputMap || {}).length > 0) {
+                if (!confirm("Reset semua angka cek fisik yang sudah diketik?")) return;
+            }
+            window._cekFisikInputMap = {};
+            window.renderTabelCekFisikStok();
+        };
+
+        window.getFilteredCekFisikItems = function() {
+            const q = (document.getElementById('cekFisikSearchInput')?.value || '').trim().toUpperCase();
+            const onlyDiff = Boolean(document.getElementById('cekFisikFilterSelisihOnly')?.checked);
+            const katFilter = window._cekFisikKatFilter || 'ALL';
+
+            return (window.stokOpnameItems || []).filter(s => {
+                if (katFilter !== 'ALL' && s.kat !== katFilter) return false;
+                const nm = ((s.nama || s.namaBarang) || '').toUpperCase();
+                if (q && !nm.includes(q) && !(s.kat || '').toUpperCase().includes(q)) return false;
+                if (onlyDiff) {
+                    const inputVal = window._cekFisikInputMap[String(s.id)];
+                    if (inputVal === undefined) return false;
+                    const sisa = Number(s.stokAwal || 0) + Number(s.stokMasuk || 0) - Number(s.terjual || 0);
+                    if (Number(inputVal) === sisa) return false;
+                }
+                return true;
+            });
+        };
+
+        window.renderTabelCekFisikStok = function() {
+            const tbody = document.getElementById('bodyTabelCekFisikStok');
+            if (!tbody) return;
+
+            // Hitung ringkasan keseluruhan dari seluruh item yang sudah dicek
+            let dicekCount = 0;
+            let klopCount = 0;
+            let kurangCount = 0;
+            let lebihCount = 0;
+            let nominalSelisihKurang = 0;
+            let nominalSelisihLebih = 0;
+
+            (window.stokOpnameItems || []).forEach(s => {
+                const inputVal = window._cekFisikInputMap[String(s.id)];
+                if (inputVal === undefined) return;
+                dicekCount++;
+                const sisa = Number(s.stokAwal || 0) + Number(s.stokMasuk || 0) - Number(s.terjual || 0);
+                const diff = Number(inputVal) - sisa;
+                const hpp = Number(s.hargaModal || 0);
+                if (diff === 0) {
+                    klopCount++;
+                } else if (diff < 0) {
+                    kurangCount++;
+                    nominalSelisihKurang += Math.abs(diff) * hpp;
+                } else {
+                    lebihCount++;
+                    nominalSelisihLebih += diff * hpp;
+                }
+            });
+
+            const elDicek = document.getElementById('cekFisikCountDicek');
+            if (elDicek) elDicek.innerText = `${dicekCount} Item`;
+            const elKlop = document.getElementById('cekFisikCountKlop');
+            if (elKlop) elKlop.innerText = `${klopCount} Item`;
+            const elKurang = document.getElementById('cekFisikCountKurang');
+            if (elKurang) elKurang.innerText = `${kurangCount} Item (${window.formatRp(nominalSelisihKurang)})`;
+            const elLebih = document.getElementById('cekFisikCountLebih');
+            if (elLebih) elLebih.innerText = `${lebihCount} Item (${window.formatRp(nominalSelisihLebih)})`;
+
+            const list = window.getFilteredCekFisikItems();
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:18px; color:#94A3B8;">Tidak ada barang stok opname yang cocok dengan filter.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map((s, idx) => {
+                const idKey = String(s.id);
+                const nama = s.nama || s.namaBarang || '-';
+                const sisa = Number(s.stokAwal || 0) + Number(s.stokMasuk || 0) - Number(s.terjual || 0);
+                const hpp = Number(s.hargaModal || 0);
+                const inputVal = window._cekFisikInputMap[idKey];
+                const hasInput = inputVal !== undefined;
+                const diff = hasInput ? (Number(inputVal) - sisa) : 0;
+
+                let statusBadge = `<span style="color:#94A3B8; font-size:10px; font-weight:700;">Belum Diisi</span>`;
+                let rowBg = '';
+                if (hasInput) {
+                    if (diff === 0) {
+                        statusBadge = `<span style="background:#DCFCE7; color:#15803D; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">✅ KLOP (0)</span>`;
+                        rowBg = 'background:rgba(240,253,244,0.45);';
+                    } else if (diff < 0) {
+                        statusBadge = `<span style="background:#FEE2E2; color:#B91C1C; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">⚠️ KURANG ${diff} Pcs (-${window.formatRp(Math.abs(diff) * hpp)})</span>`;
+                        rowBg = 'background:rgba(254,242,242,0.65);';
+                    } else {
+                        statusBadge = `<span style="background:#E0F2FE; color:#0369A1; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">➕ LEBIH +${diff} Pcs (+${window.formatRp(diff * hpp)})</span>`;
+                        rowBg = 'background:rgba(240,249,255,0.65);';
+                    }
+                }
+
+                return `
+                    <tr style="${rowBg}">
+                        <td style="padding:7px 8px; text-align:center;">${idx + 1}</td>
+                        <td style="padding:7px 8px; font-weight:800; color:#0F172A;">${nama}</td>
+                        <td style="padding:7px 8px; text-align:center;"><span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#F1F5F9; color:#334155;">${s.kat || '-'}</span></td>
+                        <td style="padding:7px 8px; text-align:right; color:#64748B;">${window.formatRp(hpp)}</td>
+                        <td style="padding:7px 8px; text-align:center; font-weight:900; font-size:12px; color:${sisa < 0 ? '#DC2626' : '#0F172A'};">${sisa} Pcs</td>
+                        <td style="padding:7px 8px; text-align:center;">
+                            <input type="number" min="0" value="${hasInput ? inputVal : ''}" placeholder="..." oninput="window.onInputQtyCekFisik('${idKey}', this.value)" style="width:76px; padding:5px 6px; border-radius:7px; border:1.5px solid ${hasInput ? (diff === 0 ? '#16A34A' : (diff < 0 ? '#DC2626' : '#0284C7')) : '#CBD5E1'}; text-align:center; font-weight:800; font-size:12px;">
+                        </td>
+                        <td style="padding:7px 8px; text-align:center;">${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        window.kirimWaHasilCekFisikStok = function() {
+            const p = window.pengaturanToko || {};
+            const cabangName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+            const petugas = sessionStorage.getItem('zencell_user') || 'Kasir';
+            const checkedItems = [];
+            let klop = 0;
+            let kurang = 0;
+            let lebih = 0;
+            let nomKurang = 0;
+
+            (window.stokOpnameItems || []).forEach(s => {
+                const inputVal = window._cekFisikInputMap[String(s.id)];
+                if (inputVal === undefined) return;
+                const sisa = Number(s.stokAwal || 0) + Number(s.stokMasuk || 0) - Number(s.terjual || 0);
+                const diff = Number(inputVal) - sisa;
+                const hpp = Number(s.hargaModal || 0);
+                if (diff === 0) klop++;
+                else if (diff < 0) { kurang++; nomKurang += Math.abs(diff) * hpp; }
+                else lebih++;
+                checkedItems.push({
+                    nama: s.nama || s.namaBarang || '-',
+                    kat: s.kat || '-',
+                    sisa,
+                    fisik: Number(inputVal),
+                    diff,
+                    hpp
+                });
+            });
+
+            if (checkedItems.length === 0) {
+                window.showToast("⚠️ Belum ada angka fisik etalase yang diinput!", "error");
+                return;
+            }
+
+            const selisihList = checkedItems.filter(x => x.diff !== 0);
+            const detailSelisih = selisihList.length > 0
+                ? selisihList.map((x, i) => `${i + 1}. *${x.nama}* (${x.kat})\n   Sistem: ${x.sisa} | Fisik: ${x.fisik} -> *${x.diff > 0 ? '+' + x.diff : x.diff} Pcs* (${window.formatRp(Math.abs(x.diff) * x.hpp)})`).join('\n')
+                : `✅ *SEMUA BARANG YANG DICEK 100% KLOP DENGAN SISTEM!*`;
+
+            const text =
+                `*LAPORAN CEK FISIK STOK ETALASE (${cabangName})* 📋\n` +
+                `----------------------------------------\n` +
+                `Tanggal: ${window.getTodayIso()}\n` +
+                `Petugas Cek: *${petugas}*\n` +
+                `Total Barang Dicek: *${checkedItems.length} Jenis*\n` +
+                `• Klop / Sesuai: *${klop} Item*\n` +
+                `• Selisih Kurang: *${kurang} Item* (-${window.formatRp(nomKurang)})\n` +
+                `• Selisih Lebih: *${lebih} Item*\n` +
+                `----------------------------------------\n` +
+                `*RINCIAN BARANG SELISIH:*\n` +
+                `${detailSelisih}\n` +
+                `----------------------------------------\n` +
+                `_Laporan otomatis Cek Fisik Etalase ${cabangName}_`;
+
+            window.kirimPesanWa(p.waOwner || '', text);
+            window.catatLogAktivitas('CEK FISIK STOK', `Mengirim laporan cek fisik stok etalase (${checkedItems.length} item dicek, ${selisihList.length} selisih) ke WA`);
+        };
+
+        // =========================================================================
+        // DASHBOARD RINGKASAN GABUNGAN OWNER (ZENCELL 1 + ZENCELL 2 REALTIME)
+        // =========================================================================
+        window._lastCombinedOwnerReport = null;
+
+        window.openModalDashboardGabunganOwner = function() {
+            const roleNow = sessionStorage.getItem('zencell_role') || 'KASIR';
+            if (roleNow !== 'OWNER') {
+                window.showToast("🔒 Fitur Dashboard Gabungan 2 Cabang khusus untuk OWNER!", "error");
+                return;
+            }
+            const modal = document.getElementById('modalDashboardGabunganOwnerOverlay');
+            if (!modal) return;
+            const dPicker = document.getElementById('dashGabunganDateInput');
+            if (dPicker && !dPicker.value) dPicker.value = window.getTodayIso();
+            const mPicker = document.getElementById('dashGabunganMonthInput');
+            if (mPicker && !mPicker.value) mPicker.value = window.getTodayIso().slice(0, 7);
+            window.onChangeModePeriodeDashGabungan();
+            modal.style.display = 'flex';
+            window.muatDataDashboardGabunganOwner();
+        };
+
+        window.closeModalDashboardGabunganOwner = function() {
+            const modal = document.getElementById('modalDashboardGabunganOwnerOverlay');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.onChangeModePeriodeDashGabungan = function() {
+            const mode = document.getElementById('dashGabunganPeriodeMode')?.value || 'DAILY';
+            const dInput = document.getElementById('dashGabunganDateInput');
+            const mInput = document.getElementById('dashGabunganMonthInput');
+            if (dInput) dInput.style.display = mode === 'DAILY' ? 'inline-block' : 'none';
+            if (mInput) mInput.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+        };
+
+        window.extractArrayFromFbNode = function(raw) {
+            if (!raw) return [];
+            if (Array.isArray(raw)) return raw.filter(Boolean);
+            if (typeof raw === 'object') return Object.values(raw).filter(Boolean);
+            return [];
+        };
+
+        window.hitungMetrikCabangDariSnapshot = function(cabangSnap, mode, targetDate, targetMonth) {
+            const trxList = window.extractArrayFromFbNode(cabangSnap.transaksi);
+            const stokList = window.extractArrayFromFbNode(cabangSnap.stok);
+            const opsList = window.extractArrayFromFbNode(cabangSnap.operasional);
+            const piutangList = window.extractArrayFromFbNode(cabangSnap.piutang);
+            const saldoAwalObj = cabangSnap.saldoAwal || {};
+            const setoranList = window.extractArrayFromFbNode(cabangSnap.setoranOwner);
+            const belanjaStokList = window.extractArrayFromFbNode(cabangSnap.riwayatBelanjaStok);
+            const sparepartList = window.extractArrayFromFbNode(cabangSnap.sparepart);
+
+            // Hitung Terjual Stok untuk Valuasi Aset Etalase
+            const akunStokSet = new Set(['VOUCHER', 'SP', 'ACC']);
+            const stokMapById = new Map();
+            const stokMapByName = new Map();
+            stokList.forEach(s => {
+                s._terjualCalc = 0;
+                if (s.id !== undefined) stokMapById.set(String(s.id), s);
+                const nm = ((s.nama || s.namaBarang) || '').toUpperCase().trim();
+                if (nm) stokMapByName.set(`${s.kat || ''}||${nm}`, s);
+            });
+
+            let omsetPeriode = 0;
+            let cuanKotorPeriode = 0;
+            let trxCountPeriode = 0;
+            const visitGroupsSeen = new Set();
+
+            // Saldo Kas Laci & Bank/E-Wallet (Realtime Akumulatif seperti di Dashboard Cabang)
+            const saldoAkun = {};
+            Object.keys(saldoAwalObj).forEach(k => {
+                saldoAkun[k] = Number(saldoAwalObj[k] || 0);
+            });
+            const addSaldo = (akun, nom) => {
+                if (!akun || akun === '-' || akunStokSet.has(akun) || akun === 'PIUTANG') return;
+                saldoAkun[akun] = (saldoAkun[akun] || 0) + Number(nom || 0);
+            };
+
+            trxList.forEach(t => {
+                if (!t) return;
+                const ketUpper = String(t.ket || '').toUpperCase().trim();
+                const isPelunasan = Boolean(t.idPiutangRef || t.kat === 'PIUTANG' || t.akunKeluar1 === 'PIUTANG' || ketUpper.includes('[PELUNASAN UTANG]'));
+                const isInitUtang = Boolean(t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT');
+                const isMutasiCab = Boolean(t.isMutasiAntarCabang || ketUpper.includes('[MUTASI KE ') || ketUpper.includes('[TERIMA DARI '));
+                const isPindah = Boolean(t.isPindahSaldo || t.kat === 'PINDAH SALDO');
+
+                // Hitung terjual stok fisik
+                if (isInitUtang) {
+                    if (akunStokSet.has(t.akunKeluar1)) {
+                        const st = (t.idStokRef && stokMapById.get(String(t.idStokRef))) || stokMapByName.get(`${t.akunKeluar1}||${String(t.namaBarangStok || ketUpper).toUpperCase().trim()}`);
+                        if (st) st._terjualCalc += Number(t.qty || 1);
+                    }
+                } else if (t.isReturAcc) {
+                    if (t.kondisiReturLama === 'MASUK_STOK') {
+                        const stIn = (t.idStokReturMasukRef && stokMapById.get(String(t.idStokReturMasukRef))) || stokMapByName.get(`ACC||${String(t.namaBarangReturLama || '').toUpperCase().trim()}`);
+                        if (stIn) stIn._terjualCalc -= Number(t.qtyReturMasuk || t.qtyReturLama || 1);
+                    }
+                    if (t.modeSolusiRetur === 'TUKAR_BARANG' || !t.modeSolusiRetur) {
+                        const stOut = (t.idStokRef && stokMapById.get(String(t.idStokRef))) || stokMapByName.get(`ACC||${String(t.namaBarangStok || '').toUpperCase().trim()}`);
+                        if (stOut) stOut._terjualCalc += Number(t.qty || 1);
+                    }
+                } else if (!isPindah && !isPelunasan) {
+                    const akStok = akunStokSet.has(t.akunKeluar1) ? t.akunKeluar1 : (akunStokSet.has(t.akunKeluar2) ? t.akunKeluar2 : null);
+                    if (akStok) {
+                        const st = (t.idStokRef && stokMapById.get(String(t.idStokRef))) || stokMapByName.get(`${akStok}||${String(t.namaBarangStok || ketUpper).toUpperCase().trim()}`);
+                        if (st) st._terjualCalc += Number(t.qty || 1);
+                    }
+                }
+
+                // Update Saldo Kas & Bank
+                if (!isInitUtang) {
+                    if (t.isSplit && t.akunMasuk2) {
+                        addSaldo(t.akunMasuk1, t.jualSplit1);
+                        addSaldo(t.akunMasuk2, t.jualSplit2);
+                    } else {
+                        addSaldo(t.akunMasuk1, t.hargaJual);
+                    }
+                    if (t.isSplit && t.akunKeluar2) {
+                        addSaldo(t.akunKeluar1, -Number(t.modalSplit1 || 0));
+                        addSaldo(t.akunKeluar2, -Number(t.modalSplit2 || 0));
+                    } else {
+                        addSaldo(t.akunKeluar1, -Number(t.hargaModal || 0));
+                    }
+                }
+
+                // Filter Periode untuk Omset & Cuan
+                if (isInitUtang || isPindah || isMutasiCab) return;
+                const dIso = t.isoDate || '';
+                const matchPeriode = mode === 'DAILY'
+                    ? (dIso === targetDate)
+                    : (mode === 'MONTHLY' ? dIso.startsWith(targetMonth) : true);
+                if (matchPeriode) {
+                    omsetPeriode += Number(t.hargaJual || 0);
+                    cuanKotorPeriode += Number(t.cuan || 0);
+                    if (t.visitGroupId) {
+                        if (!visitGroupsSeen.has(t.visitGroupId)) {
+                            visitGroupsSeen.add(t.visitGroupId);
+                            trxCountPeriode++;
+                        }
+                    } else {
+                        trxCountPeriode++;
+                    }
+                }
+            });
+
+            // Potongan saldo dari Belanja Stok, Operasional, Sparepart, Setoran Owner
+            belanjaStokList.forEach(b => {
+                if (!b || b.sumberDana === 'TANPA POTONG SALDO' || b.sumberDana === 'STOK AWAL') return;
+                addSaldo(b.sumberDana || 'TUNAI LACI', -Number(b.totalBelanja || 0));
+            });
+
+            let bebanOpsPeriode = 0;
+            opsList.forEach(o => {
+                if (!o) return;
+                addSaldo(o.sumberDana || 'TUNAI LACI', -Number(o.nominal || 0));
+                const oIso = o.isoDate || '';
+                const matchP = mode === 'DAILY'
+                    ? (oIso === targetDate)
+                    : (mode === 'MONTHLY' ? oIso.startsWith(targetMonth) : true);
+                if (matchP && o.jenis !== 'PRIVE OWNER') {
+                    bebanOpsPeriode += Number(o.nominal || 0);
+                }
+            });
+
+            sparepartList.forEach(sp => {
+                if (!sp) return;
+                if (sp.sumberDana && sp.sumberDana !== 'STOK SENDIRI') {
+                    addSaldo(sp.sumberDana, -Number(sp.hargaBeli || 0));
+                }
+            });
+
+            setoranList.forEach(st => {
+                if (!st) return;
+                addSaldo(st.sumberAkun || 'TUNAI LACI', -Number(st.nominal || 0));
+            });
+
+            const tunaiLaci = Number(saldoAkun['TUNAI LACI'] || 0);
+            let totalBankWallet = 0;
+            Object.keys(saldoAkun).forEach(k => {
+                if (k !== 'TUNAI LACI' && !akunStokSet.has(k) && k !== 'PIUTANG') {
+                    totalBankWallet += Number(saldoAkun[k] || 0);
+                }
+            });
+
+            let nilaiAsetStok = 0;
+            let totalPcsStok = 0;
+            stokList.forEach(s => {
+                const sisa = Math.max(0, Number(s.stokAwal || 0) + Number(s.stokMasuk || 0) - Number(s._terjualCalc || 0));
+                totalPcsStok += sisa;
+                nilaiAsetStok += sisa * Number(s.hargaModal || 0);
+            });
+
+            let piutangAktifNominal = 0;
+            let piutangAktifCount = 0;
+            piutangList.forEach(p => {
+                if (!p || p.status === 'LUNAS') return;
+                const sisaJual = Number(p.nominalJual !== undefined ? p.nominalJual : (p.nominal || 0));
+                if (sisaJual > 0) {
+                    piutangAktifNominal += sisaJual;
+                    piutangAktifCount++;
+                }
+            });
+
+            return {
+                omset: omsetPeriode,
+                cuanKotor: cuanKotorPeriode,
+                bebanOps: bebanOpsPeriode,
+                labaBersih: cuanKotorPeriode - bebanOpsPeriode,
+                trxCount: trxCountPeriode,
+                tunaiLaci,
+                totalBankWallet,
+                nilaiAsetStok,
+                totalPcsStok,
+                piutangAktifNominal,
+                piutangAktifCount
+            };
+        };
+
+        window.muatDataDashboardGabunganOwner = async function() {
+            const dbRef = window.getDatabaseRef ? window.getDatabaseRef() : null;
+            if (!dbRef) {
+                window.showToast("⚠️ Koneksi Firebase belum siap!", "error");
+                return;
+            }
+            const mode = document.getElementById('dashGabunganPeriodeMode')?.value || 'DAILY';
+            const targetDate = document.getElementById('dashGabunganDateInput')?.value || window.getTodayIso();
+            const targetMonth = document.getElementById('dashGabunganMonthInput')?.value || window.getTodayIso().slice(0, 7);
+
+            const fetchCabangBundle = async (prefix) => {
+                const keys = ['transaksi', 'stok', 'operasional', 'piutang', 'saldoAwal', 'setoranOwner', 'riwayatBelanjaStok', 'sparepart'];
+                const snaps = await Promise.all(keys.map(k => dbRef.ref(`${prefix}_${k}`).once('value')));
+                const bundle = {};
+                keys.forEach((k, i) => { bundle[k] = snaps[i].val(); });
+                return bundle;
+            };
+
+            try {
+                const [bundle1, bundle2] = await Promise.all([
+                    fetchCabangBundle('zencell'),
+                    fetchCabangBundle('zencell2')
+                ]);
+
+                const m1 = window.hitungMetrikCabangDariSnapshot(bundle1, mode, targetDate, targetMonth);
+                const m2 = window.hitungMetrikCabangDariSnapshot(bundle2, mode, targetDate, targetMonth);
+
+                const totalOmset = m1.omset + m2.omset;
+                const totalTrx = m1.trxCount + m2.trxCount;
+                const totalCuanKotor = m1.cuanKotor + m2.cuanKotor;
+                const totalBebanOps = m1.bebanOps + m2.bebanOps;
+                const totalLabaBersih = m1.labaBersih + m2.labaBersih;
+                const totalKasTunai = m1.tunaiLaci + m2.tunaiLaci;
+                const totalBank = m1.totalBankWallet + m2.totalBankWallet;
+                const totalKasAll = totalKasTunai + totalBank;
+                const totalAsetStok = m1.nilaiAsetStok + m2.nilaiAsetStok;
+                const totalPiutang = m1.piutangAktifNominal + m2.piutangAktifNominal;
+                const totalPiutangCount = m1.piutangAktifCount + m2.piutangAktifCount;
+
+                const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+                setTxt('dashGabTotalOmset', window.formatRp(totalOmset));
+                setTxt('dashGabTotalTrxInfo', `${totalTrx} Transaksi Gabungan`);
+                setTxt('dashGabTotalCuanKotor', window.formatRp(totalCuanKotor));
+                setTxt('dashGabTotalBebanInfo', `Beban Ops: ${window.formatRp(totalBebanOps)}`);
+                setTxt('dashGabTotalLabaBersih', window.formatRp(totalLabaBersih));
+                setTxt('dashGabTotalKasLiquid', window.formatRp(totalKasAll));
+                setTxt('dashGabTotalKasRincian', `Laci: ${window.formatRp(totalKasTunai)} | Bank: ${window.formatRp(totalBank)}`);
+                setTxt('dashGabTotalAsetStok', window.formatRp(totalAsetStok));
+                setTxt('dashGabTotalPiutangInfo', `Piutang Aktif: ${window.formatRp(totalPiutang)} (${totalPiutangCount})`);
+
+                const rows = [
+                    { label: 'Omset Penjualan (Periode)', v1: window.formatRp(m1.omset), v2: window.formatRp(m2.omset), tot: window.formatRp(totalOmset), color: '#1D4ED8' },
+                    { label: 'Jumlah Transaksi / Kunjungan', v1: `${m1.trxCount} Trx`, v2: `${m2.trxCount} Trx`, tot: `${totalTrx} Trx`, color: '#0F172A' },
+                    { label: 'Laba Kotor / Cuan Transaksi', v1: window.formatRp(m1.cuanKotor), v2: window.formatRp(m2.cuanKotor), tot: window.formatRp(totalCuanKotor), color: '#059669' },
+                    { label: 'Beban Operasional Toko', v1: window.formatRp(m1.bebanOps), v2: window.formatRp(m2.bebanOps), tot: window.formatRp(totalBebanOps), color: '#DC2626' },
+                    { label: 'Laba Bersih Operasional (Net Profit)', v1: window.formatRp(m1.labaBersih), v2: window.formatRp(m2.labaBersih), tot: window.formatRp(totalLabaBersih), color: '#7C3AED' },
+                    { label: 'Saldo Kas Tunai Laci (Realtime)', v1: window.formatRp(m1.tunaiLaci), v2: window.formatRp(m2.tunaiLaci), tot: window.formatRp(totalKasTunai), color: '#0369A1' },
+                    { label: 'Total Saldo Bank & E-Wallet (Realtime)', v1: window.formatRp(m1.totalBankWallet), v2: window.formatRp(m2.totalBankWallet), tot: window.formatRp(totalBank), color: '#0284C7' },
+                    { label: 'Valuasi Modal Aset Stok Etalase', v1: `${window.formatRp(m1.nilaiAsetStok)} (${m1.totalPcsStok} Pcs)`, v2: `${window.formatRp(m2.nilaiAsetStok)} (${m2.totalPcsStok} Pcs)`, tot: `${window.formatRp(totalAsetStok)} (${m1.totalPcsStok + m2.totalPcsStok} Pcs)`, color: '#B45309' },
+                    { label: 'Piutang Pelanggan Belum Lunas', v1: `${window.formatRp(m1.piutangAktifNominal)} (${m1.piutangAktifCount})`, v2: `${window.formatRp(m2.piutangAktifNominal)} (${m2.piutangAktifCount})`, tot: `${window.formatRp(totalPiutang)} (${totalPiutangCount})`, color: '#BE123C' }
+                ];
+
+                const tbody = document.getElementById('bodyTabelPerbandinganCabangOwner');
+                if (tbody) {
+                    tbody.innerHTML = rows.map(r => `
+                        <tr style="border-bottom:1px solid #E2E8F0;">
+                            <td style="padding:9px 12px; font-weight:800; color:#1E293B;">${r.label}</td>
+                            <td style="padding:9px 12px; text-align:right; font-weight:700; color:#334155; background:#F8FAFC;">${r.v1}</td>
+                            <td style="padding:9px 12px; text-align:right; font-weight:700; color:#334155; background:#FAF5FF;">${r.v2}</td>
+                            <td style="padding:9px 12px; text-align:right; font-weight:900; color:${r.color}; background:#F0FDF4;">${r.tot}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                window._lastCombinedOwnerReport = {
+                    periodeLabel: mode === 'DAILY' ? `Harian (${targetDate})` : (mode === 'MONTHLY' ? `Bulanan (${targetMonth})` : 'Semua Periode'),
+                    m1, m2,
+                    totalOmset, totalTrx, totalCuanKotor, totalBebanOps, totalLabaBersih,
+                    totalKasTunai, totalBank, totalKasAll, totalAsetStok, totalPiutang
+                };
+            } catch (err) {
+                console.error(err);
+                window.showToast("⚠️ Gagal memuat data gabungan dari Firebase.", "error");
+            }
+        };
+
+        window.kirimWaRingkasanGabunganOwner = function() {
+            const r = window._lastCombinedOwnerReport;
+            if (!r) {
+                window.showToast("⚠️ Data gabungan belum selesai dimuat!", "error");
+                return;
+            }
+            const p = window.pengaturanToko || {};
+            const text =
+                `*👑 LAPORAN EKSEKUTIF GABUNGAN 2 CABANG (ZENCELL 1 + ZENCELL 2)*\n` +
+                `Periode: *${r.periodeLabel}*\n` +
+                `----------------------------------------\n` +
+                `*1. PERFORMA PENJUALAN & LABA:*\n` +
+                `• Omset Zencell 1: ${window.formatRp(r.m1.omset)} (${r.m1.trxCount} Trx)\n` +
+                `• Omset Zencell 2: ${window.formatRp(r.m2.omset)} (${r.m2.trxCount} Trx)\n` +
+                `• *TOTAL OMSET GABUNGAN: ${window.formatRp(r.totalOmset)}*\n\n` +
+                `• Cuan Kotor Zencell 1: ${window.formatRp(r.m1.cuanKotor)}\n` +
+                `• Cuan Kotor Zencell 2: ${window.formatRp(r.m2.cuanKotor)}\n` +
+                `• Beban Ops Gabungan: -${window.formatRp(r.totalBebanOps)}\n` +
+                `• *LABA BERSIH GABUNGAN: ${window.formatRp(r.totalLabaBersih)}*\n` +
+                `----------------------------------------\n` +
+                `*2. POSISI KAS & ASET REALTIME:*\n` +
+                `• Kas Laci (Zen 1 + Zen 2): ${window.formatRp(r.m1.tunaiLaci)} + ${window.formatRp(r.m2.tunaiLaci)} = *${window.formatRp(r.totalKasTunai)}*\n` +
+                `• Saldo Bank/Wallet (Zen 1 + Zen 2): *${window.formatRp(r.totalBank)}*\n` +
+                `• Valuasi Stok Etalase (Zen 1 + Zen 2): *${window.formatRp(r.totalAsetStok)}*\n` +
+                `• Total Piutang Aktif: *${window.formatRp(r.totalPiutang)}*\n` +
+                `----------------------------------------\n` +
+                `_Dashboard Owner Realtime POS ZENCELL 1 & 2_`;
+
+            window.kirimPesanWa(p.waOwner || '', text);
         };
 
         // --- FITUR FILTER STOK OPNAME & PENCARIAN PINTAR (FIND ALA EXCEL) ---
