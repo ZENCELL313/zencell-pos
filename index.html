@@ -379,23 +379,36 @@
         .header-title { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
         .header-logo-svg { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); background: #FFF; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
         .header-title h1 { font-size: 16px; font-weight: 800; color: #FFF; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .header-actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+        .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .btn-icon-hdr { 
-            background: rgba(255,255,255,0.2); color: #FFF; border: none; width: 34px; height: 34px; 
-            border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; justify-content: center; 
-            align-items: center; transition: transform 0.2s, background-color 0.2s; position: relative; overflow: visible; flex-shrink: 0;
+            background: rgba(255,255,255,0.22); color: #FFF; border: 1px solid rgba(255,255,255,0.55); width: 34px; height: 34px; 
+            border-radius: 50%; font-size: 14px; cursor: pointer; display: inline-flex; justify-content: center; 
+            align-items: center; transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease; position: relative; overflow: visible; flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.22);
+        }
+        .btn-icon-hdr:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-icon-hdr svg { flex-shrink: 0; }
+        .btn-icon-hdr.btn-pill-hdr {
+            width: auto;
+            border-radius: 999px;
+            padding: 0 10px;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
         }
         #btnHeaderGlobalFind {
             width: 34px; height: 34px; padding: 0; border-radius: 50%;
-            background: rgba(15,23,42,0.32); border: 1.5px solid rgba(254,240,138,0.75);
-            gap: 5px; font-size: 13px; font-weight: 800; color: #FEF08A;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            background: linear-gradient(135deg, #F59E0B, #EA580C);
+            border: 1px solid #FDE68A;
+            gap: 5px; font-size: 11.5px; font-weight: 800; color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(234, 88, 12, 0.38);
         }
-        #btnHeaderGlobalFind .find-btn-label,
-        #btnHeaderGlobalFind .kbd-shortcut {
+        #btnHeaderGlobalFind .find-btn-label {
             display: none;
         }
-        .btn-icon-hdr:active { transform: scale(0.9); }
+        .btn-icon-hdr:active { transform: scale(0.92); }
         .btn-icon-hdr:disabled { opacity: 0.4; cursor: not-allowed; }
 
         @media (max-width: 640px) {
@@ -405,8 +418,9 @@
             .header-logo-svg svg { width: 22px; height: 22px; }
             .header-title h1 { font-size: 13px; letter-spacing: 0.2px; }
             .header-actions { gap: 4px; }
-            .btn-icon-hdr, #btnHeaderGlobalFind { width: 30px; height: 30px; font-size: 13px; }
-            .btn-icon-hdr svg { width: 15px; height: 15px; }
+            .btn-icon-hdr, #btnHeaderGlobalFind { width: 30px; height: 30px; font-size: 12px; }
+            .btn-icon-hdr.btn-pill-hdr { width: auto; height: 30px; padding: 0 8px; font-size: 10px; gap: 3.5px; }
+            .btn-icon-hdr svg { width: 14px; height: 14px; }
             .header-status-bar { padding: 5px 8px; gap: 4px; }
         }
 
@@ -2538,15 +2552,15 @@
             .header-status-bar { font-size: 12.5px; padding: 6px 12px; }
             .status-marquee-box { margin: 0 12px; padding: 4px 14px; }
             .status-marquee-track { font-size: 12.5px; }
-            .btn-icon-hdr { width: 38px; height: 38px; font-size: 16px; }
+            .btn-icon-hdr { width: 36px; height: 36px; font-size: 15px; }
+            .btn-icon-hdr.btn-pill-hdr {
+                width: auto; height: 36px; padding: 0 12px; border-radius: 999px; font-size: 11.5px; gap: 5px;
+            }
             #btnHeaderGlobalFind {
-                width: auto; height: 38px; padding: 0 12px; border-radius: 999px; font-size: 12px;
+                width: auto; height: 36px; padding: 0 13px; border-radius: 999px; font-size: 11.5px;
             }
             #btnHeaderGlobalFind .find-btn-label {
-                display: inline-block; font-size: 11px; letter-spacing: 0.3px;
-            }
-            #btnHeaderGlobalFind .kbd-shortcut {
-                display: inline-block;
+                display: inline-block; font-size: 11.5px; letter-spacing: 0.4px;
             }
             .summary-grid { gap: 10px; margin-bottom: 10px; }
             .summary-card { padding: 11px 10px; border-radius: 12px; }
@@ -2930,14 +2944,17 @@
             .btn-icon-hdr {
                 padding: 4px 6.5px !important;
                 font-size: 11px !important;
-                border-radius: 7px !important;
+                border-radius: 999px !important;
                 min-height: 27px;
+            }
+            .btn-icon-hdr.btn-pill-hdr {
+                width: auto !important;
+                padding: 4px 8px !important;
             }
             #btnHeaderGlobalFind {
                 padding: 4px 7px !important;
             }
-            #btnHeaderGlobalFind .find-btn-label,
-            #btnHeaderGlobalFind .kbd-shortcut {
+            #btnHeaderGlobalFind .find-btn-label {
                 display: none !important;
             }
             .header-status-bar {
@@ -3541,9 +3558,9 @@
                 <div style="background:linear-gradient(135deg, #ECFDF5 0%, #E0F2FE 100%); border:1.5px solid #10B981; border-radius:12px; padding:10px 14px; font-size:11px; color:#065F46; margin-bottom:12px; line-height:1.45;">
                     <div style="font-weight:800; font-size:12px; margin-bottom:2px; display:flex; align-items:center; gap:6px;">
                         <span>🖨️</span>
-                        <span>PUSAT PENGATURAN PRINTER & KUSTOMISASI SEMUA JENIS NOTA (4 TIPE NOTA TERPISAH)</span>
+                        <span>PUSAT PENGATURAN PRINTER & KUSTOMISASI SEMUA JENIS NOTA (5 TIPE NOTA TERPISAH)</span>
                     </div>
-                    Setiap jenis nota memiliki pengaturan tersendiri. Pilih jenis nota di bawah untuk mengedit judul, syarat &amp; ketentuan, garansi, catatan kaki, serta memilih elemen apa saja yang ingin ditampilkan atau disembunyikan.
+                    Setiap jenis nota memiliki pengaturan tersendiri. Pilih jenis nota di bawah untuk mengedit judul, istilah metode bayar (misal LACI ➔ CASH), syarat &amp; ketentuan, garansi, catatan kaki, serta memilih elemen apa saja yang ingin ditampilkan atau disembunyikan.
                 </div>
 
                 <form onsubmit="simpanPengaturanPrinter(event)">
@@ -3593,7 +3610,7 @@
                         </div>
                     </div>
 
-                    <!-- Pemilih 4 Jenis Nota Berbeda -->
+                    <!-- Pemilih 5 Jenis Nota Berbeda -->
                     <div style="font-size:11px; font-weight:800; color:#475569; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.3px;">
                         👇 Pilih Jenis Nota yang Ingin Diatur / Diedit:
                     </div>
@@ -3609,6 +3626,9 @@
                         </button>
                         <button type="button" class="nota-type-tab-btn" id="btnNotaType-kasir" onclick="switchNotaSettingSubTab('kasir')">
                             <span>🛒</span> 4. Nota / Struk Kasir
+                        </button>
+                        <button type="button" class="nota-type-tab-btn" id="btnNotaType-acc" onclick="switchNotaSettingSubTab('acc')">
+                            <span>🎧</span> 5. Nota Khusus ACC
                         </button>
                     </div>
 
@@ -3858,6 +3878,65 @@
                                     <label class="nota-toggle-item"><input type="checkbox" id="nc_ks_showKasir" checked> <span>Tampilkan Nama Petugas Kasir</span></label>
                                     <label class="nota-toggle-item"><input type="checkbox" id="nc_ks_showKategori" checked> <span>Tampilkan Label Kategori Barang ([VOUCHER], [ACC])</span></label>
                                     <label class="nota-toggle-item"><input type="checkbox" id="nc_ks_showMetodeBayar" checked> <span>Tampilkan Rincian Akun / Metode Pembayaran</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANE 5: NOTA THERMAL KHUSUS PENJUALAN & GARANSI ACC / STOK -->
+                    <div id="notaSubPane-acc" class="nota-sub-pane">
+                        <div class="settings-card-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <div>
+                                    <h4 style="font-size:12.5px; font-weight:800; color:#B45309; margin:0;">🎧 Pengaturan Nota Thermal Khusus Penjualan &amp; Garansi ACC</h4>
+                                    <small style="font-size:10px; color:#64748B;">Khusus cetak nota penjualan aksesoris (otomatis gabung 1 nota untuk 1 konsumen yang sama)</small>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#D97706;" onclick="testPrintStrukAcc()">🖨️ Test Print Nota ACC</button>
+                                    <button type="button" class="btn" style="width:auto; padding:5px 10px; font-size:10.5px; background:#64748B;" onclick="resetNotaConfigPerType('acc')">🔄 Reset Default</button>
+                                </div>
+                            </div>
+
+                            <div class="row-2">
+                                <div class="form-group">
+                                    <label>Judul Header Nota ACC</label>
+                                    <input type="text" id="nc_acc_judulStruk" class="form-control" placeholder="NOTA PEMBELIAN & GARANSI ACC">
+                                </div>
+                                <div class="form-group">
+                                    <label>Sub-Judul Layanan di Bawah Nama Toko</label>
+                                    <input type="text" id="nc_acc_subJudul" class="form-control" placeholder="PUSAT AKSESORIS & SPAREPART GADGET">
+                                </div>
+                            </div>
+
+                            <div class="row-3">
+                                <div class="form-group">
+                                    <label>Prefix Nomor Nota ACC</label>
+                                    <input type="text" id="nc_acc_prefixNota" class="form-control" placeholder="ACC">
+                                </div>
+                                <div class="form-group">
+                                    <label>Istilah Bayar Saat "LACI" di Nota</label>
+                                    <input type="text" id="nc_acc_labelLaci" class="form-control" placeholder="CASH" title="Mengubah tulisan LACI pada struk konsumen menjadi bahasa umum seperti CASH atau TUNAI">
+                                    <small style="font-size:9px; color:#047857; font-weight:700;">💡 Cth: <b>CASH</b>, <b>TUNAI</b>, atau <b>CASH / TUNAI</b> (Berlaku di Nota ACC &amp; Kasir)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Teks Garansi Default (Jika Kosong)</label>
+                                    <input type="text" id="nc_acc_garansiDefault" class="form-control" placeholder="TANPA GARANSI (Cek di Tempat)">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:6px;">
+                                <label>Catatan Kaki / Ketentuan Klaim Garansi ACC</label>
+                                <textarea id="nc_acc_catatanFooter" class="form-control" rows="2" placeholder="Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus."></textarea>
+                            </div>
+
+                            <div style="margin-top:8px;">
+                                <label style="font-size:11px; font-weight:800; color:#0F172A;">☑️ Pilih Informasi yang Ditampilkan di Nota Khusus ACC:</label>
+                                <div class="nota-toggle-grid">
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_acc_showLogo" checked> <span>Tampilkan Logo Toko di Atas Nota</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_acc_showKasir" checked> <span>Tampilkan Nama Petugas Kasir</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_acc_showGaransiItem" checked> <span>Tampilkan Garansi di Tiap Baris Barang</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_acc_showMetodeBayar" checked> <span>Tampilkan Metode Pembayaran (CASH / Transfer)</span></label>
+                                    <label class="nota-toggle-item"><input type="checkbox" id="nc_acc_showTtd"> <span>Tampilkan Kolom Tanda Tangan / Cap Konter</span></label>
                                 </div>
                             </div>
                         </div>
@@ -4189,33 +4268,52 @@
                 </div>
                 <div class="header-actions">
                     <button class="btn-icon-hdr" id="btnHeaderGlobalFind" onclick="bukaModalGlobalFind()" title="Cari Data Cepat Ala Excel (Shortcut: Ctrl+F atau Ctrl+K)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         <span class="find-btn-label">CARI</span>
-                        <span class="kbd-shortcut">Ctrl+F</span>
                     </button>
-                    <button class="btn-icon-hdr" id="btnHeaderDashboardGabungan" onclick="window.openModalDashboardGabunganOwner()" title="Dashboard Ringkasan Gabungan: POS ZENCELL 1 + POS ZENCELL 2 (Khusus Owner)" style="display:none; background:linear-gradient(135deg, #059669, #0D9488); border:1px solid #6EE7B7; color:#FFFFFF; font-weight:900; font-size:10.5px; align-items:center; gap:3px; padding:0 8px;">
-                        <span>📊</span>
-                        <span>Z1+Z2</span>
+                    <button class="btn-icon-hdr btn-pill-hdr" id="btnHeaderDashboardGabungan" onclick="window.openModalDashboardGabunganOwner()" title="Dashboard Ringkasan Gabungan: POS ZENCELL 1 + POS ZENCELL 2 (Khusus Owner)" style="display:none; background:linear-gradient(135deg, #10B981, #059669); border:1px solid #A7F3D0; color:#FFFFFF; box-shadow:0 2px 6px rgba(16,185,129,0.38);">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        <span>GABUNGAN</span>
                     </button>
-                    <button class="btn-icon-hdr" id="btnHeaderBranchSwitch" onclick="window.toggleSwitchCabangCepat()" title="Saklar Pindah Cabang Cepat: POS ZENCELL 1 ⇄ POS ZENCELL 2 (Khusus Owner)" style="display:none; background:rgba(15,23,42,0.38); border:1px solid rgba(125,211,252,0.75); color:#E0F2FE; font-weight:900; font-size:10.5px; align-items:center; gap:3px; padding:0 7px;">
-                        <span>🏢</span>
+                    <button class="btn-icon-hdr btn-pill-hdr" id="btnHeaderBranchSwitch" onclick="window.toggleSwitchCabangCepat()" title="Saklar Pindah Cabang Cepat: POS ZENCELL 1 ⇄ POS ZENCELL 2 (Khusus Owner)" style="display:none; background:linear-gradient(135deg, #06B6D4, #0284C7); border:1px solid #A5F3FC; color:#FFFFFF; box-shadow:0 2px 6px rgba(6,182,212,0.38);">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
                         <span id="lblHeaderBranchSwitch">Z1</span>
                     </button>
-                    <button class="btn-icon-hdr" id="btnHeaderDpiScale" onclick="toggleDpiScalePopover(event)" title="Atur Skala / Presisi Tampilan HP (Infinix Note Edge & Poco F4 GT)" style="background:rgba(15,23,42,0.32); border:1px solid rgba(254,240,138,0.65); color:#FEF08A; font-weight:800; font-size:10.5px; display:inline-flex; align-items:center; gap:3px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                    <button class="btn-icon-hdr btn-pill-hdr" id="btnHeaderDpiScale" onclick="toggleDpiScalePopover(event)" title="Atur Skala / Presisi Tampilan HP (Infinix Note Edge & Poco F4 GT)" style="background:linear-gradient(135deg, #6366F1, #4F46E5); border:1px solid #C7D2FE; color:#FFFFFF; box-shadow:0 2px 6px rgba(99,102,241,0.38);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
                         <span id="lblHeaderDpiScale">AUTO</span>
                     </button>
-                    <button class="btn-icon-hdr" onclick="bukaModalLogAktivitas()" title="Log Aktivitas Sistem">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;">
+                    <button class="btn-icon-hdr" onclick="bukaModalLogAktivitas()" title="Log Aktivitas Sistem" style="background:linear-gradient(135deg, #14B8A6, #0EA5E9); border:1px solid #99F6E4; box-shadow:0 2px 6px rgba(14,165,233,0.38);" aria-label="Log Aktivitas Sistem">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                             <path d="M3 3v5h5"></path>
                             <path d="M12 7v5l4 2"></path>
                         </svg>
                     </button>
-                    <button class="btn-icon-hdr" onclick="switchTheme()" title="Ganti Tema">🎨</button>
-                    <button class="btn-icon-hdr" id="btnHeaderSetting" onclick="bukaMenuSettingJSON()" title="Pengaturan Toko (Khusus Owner)">⚙️</button>
+                    <button class="btn-icon-hdr" onclick="switchTheme()" title="Ganti Tema" style="background:linear-gradient(135deg, #EC4899, #8B5CF6); border:1px solid #FBCFE8; box-shadow:0 2px 6px rgba(236,72,153,0.38);" aria-label="Ganti Tema">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="13.5" cy="6.5" r=".5" fill="#FFFFFF"></circle>
+                            <circle cx="17.5" cy="10.5" r=".5" fill="#FFFFFF"></circle>
+                            <circle cx="8.5" cy="7.5" r=".5" fill="#FFFFFF"></circle>
+                            <circle cx="6.5" cy="12.5" r=".5" fill="#FFFFFF"></circle>
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-icon-hdr" id="btnHeaderSetting" onclick="bukaMenuSettingJSON()" title="Pengaturan Toko (Khusus Owner)" style="background:linear-gradient(135deg, #3B82F6, #4338CA); border:1px solid #BFDBFE; box-shadow:0 2px 6px rgba(59,130,246,0.38);" aria-label="Pengaturan Toko">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </button>
                     <button class="btn-icon-hdr" onclick="prosesLogout()" title="Logout Akun" style="background:linear-gradient(135deg, #38BDF8, #A855F7); border:1px solid #E9D5FF; box-shadow:0 2px 6px rgba(168,85,247,0.4);" aria-label="Logout Akun">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#FFF;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
                     </button>
                 </div>
             </div>
@@ -5205,7 +5303,7 @@
     <!-- MODAL POPUP PREVIEW & CETAK NOTA THERMAL KHUSUS ACC / STOK OPNAME (OTOMATIS GABUNG MULTI-BARANG 1 KONSUMEN) -->
     <div id="modalStrukAccOverlay" class="modal-overlay" onclick="if(event.target === this) window.closeModalStrukAcc()">
         <div class="modal-content" style="max-width:780px; width:96%;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px; gap:8px; flex-wrap:wrap;">
                 <div>
                     <h3 style="font-size:15.5px; color:#B45309; margin:0; display:flex; align-items:center; gap:6px;">
                         <span>🎧</span> Cetak Nota Thermal Pembelian &amp; Garansi ACC / Stok
@@ -5214,7 +5312,12 @@
                         Otomatis menggabungkan pembelian beberapa barang ACC dari 1 konsumen ke dalam 1 nota (mengecualikan transaksi non-ACC).
                     </small>
                 </div>
-                <button type="button" onclick="window.closeModalStrukAcc()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button type="button" class="btn" style="width:auto; background:#F59E0B; color:#FFF; padding:5px 10px; font-size:10.5px; font-weight:800;" onclick="bukaSettingNotaDariStruk('acc')" title="Atur format permanen Nota Khusus ACC di Menu Pengaturan">
+                        ⚙️ Atur Format Permanen
+                    </button>
+                    <button type="button" onclick="window.closeModalStrukAcc()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+                </div>
             </div>
 
             <div class="struk-tf-layout">
@@ -5235,14 +5338,18 @@
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
                         <div class="form-group" style="margin:0;">
-                            <label>Potongan / Diskon Nota (Opsional Rp)</label>
+                            <label>Metode Bayar di Nota</label>
+                            <input type="text" id="sacc_metodeBayarCustom" class="form-control" placeholder="CASH / TRANSFER" oninput="window.updateLivePreviewStrukAcc()" title="Otomatis mengubah LACI menjadi CASH (Bisa diketik manual jika perlu)">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Potongan / Diskon (Rp)</label>
                             <input type="number" id="sacc_potongan" class="form-control" placeholder="0" min="0" oninput="window.updateLivePreviewStrukAcc()">
                         </div>
                         <div class="form-group" style="margin:0;">
-                            <label>Uang Diterima / Hitung Kembalian (Opsional Rp)</label>
-                            <input type="number" id="sacc_uangBayar" class="form-control" placeholder="Kosongkan = Uang Pas" min="0" oninput="window.updateLivePreviewStrukAcc()">
+                            <label>Uang Diterima (Opsional)</label>
+                            <input type="number" id="sacc_uangBayar" class="form-control" placeholder="Kosong = Pas" min="0" oninput="window.updateLivePreviewStrukAcc()">
                         </div>
                     </div>
 
@@ -9414,9 +9521,9 @@
             if (lblHdr) lblHdr.innerText = isZ2 ? 'Z2' : 'Z1';
             if (btnHdr) {
                 btnHdr.style.background = isZ2
-                    ? 'linear-gradient(135deg, #0284C7, #1D4ED8)'
-                    : 'rgba(15,23,42,0.38)';
-                btnHdr.style.borderColor = isZ2 ? '#7DD3FC' : 'rgba(125,211,252,0.75)';
+                    ? 'linear-gradient(135deg, #2563EB, #7C3AED)'
+                    : 'linear-gradient(135deg, #06B6D4, #0284C7)';
+                btnHdr.style.borderColor = isZ2 ? '#C4B5FD' : '#A5F3FC';
             }
 
             const b1Login = document.getElementById('btnLoginBranch1');
@@ -11052,8 +11159,9 @@
         window.tandaiMutasiCabangAsalSudahDiterima = async function(packetObj) {
             if (!packetObj) return;
             try {
-                const fromBranch = String(packetObj.fromCabang || (window.ACTIVE_CABANG === '2' ? '1' : '2'));
-                const fromRoot = fromBranch === '2' ? 'zencell2Nodes' : 'zencellNodes';
+                const fromBranch = String(packetObj.fromCabang || (window.ACTIVE_CABANG === '2' ? '1' : '2')).toUpperCase();
+                const isFromZ2 = fromBranch === '2' || fromBranch.includes('ZENCELL 2') || fromBranch.includes('ZEN 2');
+                const fromRoot = isFromZ2 ? 'zencell2Nodes' : 'zencellNodes';
                 const rawIds = Array.isArray(packetObj.sourceTrxIds)
                     ? packetObj.sourceTrxIds
                     : (packetObj.sourceTrxId ? [packetObj.sourceTrxId] : []);
@@ -11924,6 +12032,19 @@
                     showKasir: true,
                     showKategori: true,
                     showMetodeBayar: true
+                },
+                acc: {
+                    judulStruk: 'NOTA PEMBELIAN & GARANSI ACC',
+                    subJudul: 'PUSAT AKSESORIS & SPAREPART GADGET',
+                    prefixNota: 'ACC',
+                    labelLaci: 'CASH',
+                    garansiDefault: 'TANPA GARANSI (Cek di Tempat)',
+                    catatanFooter: 'Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus.',
+                    showLogo: true,
+                    showKasir: true,
+                    showGaransiItem: true,
+                    showMetodeBayar: true,
+                    showTtd: false
                 }
             };
         };
@@ -11935,8 +12056,24 @@
                 servisMasuk: Object.assign({}, def.servisMasuk, saved.servisMasuk || {}),
                 servisLunas: Object.assign({}, def.servisLunas, saved.servisLunas || {}),
                 transfer: Object.assign({}, def.transfer, saved.transfer || {}),
-                kasir: Object.assign({}, def.kasir, saved.kasir || {})
+                kasir: Object.assign({}, def.kasir, saved.kasir || {}),
+                acc: Object.assign({}, def.acc, saved.acc || {})
             };
+        };
+
+        // Helper mengubah istilah akun internal (seperti LACI, DANA ECA, QRIS (PIPIT)) menjadi bahasa umum konsumen di Nota/Struk
+        window.formatMetodeBayarUntukNota = function(rawAkun) {
+            const ncAcc = (window.getNotaConfig && window.getNotaConfig().acc) ? window.getNotaConfig().acc : {};
+            const labelCash = (ncAcc.labelLaci && String(ncAcc.labelLaci).trim()) ? String(ncAcc.labelLaci).trim().toUpperCase() : 'CASH';
+            const raw = String(rawAkun || '').trim().toUpperCase();
+            if (!raw || raw === 'LACI' || raw === 'TUNAI LACI') return labelCash;
+            if (raw.includes('+')) {
+                return raw.split('+').map(part => window.formatMetodeBayarUntukNota(part)).join(' + ');
+            }
+            if (raw.startsWith('QRIS')) return 'QRIS';
+            if (raw.startsWith('DANA ')) return 'DANA';
+            if (raw === 'BRI AA') return 'BRI';
+            return raw;
         };
 
         window.formatSyaratNotaHtml = function(garansiLine, multiLineText) {
@@ -23046,7 +23183,7 @@
         window.closeModalSetting = function() { document.getElementById('modalSettingOverlay').classList.remove('show'); };
 
         window.switchNotaSettingSubTab = function(typeName) {
-            ['servisMasuk', 'servisLunas', 'transfer', 'kasir'].forEach(k => {
+            ['servisMasuk', 'servisLunas', 'transfer', 'kasir', 'acc'].forEach(k => {
                 const btn = document.getElementById('btnNotaType-' + k);
                 const pane = document.getElementById('notaSubPane-' + k);
                 if (btn) btn.classList.toggle('active', k === typeName);
@@ -23115,6 +23252,19 @@
             setChk('nc_ks_showKasir', nc.kasir.showKasir);
             setChk('nc_ks_showKategori', nc.kasir.showKategori);
             setChk('nc_ks_showMetodeBayar', nc.kasir.showMetodeBayar);
+
+            // 5. Nota Thermal Khusus ACC
+            setVal('nc_acc_judulStruk', nc.acc.judulStruk);
+            setVal('nc_acc_subJudul', nc.acc.subJudul);
+            setVal('nc_acc_prefixNota', nc.acc.prefixNota || 'ACC');
+            setVal('nc_acc_labelLaci', nc.acc.labelLaci || 'CASH');
+            setVal('nc_acc_garansiDefault', nc.acc.garansiDefault);
+            setVal('nc_acc_catatanFooter', nc.acc.catatanFooter);
+            setChk('nc_acc_showLogo', nc.acc.showLogo);
+            setChk('nc_acc_showKasir', nc.acc.showKasir);
+            setChk('nc_acc_showGaransiItem', nc.acc.showGaransiItem);
+            setChk('nc_acc_showMetodeBayar', nc.acc.showMetodeBayar);
+            setChk('nc_acc_showTtd', nc.acc.showTtd);
         };
 
         window.resetNotaConfigPerType = function(typeName) {
@@ -23131,7 +23281,8 @@
                 window.showToast('⛔ Pengaturan format nota permanen hanya dapat diakses oleh akun OWNER.', 'error');
                 return;
             }
-            window.closeModalStrukTransfer();
+            if (window.closeModalStrukTransfer) window.closeModalStrukTransfer();
+            if (window.closeModalStrukAcc) window.closeModalStrukAcc();
             window.bukaPengaturan('printer');
             window.switchNotaSettingSubTab(notaType);
         };
@@ -25400,6 +25551,19 @@
                     showKasir: getChk('nc_ks_showKasir', true),
                     showKategori: getChk('nc_ks_showKategori', true),
                     showMetodeBayar: getChk('nc_ks_showMetodeBayar', true)
+                },
+                acc: {
+                    judulStruk: getVal('nc_acc_judulStruk', def.acc.judulStruk),
+                    subJudul: getVal('nc_acc_subJudul', def.acc.subJudul),
+                    prefixNota: getVal('nc_acc_prefixNota', def.acc.prefixNota || 'ACC'),
+                    labelLaci: getVal('nc_acc_labelLaci', def.acc.labelLaci || 'CASH'),
+                    garansiDefault: getVal('nc_acc_garansiDefault', def.acc.garansiDefault),
+                    catatanFooter: getVal('nc_acc_catatanFooter', def.acc.catatanFooter),
+                    showLogo: getChk('nc_acc_showLogo', true),
+                    showKasir: getChk('nc_acc_showKasir', true),
+                    showGaransiItem: getChk('nc_acc_showGaransiItem', true),
+                    showMetodeBayar: getChk('nc_acc_showMetodeBayar', true),
+                    showTtd: getChk('nc_acc_showTtd', false)
                 }
             };
 
@@ -25412,10 +25576,10 @@
             localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
             window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
             if (window.updateBluetoothPrinterStatusUI) window.updateBluetoothPrinterStatusUI();
-            window.catatLogAktivitas('PENGATURAN NOTA & PRINTER', `Menyimpan pengaturan 4 jenis nota, ukuran kertas (${ukuran}), metode (${metode})`);
+            window.catatLogAktivitas('PENGATURAN NOTA & PRINTER', `Menyimpan pengaturan 5 jenis nota, ukuran kertas (${ukuran}), metode (${metode})`);
 
             window.flashButtonSuccess('btnSimpanPrinter', '✅ TERSIMPAN!', '💾 SIMPAN SEMUA PENGATURAN NOTA & PRINTER');
-            window.showSettingBanner(`✅ Pengaturan ke-4 jenis nota & printer (${ukuran} • ${metode}) berhasil disimpan!`);
+            window.showSettingBanner(`✅ Pengaturan ke-5 jenis nota & printer (${ukuran} • ${metode}) berhasil disimpan!`);
             window.showToast(`✅ Semua pengaturan nota & printer (${ukuran}) berhasil disimpan!`, 'success');
         };
 
@@ -25977,8 +26141,8 @@
             const kasirName = sessionStorage.getItem('zencell_user') || 'Kasir';
             const garansiStr = window.resolveGaransiNotaTrx(t);
             const metodeMasuk = (t.isSplit && t.akunMasuk2)
-                ? `${t.akunMasuk1} (${window.formatRp(t.jualSplit1)}) + ${t.akunMasuk2} (${window.formatRp(t.jualSplit2)})`
-                : (t.akunMasuk1 || 'TUNAI LACI');
+                ? `${window.formatMetodeBayarUntukNota(t.akunMasuk1)} (${window.formatRp(t.jualSplit1)}) + ${window.formatMetodeBayarUntukNota(t.akunMasuk2)} (${window.formatRp(t.jualSplit2)})`
+                : window.formatMetodeBayarUntukNota(t.akunMasuk1 || 'LACI');
 
             let detailBody = '';
             if (t.isReturAcc) {
@@ -26449,10 +26613,10 @@
 
                 if (nc.showMetodeBayar) {
                     if (t.isSplit && t.akunMasuk2) {
-                        pushTxt(window.escPosFormatLR(`${t.akunMasuk1}:`, window.formatRp(t.jualSplit1), cols));
-                        pushTxt(window.escPosFormatLR(`${t.akunMasuk2}:`, window.formatRp(t.jualSplit2), cols));
+                        pushTxt(window.escPosFormatLR(`${window.formatMetodeBayarUntukNota(t.akunMasuk1)}:`, window.formatRp(t.jualSplit1), cols));
+                        pushTxt(window.escPosFormatLR(`${window.formatMetodeBayarUntukNota(t.akunMasuk2)}:`, window.formatRp(t.jualSplit2), cols));
                     } else {
-                        pushTxt(window.escPosFormatLR(`BAYAR (${t.akunMasuk1 || 'LACI'}):`, window.formatRp(totalJual), cols));
+                        pushTxt(window.escPosFormatLR(`BAYAR (${window.formatMetodeBayarUntukNota(t.akunMasuk1 || 'LACI')}):`, window.formatRp(totalJual), cols));
                     }
                 }
             }
@@ -26540,15 +26704,15 @@
             const metodeMasukHtml = nc.showMetodeBayar
                 ? ((t.isSplit && t.akunMasuk2)
                     ? `<div style="display:flex; justify-content:space-between; font-size:10px;">
-                           <span>${t.akunMasuk1}:</span>
+                           <span>${window.formatMetodeBayarUntukNota(t.akunMasuk1)}:</span>
                            <span>${window.formatRp(t.jualSplit1)}</span>
                        </div>
                        <div style="display:flex; justify-content:space-between; font-size:10px;">
-                           <span>${t.akunMasuk2}:</span>
+                           <span>${window.formatMetodeBayarUntukNota(t.akunMasuk2)}:</span>
                            <span>${window.formatRp(t.jualSplit2)}</span>
                        </div>`
                     : `<div style="display:flex; justify-content:space-between; font-size:10px;">
-                           <span>BAYAR (${t.akunMasuk1 || 'LACI'}):</span>
+                           <span>BAYAR (${window.formatMetodeBayarUntukNota(t.akunMasuk1 || 'LACI')}):</span>
                            <span>${window.formatRp(totalJual)}</span>
                        </div>`)
                 : '';
@@ -27527,7 +27691,7 @@
                     </div>
                     ${nc.showMetodeBayar ? `
                     <div style="display:flex; justify-content:space-between; font-size:10px;">
-                        <span>BAYAR (LACI):</span>
+                        <span>BAYAR (${window.formatMetodeBayarUntukNota('LACI')}):</span>
                         <span>Rp40.000</span>
                     </div>` : ''}
                     <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;">
@@ -27798,19 +27962,22 @@
 
             window._strukAccCandidateList = allAccSameDay;
 
+            const ncAcc = (window.getNotaConfig && window.getNotaConfig().acc) ? window.getNotaConfig().acc : {};
             const elPrimary = document.getElementById('sacc_primaryTrxId');
             if (elPrimary) elPrimary.value = String(anchorTrx.id);
             const elPelanggan = document.getElementById('sacc_namaPembeli');
             if (elPelanggan) elPelanggan.value = anchorTrx.namaPelanggan || '';
             const elJudul = document.getElementById('sacc_judulStruk');
-            if (elJudul && !elJudul.value) elJudul.value = 'NOTA PEMBELIAN & GARANSI ACC';
+            if (elJudul) elJudul.value = ncAcc.judulStruk || 'NOTA PEMBELIAN & GARANSI ACC';
+            const elMetodeCustom = document.getElementById('sacc_metodeBayarCustom');
+            if (elMetodeCustom) elMetodeCustom.value = '';
             const elPotongan = document.getElementById('sacc_potongan');
             if (elPotongan) elPotongan.value = '';
             const elUangBayar = document.getElementById('sacc_uangBayar');
             if (elUangBayar) elUangBayar.value = '';
             const elCatatan = document.getElementById('sacc_catatanFooter');
-            if (elCatatan && !elCatatan.value) {
-                elCatatan.value = 'Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus.';
+            if (elCatatan) {
+                elCatatan.value = ncAcc.catatanFooter || 'Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus.';
             }
 
             const bannerEl = document.getElementById('sacc_groupAutoInfoBanner');
@@ -27828,6 +27995,7 @@
 
             if (window.updateBluetoothPrinterStatusUI) window.updateBluetoothPrinterStatusUI();
             window.renderStrukAccItemListUI();
+            window.syncDefaultMetodeBayarInputStrukAcc();
             window.updateLivePreviewStrukAcc();
 
             const modal = document.getElementById('modalStrukAccOverlay');
@@ -27837,6 +28005,21 @@
         window.closeModalStrukAcc = function() {
             const modal = document.getElementById('modalStrukAccOverlay');
             if (modal) modal.classList.remove('show');
+        };
+
+        window.syncDefaultMetodeBayarInputStrukAcc = function() {
+            const elMetode = document.getElementById('sacc_metodeBayarCustom');
+            if (!elMetode) return;
+            const selectedItems = (window._strukAccCandidateList || []).filter(x => window._strukAccSelectedIds.has(String(x.id)));
+            const metodeSet = new Set();
+            selectedItems.forEach(item => {
+                if (item.isSplit && item.akunMasuk2) {
+                    metodeSet.add(`${window.formatMetodeBayarUntukNota(item.akunMasuk1)} + ${window.formatMetodeBayarUntukNota(item.akunMasuk2)}`);
+                } else {
+                    metodeSet.add(window.formatMetodeBayarUntukNota(item.akunMasuk1 || 'LACI'));
+                }
+            });
+            elMetode.value = Array.from(metodeSet).join(', ') || window.formatMetodeBayarUntukNota('LACI');
         };
 
         window.renderStrukAccItemListUI = function() {
@@ -27864,6 +28047,9 @@
                 const subtotal = Number(item.hargaJual || 0);
                 const hargaSatuan = Math.round(subtotal / qty);
                 const garansi = window.resolveGaransiNotaTrx ? window.resolveGaransiNotaTrx(item) : (item.garansiStruk || '');
+                const labelBayar = item.isSplit && item.akunMasuk2
+                    ? `${window.formatMetodeBayarUntukNota(item.akunMasuk1)}+${window.formatMetodeBayarUntukNota(item.akunMasuk2)}`
+                    : window.formatMetodeBayarUntukNota(item.akunMasuk1 || 'LACI');
 
                 return `
                     <label style="display:flex; align-items:flex-start; gap:8px; padding:7px 9px; border-radius:8px; border:1.5px solid ${isChecked ? '#F59E0B' : '#E2E8F0'}; background:${isChecked ? '#FFFBEB' : '#FFFFFF'}; cursor:pointer; transition:all 0.15s;">
@@ -27876,7 +28062,7 @@
                             <div style="display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-top:2px; font-size:10px; color:#64748B;">
                                 <span>🕒 ${item.waktu || '-'}</span>
                                 <span>• <b>${qty} Pcs</b> @ ${window.formatRp(hargaSatuan)}</span>
-                                <span>• ${item.akunMasuk1 || 'LACI'}</span>
+                                <span>• 💳 <b>${labelBayar}</b></span>
                                 ${garansi ? `<span style="background:#DCFCE7; color:#15803D; font-weight:800; padding:0 5px; border-radius:4px;">🛡️ ${garansi}</span>` : ''}
                                 ${isAnchor ? `<span style="background:#DBEAFE; color:#1D4ED8; font-weight:800; padding:0 5px; border-radius:4px;">📌 DIKLIK</span>` : ''}
                                 ${(!isAnchor && isSameGroup) ? `<span style="background:#E0F2FE; color:#0369A1; font-weight:800; padding:0 5px; border-radius:4px;">🔗 1 KONSUMEN SAMA</span>` : ''}
@@ -27899,6 +28085,7 @@
                 window._strukAccSelectedIds.delete(String(idStr));
             }
             window.renderStrukAccItemListUI();
+            window.syncDefaultMetodeBayarInputStrukAcc();
             window.updateLivePreviewStrukAcc();
         };
 
@@ -27907,6 +28094,7 @@
                 window._strukAccSelectedIds.add(String(x.id));
             });
             window.renderStrukAccItemListUI();
+            window.syncDefaultMetodeBayarInputStrukAcc();
             window.updateLivePreviewStrukAcc();
         };
 
@@ -27924,26 +28112,31 @@
                 }
             }
             window.renderStrukAccItemListUI();
+            window.syncDefaultMetodeBayarInputStrukAcc();
             window.updateLivePreviewStrukAcc();
         };
 
         window.getSelectedStrukAccData = function() {
             const p = window.pengaturanToko || {};
+            const ncAcc = (window.getNotaConfig && window.getNotaConfig().acc) ? window.getNotaConfig().acc : {};
             const defaultCabangName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
             const namaToko = p.namaToko || defaultCabangName;
+            const subJudul = ncAcc.subJudul !== undefined ? ncAcc.subJudul : 'PUSAT AKSESORIS & SPAREPART GADGET';
             const alamatToko = p.alamatToko || 'Pusat Layanan Aksesoris, Gadget & Servis HP';
             const kontakToko = p.kontakToko || '';
+            const logoUrl = (ncAcc.showLogo !== false && p.logoUrl) ? p.logoUrl : '';
             const kasirName = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
 
             const selectedItems = (window._strukAccCandidateList || []).filter(x => window._strukAccSelectedIds.has(String(x.id)));
             const firstItem = selectedItems[0] || (window.transaksiJurnal || []).find(x => String(x.id) === String(window._strukAccAnchorTrxId)) || {};
 
-            const noNota = `ACC-${String(firstItem.id || Date.now()).slice(-6)}`;
+            const prefixNota = (ncAcc.prefixNota || 'ACC').trim().toUpperCase();
+            const noNota = `${prefixNota}-${String(firstItem.id || Date.now()).slice(-6)}`;
             const pelanggan = (document.getElementById('sacc_namaPembeli')?.value || '').trim().toUpperCase();
-            const judulStruk = (document.getElementById('sacc_judulStruk')?.value || 'NOTA PEMBELIAN & GARANSI ACC').trim().toUpperCase();
+            const judulStruk = (document.getElementById('sacc_judulStruk')?.value || ncAcc.judulStruk || 'NOTA PEMBELIAN & GARANSI ACC').trim().toUpperCase();
             const potongan = Math.max(0, Number(document.getElementById('sacc_potongan')?.value || 0));
             const uangBayarInput = Math.max(0, Number(document.getElementById('sacc_uangBayar')?.value || 0));
-            const catatanFooter = (document.getElementById('sacc_catatanFooter')?.value || 'Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus.').trim();
+            const catatanFooter = (document.getElementById('sacc_catatanFooter')?.value || ncAcc.catatanFooter || 'Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus.').trim();
 
             let totalQty = 0;
             let subtotalGross = 0;
@@ -27953,13 +28146,14 @@
                 const qty = Math.max(1, Number(item.qty || 1));
                 const sub = Number(item.hargaJual || 0);
                 const satuan = Math.round(sub / qty);
-                const garansi = window.resolveGaransiNotaTrx ? window.resolveGaransiNotaTrx(item) : (item.garansiStruk || '');
+                const rawGar = window.resolveGaransiNotaTrx ? window.resolveGaransiNotaTrx(item) : (item.garansiStruk || ncAcc.garansiDefault || '');
+                const garansi = ncAcc.showGaransiItem !== false ? rawGar : '';
                 totalQty += qty;
                 subtotalGross += sub;
                 if (item.isSplit && item.akunMasuk2) {
-                    metodeSet.add(`${item.akunMasuk1}+${item.akunMasuk2}`);
-                } else if (item.akunMasuk1) {
-                    metodeSet.add(item.akunMasuk1);
+                    metodeSet.add(`${window.formatMetodeBayarUntukNota(item.akunMasuk1)} + ${window.formatMetodeBayarUntukNota(item.akunMasuk2)}`);
+                } else {
+                    metodeSet.add(window.formatMetodeBayarUntukNota(item.akunMasuk1 || 'LACI'));
                 }
                 return {
                     no: idx + 1,
@@ -27976,13 +28170,19 @@
             const grandTotal = Math.max(0, subtotalGross - potongan);
             const uangBayar = uangBayarInput > 0 ? uangBayarInput : grandTotal;
             const kembalian = Math.max(0, uangBayar - grandTotal);
-            const metodeBayar = Array.from(metodeSet).join(', ') || 'LACI';
+            const customMetodeInput = (document.getElementById('sacc_metodeBayarCustom')?.value || '').trim().toUpperCase();
+            const metodeBayar = customMetodeInput || Array.from(metodeSet).join(', ') || window.formatMetodeBayarUntukNota('LACI');
 
             return {
                 namaToko,
+                subJudul,
                 alamatToko,
                 kontakToko,
+                logoUrl,
                 kasirName,
+                showKasir: ncAcc.showKasir !== false,
+                showMetodeBayar: ncAcc.showMetodeBayar !== false,
+                showTtd: Boolean(ncAcc.showTtd),
                 noNota,
                 pelanggan,
                 judulStruk,
@@ -28018,7 +28218,9 @@
             return `
                 <div style="font-family:'Courier New', Courier, monospace; color:#000; line-height:1.35;">
                     <div style="text-align:center;">
+                        ${d.logoUrl ? `<img src="${d.logoUrl}" style="max-height:34px; margin-bottom:3px; object-fit:contain;"><br>` : ''}
                         <div style="font-size:15px; font-weight:900; letter-spacing:0.5px;">${d.namaToko}</div>
+                        ${d.subJudul ? `<div style="font-size:9.5px; font-weight:800;">${d.subJudul}</div>` : ''}
                         <div style="font-size:10px;">${d.alamatToko}</div>
                         ${d.kontakToko ? `<div style="font-size:10px;">WA/Telp: ${d.kontakToko}</div>` : ''}
                         <div style="display:inline-block; margin-top:4px; padding:2px 8px; border:1px solid #000; font-size:10px; font-weight:900;">
@@ -28031,7 +28233,7 @@
                     <div style="font-size:10.5px;">
                         <div style="display:flex; justify-content:space-between;"><span>No. Nota</span><b>${d.noNota}</b></div>
                         <div style="display:flex; justify-content:space-between;"><span>Waktu</span><span>${d.isoDate} ${d.waktu}</span></div>
-                        <div style="display:flex; justify-content:space-between;"><span>Kasir</span><span>${d.kasirName}</span></div>
+                        ${d.showKasir !== false ? `<div style="display:flex; justify-content:space-between;"><span>Kasir</span><span>${d.kasirName}</span></div>` : ''}
                         ${d.pelanggan ? `<div style="display:flex; justify-content:space-between;"><span>Pembeli</span><b>${d.pelanggan}</b></div>` : ''}
                     </div>
 
@@ -28062,10 +28264,11 @@
                             <span>TOTAL BAYAR</span>
                             <span>${window.formatRp(d.grandTotal)}</span>
                         </div>
+                        ${d.showMetodeBayar !== false ? `
                         <div style="display:flex; justify-content:space-between; margin-top:3px; font-size:10.5px;">
                             <span>Metode Bayar</span>
                             <b>${d.metodeBayar}</b>
-                        </div>
+                        </div>` : ''}
                         ${d.uangBayarInput > 0 ? `
                             <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:10.5px;">
                                 <span>Uang Diterima</span>
@@ -28077,6 +28280,14 @@
                             </div>
                         ` : ''}
                     </div>
+
+                    ${d.showTtd ? `
+                    <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px; text-align:center; padding:2px 6px;">
+                        <div>Pembeli<br><br><br>( ............ )</div>
+                        <div>Hormat Kami<br><br><br>( ${d.kasirName} )</div>
+                    </div>
+                    ` : ''}
 
                     <div style="border-top:1px dashed #000; margin:6px 0;"></div>
 
@@ -28110,6 +28321,7 @@
             pushTxt(String(d.namaToko || 'POS ZENCELL').toUpperCase() + '\n');
             pushCmd(0x1B, 0x45, 0x00);
 
+            if (d.subJudul) pushTxt(window.escPosWrapCenter(d.subJudul, cols));
             if (d.alamatToko) pushTxt(window.escPosWrapCenter(d.alamatToko, cols));
             if (d.kontakToko) pushTxt(window.escPosWrapCenter('WA/Telp: ' + d.kontakToko, cols));
 
@@ -28123,7 +28335,7 @@
             pushCmd(0x1B, 0x61, 0x00);
             pushTxt(window.escPosFormatLR('NO. NOTA:', d.noNota, cols));
             pushTxt(window.escPosFormatLR('WAKTU:', `${d.isoDate} ${d.waktu}`, cols));
-            pushTxt(window.escPosFormatLR('KASIR:', d.kasirName, cols));
+            if (d.showKasir !== false) pushTxt(window.escPosFormatLR('KASIR:', d.kasirName, cols));
             if (d.pelanggan) pushTxt(window.escPosFormatLR('PEMBELI:', d.pelanggan, cols));
             pushTxt(divider);
 
@@ -28147,7 +28359,9 @@
             pushCmd(0x1B, 0x45, 0x01);
             pushTxt(window.escPosFormatLR('TOTAL BAYAR:', window.formatRp(d.grandTotal), cols));
             pushCmd(0x1B, 0x45, 0x00);
-            pushTxt(window.escPosFormatLR('METODE BAYAR:', d.metodeBayar, cols));
+            if (d.showMetodeBayar !== false) {
+                pushTxt(window.escPosFormatLR('METODE BAYAR:', d.metodeBayar, cols));
+            }
             if (d.uangBayarInput > 0) {
                 pushTxt(window.escPosFormatLR('UANG DITERIMA:', window.formatRp(d.uangBayar), cols));
                 pushCmd(0x1B, 0x45, 0x01);
@@ -28162,6 +28376,64 @@
             pushTxt('\n\n\n');
             pushCmd(0x1D, 0x56, 0x42, 0x00);
             return new Uint8Array(bytes);
+        };
+
+        window.testPrintStrukAcc = async function() {
+            const p = window.pengaturanToko || {};
+            const ncAcc = (window.getNotaConfig && window.getNotaConfig().acc) ? window.getNotaConfig().acc : {};
+            const sampleData = {
+                namaToko: p.namaToko || (window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1'),
+                subJudul: ncAcc.subJudul !== undefined ? ncAcc.subJudul : 'PUSAT AKSESORIS & SPAREPART GADGET',
+                alamatToko: p.alamatToko || 'Nanggerang, Jalaksana, Kuningan, Jabar',
+                kontakToko: p.kontakToko || '0812-3456-7890',
+                logoUrl: (ncAcc.showLogo !== false && p.logoUrl) ? p.logoUrl : '',
+                kasirName: (sessionStorage.getItem('zencell_user') || 'OWNER').toUpperCase(),
+                showKasir: ncAcc.showKasir !== false,
+                showMetodeBayar: ncAcc.showMetodeBayar !== false,
+                showTtd: Boolean(ncAcc.showTtd),
+                noNota: `${(ncAcc.prefixNota || 'ACC').toUpperCase()}-889102`,
+                pelanggan: 'CONTOH PEMBELI',
+                judulStruk: ncAcc.judulStruk || 'NOTA PEMBELIAN & GARANSI ACC',
+                waktu: '14:30',
+                isoDate: window.getTodayIso(),
+                items: [
+                    { no: 1, nama: 'CHARGER ROBOT RT-K7 FAST 20W', qty: 1, satuan: 45000, subtotal: 45000, garansi: ncAcc.showGaransiItem !== false ? 'GARANSI 1 BULAN (Rusak Ganti Baru)' : '' },
+                    { no: 2, nama: 'KABEL DATA TYPE-C VIVAN 1M', qty: 2, satuan: 20000, subtotal: 40000, garansi: ncAcc.showGaransiItem !== false ? (ncAcc.garansiDefault || 'TANPA GARANSI (Cek di Tempat)') : '' }
+                ],
+                totalJenis: 2,
+                totalQty: 3,
+                subtotalGross: 85000,
+                potongan: 5000,
+                grandTotal: 80000,
+                uangBayar: 100000,
+                uangBayarInput: 100000,
+                kembalian: 20000,
+                metodeBayar: window.formatMetodeBayarUntukNota('LACI'),
+                catatanFooter: ncAcc.catatanFooter || 'Klaim garansi wajib membawa nota ini & fisik barang tidak cacat/putus.',
+                footerToko: p.teksStruk || 'Terima kasih telah berbelanja!'
+            };
+
+            const targetMode = window.shouldUseDirectBluetoothPrint ? window.shouldUseDirectBluetoothPrint() : 'BROWSER_PRINT';
+            if (targetMode === 'RAWBT_ANDROID') {
+                window.sendEscPosToRawBTAndroid(window.buildEscPosStrukAccBytes(sampleData));
+                return;
+            }
+            if (targetMode === 'BLUETOOTH_DIRECT') {
+                const sent = await window.sendEscPosBytesToBluetooth(window.buildEscPosStrukAccBytes(sampleData));
+                if (sent) {
+                    window.showToast('🖨️ Test Nota Khusus ACC berhasil dicetak ke Printer Bluetooth!', 'success');
+                    return;
+                }
+            }
+
+            const printArea = document.getElementById('printAreaNotaLunasService');
+            if (!printArea) return;
+            if (window.setPrintPageMode) window.setPrintPageMode('STRUK');
+            printArea.className = window.getStrukThermalClass ? window.getStrukThermalClass() : 'struk-thermal-mode';
+            printArea.style.display = 'block';
+            printArea.innerHTML = window.buildStrukAccThermalHtml(sampleData);
+            window.print();
+            setTimeout(() => { printArea.style.display = 'none'; printArea.className = ''; }, 1000);
         };
 
         window.cetakStrukAccSekarang = async function() {
@@ -28580,7 +28852,7 @@
                 const ketUpper = String(t.ket || '').toUpperCase().trim();
                 const isPelunasan = Boolean(t.idPiutangRef || t.kat === 'PIUTANG' || t.akunKeluar1 === 'PIUTANG' || ketUpper.includes('[PELUNASAN UTANG]'));
                 const isInitUtang = Boolean(t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT');
-                const isMutasiCab = Boolean(t.isMutasiAntarCabang || ketUpper.includes('[MUTASI KE ') || ketUpper.includes('[TERIMA DARI '));
+                const isMutasiCab = Boolean(t.isMutasiStokCabang || t.isMutasiAntarCabang || t.kat === 'MUTASI_CABANG' || ketUpper.includes('[MUTASI KE ') || ketUpper.includes('[MUTASI CABANG]') || ketUpper.includes('[TERIMA DARI '));
                 const isPindah = Boolean(t.isPindahSaldo || t.kat === 'PINDAH SALDO' || ketUpper.includes('[PINDAH SALDO]'));
 
                 // Hitung terjual stok fisik
