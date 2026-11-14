@@ -5497,72 +5497,91 @@
             </div>
         </div>
 
-        <!-- MODAL POPUP: KIRIM / MUTASI STOK KE CABANG (ZENCELL 1 ➔ ZENCELL 2) -->
+        <!-- MODAL POPUP: KIRIM / MUTASI STOK KE CABANG (SINGLE & MULTI-BARANG) -->
         <div id="modalMutasiStokCabangOverlay" class="modal-overlay">
-            <div class="modal-content" style="max-width: 520px;">
+            <div class="modal-content" style="max-width: 600px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #C7D2FE; padding-bottom:8px;">
                     <div>
-                        <h3 id="modalMutasiStokCabangTitle" style="font-size:15px; color:#4F46E5; margin:0; display:flex; align-items:center; gap:6px;">📤 Kirim / Mutasi Stok ke Cabang</h3>
-                        <small style="font-size:10px; color:#64748B; font-weight:600;">Potong stok toko ini (Non-Omset &amp; 0 TRX) lalu kirim antrean terima ke cabang tujuan</small>
+                        <h3 id="modalMutasiStokCabangTitle" style="font-size:15px; color:#4F46E5; margin:0; display:flex; align-items:center; gap:6px;">📤 Kirim / Mutasi Stok ke Cabang (Bisa Banyak Barang)</h3>
+                        <small style="font-size:10px; color:#64748B; font-weight:600;">Potong stok toko ini (Non-Omset &amp; 0 TRX) lalu kirim paket ke antrean Stok Opname cabang tujuan</small>
                     </div>
                     <button type="button" onclick="closeModalMutasiStokCabang()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
                 </div>
 
                 <form id="formMutasiStokCabang" onsubmit="simpanMutasiStokCabang(event)">
                     <input type="hidden" id="mutasiCabangStokId" value="">
-                    <div style="background:#EEF2FF; border:1px solid #C7D2FE; border-radius:8px; padding:8px 10px; margin-bottom:10px; font-size:10.5px; color:#312E81; line-height:1.4;">
-                        💡 <b>Cara Kerja Aman:</b> Stok fisik di toko ini langsung berkurang &amp; saldo akun penerima bertambah sesuai modal (<b>Cuan Rp0, tidak masuk Omset/TRX penjualan, &amp; Audit Modal tetap PAS</b>). Cabang tujuan akan menerima notifikasi untuk menyimpan ke Stok Opname mereka dengan nama/harga versi mereka sendiri.
+                    <div style="background:#EEF2FF; border:1px solid #C7D2FE; border-radius:8px; padding:7px 10px; margin-bottom:10px; font-size:10.5px; color:#312E81; line-height:1.4;">
+                        💡 <b>Bisa 1 Barang atau Banyak Barang Sekaligus:</b> Pilih barang lalu klik <b>➕ Tambah Barang ke Daftar</b> jika kirim beberapa jenis. Semua barang otomatis dijumlahkan, <b>Cuan Rp0 (Non-Omset)</b>, &amp; cabang tujuan tinggal klik <b>Terima Semua</b>.
                     </div>
 
-                    <div class="row-2" style="margin-bottom:8px;">
+                    <!-- KOTAK KERANJANG / ANTREAN BARANG YANG AKAN DIKIRIM KE CABANG -->
+                    <div id="boxMutasiCabangQueue" style="display:none; background:#F5F3FF; border:1.5px solid #A78BFA; border-radius:10px; padding:9px 11px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-size:11px; font-weight:900; color:#5B21B6;">📦 DAFTAR BARANG SIAP DIKIRIM (<span id="lblMutasiQueueCount">0</span> Jenis)</span>
+                            <button type="button" onclick="clearMutasiCabangQueue()" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; border-radius:5px; padding:2px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">🗑️ Kosongkan</button>
+                        </div>
+                        <div id="listMutasiCabangQueueItems" style="display:flex; flex-direction:column; gap:5px; max-height:165px; overflow-y:auto; margin-bottom:7px;"></div>
+                        <div id="summaryMutasiCabangQueue" style="background:#EDE9FE; border:1px solid #C4B5FD; border-radius:7px; padding:6px 9px; font-size:11px; color:#3B0764; display:flex; justify-content:space-between; align-items:center; font-weight:800;"></div>
+                    </div>
+
+                    <!-- BAGIAN INPUT ITEM BARANG -->
+                    <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:9px; padding:9px 10px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span id="lblMutasiInputItemHeader" style="font-size:11px; font-weight:800; color:#334155;">🛒 Pilih Barang Stok yang Diambil Cabang</span>
+                            <span style="font-size:9.5px; color:#64748B; font-weight:600;">Auto-Fill HPP Modal</span>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 120px 1fr 82px; gap:7px; margin-bottom:7px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Kategori *</label>
+                                <select id="mutasiCabangKat" class="form-control" style="font-weight:700;" onchange="onMutasiCabangKatChange()">
+                                    <option value="VOUCHER">VOUCHER</option>
+                                    <option value="SP">SP (PERDANA)</option>
+                                    <option value="ACC">ACC (AKSESORIS)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Nama Barang Stok *</label>
+                                <input type="text" id="mutasiCabangNama" list="datalistMutasiStokCabang" autocomplete="off" class="form-control" placeholder="Ketik / pilih barang stok..." style="font-weight:700;" oninput="onMutasiCabangNamaInput()" onchange="onMutasiCabangNamaInput()">
+                                <datalist id="datalistMutasiStokCabang"></datalist>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Qty *</label>
+                                <input type="number" id="mutasiCabangQty" class="form-control" value="1" min="1" style="font-weight:800; text-align:center;" oninput="hitungTotalMutasiStokCabang()">
+                            </div>
+                        </div>
+
+                        <div id="mutasiCabangStokInfoBox" style="display:none; background:#F0FDF4; border:1px solid #86EFAC; border-radius:7px; padding:5px 9px; margin-bottom:7px; font-size:10.5px; color:#065F46; font-weight:700;"></div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:7px; align-items:end;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Harga Modal / Pcs (Rp) *</label>
+                                <input type="text" id="mutasiCabangModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'mutasiCabangModal'); hitungTotalMutasiStokCabang();">
+                                <input type="hidden" id="mutasiCabangModal" value="0">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Subtotal Modal Item (Rp)</label>
+                                <input type="text" id="mutasiCabangTotalDisplay" class="form-control" placeholder="Rp0" readonly style="background:#EEF2FF; border-color:#A5B4FC; font-weight:900; color:#3730A3;">
+                            </div>
+                            <button type="button" onclick="tambahItemKeAntreanMutasiCabang()" style="height:36px; background:#0284C7; color:#FFFFFF; border:none; border-radius:8px; padding:0 11px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(2,132,199,0.25);" title="Masukkan barang ini ke daftar paket lalu pilih barang lainnya">
+                                ➕ Tambah ke Daftar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- BAGIAN TANGGAL, SALDO PENERIMA & CATATAN PAKET -->
+                    <div style="display:grid; grid-template-columns: 135px 1fr 1fr; gap:8px; margin-bottom:10px;">
                         <div class="form-group" style="margin-bottom:0;">
                             <label>📅 Tanggal Mutasi</label>
                             <input type="date" id="mutasiCabangDate" class="form-control" required style="font-weight:700;">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label>Kategori Stok *</label>
-                            <select id="mutasiCabangKat" class="form-control" required style="font-weight:700;" onchange="onMutasiCabangKatChange()">
-                                <option value="VOUCHER">VOUCHER</option>
-                                <option value="SP">SP (PERDANA)</option>
-                                <option value="ACC">ACC (AKSESORIS)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns: 1fr 95px; gap:8px; margin-bottom:8px;">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Pilih Barang Stok yang Diambil Cabang *</label>
-                            <input type="text" id="mutasiCabangNama" list="listMutasiCabangStok" autocomplete="off" class="form-control" placeholder="Ketik / pilih barang stok..." required style="font-weight:700;" oninput="onMutasiCabangNamaInput()" onchange="onMutasiCabangNamaInput()">
-                            <datalist id="listMutasiCabangStok"></datalist>
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Qty Kirim *</label>
-                            <input type="number" id="mutasiCabangQty" class="form-control" value="1" min="1" required style="font-weight:800; text-align:center;" oninput="hitungTotalMutasiStokCabang()">
-                        </div>
-                    </div>
-
-                    <div id="mutasiCabangStokInfoBadge" style="display:none; background:#F0FDF4; border:1px solid #86EFAC; border-radius:8px; padding:6px 10px; margin-bottom:8px; font-size:11px; color:#065F46; font-weight:700;"></div>
-
-                    <div class="row-2" style="margin-bottom:8px;">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Harga Modal / Pcs (Rp) *</label>
-                            <input type="text" id="mutasiCabangModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'mutasiCabangModal'); hitungTotalMutasiStokCabang();">
-                            <input type="hidden" id="mutasiCabangModal" value="0">
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Total Nilai Modal Stok (Rp)</label>
-                            <input type="text" id="mutasiCabangTotalDisplay" class="form-control" placeholder="Rp0" readonly style="background:#EEF2FF; border-color:#A5B4FC; font-weight:900; color:#3730A3;">
-                        </div>
-                    </div>
-
-                    <div class="row-2" style="margin-bottom:10px;">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="color:#047857; font-weight:800;">🟢 Uang Pengganti Masuk ke Saldo *</label>
+                            <label style="color:#047857; font-weight:800;">🟢 Uang Pengganti Masuk ke *</label>
                             <select id="mutasiCabangAkunMasuk" class="form-control" required style="font-weight:800; background:#ECFDF5; border-color:#6EE7B7; color:#065F46;"></select>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label>Catatan (Opsional)</label>
-                            <input type="text" id="mutasiCabangCatatan" class="form-control" placeholder="Cth: Diambil kasir Zencell 2">
+                            <label>Catatan Paket (Opsional)</label>
+                            <input type="text" id="mutasiCabangCatatan" class="form-control" placeholder="Cth: Kulakan sore Zen 2">
                         </div>
                     </div>
 
@@ -5574,11 +5593,60 @@
             </div>
         </div>
 
+        <!-- MODAL POPUP: TERIMA & SESUAIKAN PAKET KIRIMAN STOK DARI CABANG (MULTI-ITEM) -->
+        <div id="modalTerimaPaketCabangOverlay" class="modal-overlay">
+            <div class="modal-content" style="max-width: 720px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #C4B5FD; padding-bottom:8px;">
+                    <div>
+                        <h3 id="modalTerimaPaketCabangTitle" style="font-size:15px; color:#5B21B6; margin:0; display:flex; align-items:center; gap:6px;">📥 Terima &amp; Sesuaikan Paket Kiriman Stok Cabang</h3>
+                        <small id="modalTerimaPaketCabangSub" style="font-size:10.5px; color:#64748B; font-weight:600;">Cek nama barang, sesuaikan harga modal/jual cabang ini bila perlu, lalu pilih saldo pemotongan kas</small>
+                    </div>
+                    <button type="button" onclick="closeModalTerimaPaketCabang()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
+                </div>
+
+                <input type="hidden" id="terimaPaketBatchId" value="">
+                <div id="infoHeaderTerimaPaketCabang" style="background:#F5F3FF; border:1px solid #DDD6FE; border-radius:8px; padding:8px 11px; margin-bottom:10px; font-size:11px; color:#3B0764;"></div>
+
+                <div class="table-responsive" style="max-height:310px; overflow-y:auto; border:1px solid #E2E8F0; border-radius:8px; margin-bottom:10px;">
+                    <table style="font-size:11px;">
+                        <thead>
+                            <tr style="background:#EEF2FF;">
+                                <th style="width:85px;">KATEGORI</th>
+                                <th>NAMA BARANG DI CABANG INI (BISA DIEDIT)</th>
+                                <th style="width:65px; text-align:center;">QTY</th>
+                                <th style="width:115px;">MODAL / PCS (RP)</th>
+                                <th style="width:115px;">HARGA JUAL / PCS</th>
+                                <th style="width:110px; text-align:right;">SUBTOTAL MODAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyTabelTerimaPaketCabang"></tbody>
+                    </table>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:end; background:#FEFCE8; border:1.5px solid #FDE047; border-radius:9px; padding:9px 11px; margin-bottom:10px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="color:#854D0E; font-weight:800;">🔴 Sumber Saldo Pembayaran di Cabang Ini (Potong Kas) *</label>
+                        <select id="terimaPaketSumberKas" class="form-control" style="font-weight:800; background:#FFFFFF; border-color:#FACC15; color:#713F12;"></select>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:10px; font-weight:800; color:#854D0E;">TOTAL BELANJA STOK DITERIMA:</div>
+                        <div id="lblTotalModalTerimaPaket" style="font-size:16px; font-weight:900; color:#B91C1C;">Rp0</div>
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <button type="button" class="btn" style="background:linear-gradient(135deg, #059669, #047857); font-weight:800;" onclick="prosesSimpanTerimaPaketCabang()">✅ Terima &amp; Masukkan Semua ke Stok Opname</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="closeModalTerimaPaketCabang()">Batal</button>
+                </div>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>📦 Stok Opname Realtime</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                    <button type="button" id="btnOpenMutasiStokCabang" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:linear-gradient(135deg, #4F46E5, #3730A3); color:#FFF; font-weight:800;" onclick="openModalMutasiStokCabang()" title="Kirim / Mutasi Stok ke Cabang Sebelah (Non-Omset &amp; Masuk Kotak Terima Cabang)">📤 Kirim Stok ke Cabang</button>
+                    <button type="button" id="btnOpenMutasiStokCabang" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:linear-gradient(135deg, #4F46E5, #3730A3); color:#FFF; font-weight:800;" onclick="openModalMutasiStokCabang()" title="Kirim / Mutasi Stok ke Cabang Sebelah (Bisa Banyak Barang Sekaligus, Non-Omset)">📤 Kirim Stok ke Cabang</button>
+                    <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#7C3AED; color:#FFF; font-weight:800;" onclick="document.getElementById('cardRekapMutasiStokCabang')?.scrollIntoView({behavior:'smooth'})" title="Lihat Tabel Rekapitulasi &amp; Riwayat Mutasi Stok Antar Cabang">📋 Rekap Mutasi Cabang</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#EA580C; color:#FFF;" onclick="openModalReturAcc()" title="Proses Retur / Komplain / Tukar Aksesoris (ACC) Konsumen">🔄 Retur / Tukar ACC</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#0F172A;" onclick="bukaModalGlobalFind('STOK')">🔍 Find Cepat (Ctrl+F)</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 12px; font-size:11px; background:linear-gradient(135deg, #059669, #047857); box-shadow:0 3px 8px rgba(5,150,105,0.28);" onclick="openModalStokOpname()">+ Input Stok Opname</button>
@@ -5586,7 +5654,19 @@
             </div>
 
             <!-- KOTAK NOTIFIKASI ANTREAN KIRIMAN STOK DARI CABANG LAIN (KHUSUS PILIHAN B) -->
-            <div id="boxAntreanKirimanStokCabang" style="display:none; background:#EEF2FF; border:1.5px solid #818CF8; border-radius:10px; padding:10px 12px; margin-bottom:10px;"></div>
+            <div id="boxAntreanKirimanStokCabang" style="display:none; background:#EEF2FF; border:1.5px solid #818CF8; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                        <span style="font-size:16px;">📥</span>
+                        <div>
+                            <div style="font-size:12px; font-weight:900; color:#312E81;">ANTREAN KIRIMAN STOK DARI CABANG (SIAP DITERIMA)</div>
+                            <div style="font-size:10px; color:#4338CA; font-weight:600;">Klik <b>Terima &amp; Sesuaikan</b> untuk memasukkan seluruh barang ke Stok Opname &amp; memilih potong saldo kas cabang ini</div>
+                        </div>
+                    </div>
+                    <span id="badgeCountAntreanCabang" style="background:#4F46E5; color:#FFFFFF; font-size:10.5px; font-weight:900; padding:3px 9px; border-radius:999px;">0 Paket</span>
+                </div>
+                <div id="listAntreanKirimanStokCabang" style="display:flex; flex-direction:column; gap:7px;"></div>
+            </div>
 
             <!-- Filter Kategori, Kondisi & Search Stok Opname -->
             <div class="stok-filter-bar">
@@ -5634,6 +5714,81 @@
                         </tr>
                     </thead>
                     <tbody id="bodyStokOpname"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- KARTU REKAPITULASI & RIWAYAT MUTASI STOK ANTAR CABANG (NON-OMSET) -->
+        <div class="card" id="cardRekapMutasiStokCabang" style="margin-top:12px; border:1.5px solid #C4B5FD;">
+            <div class="card-header" style="background:linear-gradient(135deg, #4F46E5, #6D28D9); color:#FFFFFF; border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:15px;">🏢</span>
+                    <div>
+                        <div style="font-size:12.5px; font-weight:900;">REKAPITULASI &amp; RIWAYAT MUTASI STOK ANTAR CABANG (NON-OMSET)</div>
+                        <div style="font-size:9.5px; opacity:0.9; font-weight:500;">Daftar stok yang dikirim ke cabang sebelah • Tidak dihitung Omset/TRX penjualan • Audit Modal 100% Balance</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <button type="button" onclick="kirimWaRekapMutasiCabang()" style="background:#22C55E; color:#FFFFFF; border:none; border-radius:6px; padding:4px 10px; font-size:10.5px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 5px rgba(0,0,0,0.18);">📲 Kirim WA Surat Jalan / Rekap</button>
+                    <button type="button" onclick="openModalMutasiStokCabang()" style="background:#FFFFFF; color:#4F46E5; border:none; border-radius:6px; padding:4px 10px; font-size:10.5px; font-weight:800; cursor:pointer;">+ Kirim Stok Cabang</button>
+                </div>
+            </div>
+
+            <!-- 3 Kotak Ringkasan Rekap Mutasi Cabang -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:8px; margin:10px 0;">
+                <div style="background:#F5F3FF; border:1px solid #DDD6FE; border-radius:9px; padding:8px 11px;">
+                    <div style="font-size:10px; font-weight:800; color:#5B21B6;">💰 TOTAL NILAI MODAL MUTASI</div>
+                    <div id="valRekapMutasiTotalRp" style="font-size:15px; font-weight:900; color:#4C1D95; margin-top:2px;">Rp0</div>
+                    <div id="subRekapMutasiTotalItem" style="font-size:9.5px; color:#6D28D9; font-weight:700;">0 Baris Barang • 0 Pcs</div>
+                </div>
+                <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:9px; padding:8px 11px;">
+                    <div style="font-size:10px; font-weight:800; color:#065F46;">🟢 RINCIAN SALDO PENERIMA UANG</div>
+                    <div id="valRekapMutasiPerAkun" style="font-size:11px; font-weight:800; color:#047857; margin-top:3px; line-height:1.4;">Belum ada mutasi</div>
+                </div>
+                <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:9px; padding:8px 11px;">
+                    <div style="font-size:10px; font-weight:800; color:#1E40AF;">📦 RINCIAN PER KATEGORI STOK</div>
+                    <div id="valRekapMutasiPerKat" style="font-size:11px; font-weight:800; color:#1D4ED8; margin-top:3px; line-height:1.4;">VOUCHER: Rp0 • SP: Rp0 • ACC: Rp0</div>
+                </div>
+            </div>
+
+            <!-- Filter Bar Rekap Mutasi Cabang -->
+            <div class="filter-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:11px; font-weight:800; color:#5B21B6;">🔍 FILTER REKAP:</span>
+                    <select id="rekapMutasiCabangMode" class="date-picker-input" onchange="onRekapMutasiFilterChange()">
+                        <option value="MONTHLY" selected>🗓️ Per Bulan</option>
+                        <option value="DAILY">📆 Per Tanggal</option>
+                        <option value="ALL">🌐 Semua Waktu</option>
+                    </select>
+                    <input type="date" id="rekapMutasiCabangDate" class="date-picker-input" style="display:none;" onchange="renderRekapMutasiCabangTable()">
+                    <input type="month" id="rekapMutasiCabangMonth" class="date-picker-input" onchange="renderRekapMutasiCabangTable()">
+                    <select id="rekapMutasiCabangKat" class="date-picker-input" onchange="renderRekapMutasiCabangTable()">
+                        <option value="ALL">Semua Kategori</option>
+                        <option value="VOUCHER">🎫 VOUCHER</option>
+                        <option value="SP">📱 SP</option>
+                        <option value="ACC">🎧 ACC</option>
+                    </select>
+                    <input type="text" id="rekapMutasiCabangSearch" class="date-picker-input" placeholder="Cari barang / saldo / ket..." oninput="renderRekapMutasiCabangTable()" style="min-width:165px;">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>WAKTU / TANGGAL</th>
+                            <th>KATEGORI</th>
+                            <th>NAMA BARANG &amp; KETERANGAN</th>
+                            <th style="text-align:center;">QTY</th>
+                            <th style="text-align:right;">MODAL / PCS</th>
+                            <th style="text-align:right;">TOTAL MODAL</th>
+                            <th style="text-align:center;">MASUK SALDO</th>
+                            <th style="text-align:center;">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyTabelRekapMutasiCabang">
+                        <tr><td colspan="8" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada riwayat mutasi stok ke cabang pada periode ini.</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -9994,6 +10149,8 @@
             document.getElementById('modalStokOpnameOverlay')?.classList.remove('show');
         };
 
+        window._mutasiCabangQueue = [];
+
         window.populateMutasiCabangDropdowns = function() {
             const selAkun = document.getElementById('mutasiCabangAkunMasuk');
             if (selAkun) {
@@ -10034,6 +10191,7 @@
                 if (hidId) hidId.value = '';
                 if (infoBox) { infoBox.style.display = 'none'; infoBox.innerHTML = ''; }
                 window.hitungTotalMutasiStokCabang();
+                window.renderMutasiCabangQueueUI();
                 return;
             }
             const matched = (window.stokOpnameItems || []).find(s =>
@@ -10065,6 +10223,7 @@
                 }
             }
             window.hitungTotalMutasiStokCabang();
+            window.renderMutasiCabangQueueUI();
         };
 
         window.hitungTotalMutasiStokCabang = function() {
@@ -10076,11 +10235,60 @@
             return total;
         };
 
-        window.openModalMutasiStokCabang = function(stokIdOpt) {
-            const f = document.getElementById('formMutasiStokCabang');
-            if (f) f.reset();
-            const tglEl = document.getElementById('mutasiCabangDate');
-            if (tglEl) tglEl.value = window.getTodayIso();
+        window.extractCurrentMutasiFormItem = function() {
+            const kat = (document.getElementById('mutasiCabangKat')?.value || 'ACC').toUpperCase().trim();
+            const rawNama = (document.getElementById('mutasiCabangNama')?.value || '').trim().toUpperCase();
+            const qty = Math.max(1, parseFloat(document.getElementById('mutasiCabangQty')?.value) || 1);
+            const modalPcs = Math.max(0, parseFloat(document.getElementById('mutasiCabangModal')?.value) || 0);
+            const stokIdHid = document.getElementById('mutasiCabangStokId')?.value || '';
+
+            if (!rawNama) {
+                window.showToast("⚠️ Pilih atau ketik Nama Barang Stok terlebih dahulu!", "error");
+                document.getElementById('mutasiCabangNama')?.focus();
+                return null;
+            }
+            if (modalPcs <= 0) {
+                window.showToast("⚠️ Harga Modal / Pcs harus lebih dari Rp 0!", "error");
+                document.getElementById('mutasiCabangModalDisplay')?.focus();
+                return null;
+            }
+
+            const matchedStok = (window.stokOpnameItems || []).find(s =>
+                (stokIdHid && String(s.id) === String(stokIdHid)) ||
+                (String(s.nama || s.namaBarang || '').trim().toUpperCase() === rawNama && String(s.kat || '').toUpperCase() === kat)
+            ) || (window.stokOpnameItems || []).find(s =>
+                String(s.nama || s.namaBarang || '').trim().toUpperCase() === rawNama
+            );
+
+            if (!matchedStok) {
+                const okManual = confirm(`⚠️ Barang "${rawNama}" tidak ditemukan di Tabel Stok Opname [${kat}].\nPastikan Anda memilih barang dari daftar saran agar stok fisik terpotong otomatis.\n\nTetap masukkan barang ini?`);
+                if (!okManual) return null;
+            } else {
+                const sisa = Number(matchedStok.awal || 0) - Number(matchedStok.terjual || 0);
+                if (qty > sisa) {
+                    const okMinus = confirm(`⚠️ Sisa stok fisik "${rawNama}" saat ini hanya ${sisa} Pcs, sedangkan Anda menginput ${qty} Pcs.\nTetap lanjutkan?`);
+                    if (!okMinus) return null;
+                }
+            }
+
+            const finalKat = matchedStok && matchedStok.kat ? String(matchedStok.kat).toUpperCase().trim() : kat;
+            const finalNama = matchedStok ? String(matchedStok.nama || matchedStok.namaBarang || rawNama).toUpperCase().trim() : rawNama;
+            const totalModal = Math.round(qty * modalPcs);
+
+            return {
+                idStokRef: matchedStok ? matchedStok.id : null,
+                kat: finalKat,
+                namaBarang: finalNama,
+                qty: qty,
+                modalPcs: modalPcs,
+                jualPcsAsal: matchedStok ? Number(matchedStok.jual || 0) : 0,
+                garansiAsal: matchedStok ? (matchedStok.garansi || '') : '',
+                totalModal: totalModal
+            };
+        };
+
+        window.resetMutasiItemInputFieldsOnly = function() {
+            if (document.getElementById('mutasiCabangNama')) document.getElementById('mutasiCabangNama').value = '';
             if (document.getElementById('mutasiCabangQty')) document.getElementById('mutasiCabangQty').value = '1';
             if (document.getElementById('mutasiCabangModal')) document.getElementById('mutasiCabangModal').value = '0';
             if (document.getElementById('mutasiCabangModalDisplay')) document.getElementById('mutasiCabangModalDisplay').value = '0';
@@ -10088,7 +10296,119 @@
             if (document.getElementById('mutasiCabangStokId')) document.getElementById('mutasiCabangStokId').value = '';
             const infoBox = document.getElementById('mutasiCabangStokInfoBox');
             if (infoBox) { infoBox.style.display = 'none'; infoBox.innerHTML = ''; }
+            window.renderMutasiCabangQueueUI();
+        };
 
+        window.tambahItemKeAntreanMutasiCabang = function() {
+            const item = window.extractCurrentMutasiFormItem();
+            if (!item) return;
+            if (!Array.isArray(window._mutasiCabangQueue)) window._mutasiCabangQueue = [];
+
+            // Jika barang yang sama persis sudah ada di keranjang, tambahkan qty-nya
+            const existingIdx = window._mutasiCabangQueue.findIndex(q => q.namaBarang === item.namaBarang && q.kat === item.kat && q.modalPcs === item.modalPcs);
+            if (existingIdx !== -1) {
+                window._mutasiCabangQueue[existingIdx].qty += item.qty;
+                window._mutasiCabangQueue[existingIdx].totalModal = Math.round(window._mutasiCabangQueue[existingIdx].qty * window._mutasiCabangQueue[existingIdx].modalPcs);
+            } else {
+                window._mutasiCabangQueue.push(item);
+            }
+
+            window.resetMutasiItemInputFieldsOnly();
+            document.getElementById('mutasiCabangNama')?.focus();
+            window.showToast(`➕ "${item.namaBarang}" (${item.qty} Pcs) ditambahkan ke daftar kiriman (#${window._mutasiCabangQueue.length})!`, "success");
+        };
+
+        window.hapusItemAntreanMutasiCabang = function(idx) {
+            if (!Array.isArray(window._mutasiCabangQueue) || idx < 0 || idx >= window._mutasiCabangQueue.length) return;
+            window._mutasiCabangQueue.splice(idx, 1);
+            window.renderMutasiCabangQueueUI();
+        };
+
+        window.editItemAntreanMutasiCabang = function(idx) {
+            if (!Array.isArray(window._mutasiCabangQueue) || idx < 0 || idx >= window._mutasiCabangQueue.length) return;
+            const item = window._mutasiCabangQueue.splice(idx, 1)[0];
+            if (document.getElementById('mutasiCabangKat')) document.getElementById('mutasiCabangKat').value = item.kat || 'ACC';
+            window.onMutasiCabangKatChange();
+            if (document.getElementById('mutasiCabangNama')) document.getElementById('mutasiCabangNama').value = item.namaBarang || '';
+            if (document.getElementById('mutasiCabangQty')) document.getElementById('mutasiCabangQty').value = item.qty || 1;
+            if (document.getElementById('mutasiCabangModal')) document.getElementById('mutasiCabangModal').value = item.modalPcs || 0;
+            if (document.getElementById('mutasiCabangModalDisplay')) document.getElementById('mutasiCabangModalDisplay').value = item.modalPcs ? Number(item.modalPcs).toLocaleString('id-ID') : '0';
+            if (document.getElementById('mutasiCabangStokId')) document.getElementById('mutasiCabangStokId').value = item.idStokRef || '';
+            window.hitungTotalMutasiStokCabang();
+            window.renderMutasiCabangQueueUI();
+            document.getElementById('mutasiCabangQty')?.focus();
+        };
+
+        window.clearMutasiCabangQueue = function() {
+            window._mutasiCabangQueue = [];
+            window.renderMutasiCabangQueueUI();
+        };
+
+        window.renderMutasiCabangQueueUI = function() {
+            const box = document.getElementById('boxMutasiCabangQueue');
+            const listEl = document.getElementById('listMutasiCabangQueueItems');
+            const sumEl = document.getElementById('summaryMutasiCabangQueue');
+            const cntEl = document.getElementById('lblMutasiQueueCount');
+            const hdrEl = document.getElementById('lblMutasiInputItemHeader');
+            const btnSubmit = document.getElementById('btnSubmitMutasiCabang');
+
+            const q = window._mutasiCabangQueue || [];
+            const currentNama = (document.getElementById('mutasiCabangNama')?.value || '').trim();
+
+            if (!box || !listEl || !sumEl) return;
+
+            if (q.length === 0) {
+                box.style.display = 'none';
+                if (hdrEl) hdrEl.innerHTML = '🛒 Pilih Barang Stok yang Diambil Cabang';
+                if (btnSubmit) btnSubmit.innerHTML = '📤 Kirim Stok &amp; Catat Mutasi';
+                return;
+            }
+
+            box.style.display = 'block';
+            if (cntEl) cntEl.innerText = q.length;
+            if (hdrEl) {
+                hdrEl.innerHTML = `<span style="color:#0284C7; font-weight:800;">➕ Tambah Barang Ke-${q.length + 1}</span> <small style="color:#64748B;">(Kosongkan jika sudah cukup)</small>`;
+            }
+
+            let totalPcs = 0;
+            let totalModalGabungan = 0;
+
+            listEl.innerHTML = q.map((item, idx) => {
+                totalPcs += Number(item.qty || 1);
+                totalModalGabungan += Number(item.totalModal || 0);
+                return `
+                    <div style="background:#FFFFFF; border:1px solid #DDD6FE; border-left:3.5px solid #7C3AED; border-radius:7px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                        <div style="font-size:10.5px; line-height:1.35; flex:1;">
+                            <b style="color:#5B21B6;">#${idx + 1} [${item.kat}]</b> <b>${item.namaBarang}</b>
+                            <span style="background:#EDE9FE; color:#6D28D9; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;">${item.qty} Pcs</span>
+                            <div style="font-size:10px; color:#475569;">Modal: ${window.formatRp(item.modalPcs)}/pcs ➔ Subtotal: <b style="color:#DC2626;">${window.formatRp(item.totalModal)}</b></div>
+                        </div>
+                        <div style="display:flex; gap:4px;">
+                            <button type="button" onclick="editItemAntreanMutasiCabang(${idx})" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; border-radius:5px; padding:2px 6px; font-size:10px; font-weight:800; cursor:pointer;" title="Edit baris ini">✏️</button>
+                            <button type="button" onclick="hapusItemAntreanMutasiCabang(${idx})" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; border-radius:5px; padding:2px 6px; font-size:10px; font-weight:800; cursor:pointer;" title="Hapus dari daftar">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            sumEl.innerHTML = `
+                <span>📦 Total Paket: <b>${q.length} Jenis Barang (${totalPcs} Pcs)</b></span>
+                <span>Total Modal Diganti: <b style="color:#B91C1C; font-size:12.5px;">${window.formatRp(totalModalGabungan)}</b></span>
+            `;
+
+            const totalItemsIfSubmitted = currentNama ? (q.length + 1) : q.length;
+            if (btnSubmit) {
+                btnSubmit.innerHTML = `📤 Kirim Semua Paket (${totalItemsIfSubmitted} Jenis Barang)`;
+            }
+        };
+
+        window.openModalMutasiStokCabang = function(stokIdOpt) {
+            const f = document.getElementById('formMutasiStokCabang');
+            if (f) f.reset();
+            window._mutasiCabangQueue = [];
+            const tglEl = document.getElementById('mutasiCabangDate');
+            if (tglEl) tglEl.value = window.getTodayIso();
+            window.resetMutasiItemInputFieldsOnly();
             window.populateMutasiCabangDropdowns();
 
             if (stokIdOpt !== undefined && stokIdOpt !== null) {
@@ -10112,118 +10432,144 @@
         };
 
         window.closeModalMutasiStokCabang = function() {
+            window._mutasiCabangQueue = [];
             document.getElementById('modalMutasiStokCabangOverlay')?.classList.remove('show');
         };
 
         window.simpanMutasiStokCabang = async function(e) {
             if (e) e.preventDefault();
             const isoDate = document.getElementById('mutasiCabangDate')?.value || window.getTodayIso();
-            const kat = (document.getElementById('mutasiCabangKat')?.value || 'ACC').toUpperCase().trim();
-            const rawNama = (document.getElementById('mutasiCabangNama')?.value || '').trim().toUpperCase();
-            const qty = Math.max(1, parseFloat(document.getElementById('mutasiCabangQty')?.value) || 1);
-            const modalPcs = Math.max(0, parseFloat(document.getElementById('mutasiCabangModal')?.value) || 0);
             const akunMasuk = (document.getElementById('mutasiCabangAkunMasuk')?.value || '').trim();
             const catatan = (document.getElementById('mutasiCabangCatatan')?.value || '').trim();
-            const stokIdHid = document.getElementById('mutasiCabangStokId')?.value || '';
 
-            if (!rawNama) {
-                window.showToast("⚠️ Pilih atau ketik Nama Barang Stok yang akan dikirim ke cabang!", "error");
-                return;
-            }
             if (!akunMasuk) {
                 window.showToast("⚠️ Pilih Saldo Penerima Uang Pengganti Modal (misal LACI / BCA)!", "error");
+                document.getElementById('mutasiCabangAkunMasuk')?.focus();
                 return;
             }
-            const matchedStok = (window.stokOpnameItems || []).find(s =>
-                (stokIdHid && String(s.id) === String(stokIdHid)) ||
-                (String(s.nama || s.namaBarang || '').trim().toUpperCase() === rawNama && String(s.kat || '').toUpperCase() === kat)
-            ) || (window.stokOpnameItems || []).find(s =>
-                String(s.nama || s.namaBarang || '').trim().toUpperCase() === rawNama
-            );
 
-            if (!matchedStok) {
-                const okManual = confirm(`⚠️ Barang "${rawNama}" tidak ditemukan di Tabel Stok Opname [${kat}].\nPastikan Anda memilih barang dari daftar saran agar stok fisik terpotong otomatis.\n\nTetap lanjutkan?`);
-                if (!okManual) return;
+            const queueItems = Array.isArray(window._mutasiCabangQueue) ? window._mutasiCabangQueue.slice() : [];
+            const currentNama = (document.getElementById('mutasiCabangNama')?.value || '').trim();
+
+            let itemsToProcess = [];
+            if (queueItems.length > 0 && !currentNama) {
+                itemsToProcess = queueItems;
             } else {
-                const sisa = Number(matchedStok.awal || 0) - Number(matchedStok.terjual || 0);
-                if (qty > sisa) {
-                    const okMinus = confirm(`⚠️ Sisa stok fisik "${rawNama}" saat ini hanya ${sisa} Pcs, sedangkan Anda mengirim ${qty} Pcs.\nTetap lanjutkan kirim stok ke cabang?`);
-                    if (!okMinus) return;
-                }
+                const currentItem = window.extractCurrentMutasiFormItem();
+                if (!currentItem) return;
+                itemsToProcess = [...queueItems, currentItem];
             }
 
-            const totalModal = Math.round(qty * modalPcs);
+            if (itemsToProcess.length === 0) return;
+
             const nowTs = window.getNextUniqueTs();
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const targetCabangNum = window.ACTIVE_CABANG === '2' ? '1' : '2';
             const targetRootNode = window.ACTIVE_CABANG === '2' ? 'zencellNodes' : 'zencell2Nodes';
             const packetId = `pkt_mutasi_${nowTs}`;
-            const trxId = `trx_mutasi_${nowTs}`;
+            const batchId = `batch_mutasi_${nowTs}`;
 
-            const trxMutasi = {
-                id: trxId,
-                waktu: timeStr,
-                isoDate: isoDate,
-                ket: `[MUTASI KE ZEN ${targetCabangNum}] ${rawNama}${catatan ? ' (' + catatan.toUpperCase() + ')' : ''}`,
-                qty: qty,
-                kat: kat,
-                isNewCustomer: false,
-                isMutasiStokCabang: true,
-                mutasiPacketId: packetId,
-                mutasiTargetRoot: targetRootNode,
-                hargaJual: totalModal,
-                akunMasuk1: akunMasuk,
-                jualSplit1: totalModal,
-                akunMasuk2: '',
-                jualSplit2: 0,
-                hargaModal: totalModal,
-                akunKeluar1: kat,
-                modalSplit1: totalModal,
-                akunKeluar2: '',
-                modalSplit2: 0,
-                cuan: 0,
-                isSplit: false,
-                idStokRef: matchedStok ? matchedStok.id : null,
-                namaBarangStok: matchedStok ? (matchedStok.nama || matchedStok.namaBarang || rawNama) : rawNama,
-                garansiStruk: matchedStok && matchedStok.garansi ? matchedStok.garansi : '',
-                updatedAt: nowTs
-            };
+            let totalPcsBatch = 0;
+            let totalModalBatch = 0;
+            const blinkAccounts = [akunMasuk];
+            const createdTrxIds = [];
 
+            itemsToProcess.forEach((item, idx) => {
+                const itemTs = window.getNextUniqueTs();
+                const trxId = `trx_mutasi_${itemTs}`;
+                createdTrxIds.push(trxId);
+                totalPcsBatch += Number(item.qty || 1);
+                totalModalBatch += Number(item.totalModal || 0);
+                if (!blinkAccounts.includes(item.kat)) blinkAccounts.push(item.kat);
+
+                const batchTag = itemsToProcess.length > 1 ? ` [PAKET ${idx + 1}/${itemsToProcess.length}]` : '';
+                const trxMutasi = {
+                    id: trxId,
+                    waktu: timeStr,
+                    isoDate: isoDate,
+                    ket: `[MUTASI KE ZEN ${targetCabangNum}] ${item.namaBarang}${batchTag}${catatan ? ' (' + catatan.toUpperCase() + ')' : ''}`,
+                    qty: item.qty,
+                    kat: item.kat,
+                    isNewCustomer: false,
+                    isMutasiStokCabang: true,
+                    mutasiBatchId: batchId,
+                    mutasiPacketId: packetId,
+                    mutasiTargetRoot: targetRootNode,
+                    mutasiCatatan: catatan,
+                    hargaJual: item.totalModal,
+                    akunMasuk1: akunMasuk,
+                    jualSplit1: item.totalModal,
+                    akunMasuk2: '',
+                    jualSplit2: 0,
+                    hargaModal: item.totalModal,
+                    akunKeluar1: item.kat,
+                    modalSplit1: item.totalModal,
+                    akunKeluar2: '',
+                    modalSplit2: 0,
+                    cuan: 0,
+                    isSplit: false,
+                    idStokRef: item.idStokRef || null,
+                    namaBarangStok: item.namaBarang,
+                    garansiStruk: item.garansiAsal || '',
+                    updatedAt: itemTs
+                };
+
+                window.transaksiJurnal.unshift(trxMutasi);
+                window.markLocalTrxEdited(trxMutasi);
+            });
+
+            const firstItem = itemsToProcess[0];
             const packetObj = {
                 id: packetId,
-                sourceTrxId: trxId,
+                batchId: batchId,
+                sourceTrxIds: createdTrxIds,
+                sourceTrxId: createdTrxIds[0] || '',
                 fromCabang: window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1',
                 toCabang: window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 1' : 'POS ZENCELL 2',
                 isoDate: isoDate,
                 waktu: timeStr,
-                kat: kat,
-                namaBarangAsal: rawNama,
-                qty: qty,
-                modalPcsAsal: modalPcs,
-                jualPcsAsal: matchedStok ? Number(matchedStok.jual || 0) : 0,
-                garansiAsal: matchedStok ? (matchedStok.garansi || '') : '',
-                totalModalAsal: totalModal,
+                // Properti kompatibilitas single-item & multi-item
+                kat: firstItem.kat,
+                namaBarangAsal: itemsToProcess.length > 1
+                    ? `PAKET ${itemsToProcess.length} JENIS BARANG (${firstItem.namaBarang}, dll)`
+                    : firstItem.namaBarang,
+                qty: totalPcsBatch,
+                modalPcsAsal: firstItem.modalPcs,
+                jualPcsAsal: firstItem.jualPcsAsal || 0,
+                garansiAsal: firstItem.garansiAsal || '',
+                totalModalAsal: totalModalBatch,
                 akunMasukAsal: akunMasuk,
                 catatan: catatan,
+                items: itemsToProcess.map(it => ({
+                    kat: it.kat,
+                    namaBarangAsal: it.namaBarang,
+                    qty: it.qty,
+                    modalPcsAsal: it.modalPcs,
+                    jualPcsAsal: it.jualPcsAsal || 0,
+                    garansiAsal: it.garansiAsal || '',
+                    totalModalAsal: it.totalModal
+                })),
                 status: 'MENUNGGU',
                 createdAt: nowTs
             };
 
-            window.transaksiJurnal.unshift(trxMutasi);
-            window.markLocalTrxEdited(trxMutasi);
-            window.catatLogAktivitas('MUTASI STOK CABANG', `Kirim stok [${kat}] ${rawNama} (${qty} Pcs • Modal ${window.formatRp(totalModal)}) ke Zencell ${targetCabangNum}, uang masuk ke ${akunMasuk}`);
+            window.catatLogAktivitas(
+                'MUTASI STOK CABANG',
+                `Kirim paket stok (${itemsToProcess.length} jenis • ${totalPcsBatch} Pcs • Total Modal ${window.formatRp(totalModalBatch)}) ke Zencell ${targetCabangNum}, uang masuk ke ${akunMasuk}`
+            );
 
             if (window.triggerBlinkMutasiAkun) {
-                window.triggerBlinkMutasiAkun([akunMasuk, kat], 10000);
+                window.triggerBlinkMutasiAkun(blinkAccounts, 10000);
             }
 
+            window._mutasiCabangQueue = [];
             window.closeModalMutasiStokCabang();
             window.renderAll();
             window.saveToFirebaseNode('transaksi', window.transaksiJurnal);
 
             const sentOk = await window.kirimPaketAntreanStokKeCabang(packetObj, targetRootNode);
             if (sentOk) {
-                window.showToast(`📤 Stok "${rawNama}" (${qty} Pcs) berhasil dimutasi (Non-Omset) & masuk ke Antrean Stok Zencell ${targetCabangNum}!`, "success");
+                window.showToast(`📤 Paket ${itemsToProcess.length} Jenis Barang (${totalPcsBatch} Pcs • ${window.formatRp(totalModalBatch)}) berhasil dimutasi & dikirim ke Antrean Zencell ${targetCabangNum}!`, "success");
             } else {
                 window.showToast(`⚠️ Mutasi tercatat di jurnal lokal, namun gagal mengirim antrean ke Zencell ${targetCabangNum}. Cek koneksi internet.`, "warn");
             }
@@ -10247,25 +10593,40 @@
             if (cntEl) cntEl.innerText = `${list.length} Paket`;
 
             listEl.innerHTML = list.map(pkt => {
-                const katBadge = pkt.kat === 'ACC'
-                    ? 'background:#FEF3C7; color:#B45309; border:1px solid #FDE68A;'
-                    : (pkt.kat === 'SP' ? 'background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0;' : 'background:#E0F2FE; color:#0284C7; border:1px solid #BAE6FD;');
+                const pktItems = Array.isArray(pkt.items) && pkt.items.length > 0
+                    ? pkt.items
+                    : [{
+                        kat: pkt.kat || 'ACC',
+                        namaBarangAsal: pkt.namaBarangAsal || '-',
+                        qty: Number(pkt.qty || 1),
+                        modalPcsAsal: Number(pkt.modalPcsAsal || 0),
+                        jualPcsAsal: Number(pkt.jualPcsAsal || 0),
+                        garansiAsal: pkt.garansiAsal || '',
+                        totalModalAsal: Number(pkt.totalModalAsal || 0)
+                    }];
+                const totalPcs = pktItems.reduce((s, it) => s + Number(it.qty || 1), 0);
+                const totalModal = pkt.totalModalAsal || pktItems.reduce((s, it) => s + Number(it.totalModalAsal || (it.qty * it.modalPcsAsal) || 0), 0);
                 const safeId = String(pkt.id).replace(/'/g, "\\'");
+
+                const rincianBadges = pktItems.map(it =>
+                    `<span style="display:inline-block; background:#F5F3FF; color:#4C1D95; border:1px solid #DDD6FE; border-radius:5px; padding:1.5px 6px; font-size:10px; font-weight:700;">[${it.kat}] <b>${it.namaBarangAsal}</b> (${it.qty}x @ ${window.formatRp(it.modalPcsAsal)})</span>`
+                ).join(' ');
+
                 return `
                     <div style="background:#FFFFFF; border:1.5px solid #DDD6FE; border-left:4px solid #7C3AED; border-radius:9px; padding:8px 11px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; box-shadow:0 2px 6px rgba(124,58,237,0.06);">
-                        <div style="flex:1; min-width:220px;">
-                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
-                                <span style="padding:1.5px 6px; border-radius:5px; font-size:9.5px; font-weight:800; ${katBadge}">${pkt.kat || 'ACC'}</span>
-                                <b style="font-size:12px; color:#1E1B4B;">${pkt.namaBarangAsal || '-'}</b>
-                                <span style="background:#EDE9FE; color:#6D28D9; font-weight:900; font-size:10.5px; padding:1.5px 7px; border-radius:6px;">Qty: ${pkt.qty || 1} Pcs</span>
+                        <div style="flex:1; min-width:240px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
+                                <span style="background:#7C3AED; color:#FFFFFF; font-weight:900; font-size:10px; padding:2px 7px; border-radius:6px;">📦 ${pktItems.length} JENIS BARANG (${totalPcs} PCS)</span>
+                                <span style="font-size:11px; font-weight:900; color:#B91C1C;">Total Modal: ${window.formatRp(totalModal)}</span>
+                                <span style="font-size:10px; color:#64748B;">• 📅 ${window.formatTanggalDDMMYY(pkt.isoDate)} ${pkt.waktu || ''} dari <b>${pkt.fromCabang || 'POS ZENCELL 1'}</b></span>
+                                ${pkt.catatan ? `<span style="font-size:10px; color:#5B21B6; font-weight:700;">• 📝 "${pkt.catatan}"</span>` : ''}
                             </div>
-                            <div style="font-size:10.5px; color:#475569;">
-                                📅 ${window.formatTanggalDDMMYY(pkt.isoDate)} ${pkt.waktu || ''} • Dari: <b>${pkt.fromCabang || 'POS ZENCELL 1'}</b> • Modal Asal: <b style="color:#0F172A;">${window.formatRp(pkt.modalPcsAsal || 0)}/pcs</b> (Total: <b style="color:#DC2626;">${window.formatRp(pkt.totalModalAsal || 0)}</b>)
-                                ${pkt.catatan ? ` • 📝 <i>${pkt.catatan}</i>` : ''}
+                            <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                                ${rincianBadges}
                             </div>
                         </div>
                         <div style="display:flex; gap:6px; align-items:center;">
-                            <button type="button" onclick="terimaKirimanStokDariCabang('${safeId}')" style="background:linear-gradient(135deg, #7C3AED, #6D28D9); color:#FFFFFF; border:none; border-radius:7px; padding:6px 11px; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(124,58,237,0.25);">📥 Terima & Sesuaikan</button>
+                            <button type="button" onclick="terimaKirimanStokDariCabang('${safeId}')" style="background:linear-gradient(135deg, #7C3AED, #6D28D9); color:#FFFFFF; border:none; border-radius:7px; padding:6px 12px; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(124,58,237,0.25);">📥 Terima &amp; Sesuaikan (${pktItems.length} Barang)</button>
                             <button type="button" onclick="hapusItemAntreanKirimanStok('${safeId}')" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; border-radius:7px; padding:6px 8px; font-size:10.5px; font-weight:800; cursor:pointer;" title="Tolak / Hapus dari antrean">🗑️</button>
                         </div>
                     </div>
@@ -10279,63 +10640,241 @@
                 window.showToast("⚠️ Paket kiriman stok tidak ditemukan!", "error");
                 return;
             }
-            window.openModalStokOpname();
+            const pktItems = Array.isArray(pkt.items) && pkt.items.length > 0
+                ? pkt.items
+                : [{
+                    kat: pkt.kat || 'ACC',
+                    namaBarangAsal: pkt.namaBarangAsal || '-',
+                    qty: Number(pkt.qty || 1),
+                    modalPcsAsal: Number(pkt.modalPcsAsal || 0),
+                    jualPcsAsal: Number(pkt.jualPcsAsal || 0),
+                    garansiAsal: pkt.garansiAsal || '',
+                    totalModalAsal: Number(pkt.totalModalAsal || 0)
+                }];
 
-            const pktInput = document.getElementById('terimaMutasiPacketId');
-            if (pktInput) pktInput.value = pkt.id;
+            const hidBatch = document.getElementById('terimaPaketBatchId');
+            if (hidBatch) hidBatch.value = pkt.id;
 
-            const katEl = document.getElementById('stokKategori');
-            if (katEl && pkt.kat) {
-                katEl.value = pkt.kat;
-                if (window.toggleStokGaransiField) window.toggleStokGaransiField();
-                if (window.updateDatalistStokOpname) window.updateDatalistStokOpname();
-            }
-
-            // Cek apakah di cabang penerima sudah ada nama barang yang sama atau mirip
-            const rawNamaAsal = String(pkt.namaBarangAsal || '').trim().toUpperCase();
-            const existingLocal = (window.stokOpnameItems || []).find(s =>
-                String(s.nama || s.namaBarang || '').trim().toUpperCase() === rawNamaAsal &&
-                String(s.kat || '').toUpperCase() === String(pkt.kat || '').toUpperCase()
-            );
-
-            const namaEl = document.getElementById('stokNama');
-            if (namaEl) namaEl.value = existingLocal ? (existingLocal.nama || existingLocal.namaBarang) : rawNamaAsal;
-
-            const qtyEl = document.getElementById('stokAwal');
-            if (qtyEl) qtyEl.value = Number(pkt.qty || 1);
-
-            const modalPcs = Number(pkt.modalPcsAsal || 0);
-            const jualPcs = existingLocal && Number(existingLocal.jual || 0) > 0
-                ? Number(existingLocal.jual)
-                : Number(pkt.jualPcsAsal || 0);
-
-            if (document.getElementById('stokModal')) document.getElementById('stokModal').value = modalPcs;
-            if (document.getElementById('stokModalDisplay')) document.getElementById('stokModalDisplay').value = modalPcs > 0 ? modalPcs.toLocaleString('id-ID') : '0';
-            if (document.getElementById('stokJual')) document.getElementById('stokJual').value = jualPcs;
-            if (document.getElementById('stokJualDisplay')) document.getElementById('stokJualDisplay').value = jualPcs > 0 ? jualPcs.toLocaleString('id-ID') : '';
-
-            if (pkt.garansiAsal && document.getElementById('stokGaransi')) {
-                document.getElementById('stokGaransi').value = pkt.garansiAsal;
-            }
-
-            if (window.cekAutoFillRestokStokOpname) window.cekAutoFillRestokStokOpname();
-            // Pastikan modal & qty kiriman tetap sesuai paket yang dikirim (bisa diedit kasir)
-            if (qtyEl) qtyEl.value = Number(pkt.qty || 1);
-            if (document.getElementById('stokModal')) document.getElementById('stokModal').value = modalPcs;
-            if (document.getElementById('stokModalDisplay')) document.getElementById('stokModalDisplay').value = modalPcs > 0 ? modalPcs.toLocaleString('id-ID') : '0';
-            if (window.hitungPreviewBelanjaStok) window.hitungPreviewBelanjaStok();
-
-            const banner = document.getElementById('stokMutasiTerimaBanner');
-            if (banner) {
-                banner.style.display = 'block';
-                banner.innerHTML = `
-                    <div style="font-weight:900; color:#5B21B6; margin-bottom:2px;">📥 MENERIMA KIRIMAN STOK DARI ${pkt.fromCabang || 'CABANG LAIN'}</div>
-                    <div>Barang Asal: <b>[${pkt.kat}] ${pkt.namaBarangAsal}</b> • Qty: <b>${pkt.qty} Pcs</b> • Modal Kiriman: <b>${window.formatRp(modalPcs)}/pcs</b> (Total: <b>${window.formatRp(pkt.totalModalAsal || (pkt.qty * modalPcs))}</b>).</div>
-                    <div style="margin-top:3px; font-size:10px; color:#6D28D9;">💡 Anda bebas menyesuaikan <b>Nama Barang</b> (jika nama di cabang ini berbeda), <b>Harga Modal/Jual</b>, dan memilih <b>Sumber Saldo (Potong Kas)</b> cabang ini sebelum klik Simpan.</div>
+            const infoHdr = document.getElementById('infoHeaderTerimaPaketCabang');
+            if (infoHdr) {
+                infoHdr.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>📤 Kiriman dari: <b>${pkt.fromCabang || 'POS ZENCELL 1'}</b> • Tanggal: <b>${window.formatTanggalDDMMYY(pkt.isoDate)} ${pkt.waktu || ''}</b></span>
+                        <span style="background:#EDE9FE; color:#5B21B6; font-weight:900; padding:2px 8px; border-radius:6px;">${pktItems.length} Jenis Barang</span>
+                    </div>
+                    <div style="margin-top:3px; font-size:10px; color:#5B21B6;">
+                        💡 Jika nama barang di cabang ini berbeda atau ingin mengatur Harga Jual baru, silakan ubah langsung pada kolom di bawah sebelum klik <b>Terima &amp; Masukkan Semua</b>.
+                    </div>
                 `;
             }
-            const titleEl = document.getElementById('formStokTitle');
-            if (titleEl) titleEl.innerText = '📥 Terima Kiriman Stok Cabang';
+
+            // Isi pilihan Sumber Saldo Pembayaran di cabang penerima
+            const selSumber = document.getElementById('terimaPaketSumberKas');
+            if (selSumber) {
+                const nonCash = new Set(['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG']);
+                const cashAccounts = (window.saldoList || []).filter(a => !nonCash.has(String(a).toUpperCase()));
+                selSumber.innerHTML = `<option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>` +
+                    cashAccounts.map(a => `<option value="${a}">🔴 Potong Saldo ${a}</option>`).join('');
+                if (cashAccounts.includes('LACI')) selSumber.value = 'LACI';
+            }
+
+            const tbody = document.getElementById('bodyTabelTerimaPaketCabang');
+            if (tbody) {
+                tbody.innerHTML = pktItems.map((it, idx) => {
+                    const rawNamaAsal = String(it.namaBarangAsal || '').trim().toUpperCase();
+                    const katAsal = String(it.kat || 'ACC').toUpperCase();
+                    const existingLocal = (window.stokOpnameItems || []).find(s =>
+                        String(s.nama || s.namaBarang || '').trim().toUpperCase() === rawNamaAsal &&
+                        String(s.kat || '').toUpperCase() === katAsal
+                    ) || (window.stokOpnameItems || []).find(s =>
+                        String(s.nama || s.namaBarang || '').trim().toUpperCase() === rawNamaAsal
+                    );
+
+                    const defaultNama = existingLocal ? (existingLocal.nama || existingLocal.namaBarang) : rawNamaAsal;
+                    const defaultModal = Number(it.modalPcsAsal || 0);
+                    const defaultJual = existingLocal && Number(existingLocal.jual || 0) > 0
+                        ? Number(existingLocal.jual)
+                        : Number(it.jualPcsAsal || 0);
+                    const qtyVal = Math.max(1, Number(it.qty || 1));
+                    const subModal = Math.round(qtyVal * defaultModal);
+                    const statusMatchHtml = existingLocal
+                        ? `<span style="color:#047857; font-size:9px; font-weight:800;">🔄 Restok barang yg sudah ada (Sisa: ${Number(existingLocal.awal || 0) - Number(existingLocal.terjual || 0)} Pcs)</span>`
+                        : `<span style="color:#0284C7; font-size:9px; font-weight:800;">✨ Barang baru di cabang ini</span>`;
+
+                    return `
+                        <tr data-terima-idx="${idx}" data-garansi="${(it.garansiAsal || '').replace(/"/g, '&quot;')}">
+                            <td>
+                                <select id="terimaItemKat_${idx}" class="form-control" style="padding:4px 6px; font-size:10.5px; font-weight:800;">
+                                    <option value="VOUCHER" ${katAsal === 'VOUCHER' ? 'selected' : ''}>VOUCHER</option>
+                                    <option value="SP" ${katAsal === 'SP' ? 'selected' : ''}>SP</option>
+                                    <option value="ACC" ${katAsal === 'ACC' ? 'selected' : ''}>ACC</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" id="terimaItemNama_${idx}" list="listStokOpnameExist" class="form-control" value="${defaultNama.replace(/"/g, '&quot;')}" style="padding:4px 7px; font-size:11px; font-weight:800;">
+                                <div style="margin-top:2px;">${statusMatchHtml}</div>
+                            </td>
+                            <td>
+                                <input type="number" id="terimaItemQty_${idx}" class="form-control" value="${qtyVal}" min="1" style="padding:4px; font-size:11px; font-weight:800; text-align:center;" oninput="hitungUlangTotalTerimaPaketCabang()">
+                            </td>
+                            <td>
+                                <input type="number" id="terimaItemModal_${idx}" class="form-control" value="${defaultModal}" min="0" style="padding:4px 6px; font-size:11px; font-weight:800; color:#B91C1C;" oninput="hitungUlangTotalTerimaPaketCabang()">
+                            </td>
+                            <td>
+                                <input type="number" id="terimaItemJual_${idx}" class="form-control" value="${defaultJual}" min="0" placeholder="0" style="padding:4px 6px; font-size:11px; font-weight:800; color:#047857;">
+                            </td>
+                            <td style="text-align:right; font-weight:900; color:#1E1B4B;" id="terimaItemSub_${idx}">
+                                ${window.formatRp(subModal)}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            if (window.updateDatalistStokOpname) window.updateDatalistStokOpname();
+            window.hitungUlangTotalTerimaPaketCabang();
+            document.getElementById('modalTerimaPaketCabangOverlay')?.classList.add('show');
+        };
+
+        window.closeModalTerimaPaketCabang = function() {
+            if (document.getElementById('terimaPaketBatchId')) document.getElementById('terimaPaketBatchId').value = '';
+            document.getElementById('modalTerimaPaketCabangOverlay')?.classList.remove('show');
+        };
+
+        window.hitungUlangTotalTerimaPaketCabang = function() {
+            const rows = document.querySelectorAll('#bodyTabelTerimaPaketCabang tr[data-terima-idx]');
+            let grandTotal = 0;
+            rows.forEach(r => {
+                const idx = r.getAttribute('data-terima-idx');
+                const q = Math.max(1, parseFloat(document.getElementById(`terimaItemQty_${idx}`)?.value) || 1);
+                const m = Math.max(0, parseFloat(document.getElementById(`terimaItemModal_${idx}`)?.value) || 0);
+                const sub = Math.round(q * m);
+                grandTotal += sub;
+                const subEl = document.getElementById(`terimaItemSub_${idx}`);
+                if (subEl) subEl.innerText = window.formatRp(sub);
+            });
+            const lblTot = document.getElementById('lblTotalModalTerimaPaket');
+            if (lblTot) lblTot.innerText = window.formatRp(grandTotal);
+            return grandTotal;
+        };
+
+        window.prosesSimpanTerimaPaketCabang = async function() {
+            const packetId = document.getElementById('terimaPaketBatchId')?.value || '';
+            const rows = document.querySelectorAll('#bodyTabelTerimaPaketCabang tr[data-terima-idx]');
+            if (rows.length === 0) return;
+
+            const sumberKas = document.getElementById('terimaPaketSumberKas')?.value || 'TIDAK POTONG SALDO';
+            const tglInput = window.getTodayIso();
+            const waktuInput = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
+            if (!window.stokOpnameItems) window.stokOpnameItems = [];
+
+            let totalPcsReceived = 0;
+            let totalModalReceived = 0;
+            let countItemsReceived = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const r = rows[i];
+                const idx = r.getAttribute('data-terima-idx');
+                const kat = (document.getElementById(`terimaItemKat_${idx}`)?.value || 'ACC').toUpperCase().trim();
+                const nama = (document.getElementById(`terimaItemNama_${idx}`)?.value || '').trim().toUpperCase();
+                const qty = Math.max(1, parseFloat(document.getElementById(`terimaItemQty_${idx}`)?.value) || 1);
+                const modal = Math.max(0, parseFloat(document.getElementById(`terimaItemModal_${idx}`)?.value) || 0);
+                const jual = Math.max(0, parseFloat(document.getElementById(`terimaItemJual_${idx}`)?.value) || 0);
+                const garansi = r.getAttribute('data-garansi') || 'TANPA GARANSI (Cek di Tempat)';
+
+                if (!nama || modal <= 0) {
+                    window.showToast(`⚠️ Nama barang & Harga Modal pada baris #${i + 1} wajib diisi!`, "error");
+                    return;
+                }
+
+                const nowTs = window.getNextUniqueTs();
+                const totalNilai = Math.round(qty * modal);
+                totalPcsReceived += qty;
+                totalModalReceived += totalNilai;
+                countItemsReceived++;
+
+                let existingItem = window.stokOpnameItems.find(st =>
+                    String(st.nama || st.namaBarang || '').trim().toUpperCase() === nama && st.kat === kat
+                );
+                const modalLama = existingItem ? Number(existingItem.modal || 0) : 0;
+                const jualLama = existingItem ? Number(existingItem.jual || 0) : 0;
+                const sisaLama = existingItem ? Math.max(0, Number(existingItem.awal || 0) - Number(existingItem.terjual || 0)) : 0;
+
+                let modalFinalTabel = modal;
+                if (existingItem && sisaLama > 0 && modalLama > 0 && modalLama !== modal) {
+                    modalFinalTabel = Math.round(((sisaLama * modalLama) + (qty * modal)) / (sisaLama + qty));
+                }
+                const jualFinalTabel = jual > 0 ? jual : jualLama;
+                const garansiFinal = garansi || (existingItem && existingItem.garansi ? existingItem.garansi : 'TANPA GARANSI (Cek di Tempat)');
+
+                const newRiwayat = {
+                    id: nowTs,
+                    waktu: waktuInput,
+                    isoDate: tglInput,
+                    tgl: tglInput,
+                    kat: kat,
+                    nama: nama,
+                    qty: qty,
+                    modal: modal,
+                    prevModal: existingItem ? modalLama : modal,
+                    modalRataSetelah: modalFinalTabel,
+                    jual: jualFinalTabel,
+                    garansi: garansiFinal,
+                    total: totalNilai,
+                    sumberKas: sumberKas,
+                    isKirimanCabang: true,
+                    updatedAt: nowTs
+                };
+                window.riwayatBelanjaStok.unshift(newRiwayat);
+                window.markLocalEntityEdited('riwayatBelanjaStok', newRiwayat);
+
+                if (existingItem) {
+                    existingItem.awal = Number(existingItem.awal || 0) + qty;
+                    existingItem.modal = modalFinalTabel;
+                    if (jualFinalTabel > 0) existingItem.jual = jualFinalTabel;
+                    existingItem.garansi = garansiFinal;
+                    existingItem.updatedAt = nowTs;
+                    window.markLocalEntityEdited('stok', existingItem);
+                } else {
+                    const newStok = {
+                        id: nowTs,
+                        kat: kat,
+                        nama: nama,
+                        awal: qty,
+                        terjual: 0,
+                        modal: modalFinalTabel,
+                        jual: jualFinalTabel,
+                        garansi: garansiFinal,
+                        updatedAt: nowTs
+                    };
+                    window.stokOpnameItems.push(newStok);
+                    window.markLocalEntityEdited('stok', newStok);
+                }
+            }
+
+            if (window.sortStokOpnameAlphabetical) {
+                window.sortStokOpnameAlphabetical(window.stokOpnameItems);
+            }
+
+            window.catatLogAktivitas(
+                'TERIMA STOK CABANG',
+                `Menerima paket kiriman stok cabang (${countItemsReceived} jenis • ${totalPcsReceived} Pcs • Total ${window.formatRp(totalModalReceived)}) potong saldo: ${sumberKas}`
+            );
+
+            window.closeModalTerimaPaketCabang();
+            if (packetId && window.hapusPaketAntreanStokCabang) {
+                await window.hapusPaketAntreanStokCabang(packetId, window.FIREBASE_ROOT_NODE);
+            }
+
+            window.saveMultipleFirebaseNodes({
+                stok: window.stokOpnameItems,
+                riwayatBelanjaStok: window.riwayatBelanjaStok,
+                vlookup: window.masterVlookup
+            }, false);
+            window.renderAll();
+            window.showToast(`✅ ${countItemsReceived} Jenis Barang (${totalPcsReceived} Pcs) berhasil diterima & masuk ke Stok Opname!`, "success");
         };
 
         window.hapusItemAntreanKirimanStok = async function(packetId) {
@@ -10344,6 +10883,160 @@
             if (!confirm(`Hapus paket kiriman "${label}" dari daftar antrean?`)) return;
             await window.hapusPaketAntreanStokCabang(packetId, window.FIREBASE_ROOT_NODE);
             window.showToast(`🗑️ Paket kiriman "${label}" dihapus dari antrean.`, "warn");
+        };
+
+        window.onRekapMutasiFilterChange = function() {
+            const mode = document.getElementById('rekapMutasiCabangMode')?.value || 'MONTHLY';
+            const dEl = document.getElementById('rekapMutasiCabangDate');
+            const mEl = document.getElementById('rekapMutasiCabangMonth');
+            if (dEl) {
+                dEl.style.display = mode === 'DAILY' ? 'inline-block' : 'none';
+                if (!dEl.value) dEl.value = window.getTodayIso();
+            }
+            if (mEl) {
+                mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+                if (!mEl.value) mEl.value = window.getCurrentMonthIso();
+            }
+            window.renderRekapMutasiCabangTable();
+        };
+
+        window.getFilteredMutasiCabangTrxList = function() {
+            const modeEl = document.getElementById('rekapMutasiCabangMode');
+            const dEl = document.getElementById('rekapMutasiCabangDate');
+            const mEl = document.getElementById('rekapMutasiCabangMonth');
+            if (dEl && !dEl.value) dEl.value = window.getTodayIso();
+            if (mEl && !mEl.value) mEl.value = window.getCurrentMonthIso();
+
+            const mode = modeEl ? modeEl.value : 'MONTHLY';
+            const fDate = dEl ? dEl.value : window.getTodayIso();
+            const fMonth = mEl ? mEl.value : window.getCurrentMonthIso();
+            const fKat = document.getElementById('rekapMutasiCabangKat')?.value || 'ALL';
+            const qSearch = (document.getElementById('rekapMutasiCabangSearch')?.value || '').trim().toUpperCase();
+
+            return (window.transaksiJurnal || []).filter(t => {
+                if (!t || !window.isTransaksiMutasiCabang(t)) return false;
+                if (mode === 'DAILY' && t.isoDate !== fDate) return false;
+                if (mode === 'MONTHLY' && (!t.isoDate || !t.isoDate.startsWith(fMonth))) return false;
+                if (fKat !== 'ALL' && String(t.kat || '').toUpperCase() !== fKat) return false;
+                if (qSearch) {
+                    const hay = `${t.ket || ''} ${t.namaBarangStok || ''} ${t.akunMasuk1 || ''} ${t.kat || ''}`.toUpperCase();
+                    if (!hay.includes(qSearch)) return false;
+                }
+                return true;
+            });
+        };
+
+        window.renderRekapMutasiCabangTable = function() {
+            const tbody = document.getElementById('bodyTabelRekapMutasiCabang');
+            if (!tbody) return;
+
+            const list = window.getFilteredMutasiCabangTrxList();
+            let totalRp = 0;
+            let totalPcs = 0;
+            const perAkun = {};
+            const perKat = { VOUCHER: 0, SP: 0, ACC: 0 };
+
+            list.forEach(t => {
+                const nom = Number(t.hargaModal || t.hargaJual || 0);
+                const q = Number(t.qty || 1);
+                totalRp += nom;
+                totalPcs += q;
+                const ak = t.akunMasuk1 || 'LACI';
+                perAkun[ak] = (perAkun[ak] || 0) + nom;
+                const kt = String(t.kat || 'ACC').toUpperCase();
+                if (perKat[kt] !== undefined) perKat[kt] += nom;
+            });
+
+            const elTotRp = document.getElementById('valRekapMutasiTotalRp');
+            const elSubItem = document.getElementById('subRekapMutasiTotalItem');
+            const elPerAkun = document.getElementById('valRekapMutasiPerAkun');
+            const elPerKat = document.getElementById('valRekapMutasiPerKat');
+
+            if (elTotRp) elTotRp.innerText = window.formatRp(totalRp);
+            if (elSubItem) elSubItem.innerText = `${list.length} Baris Barang • Total ${totalPcs} Pcs`;
+            if (elPerAkun) {
+                const akunKeys = Object.keys(perAkun);
+                elPerAkun.innerHTML = akunKeys.length > 0
+                    ? akunKeys.map(k => `<b>${k}</b>: ${window.formatRp(perAkun[k])}`).join(' &nbsp;•&nbsp; ')
+                    : '<span style="color:#64748B; font-weight:600;">Belum ada mutasi pada periode ini</span>';
+            }
+            if (elPerKat) {
+                elPerKat.innerHTML = `VOUCHER: <b>${window.formatRp(perKat.VOUCHER)}</b> • SP: <b>${window.formatRp(perKat.SP)}</b> • ACC: <b>${window.formatRp(perKat.ACC)}</b>`;
+            }
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada riwayat mutasi stok ke cabang pada periode ini.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(t => {
+                const nomTotal = Number(t.hargaModal || t.hargaJual || 0);
+                const qty = Math.max(1, Number(t.qty || 1));
+                const modalPcs = Math.round(nomTotal / qty);
+                const katBadge = t.kat === 'ACC'
+                    ? 'background:#FEF3C7; color:#B45309; border:1px solid #FDE68A;'
+                    : (t.kat === 'SP' ? 'background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0;' : 'background:#E0F2FE; color:#0284C7; border:1px solid #BAE6FD;');
+                return `
+                    <tr>
+                        <td><b>${t.waktu || '-'}</b><br><small>${window.formatTanggalDDMMYY(t.isoDate)}</small></td>
+                        <td><span style="padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800; ${katBadge}">${t.kat || 'ACC'}</span></td>
+                        <td>
+                            <b style="color:#1E1B4B;">${t.namaBarangStok || t.ket}</b>
+                            <div style="font-size:10px; color:#6D28D9; font-weight:700;">${t.ket}</div>
+                        </td>
+                        <td style="text-align:center;"><b>${qty} Pcs</b></td>
+                        <td style="text-align:right;">${window.formatRp(modalPcs)}</td>
+                        <td style="text-align:right;" class="text-debit"><b>${window.formatRp(nomTotal)}</b></td>
+                        <td style="text-align:center;">
+                            <span style="background:#ECFDF5; color:#047857; border:1px solid #6EE7B7; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">🟢 ${t.akunMasuk1 || '-'}</span>
+                        </td>
+                        <td style="text-align:center;">
+                            <div style="display:flex; gap:4px; justify-content:center;">
+                                <button type="button" class="btn-edit" onclick="editTrx('${t.id}')" title="Edit Mutasi">Edit</button>
+                                <button type="button" class="btn-delete" onclick="hapusJurnalTrx('${t.id}')" title="Hapus Mutasi & Kembalikan Stok">Hapus</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        window.kirimWaRekapMutasiCabang = function() {
+            const list = window.getFilteredMutasiCabangTrxList();
+            if (list.length === 0) {
+                window.showToast("⚠️ Tidak ada data mutasi cabang pada filter ini untuk dikirim ke WA!", "error");
+                return;
+            }
+            const tokoAsal = window.pengaturanToko?.namaToko || (window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1');
+            const targetCab = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 1' : 'POS ZENCELL 2';
+            let totalRp = 0;
+            let totalPcs = 0;
+            const perAkun = {};
+
+            const lines = list.map((t, idx) => {
+                const nom = Number(t.hargaModal || t.hargaJual || 0);
+                const q = Math.max(1, Number(t.qty || 1));
+                const mPcs = Math.round(nom / q);
+                totalRp += nom;
+                totalPcs += q;
+                const ak = t.akunMasuk1 || 'LACI';
+                perAkun[ak] = (perAkun[ak] || 0) + nom;
+                const nm = t.namaBarangStok || String(t.ket || '').replace(/^\[MUTASI[^\]]*\]\s*/i, '');
+                return `${idx + 1}. [${t.kat}] *${nm}* — ${q} Pcs × ${window.formatRp(mPcs)} = *${window.formatRp(nom)}* (${window.formatTanggalDDMMYY(t.isoDate)})`;
+            });
+
+            const rincianAkun = Object.keys(perAkun).map(k => `• Saldo ${k}: *${window.formatRp(perAkun[k])}*`).join('\n');
+            const text = `*📦 SURAT JALAN / REKAP MUTASI STOK CABANG*\n` +
+                `*Dari:* ${tokoAsal} ➔ *Ke:* ${targetCab}\n` +
+                `----------------------------------------\n` +
+                lines.join('\n') + `\n` +
+                `----------------------------------------\n` +
+                `*Total Jenis:* ${list.length} Baris (${totalPcs} Pcs)\n` +
+                `*TOTAL MODAL DIGANTI: ${window.formatRp(totalRp)}*\n\n` +
+                `*Rincian Uang Masuk (${tokoAsal}):*\n${rincianAkun}`;
+
+            const waTarget = window.pengaturanToko?.waOwner || window.pengaturanToko?.kontakToko || '';
+            window.kirimPesanWa(waTarget, text);
         };
 
         window.toggleFabMenu = function() {
@@ -19969,6 +20662,9 @@
 
                 if (typeof window.renderAntreanKirimanStokCabangUI === 'function') {
                     window.renderAntreanKirimanStokCabangUI();
+                }
+                if (typeof window.renderRekapMutasiCabangTable === 'function') {
+                    window.renderRekapMutasiCabangTable();
                 }
 
                 const txtCountEl = document.getElementById('txtStokFilterCount');
