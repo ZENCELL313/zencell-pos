@@ -8087,6 +8087,41 @@
             return result;
         };
 
+        // Daftar 8 akun sistem inti yang namanya dikunci permanen agar rumus Laci, Stok, Servis, Piutang, Operasional & EDC tidak pernah rusak
+        window.CORE_LOCKED_SALDO_ACCOUNTS = ['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART', 'KOMISI EDC'];
+
+        // Bersihkan masterSaldoAwal dari akun bawaan lama yang sudah diganti namanya (agar tidak hidup lagi / ghost balance di Cloud)
+        window.cleanMasterSaldoAwalAgainstActiveList = function(rawSaldoAwal, activeSaldoList, defaultSaldoMap, hasCustomList) {
+            const activeSet = new Set((activeSaldoList || []).map(s => String(s || '').trim().toUpperCase()));
+            const defMap = defaultSaldoMap || window.DEFAULT_SALDO_AWAL || {};
+            const src = rawSaldoAwal || {};
+            const result = {};
+
+            // 1. Masukkan nilai dari default hanya untuk akun yang masih aktif di daftar saldo
+            Object.keys(defMap).forEach(k => {
+                const kUp = String(k || '').trim().toUpperCase();
+                if (!hasCustomList || activeSet.has(kUp)) {
+                    result[kUp] = Number(defMap[k] || 0);
+                }
+            });
+
+            // 2. Timpa dengan nilai dari Cloud (hanya untuk akun yang aktif di saldoList jika saldoListCustom sudah ada)
+            Object.keys(src).forEach(k => {
+                const kUp = String(k || '').trim().toUpperCase();
+                if (!kUp) return;
+                if (hasCustomList && !activeSet.has(kUp) && !(kUp === 'QRIS (PIPIT)' && activeSet.has('QRIS'))) {
+                    return;
+                }
+                result[kUp] = Number(src[k] || 0);
+            });
+
+            // 3. Pastikan akun berbasis data otomatis selalu bersaldo awal 0
+            ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'].forEach(autoAcc => {
+                result[autoAcc] = 0;
+            });
+            return result;
+        };
+
         window.saldoList = window.STANDARD_SALDO_ORDER.slice();
 
         window.DEFAULT_SALDO_AWAL_Z1 = {
@@ -9158,26 +9193,23 @@
                 }
 
                 if (data.saldoAwal) {
+                    const hasCustomSaldoList = Array.isArray(data.saldoListCustom) && data.saldoListCustom.length > 0;
                     if (window.hasNonZeroSaldoAwal(data.saldoAwal) || data.isExplicitZeroSaldoAwal === true) {
-                        window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL, data.saldoAwal, {
-                            VOUCHER: 0,
-                            SP: 0,
-                            ACC: 0,
-                            SPAREPART: 0,
-                            PIUTANG: 0,
-                            OPERASIONAL: 0
-                        });
+                        window.masterSaldoAwal = window.cleanMasterSaldoAwalAgainstActiveList(
+                            data.saldoAwal,
+                            window.saldoList,
+                            window.DEFAULT_SALDO_AWAL,
+                            hasCustomSaldoList
+                        );
                     } else {
                         // Self-healing: jika perangkat lain yang belum di-refresh tidak sengaja mengirim saldoAwal 0 semua karena bug Undo lama, pulihkan otomatis!
                         const fallbackAwal = window.hasNonZeroSaldoAwal(window.masterSaldoAwal) ? window.masterSaldoAwal : window.DEFAULT_SALDO_AWAL;
-                        window.masterSaldoAwal = Object.assign({}, fallbackAwal, {
-                            VOUCHER: 0,
-                            SP: 0,
-                            ACC: 0,
-                            SPAREPART: 0,
-                            PIUTANG: 0,
-                            OPERASIONAL: 0
-                        });
+                        window.masterSaldoAwal = window.cleanMasterSaldoAwalAgainstActiveList(
+                            fallbackAwal,
+                            window.saldoList,
+                            window.DEFAULT_SALDO_AWAL,
+                            hasCustomSaldoList
+                        );
                         needsResyncMap.saldoAwal = true;
                     }
                 }
@@ -12106,7 +12138,11 @@
             }
             if (raw.startsWith('QRIS')) return 'QRIS';
             if (raw.startsWith('DANA ')) return 'DANA';
-            if (raw === 'BRI AA') return 'BRI';
+            if (raw.startsWith('BRI ')) return 'BRI';
+            if (raw.startsWith('BCA ')) return 'BCA';
+            if (raw.startsWith('SEA ') || raw.startsWith('SEABANK ')) return 'SEABANK';
+            if (raw.startsWith('OVO ')) return 'OVO';
+            if (raw.startsWith('GOPAY ')) return 'GOPAY';
             return raw;
         };
 
@@ -16069,7 +16105,16 @@
 
         window.muatDataAkunConfig = function(namaAkun) {
             if (!namaAkun) return;
-            document.getElementById('cfgNamaBaru').value = namaAkun;
+            const inpNamaBaru = document.getElementById('cfgNamaBaru');
+            const isCoreLocked = (window.CORE_LOCKED_SALDO_ACCOUNTS || ['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART', 'KOMISI EDC']).includes(namaAkun);
+            if (inpNamaBaru) {
+                inpNamaBaru.value = namaAkun;
+                inpNamaBaru.readOnly = isCoreLocked;
+                inpNamaBaru.style.backgroundColor = isCoreLocked ? '#F1F5F9' : '';
+                inpNamaBaru.title = isCoreLocked
+                    ? `🔒 Nama akun sistem inti (${namaAkun}) dikunci permanen agar rumus pembukuan tetap aman.`
+                    : 'Ketik nama baru jika ingin mengganti nama akun saldo ini';
+            }
             const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'].includes(namaAkun);
             const awal = isAutoDataAkun ? 0 : (window.masterSaldoAwal[namaAkun] || 0);
             document.getElementById('cfgSaldoAwal').value = awal;
@@ -16085,15 +16130,23 @@
         }
 
         window.simpanPengaturanAkun = function() {
-            const lama = document.getElementById('cfgAkunTarget').value;
+            const lama = (document.getElementById('cfgAkunTarget').value || '').trim().toUpperCase();
             const baru = (document.getElementById('cfgNamaBaru').value.trim() || lama).toUpperCase();
-            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'].includes(baru);
-            const awal = isAutoDataAkun ? 0 : (parseFloat(document.getElementById('cfgSaldoAwal').value) || 0);
-            const min = parseFloat(document.getElementById('cfgBatasMin').value) || 0;
+            const coreLockedList = window.CORE_LOCKED_SALDO_ACCOUNTS || ['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART', 'KOMISI EDC'];
             if (!lama || !baru) {
                 if (window.showToast) window.showToast("⚠️ Pilih akun saldo terlebih dahulu!", "error");
                 return;
             }
+            if (lama !== baru && (coreLockedList.includes(lama) || coreLockedList.includes(baru))) {
+                if (window.showToast) window.showToast(`🔒 Akun sistem inti (${lama}) dikunci dan tidak boleh diganti namanya agar rumus pembukuan tetap aman!`, "error");
+                const inpNamaBaru = document.getElementById('cfgNamaBaru');
+                if (inpNamaBaru) inpNamaBaru.value = lama;
+                return;
+            }
+            const isAutoDataAkun = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'].includes(baru);
+            const awal = isAutoDataAkun ? 0 : (parseFloat(document.getElementById('cfgSaldoAwal').value) || 0);
+            const min = parseFloat(document.getElementById('cfgBatasMin').value) || 0;
+
             const awalLama = Number(window.masterSaldoAwal[lama] || 0);
             if ((awal !== awalLama || lama !== baru) && window.verifyOwnerAccessForKoreksi) {
                 if (!window.verifyOwnerAccessForKoreksi('Ubah Saldo Awal / Nama Akun Master')) return;
@@ -16120,8 +16173,7 @@
                     delete window.masterBatasMinSaldo[lama];
                 }
 
-                // Migrasi otomatis seluruh riwayat transaksi, belanja stok, sparepart, piutang, operasional, setoran & VLOOKUP
-                // agar pergantian nama akun (misal gantian akun DANA karena limit) 100% aman dan tidak menimbulkan selisih/error!
+                // Migrasi otomatis seluruh riwayat transaksi, belanja stok, sparepart, tiket servis, piutang, operasional, setoran, koreksi saldo, bunga SeaBank & VLOOKUP
                 const nowTs = window.getNextUniqueTs();
                 let trxChanged = false;
                 (window.transaksiJurnal || []).forEach(t => {
@@ -16160,6 +16212,17 @@
                 });
                 if (spChanged) nodesPayload.sparepart = window.sparepartList;
 
+                let tkChanged = false;
+                (window.tiketServisList || []).forEach(tk => {
+                    if (tk && tk.sumberKasPart === lama) {
+                        tk.sumberKasPart = baru;
+                        tk.updatedAt = nowTs;
+                        window.markLocalEntityEdited('tiketServis', tk);
+                        tkChanged = true;
+                    }
+                });
+                if (tkChanged) nodesPayload.tiketServis = window.tiketServisList;
+
                 let pChanged = false;
                 (window.piutangList || []).forEach(p => {
                     let modP = false;
@@ -16179,8 +16242,10 @@
 
                 let opChanged = false;
                 (window.operasionalList || []).forEach(o => {
-                    if (o.sumber === lama) {
-                        o.sumber = baru;
+                    let modOp = false;
+                    if (o.sumber === lama) { o.sumber = baru; modOp = true; }
+                    if (o.sumberDiganti === lama) { o.sumberDiganti = baru; modOp = true; }
+                    if (modOp) {
                         o.updatedAt = nowTs;
                         window.markLocalEntityEdited('operasional', o);
                         opChanged = true;
@@ -16199,8 +16264,44 @@
                 });
                 if (stChanged) nodesPayload.setoran = window.setoranOwnerList;
 
+                // Migrasi akun pada Riwayat Koreksi Saldo & Riwayat Bunga SeaBank (di dalam pengaturanToko)
+                let pengaturanChanged = false;
+                if (window.pengaturanToko) {
+                    const korState = window.pengaturanToko.koreksiSaldoState;
+                    if (korState && Array.isArray(korState.riwayatKoreksi)) {
+                        korState.riwayatKoreksi.forEach(item => {
+                            if (item && item.akun === lama) {
+                                item.akun = baru;
+                                pengaturanChanged = true;
+                            }
+                        });
+                    }
+                    const seaState = window.pengaturanToko.seaBankBungaState;
+                    if (seaState) {
+                        if (seaState.lastClaimedByAccount && seaState.lastClaimedByAccount[lama] !== undefined) {
+                            seaState.lastClaimedByAccount[baru] = seaState.lastClaimedByAccount[lama];
+                            delete seaState.lastClaimedByAccount[lama];
+                            pengaturanChanged = true;
+                        }
+                        if (Array.isArray(seaState.riwayatBunga)) {
+                            seaState.riwayatBunga.forEach(item => {
+                                if (item && item.akun === lama) {
+                                    item.akun = baru;
+                                    pengaturanChanged = true;
+                                }
+                            });
+                        }
+                    }
+                }
+                if (pengaturanChanged) {
+                    localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+                    nodesPayload.pengaturan = window.pengaturanToko;
+                }
+
+                // Migrasi tujuan akun sekaligus kata kunci VLOOKUP jika kata kuncinya persis nama akun lama
                 let vlChanged = false;
-                Object.keys(window.masterVlookup || {}).forEach(k => {
+                const vKeys = Object.keys(window.masterVlookup || {});
+                vKeys.forEach(k => {
                     const rule = window.masterVlookup[k];
                     if (!rule) return;
                     let modV = false;
@@ -16210,6 +16311,11 @@
                     if (rule.m2 === lama) { rule.m2 = baru; modV = true; }
                     if (rule.k1 === lama) { rule.k1 = baru; modV = true; }
                     if (rule.k2 === lama) { rule.k2 = baru; modV = true; }
+                    if (String(k).trim().toUpperCase() === lama && !window.masterVlookup[baru]) {
+                        window.masterVlookup[baru] = Object.assign({}, rule, { origKey: baru });
+                        delete window.masterVlookup[k];
+                        modV = true;
+                    }
                     if (modV) vlChanged = true;
                 });
                 if (vlChanged) {
@@ -16224,6 +16330,14 @@
             }
             window.masterBatasMinSaldo[baru] = min;
 
+            // Pastikan masterSaldoAwal bersih dari key lama yang sudah tidak ada di daftar saldo aktif
+            window.masterSaldoAwal = window.cleanMasterSaldoAwalAgainstActiveList(
+                window.masterSaldoAwal,
+                window.saldoList,
+                window.DEFAULT_SALDO_AWAL,
+                true
+            );
+
             nodesPayload.saldoAwal = window.masterSaldoAwal;
             nodesPayload.saldoListCustom = window.saldoList;
             nodesPayload.batasMinSaldo = window.masterBatasMinSaldo;
@@ -16235,7 +16349,7 @@
             window.muatDataAkunConfig(baru);
             window.saveMultipleFirebaseNodes(nodesPayload, false);
             window.renderAll();
-            if (window.showToast) window.showToast(`✅ Pengaturan akun ${baru} & riwayat terkait berhasil diperbarui!`, "success");
+            if (window.showToast) window.showToast(`✅ Pengaturan akun ${baru} & seluruh data terkait berhasil diperbarui!`, "success");
         }
 
         window.resetSemuaSaldoAwalKeNol = function() {
@@ -29004,10 +29118,18 @@
                 }
             });
 
+            const rawCustomList = Array.isArray(snap.saldoListCustom)
+                ? snap.saldoListCustom
+                : (snap.saldoListCustom && typeof snap.saldoListCustom === 'object' ? Object.values(snap.saldoListCustom) : null);
+            const activeSnapSet = (rawCustomList && rawCustomList.length > 0)
+                ? new Set(rawCustomList.map(s => String(s || '').trim().toUpperCase()).filter(Boolean))
+                : null;
+
             let tunaiLaci = 0;
             let totalBankWallet = 0;
             Object.keys(masukAkun).forEach(k => {
                 if (akunDataOtomatis.includes(k)) return;
+                if (activeSnapSet && !activeSnapSet.has(String(k).trim().toUpperCase())) return;
                 const awal = Number(saldoAwalObj[k] || 0);
                 const akhir = awal + Number(masukAkun[k] || 0) - Number(keluarAkun[k] || 0);
                 if (k === 'LACI') {
