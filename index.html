@@ -28691,19 +28691,112 @@
         };
         window.setFilterKatCekFisik = window.setFilterCekFisikKat;
 
-        window.onInputQtyCekFisik = function(stokId, rawVal) {
+        window.buildCekFisikRowVisualState = function(s, inputVal) {
+            const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
+            const hpp = Number(s.modal || 0);
+            const hasInput = inputVal !== undefined;
+            const diff = hasInput ? (Number(inputVal) - sisa) : 0;
+
+            let statusBadge = `<span style="color:#94A3B8; font-size:10px; font-weight:700;">⏳ Belum Diisi</span>`;
+            let rowBg = '';
+            let borderColor = '#CBD5E1';
+            if (hasInput) {
+                if (diff === 0) {
+                    statusBadge = `<span style="background:#DCFCE7; color:#15803D; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">✅ PAS / KLOP (0)</span>`;
+                    rowBg = 'rgba(240,253,244,0.45)';
+                    borderColor = '#16A34A';
+                } else if (diff < 0) {
+                    statusBadge = `<span style="background:#FEE2E2; color:#B91C1C; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">🔴 KURANG ${diff} Pcs (-${window.formatRp(Math.abs(diff) * hpp)})</span>`;
+                    rowBg = 'rgba(254,242,242,0.65)';
+                    borderColor = '#DC2626';
+                } else {
+                    statusBadge = `<span style="background:#E0F2FE; color:#0369A1; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">🔵 LEBIH +${diff} Pcs (+${window.formatRp(diff * hpp)})</span>`;
+                    rowBg = 'rgba(240,249,255,0.65)';
+                    borderColor = '#0284C7';
+                }
+            }
+            return { statusBadge, rowBg, borderColor, hasInput, diff, sisa, hpp };
+        };
+
+        window.updateSummaryCardsCekFisikStok = function() {
+            const allStok = window.stokOpnameItems || [];
+            let dicekCount = 0;
+            let klopCount = 0;
+            let kurangCount = 0;
+            let lebihCount = 0;
+            let nominalSelisihKurang = 0;
+            let nominalSelisihLebih = 0;
+
+            allStok.forEach(s => {
+                const inputVal = window._cekFisikInputMap[String(s.id)];
+                if (inputVal === undefined) return;
+                dicekCount++;
+                const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
+                const diff = Number(inputVal) - sisa;
+                const hpp = Number(s.modal || 0);
+                if (diff === 0) {
+                    klopCount++;
+                } else if (diff < 0) {
+                    kurangCount++;
+                    nominalSelisihKurang += Math.abs(diff) * hpp;
+                } else {
+                    lebihCount++;
+                    nominalSelisihLebih += diff * hpp;
+                }
+            });
+
+            const elDicek = document.getElementById('valCekFisikProgress');
+            if (elDicek) elDicek.innerText = `${dicekCount} / ${allStok.length} Barang`;
+            const elKlop = document.getElementById('valCekFisikPas');
+            if (elKlop) elKlop.innerText = `${klopCount} Barang`;
+            const elKurang = document.getElementById('valCekFisikKurang');
+            if (elKurang) elKurang.innerText = `${kurangCount} Barang (${window.formatRp(nominalSelisihKurang)})`;
+            const elLebih = document.getElementById('valCekFisikLebih');
+            if (elLebih) elLebih.innerText = `${lebihCount} Barang (${window.formatRp(nominalSelisihLebih)})`;
+        };
+
+        window.onInputQtyCekFisik = function(stokId, rawVal, inpEl) {
             const idKey = String(stokId);
-            if (rawVal === '' || rawVal === null || rawVal === undefined) {
+            const trimmed = String(rawVal ?? '').trim();
+            if (trimmed === '') {
                 delete window._cekFisikInputMap[idKey];
             } else {
-                const num = parseInt(rawVal, 10);
+                const num = parseInt(trimmed, 10);
                 if (!isNaN(num) && num >= 0) {
                     window._cekFisikInputMap[idKey] = num;
                 } else {
                     delete window._cekFisikInputMap[idKey];
                 }
             }
-            window.renderTabelCekFisikStok();
+
+            // Update kartu ringkasan atas secara instan tanpa merender ulang tabel (agar kursor input tidak pernah lepas!)
+            window.updateSummaryCardsCekFisikStok();
+
+            const itemObj = (window.stokOpnameItems || []).find(s => String(s.id) === idKey);
+            if (!itemObj) return;
+            const st = window.buildCekFisikRowVisualState(itemObj, window._cekFisikInputMap[idKey]);
+
+            const rowEl = document.getElementById(`cf-row-${idKey}`);
+            if (rowEl) rowEl.style.background = st.rowBg || '';
+            const targetInp = inpEl || document.getElementById(`cf-inp-${idKey}`);
+            if (targetInp) targetInp.style.borderColor = st.borderColor;
+            const statusCell = document.getElementById(`cf-status-${idKey}`);
+            if (statusCell) statusCell.innerHTML = st.statusBadge;
+        };
+
+        window.onKeyDownQtyCekFisik = function(e) {
+            if (!e) return;
+            if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const allInputs = Array.from(document.querySelectorAll('#bodyTabelCekFisikStok input.cf-qty-input'));
+                const idx = allInputs.indexOf(e.target);
+                if (idx === -1) return;
+                const nextIdx = e.key === 'ArrowUp' ? idx - 1 : idx + 1;
+                if (nextIdx >= 0 && nextIdx < allInputs.length) {
+                    allInputs[nextIdx].focus();
+                    allInputs[nextIdx].select();
+                }
+            }
         };
 
         window.isiOtomatisSemuaFisikSesuaiSistem = function() {
@@ -28755,40 +28848,7 @@
             const tbody = document.getElementById('bodyTabelCekFisikStok');
             if (!tbody) return;
 
-            const allStok = window.stokOpnameItems || [];
-            let dicekCount = 0;
-            let klopCount = 0;
-            let kurangCount = 0;
-            let lebihCount = 0;
-            let nominalSelisihKurang = 0;
-            let nominalSelisihLebih = 0;
-
-            allStok.forEach(s => {
-                const inputVal = window._cekFisikInputMap[String(s.id)];
-                if (inputVal === undefined) return;
-                dicekCount++;
-                const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
-                const diff = Number(inputVal) - sisa;
-                const hpp = Number(s.modal || 0);
-                if (diff === 0) {
-                    klopCount++;
-                } else if (diff < 0) {
-                    kurangCount++;
-                    nominalSelisihKurang += Math.abs(diff) * hpp;
-                } else {
-                    lebihCount++;
-                    nominalSelisihLebih += diff * hpp;
-                }
-            });
-
-            const elDicek = document.getElementById('valCekFisikProgress');
-            if (elDicek) elDicek.innerText = `${dicekCount} / ${allStok.length} Barang`;
-            const elKlop = document.getElementById('valCekFisikPas');
-            if (elKlop) elKlop.innerText = `${klopCount} Barang`;
-            const elKurang = document.getElementById('valCekFisikKurang');
-            if (elKurang) elKurang.innerText = `${kurangCount} Barang (${window.formatRp(nominalSelisihKurang)})`;
-            const elLebih = document.getElementById('valCekFisikLebih');
-            if (elLebih) elLebih.innerText = `${lebihCount} Barang (${window.formatRp(nominalSelisihLebih)})`;
+            window.updateSummaryCardsCekFisikStok();
 
             const list = window.getFilteredCekFisikItems();
             if (list.length === 0) {
@@ -28799,37 +28859,19 @@
             tbody.innerHTML = list.map(s => {
                 const idKey = String(s.id);
                 const nama = s.nama || s.namaBarang || '-';
-                const sisa = Number(s.awal || 0) - Number(s.terjual || 0);
-                const hpp = Number(s.modal || 0);
                 const inputVal = window._cekFisikInputMap[idKey];
-                const hasInput = inputVal !== undefined;
-                const diff = hasInput ? (Number(inputVal) - sisa) : 0;
-
-                let statusBadge = `<span style="color:#94A3B8; font-size:10px; font-weight:700;">⏳ Belum Diisi</span>`;
-                let rowBg = '';
-                if (hasInput) {
-                    if (diff === 0) {
-                        statusBadge = `<span style="background:#DCFCE7; color:#15803D; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">✅ PAS / KLOP (0)</span>`;
-                        rowBg = 'background:rgba(240,253,244,0.45);';
-                    } else if (diff < 0) {
-                        statusBadge = `<span style="background:#FEE2E2; color:#B91C1C; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">🔴 KURANG ${diff} Pcs (-${window.formatRp(Math.abs(diff) * hpp)})</span>`;
-                        rowBg = 'background:rgba(254,242,242,0.65);';
-                    } else {
-                        statusBadge = `<span style="background:#E0F2FE; color:#0369A1; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">🔵 LEBIH +${diff} Pcs (+${window.formatRp(diff * hpp)})</span>`;
-                        rowBg = 'background:rgba(240,249,255,0.65);';
-                    }
-                }
+                const st = window.buildCekFisikRowVisualState(s, inputVal);
 
                 return `
-                    <tr style="${rowBg}">
+                    <tr id="cf-row-${idKey}" style="${st.rowBg ? 'background:' + st.rowBg + ';' : ''}">
                         <td style="padding:7px 8px; text-align:center;"><span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#F1F5F9; color:#334155;">${s.kat || '-'}</span></td>
                         <td style="padding:7px 8px; font-weight:800; color:#0F172A; text-align:left;">${nama}</td>
-                        <td style="padding:7px 8px; text-align:right; color:#64748B;">${window.formatRp(hpp)}</td>
-                        <td style="padding:7px 8px; text-align:center; font-weight:900; font-size:12px; color:${sisa <= 0 ? '#DC2626' : '#0F172A'};">${sisa} Pcs</td>
+                        <td style="padding:7px 8px; text-align:right; color:#64748B;">${window.formatRp(st.hpp)}</td>
+                        <td style="padding:7px 8px; text-align:center; font-weight:900; font-size:12px; color:${st.sisa <= 0 ? '#DC2626' : '#0F172A'};">${st.sisa} Pcs</td>
                         <td style="padding:7px 8px; text-align:center;">
-                            <input type="number" min="0" value="${hasInput ? inputVal : ''}" placeholder="..." oninput="window.onInputQtyCekFisik('${idKey}', this.value)" style="width:78px; padding:5px 6px; border-radius:7px; border:1.5px solid ${hasInput ? (diff === 0 ? '#16A34A' : (diff < 0 ? '#DC2626' : '#0284C7')) : '#CBD5E1'}; text-align:center; font-weight:800; font-size:12px;">
+                            <input type="number" id="cf-inp-${idKey}" class="cf-qty-input" inputmode="numeric" min="0" value="${st.hasInput ? inputVal : ''}" placeholder="..." oninput="window.onInputQtyCekFisik('${idKey}', this.value, this)" onkeydown="window.onKeyDownQtyCekFisik(event)" style="width:78px; padding:5px 6px; border-radius:7px; border:1.5px solid ${st.borderColor}; text-align:center; font-weight:800; font-size:12px;">
                         </td>
-                        <td style="padding:7px 8px; text-align:center;">${statusBadge}</td>
+                        <td id="cf-status-${idKey}" style="padding:7px 8px; text-align:center;">${st.statusBadge}</td>
                     </tr>
                 `;
             }).join('');
