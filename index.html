@@ -3183,7 +3183,7 @@
             }
         }
     </style>
-<script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
+<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body>
 
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
@@ -4785,10 +4785,10 @@
                     <input type="text" id="korCatatan" class="form-control" placeholder="CONTOH: BONUS SALDO DIGIPOS / SELISIH MUTASI BCA TGL 25..." required>
                 </div>
 
-                <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:7px 9px; margin-bottom:10px;">
-                    <label style="display:flex; align-items:flex-start; gap:7px; cursor:pointer; margin:0; font-size:10.5px; color:#065F46; font-weight:700; line-height:1.35;">
-                        <input type="checkbox" id="korChkAdjustModal" checked style="margin-top:2px; width:15px; height:15px; accent-color:#059669;">
-                        <span>🎯 Sesuaikan otomatis <b>Target Modal Berputar</b> sebesar selisih koreksi agar indikator Audit Modal tetap <b>PAS / BALANCE</b> (Direkomendasikan)</span>
+                <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:7px 9px; margin-bottom:10px;">
+                    <label style="display:flex; align-items:flex-start; gap:7px; cursor:pointer; margin:0; font-size:10.5px; color:#475569; font-weight:700; line-height:1.35;">
+                        <input type="checkbox" id="korChkAdjustModal" style="margin-top:2px; width:15px; height:15px; accent-color:#059669;">
+                        <span>🔒 <b>Biarkan Tidak Dicentang</b> agar Patokan Modal Berputar tetap terkunci (misal Rp250.000.000). Centang hanya jika ingin ikut mengubah patokan modal pokok.</span>
                     </label>
                 </div>
 
@@ -24141,12 +24141,14 @@
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     ${!isPas ? `
                     <button type="button" class="btn" style="flex:1; min-width:210px; background:#7C3AED; font-weight:800; font-size:11.5px; padding:9px 12px;" onclick="window.paskanSelisihAuditKeLaciOtomatis()">
-                        ⚖️ Pas-kan via Koreksi LACI (${info.selisihAudit > 0 ? '-' : '+'}${window.formatRp(Math.abs(info.selisihAudit))}) Agar Pas 250 Jt + Cuan
+                        ⚖️ Pas-kan via Koreksi LACI (${info.selisihAudit > 0 ? '-' : '+'}${window.formatRp(Math.abs(info.selisihAudit))}) Agar Pas ${window.formatCompactRp ? window.formatCompactRp(info.targetModalPokok) : 'Modal'} + Cuan
                     </button>
                     ` : ''}
-                    <button type="button" class="btn" style="flex:1; min-width:180px; background:#059669; font-weight:800; font-size:11.5px; padding:9px 12px;" onclick="window.kalibrasiModalPokokOtomatis()">
-                        ⚡ Kalibrasi Patokan Modal Pokok
+                    ${info.targetModalPokok !== 250000000 ? `
+                    <button type="button" class="btn" style="flex:1; min-width:190px; background:#0284C7; font-weight:800; font-size:11.5px; padding:9px 12px;" onclick="window.kunciModalPokok250Juta()">
+                        🔒 Kembalikan Patokan ke Rp250.000.000
                     </button>
+                    ` : ''}
                     <button type="button" class="btn" style="background:#64748B; width:auto; padding:9px 16px; font-size:11.5px;" onclick="window.closeModalBedahAuditModal()">
                         Tutup
                     </button>
@@ -24159,6 +24161,19 @@
         window.closeModalBedahAuditModal = function() {
             const modal = document.getElementById('modalBedahAuditOverlay');
             if (modal) modal.classList.remove('show');
+        };
+
+        window.kunciModalPokok250Juta = function() {
+            if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi('Kunci Patokan Modal Pokok Rp250.000.000')) {
+                return;
+            }
+            if (!window.pengaturanToko) window.pengaturanToko = {};
+            window.pengaturanToko.targetModalBerputar = 250000000;
+            localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+            window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
+            window.renderAll();
+            window.openModalBedahAuditModal();
+            window.showToast('🔒 Patokan Modal Berputar berhasil dikembalikan & dikunci ke Rp250.000.000!', 'success');
         };
 
         window.paskanSelisihAuditKeLaciOtomatis = function() {
@@ -24213,8 +24228,15 @@
         };
 
         window.kalibrasiModalPokokOtomatis = function() {
+            if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi('Kalibrasi Patokan Modal Pokok')) {
+                return;
+            }
             const info = window.hitungRingkasanProfitDanHarta();
             const modalMurni = Math.max(0, info.totalHartaAktual - info.sisaProfitHariIni);
+            const curTarget = Number((window.pengaturanToko && window.pengaturanToko.targetModalBerputar) || 250000000);
+            if (!confirm(`⚠️ PERINGATAN UBAH PATOKAN MODAL POKOK\n\nApakah Anda yakin ingin mengubah Patokan Modal Berputar dari ${window.formatRp(curTarget)} menjadi ${window.formatRp(modalMurni)}?`)) {
+                return;
+            }
             if (!window.pengaturanToko) window.pengaturanToko = {};
             window.pengaturanToko.targetModalBerputar = modalMurni;
             localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
@@ -24318,13 +24340,8 @@
             const prevAwal = Number(window.masterSaldoAwal[akun] || 0);
             window.masterSaldoAwal[akun] = prevAwal + nominalCair;
 
-            // 2. Sesuaikan Target Modal Berputar otomatis dengan jumlah yang sama agar Audit Modal Berputar tetap PAS (Selisih Rp 0)
-            let modalAdjusted = false;
-            const prevTargetModal = Number((window.pengaturanToko && window.pengaturanToko.targetModalBerputar) || 0);
-            if (prevTargetModal > 0) {
-                window.pengaturanToko.targetModalBerputar = prevTargetModal + nominalCair;
-                modalAdjusted = true;
-            }
+            // 2. JANGAN ubah Target Modal Berputar otomatis agar patokan modal (misal Rp250.000.000) tetap terkunci permanen
+            const modalAdjusted = false;
 
             // 3. Simpan riwayat pencairan bunga & tandai sudah cair hari ini
             const logItem = {
@@ -24358,7 +24375,7 @@
 
             if (window.triggerMutasiBlink) window.triggerMutasiBlink([akun]);
             window.renderAll();
-            window.showToast(`🌅 Bunga harian ${akun} (+${window.formatRp(nominalCair)}) berhasil ditambahkan ke Saldo & Modal Berputar!`, 'success');
+            window.showToast(`🌅 Bunga harian ${akun} (+${window.formatRp(nominalCair)}) berhasil ditambahkan ke Saldo ${akun}!`, 'success');
         };
 
         window.openModalLaporanShift = function() {
@@ -24826,7 +24843,7 @@
             if (nomSelEl) nomSelEl.value = '0';
             if (nomSelDisp) nomSelDisp.value = '';
             const chkEl = document.getElementById('korChkAdjustModal');
-            if (chkEl) chkEl.checked = true;
+            if (chkEl) chkEl.checked = false;
 
             window.onKoreksiModeChange();
             window.onKoreksiAkunChange();
