@@ -4400,7 +4400,7 @@
 
         <div id="topKpiSection" class="top-kpi-wrapper kpi-mode-modern">
             <div class="summary-grid">
-                <div class="summary-card kpi-c1" style="border-top: 3px solid #D97706; background: linear-gradient(180deg, #FFFBEB 0%, var(--card) 100%);">
+                <div id="topCardCuanTotal" class="summary-card kpi-c1" onclick="window.filterJurnalBySektorCuan('')" title="Klik untuk menampilkan SEMUA Kategori Transaksi di Jurnal Harian" style="border-top: 3px solid #D97706; background: linear-gradient(180deg, #FFFBEB 0%, var(--card) 100%); cursor:pointer; transition:transform 0.15s ease, box-shadow 0.15s ease;">
                     <div class="kpi-icon-box" title="Cuan Harian">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
                     </div>
@@ -4409,30 +4409,30 @@
                         <div class="val" id="cuanTotalVal">Rp0</div>
                     </div>
                 </div>
-                <div class="summary-card kpi-c2" style="border-top: 3px solid var(--primary);">
+                <div id="topCardCuanAtm" class="summary-card kpi-c2" onclick="window.filterJurnalBySektorCuan('SEKTOR_ATM')" title="Klik untuk memfilter Jurnal Harian: Semua Kategori ATM LINK (TOPUP, TRANSFER, TARIK TUNAI, EDC)" style="border-top: 3px solid var(--primary); cursor:pointer; transition:transform 0.15s ease, box-shadow 0.15s ease;">
                     <div class="kpi-icon-box" title="Cuan ATM">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
                     </div>
                     <div class="kpi-content-box">
-                        <div class="lbl" style="color:var(--primary);"><span class="kpi-inline-emoji">🏧 </span>CUAN ATM</div>
+                        <div class="lbl" style="color:var(--primary);"><span class="kpi-inline-emoji">🏧 </span>CUAN ATM <span id="badgeFilterSektorAtm" style="display:none; font-size:8.5px; background:var(--primary); color:#FFF; padding:1px 4px; border-radius:4px; margin-left:3px;">AKTIF</span></div>
                         <div class="val" id="cuanAtmVal">Rp0</div>
                     </div>
                 </div>
-                <div class="summary-card kpi-c3" style="border-top: 3px solid #16A34A;">
+                <div id="topCardCuanKonter" class="summary-card kpi-c3" onclick="window.filterJurnalBySektorCuan('SEKTOR_KONTER')" title="Klik untuk memfilter Jurnal Harian: Semua Kategori KONTER (VOUCHER, KUOTA, PPOB, PULSA, ACC, SP, GAME, GADAI)" style="border-top: 3px solid #16A34A; cursor:pointer; transition:transform 0.15s ease, box-shadow 0.15s ease;">
                     <div class="kpi-icon-box" title="Cuan Konter">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
                     </div>
                     <div class="kpi-content-box">
-                        <div class="lbl" style="color:#15803D;"><span class="kpi-inline-emoji">📱 </span>CUAN KONTER</div>
+                        <div class="lbl" style="color:#15803D;"><span class="kpi-inline-emoji">📱 </span>CUAN KONTER <span id="badgeFilterSektorKonter" style="display:none; font-size:8.5px; background:#16A34A; color:#FFF; padding:1px 4px; border-radius:4px; margin-left:3px;">AKTIF</span></div>
                         <div class="val" id="cuanKonterVal">Rp0</div>
                     </div>
                 </div>
-                <div class="summary-card kpi-c4" style="border-top: 3px solid #9333EA;">
+                <div id="topCardCuanService" class="summary-card kpi-c4" onclick="window.filterJurnalBySektorCuan('SEKTOR_SERVICE')" title="Klik untuk memfilter Jurnal Harian: Kategori SERVICE" style="border-top: 3px solid #9333EA; cursor:pointer; transition:transform 0.15s ease, box-shadow 0.15s ease;">
                     <div class="kpi-icon-box" title="Cuan Service">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
                     </div>
                     <div class="kpi-content-box">
-                        <div class="lbl" style="color:#7E22CE;"><span class="kpi-inline-emoji">🛠️ </span>CUAN SERVICE</div>
+                        <div class="lbl" style="color:#7E22CE;"><span class="kpi-inline-emoji">🛠️ </span>CUAN SERVICE <span id="badgeFilterSektorService" style="display:none; font-size:8.5px; background:#9333EA; color:#FFF; padding:1px 4px; border-radius:4px; margin-left:3px;">AKTIF</span></div>
                         <div class="val" id="cuanServiceVal">Rp0</div>
                     </div>
                 </div>
@@ -5023,11 +5023,23 @@
                         <input type="hidden" id="opFastNom" value="0">
                     </div>
                 </div>
-                <div class="form-group" style="margin-bottom:8px;">
-                    <label style="font-size:10.5px;">Keperluan / Keterangan Operasional *</label>
-                    <input type="text" id="opFastKet" class="form-control" placeholder="Contoh: KERTAS THERMAL, TOKEN LISTRIK TOKO, AIR GALON..." required style="font-size:11px; padding:6px 8px;">
+                <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:8px; margin-bottom:8px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="font-size:10.5px;">Jenis Pengeluaran / Talangan *</label>
+                        <select id="opFastJenis" class="form-control" style="font-size:11px; font-weight:800; padding:6px 8px; background:#FAF5FF; border-color:#C4B5FD; color:#5B21B6;" onchange="window.onOpFastJenisChange && window.onOpFastJenisChange()">
+                            <option value="BIAYA_TOKO">🏢 Biaya Operasional Toko (Listrik, Struk, Galon — Potong Laba)</option>
+                            <option value="PINJAMAN_SEMENTARA">🤝 Pinjaman Sementara / Talangan Cabang (Zen 2 — Non-Biaya)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="font-size:10.5px;">Keperluan / Keterangan *</label>
+                        <input type="text" id="opFastKet" class="form-control" placeholder="Contoh: PINJAM SALDO ZEN 2 / TOKEN LISTRIK / KERTAS..." required style="font-size:11px; padding:6px 8px;">
+                    </div>
                 </div>
-                <div style="display:flex; justify-content:flex-end; gap:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <small id="opFastJenisHint" style="font-size:9.8px; color:#64748B; font-weight:600;">
+                        💡 Saldo berpindah sementara ke akun <b>OPERASIONAL</b> (Modal 250Jt tetap pas) hingga diklik <b>📥 Ganti ke Kas</b>.
+                    </small>
                     <button type="submit" id="btnSubmitOpFast" class="btn" style="background:#7C3AED; padding:7px 14px; font-size:11px; width:auto;">💾 Catat Operasional (Ditalangi Kas)</button>
                 </div>
             </form>
@@ -5642,6 +5654,12 @@
                         <option value="">-- All Akun Keluar --</option>
                     </select>
 
+                    <select id="jurnalSortCuan" class="date-picker-input" onchange="renderAll()" title="Urutkan Daftar Jurnal Berdasarkan Cuan Terbesar / Terkecil" style="font-weight:700; color:#B45309; background:#FFFBEB; border-color:#FCD34D;">
+                        <option value="DEFAULT">🕒 Urutan: Waktu Terbaru</option>
+                        <option value="CUAN_DESC">💰 Cuan: Terbesar ➔ Terkecil (⬇)</option>
+                        <option value="CUAN_ASC">💸 Cuan: Terkecil ➔ Terbesar (⬆)</option>
+                    </select>
+
                     <div style="position:relative; display:flex; align-items:center; flex:1; min-width:175px; max-width:260px;">
                         <input type="text" id="jurnalSearchInput" class="date-picker-input" placeholder="🔍 Cari ket / nama / nominal..." oninput="window.debouncedRenderAll()" style="width:100%; padding-right:24px;">
                         <button type="button" id="btnClearJurnalSearch" onclick="document.getElementById('jurnalSearchInput').value=''; renderAll();" style="display:none; position:absolute; right:5px; background:none; border:none; color:#EF4444; font-weight:800; font-size:11px; cursor:pointer;" title="Bersihkan Pencarian">✕</button>
@@ -5660,7 +5678,7 @@
                             <th rowspan="2" class="th-jurnal-kat">KATEGORI</th>
                             <th colspan="2" class="th-group-pemasukan">PEMASUKAN</th>
                             <th colspan="2" class="th-group-pengeluaran">PENGELUARAN</th>
-                            <th rowspan="2" class="th-jurnal-cuan">CUAN</th>
+                            <th rowspan="2" class="th-jurnal-cuan" onclick="window.toggleSortCuanJurnal()" style="cursor:pointer; user-select:none;" title="Klik untuk mengurutkan Cuan: Terbesar ➔ Terkecil / Terkecil ➔ Terbesar / Waktu Terbaru">CUAN <span id="jurnalThCuanSortIcon" style="font-size:10px; opacity:0.85;">⇅</span></th>
                             <th rowspan="2" class="th-jurnal-aksi">AKSI</th>
                         </tr>
                         <tr class="tr-jurnal-hdr-sub">
@@ -6464,23 +6482,23 @@
                 </div>
 
                 <div class="summary-grid" style="margin-bottom:10px;">
-                    <div class="summary-card" style="background:#FEF3C7; border-color:#FCD34D;">
+                    <div class="summary-card" onclick="window.filterJurnalBySektorCuan('')" title="Klik untuk melihat semua kategori transaksi di Jurnal Harian" style="background:#FEF3C7; border-color:#FCD34D; cursor:pointer;">
                         <div class="lbl" id="lblRekapCuanTotal">TOTAL CUAN HARIAN</div>
                         <div class="val text-cuan" id="valRekapCuanTotal">Rp0</div>
                         <div id="subRekapCuanTotal" style="font-size:9.5px; color:#92400E; font-weight:700; margin-top:2px;">0 Transaksi</div>
                     </div>
-                    <div class="summary-card" style="background:var(--primary-light); border-color:var(--border);">
-                        <div class="lbl">CUAN ATM LINK</div>
+                    <div class="summary-card" onclick="window.filterJurnalBySektorCuan('SEKTOR_ATM')" title="Klik untuk memfilter Jurnal Harian: Semua Kategori ATM LINK" style="background:var(--primary-light); border-color:var(--border); cursor:pointer;">
+                        <div class="lbl">CUAN ATM LINK 🔍</div>
                         <div class="val" id="valRekapCuanAtm" style="color:var(--primary);">Rp0</div>
                         <div id="subRekapCuanAtm" style="font-size:9.5px; color:#047857; font-weight:700; margin-top:2px;">0% dari total cuan</div>
                     </div>
-                    <div class="summary-card" style="background:#F0FDF4; border-color:#BBF7D0;">
-                        <div class="lbl">CUAN KONTER</div>
+                    <div class="summary-card" onclick="window.filterJurnalBySektorCuan('SEKTOR_KONTER')" title="Klik untuk memfilter Jurnal Harian: Semua Kategori KONTER" style="background:#F0FDF4; border-color:#BBF7D0; cursor:pointer;">
+                        <div class="lbl">CUAN KONTER 🔍</div>
                         <div class="val text-kredit" id="valRekapCuanKonter">Rp0</div>
                         <div id="subRekapCuanKonter" style="font-size:9.5px; color:#15803D; font-weight:700; margin-top:2px;">0% dari total cuan</div>
                     </div>
-                    <div class="summary-card" style="background:#FAF5FF; border-color:#E9D5FF;" colspan="2">
-                        <div class="lbl">CUAN SERVICE</div>
+                    <div class="summary-card" onclick="window.filterJurnalBySektorCuan('SEKTOR_SERVICE')" title="Klik untuk memfilter Jurnal Harian: Kategori SERVICE" style="background:#FAF5FF; border-color:#E9D5FF; cursor:pointer;" colspan="2">
+                        <div class="lbl">CUAN SERVICE 🔍</div>
                         <div class="val" id="valRekapCuanService" style="color:#9333EA;">Rp0</div>
                         <div id="subRekapCuanService" style="font-size:9.5px; color:#7E22CE; font-weight:700; margin-top:2px;">0% dari total cuan</div>
                     </div>
@@ -14600,12 +14618,18 @@
             });
 
             let totalOperasional = 0, countOperasional = 0;
+            let totalPinjamanSementara = 0, countPinjamanSementara = 0;
             (window.operasionalList || []).forEach(op => {
                 if (!op) return;
                 const d = op.isoDate || op.tgl || '';
                 if (window.isIsoDateInRekapPeriod(d, mode, targetDate, targetMonth)) {
-                    totalOperasional += Number(op.nominal || 0);
-                    countOperasional += 1;
+                    if (window.isPinjamanSementaraOperasional && window.isPinjamanSementaraOperasional(op)) {
+                        totalPinjamanSementara += Number(op.nominal || 0);
+                        countPinjamanSementara += 1;
+                    } else {
+                        totalOperasional += Number(op.nominal || 0);
+                        countOperasional += 1;
+                    }
                 }
             });
 
@@ -16044,15 +16068,26 @@
             if (!kSel) return;
             kSel.innerHTML = ''; vKat.innerHTML = ''; if (vKatFast) vKatFast.innerHTML = '';
             if (pKat) pKat.innerHTML = ''; if (cfgAkun) cfgAkun.innerHTML = '<option value="">-- Pilih Akun --</option>';
-            fKat.innerHTML = '<option value="">-- All Kategori --</option>';
-
+            const prevFKatVal = fKat ? fKat.value : '';
+            fKat.innerHTML = `
+                <option value="">-- All Kategori --</option>
+                <optgroup label="📊 FILTER KARTU SEKTOR CUAN">
+                    <option value="SEKTOR_ATM">🏧 KARTU CUAN ATM LINK (TOPUP, TF, TARIK, EDC)</option>
+                    <option value="SEKTOR_KONTER">📱 KARTU CUAN KONTER (VCR, KUOTA, PULSA, PPOB, ACC, SP, GAME, GADAI)</option>
+                    <option value="SEKTOR_SERVICE">🛠️ KARTU CUAN SERVICE (SERVICE HP)</option>
+                </optgroup>
+            `;
+            let indivKatOpts = '<optgroup label="🏷️ PER KATEGORI SATUAN">';
             window.kategoriList.forEach(k => {
                 kSel.innerHTML += `<option value="${k}">${k}</option>`;
                 vKat.innerHTML += `<option value="${k}">${k}</option>`;
                 if (vKatFast) vKatFast.innerHTML += `<option value="${k}">${k}</option>`;
                 if (pKat) pKat.innerHTML += `<option value="${k}">${k}</option>`;
-                fKat.innerHTML += `<option value="${k}">${k}</option>`;
+                indivKatOpts += `<option value="${k}">${k}</option>`;
             });
+            indivKatOpts += '</optgroup>';
+            fKat.innerHTML += indivKatOpts;
+            if (prevFKatVal) fKat.value = prevFKatVal;
 
             window.AKUN_DATA_OTOMATIS = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL'];
             const rules = window.ATURAN_AKUN_KASIR || {
@@ -19278,20 +19313,49 @@
 
             const ketEl = document.getElementById('opFastKet');
             if (ketEl) ketEl.value = '';
+            const jenisEl = document.getElementById('opFastJenis');
+            if (jenisEl) jenisEl.value = 'BIAYA_TOKO';
 
             const selSumber = document.getElementById('opFastSumber');
             if (selSumber && (window.saldoList || []).includes('LACI')) selSumber.value = 'LACI';
 
             const titleEl = document.getElementById('titleFormOpFast');
-            if (titleEl) titleEl.innerText = '➕ Catat Pengeluaran Operasional Baru';
+            if (titleEl) titleEl.innerText = '➕ Catat Pengeluaran Operasional / Talangan Baru';
 
             const btnBatal = document.getElementById('btnBatalEditOpFast');
             if (btnBatal) btnBatal.style.display = 'none';
 
+            if (window.onOpFastJenisChange) window.onOpFastJenisChange();
+        };
+
+        window.isPinjamanSementaraOperasional = function(op) {
+            if (!op) return false;
+            if (op.jenis === 'PINJAMAN_SEMENTARA') return true;
+            if (op.jenis === 'BIAYA_TOKO') return false;
+            const ketUp = String(op.ket || '').toUpperCase();
+            return /\b(ZEN\s*2|ZENCELL\s*2|ZEN\s*1|ZENCELL\s*1|PINJAM|TALANGAN\s*CABANG|BON\s*SEMENTARA)\b/.test(ketUp);
+        };
+
+        window.onOpFastJenisChange = function() {
+            const jenis = document.getElementById('opFastJenis')?.value || 'BIAYA_TOKO';
+            const ketEl = document.getElementById('opFastKet');
+            const hintEl = document.getElementById('opFastJenisHint');
             const btnSubmit = document.getElementById('btnSubmitOpFast');
-            if (btnSubmit) {
-                btnSubmit.innerText = '💾 Catat Operasional (Ditalangi Kas)';
-                btnSubmit.style.background = '#7C3AED';
+            const isEdit = Boolean(document.getElementById('editOpFastId')?.value);
+            if (jenis === 'PINJAMAN_SEMENTARA') {
+                if (ketEl) ketEl.placeholder = 'Contoh: PINJAM SALDO / UANG LACI KE ZENCELL 2...';
+                if (hintEl) hintEl.innerHTML = '🤝 <b>Pinjaman Sementara (Non-Biaya):</b> Menjaga Modal 250Jt tetap Balance & <b>TIDAK memotong Laba Bersih Toko</b>. Klik <b>📥 Ganti ke Kas</b> saat Zen 2 bayar.';
+                if (btnSubmit && !isEdit) {
+                    btnSubmit.innerText = '🤝 Catat Pinjaman / Talangan Sementara';
+                    btnSubmit.style.background = '#0284C7';
+                }
+            } else {
+                if (ketEl) ketEl.placeholder = 'Contoh: KERTAS THERMAL, TOKEN LISTRIK TOKO, AIR GALON...';
+                if (hintEl) hintEl.innerHTML = '🏢 <b>Biaya Operasional Toko:</b> Mengurangi Laba Bersih di Rapor Laporan & ditalangi akun <b>OPERASIONAL</b> hingga diganti Owner.';
+                if (btnSubmit && !isEdit) {
+                    btnSubmit.innerText = '💾 Catat Operasional (Ditalangi Kas)';
+                    btnSubmit.style.background = '#7C3AED';
+                }
             }
         };
 
@@ -19302,6 +19366,10 @@
             const sumber = document.getElementById('opFastSumber')?.value || 'LACI';
             const nom = parseFloat(document.getElementById('opFastNom')?.value) || 0;
             const ket = (document.getElementById('opFastKet')?.value || '').trim().toUpperCase();
+            let jenis = document.getElementById('opFastJenis')?.value || 'BIAYA_TOKO';
+            if (jenis === 'BIAYA_TOKO' && /\b(ZEN\s*2|ZENCELL\s*2|PINJAM\s*SALDO|PINJAM\s*LACI|TALANGAN\s*CABANG)\b/.test(ket)) {
+                jenis = 'PINJAMAN_SEMENTARA';
+            }
 
             if (!ket || nom <= 0) {
                 window.showToast("⚠️ Lengkapi keperluan operasional dan nominal pengeluaran!", "error");
@@ -19315,16 +19383,16 @@
                     window.showToast("Data operasional tidak ditemukan!", "error");
                     return;
                 }
-                const oldNom = op.nominal;
                 const oldSumber = op.sumber;
                 op.isoDate = tgl;
                 op.tgl = tgl;
                 op.sumber = sumber;
                 op.nominal = nom;
                 op.ket = ket;
+                op.jenis = jenis;
                 op.updatedAt = nowTs;
                 window.markLocalEntityEdited('operasional', op);
-                window.catatLogAktivitas('EDIT OPERASIONAL', `Mengubah operasional "${ket}" menjadi ${window.formatRp(nom)} (sumber: ${sumber})`);
+                window.catatLogAktivitas('EDIT OPERASIONAL', `Mengubah ${jenis === 'PINJAMAN_SEMENTARA' ? 'pinjaman sementara' : 'operasional'} "${ket}" menjadi ${window.formatRp(nom)} (sumber: ${sumber})`);
                 if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber, oldSumber, 'OPERASIONAL'], 10000);
             } else {
                 const newOp = {
@@ -19335,6 +19403,7 @@
                     sumber: sumber,
                     nominal: nom,
                     ket: ket,
+                    jenis: jenis,
                     status: 'BELUM DIGANTI',
                     tglDiganti: null,
                     sumberDiganti: null,
@@ -19343,7 +19412,7 @@
                 if (!window.operasionalList) window.operasionalList = [];
                 window.operasionalList.unshift(newOp);
                 window.markLocalEntityEdited('operasional', newOp);
-                window.catatLogAktivitas('CATAT OPERASIONAL', `Mencatat operasional toko "${ket}" sebesar ${window.formatRp(nom)} ditalangi ${sumber}`);
+                window.catatLogAktivitas('CATAT OPERASIONAL', `Mencatat ${jenis === 'PINJAMAN_SEMENTARA' ? 'pinjaman sementara/talangan cabang' : 'operasional toko'} "${ket}" sebesar ${window.formatRp(nom)} ditalangi ${sumber}`);
                 if (window.triggerBlinkMutasiAkun) window.triggerBlinkMutasiAkun([sumber, 'OPERASIONAL'], 10000);
             }
 
@@ -19351,7 +19420,12 @@
             window.renderAll();
             window.resetFormOpFast();
             window.renderOpFastTable();
-            window.showToast(`✅ Pengeluaran operasional ${window.formatRp(nom)} berhasil dicatat! Saldo ${sumber} ditalangi ke akun OPERASIONAL sehingga modal konter tetap pas.`, "success");
+            window.showToast(
+                jenis === 'PINJAMAN_SEMENTARA'
+                    ? `🤝 Pinjaman sementara ${window.formatRp(nom)} dicatat di akun OPERASIONAL (Modal 250Jt tetap pas & tidak memotong Laba Bersih)!`
+                    : `✅ Pengeluaran operasional ${window.formatRp(nom)} berhasil dicatat! Saldo ${sumber} ditalangi ke akun OPERASIONAL sehingga modal konter tetap pas.`,
+                "success"
+            );
         };
 
         window.getLiquidKasBankAccountsList = function() {
@@ -19484,16 +19558,20 @@
             document.getElementById('opFastNom').value = op.nominal || 0;
             document.getElementById('opFastNomDisplay').value = Number(op.nominal || 0).toLocaleString('id-ID');
             document.getElementById('opFastKet').value = op.ket || '';
+            const selJenis = document.getElementById('opFastJenis');
+            if (selJenis) {
+                selJenis.value = (window.isPinjamanSementaraOperasional && window.isPinjamanSementaraOperasional(op)) ? 'PINJAMAN_SEMENTARA' : 'BIAYA_TOKO';
+            }
 
             const titleEl = document.getElementById('titleFormOpFast');
-            if (titleEl) titleEl.innerText = `✏️ Edit Pengeluaran Operasional (${op.ket})`;
+            if (titleEl) titleEl.innerText = `✏️ Edit Catatan Operasional / Talangan (${op.ket})`;
 
             const btnBatal = document.getElementById('btnBatalEditOpFast');
             if (btnBatal) btnBatal.style.display = 'inline-block';
 
             const btnSubmit = document.getElementById('btnSubmitOpFast');
             if (btnSubmit) {
-                btnSubmit.innerText = '💾 Simpan Perubahan Operasional';
+                btnSubmit.innerText = '💾 Simpan Perubahan';
                 btnSubmit.style.background = '#0284C7';
             }
             document.getElementById('opFastNomDisplay')?.focus();
@@ -19568,6 +19646,11 @@
                            <button type="button" onclick="hapusOperasionalFast('${o.id}')" title="Hapus" style="background:#EF4444; color:#FFF; border:none; padding:3px 6px; border-radius:5px; font-size:10px; font-weight:800; cursor:pointer;">🗑️</button>
                        </div>`;
 
+                const isPinjam = window.isPinjamanSementaraOperasional && window.isPinjamanSementaraOperasional(o);
+                const jenisBadge = isPinjam
+                    ? `<span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">🤝 PINJAMAN / TALANGAN SEMENTARA (Non-Biaya)</span>`
+                    : `<span style="display:inline-block; background:#F3E8FF; color:#6B21A8; border:1px solid #E9D5FF; font-size:9px; font-weight:700; padding:1px 5px; border-radius:4px; margin-top:2px;">🏢 BIAYA OPERASIONAL TOKO</span>`;
+
                 return `
                     <tr style="border-bottom:1px solid #F1F5F9; ${isLunas ? 'background:#F8FAFC;' : ''}">
                         <td style="padding:6px 8px; text-align:left; white-space:nowrap;">
@@ -19575,7 +19658,8 @@
                             <small style="color:#64748B;">${o.waktu || ''}</small>
                         </td>
                         <td style="padding:6px 8px; text-align:left;">
-                            <b style="color:#0F172A;">${o.ket}</b>
+                            <b style="color:#0F172A; display:block;">${o.ket}</b>
+                            ${jenisBadge}
                         </td>
                         <td style="padding:6px 8px; text-align:center;">
                             <span style="background:#EDE9FE; color:#7C3AED; border:1px solid #DDD6FE; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:10px;">${o.sumber || 'LACI'}</span>
@@ -21170,10 +21254,30 @@
             const fKat = document.getElementById('jurnalFilterKat').value;
             const fMasuk = document.getElementById('jurnalFilterMasuk').value;
             const fKeluar = document.getElementById('jurnalFilterKeluar').value;
+            const fSortCuan = document.getElementById('jurnalSortCuan')?.value || 'DEFAULT';
             const fSearchRaw = (document.getElementById('jurnalSearchInput')?.value || '').trim().toUpperCase();
             const fSearchDigits = fSearchRaw.replace(/\./g, '');
             const btnClearJurnal = document.getElementById('btnClearJurnalSearch');
             if (btnClearJurnal) btnClearJurnal.style.display = fSearchRaw ? 'block' : 'none';
+
+            // Update indikator panah sort di header tabel CUAN & highlight kartu KPI sektor aktif
+            const thCuanIcon = document.getElementById('jurnalThCuanSortIcon');
+            if (thCuanIcon) {
+                thCuanIcon.innerText = fSortCuan === 'CUAN_DESC' ? '⬇' : (fSortCuan === 'CUAN_ASC' ? '⬆' : '⇅');
+                thCuanIcon.style.opacity = fSortCuan === 'DEFAULT' ? '0.75' : '1';
+            }
+            const setCardSektorActive = (cardId, badgeId, isActive, activeColor) => {
+                const cEl = document.getElementById(cardId);
+                const bEl = document.getElementById(badgeId);
+                if (cEl) {
+                    cEl.style.boxShadow = isActive ? `0 0 0 2.5px ${activeColor}, 0 4px 12px rgba(15,23,42,0.12)` : '';
+                    cEl.style.transform = isActive ? 'translateY(-1px)' : '';
+                }
+                if (bEl) bEl.style.display = isActive ? 'inline-block' : 'none';
+            };
+            setCardSektorActive('topCardCuanAtm', 'badgeFilterSektorAtm', fKat === 'SEKTOR_ATM', '#059669');
+            setCardSektorActive('topCardCuanKonter', 'badgeFilterSektorKonter', fKat === 'SEKTOR_KONTER', '#16A34A');
+            setCardSektorActive('topCardCuanService', 'badgeFilterSektorService', fKat === 'SEKTOR_SERVICE', '#9333EA');
 
             window.sparepartList.forEach(sp => {
                 const spName = (sp.namaUnit || '').trim().toUpperCase();
@@ -21441,7 +21545,21 @@
                 let match = true;
                 if (fMode === 'DAILY' && t.isoDate !== fDate) match = false;
                 if (fMode === 'MONTHLY' && (!t.isoDate || !t.isoDate.startsWith(fMonth))) match = false;
-                if (fKat && t.kat !== fKat) match = false;
+                if (fKat) {
+                    let katEfektif = t.kat || '';
+                    if (isPelunasanPiutang && (!katEfektif || katEfektif === 'PIUTANG')) {
+                        katEfektif = window.resolveKategoriAsliPelunasan ? window.resolveKategoriAsliPelunasan(t) : 'TOPUP';
+                    }
+                    if (fKat === 'SEKTOR_ATM') {
+                        if (!window.katAtm.includes(katEfektif)) match = false;
+                    } else if (fKat === 'SEKTOR_KONTER') {
+                        if (!window.katKonter.includes(katEfektif)) match = false;
+                    } else if (fKat === 'SEKTOR_SERVICE') {
+                        if (!window.katService.includes(katEfektif)) match = false;
+                    } else if (t.kat !== fKat && katEfektif !== fKat) {
+                        match = false;
+                    }
+                }
                 if (fMasuk && (t.akunMasuk1 !== fMasuk && t.akunMasuk2 !== fMasuk)) match = false;
                 if (fKeluar && (t.akunKeluar1 !== fKeluar && t.akunKeluar2 !== fKeluar)) match = false;
                 if (match && fSearchRaw) {
@@ -21453,6 +21571,12 @@
                 }
                 if (match) filteredTrx.push({ data: t });
             });
+
+            if (fSortCuan === 'CUAN_DESC') {
+                filteredTrx.sort((a, b) => Number(b.data.cuan || 0) - Number(a.data.cuan || 0));
+            } else if (fSortCuan === 'CUAN_ASC') {
+                filteredTrx.sort((a, b) => Number(a.data.cuan || 0) - Number(b.data.cuan || 0));
+            }
 
             // Fallback pengaman: jika ada data di piutangList bersumber dari VOUCHER/SP/ACC yang belum punya transaksi init di transaksiJurnal
             const piutangInitIdSet = new Set();
@@ -23273,7 +23397,51 @@
                 window.renderOpFastTable();
             }
             window.updateUndoRedoBtnState();
-        }
+        };
+
+        window.toggleSortCuanJurnal = function() {
+            const sel = document.getElementById('jurnalSortCuan');
+            if (!sel) return;
+            if (sel.value === 'DEFAULT') {
+                sel.value = 'CUAN_DESC';
+                window.showToast("💰 Jurnal diurutkan: Cuan Terbesar ➔ Terkecil", "info");
+            } else if (sel.value === 'CUAN_DESC') {
+                sel.value = 'CUAN_ASC';
+                window.showToast("💸 Jurnal diurutkan: Cuan Terkecil ➔ Terbesar", "info");
+            } else {
+                sel.value = 'DEFAULT';
+                window.showToast("🕒 Jurnal dikembalikan ke urutan Waktu Terbaru", "info");
+            }
+            window.renderAll();
+        };
+
+        window.filterJurnalBySektorCuan = function(sektorKey) {
+            const fKatEl = document.getElementById('jurnalFilterKat');
+            if (!fKatEl) return;
+
+            if (typeof window.activateMainTabById === 'function') {
+                window.activateMainTabById('tab-kasir');
+            }
+
+            if (!sektorKey || fKatEl.value === sektorKey) {
+                fKatEl.value = '';
+                window.renderAll();
+                if (sektorKey) {
+                    window.showToast("🔄 Filter Kartu Cuan dimatikan — Menampilkan Semua Kategori", "info");
+                } else {
+                    window.showToast("🔥 Menampilkan Semua Kategori Transaksi di Jurnal Harian", "info");
+                }
+            } else {
+                fKatEl.value = sektorKey;
+                window.renderAll();
+                const labelMap = {
+                    'SEKTOR_ATM': '🏧 KARTU CUAN ATM LINK (TOPUP, TRANSFER, TARIK TUNAI, EDC)',
+                    'SEKTOR_KONTER': '📱 KARTU CUAN KONTER (VOUCHER, KUOTA, PPOB, PULSA, ACC, SP, GAME, GADAI)',
+                    'SEKTOR_SERVICE': '🛠️ KARTU CUAN SERVICE (SERVICE HP)'
+                };
+                window.showToast(`🔍 Filter Jurnal Aktif: ${labelMap[sektorKey] || sektorKey} (Klik kartu lagi untuk reset)`, "success");
+            }
+        };
 
         window.renderRekapKategoriTab = function() {
             // Ambil filter tanggal aktif dari Jurnal Transaksi Harian (dashboard utama)
@@ -29515,7 +29683,7 @@
                     ensureAkun(targetAkun);
                     masukAkun[targetAkun] += nom;
                 }
-                if (isMatchPeriode(op.isoDate || op.tgl || '')) {
+                if (isMatchPeriode(op.isoDate || op.tgl || '') && !(window.isPinjamanSementaraOperasional && window.isPinjamanSementaraOperasional(op))) {
                     bebanOpsPeriode += nom;
                 }
             });
