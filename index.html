@@ -1734,26 +1734,139 @@
             vertical-align: middle;
             padding: 7px 6px;
         }
-        .table-jurnal th.th-jurnal-no, .table-jurnal td:nth-child(1) { text-align: center; white-space: nowrap; width: 36px; }
-        .table-jurnal th.th-jurnal-waktu, .table-jurnal td:nth-child(2) { text-align: center; white-space: nowrap; width: 92px; }
+        .table-jurnal th.th-jurnal-no, .table-jurnal td:nth-child(1) { text-align: center; white-space: nowrap; width: 34px; }
+        .table-jurnal th.th-jurnal-waktu, .table-jurnal td:nth-child(2) { text-align: center; white-space: nowrap; width: 108px; }
         .table-jurnal th.th-jurnal-ket, .table-jurnal td:nth-child(3) { 
             text-align: left; 
             white-space: normal !important; 
             word-break: break-word; 
             overflow-wrap: break-word;
-            width: 195px; 
-            min-width: 130px; 
-            max-width: 220px; 
+            width: 215px; 
+            min-width: 165px; 
+            max-width: 250px; 
         }
-        .table-jurnal th.th-jurnal-qty, .table-jurnal td:nth-child(4) { text-align: center; white-space: nowrap; width: 44px; }
-        .table-jurnal th.th-jurnal-kat, .table-jurnal td:nth-child(5) { text-align: center; white-space: nowrap; width: 84px; }
+        .table-jurnal th.th-jurnal-qty, .table-jurnal td:nth-child(4) { text-align: center; white-space: nowrap; width: 40px; }
+        .table-jurnal th.th-jurnal-kat, .table-jurnal td:nth-child(5) { text-align: center; white-space: nowrap; width: 96px; }
         .table-jurnal th.th-sub-pemasukan, .table-jurnal th.th-sub-pengeluaran { text-align: center; white-space: nowrap; width: 92px; }
         .table-jurnal td:nth-child(6) { text-align: center; white-space: nowrap; width: 92px; }
         .table-jurnal td:nth-child(7) { text-align: right; white-space: nowrap; width: 92px; }
         .table-jurnal td:nth-child(8) { text-align: center; white-space: nowrap; width: 92px; }
         .table-jurnal td:nth-child(9) { text-align: right; white-space: nowrap; width: 92px; }
-        .table-jurnal th.th-jurnal-cuan, .table-jurnal td:nth-child(10) { text-align: right; white-space: nowrap; width: 88px; }
+        .table-jurnal th.th-jurnal-cuan, .table-jurnal td:nth-child(10) { text-align: right; white-space: nowrap; width: 92px; }
         .table-jurnal th.th-jurnal-aksi, .table-jurnal td:nth-child(11) { text-align: center; white-space: nowrap; width: 1%; }
+
+        /* Komponen Filter & Search Terintegrasi di Header Kolom Tabel Jurnal (Clean & Hemat Ruang) */
+        .th-col-stack {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 3px;
+            width: 100%;
+        }
+        .th-col-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: 0.2px;
+        }
+        .th-jurnal-ket .th-col-title-row {
+            justify-content: space-between;
+        }
+        .th-col-ctrl {
+            width: 100%;
+            height: 22px;
+            padding: 1px 5px;
+            font-size: 10.2px;
+            font-weight: 800;
+            border-radius: 5px;
+            border: 1px solid rgba(15, 23, 42, 0.16);
+            background: rgba(255, 255, 255, 0.92);
+            color: #0F172A;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-sizing: border-box;
+        }
+        .th-col-ctrl:hover, .th-col-ctrl:focus {
+            border-color: var(--primary);
+            background: #FFFFFF;
+        }
+        .th-col-ctrl.filter-active {
+            background: #FEF08A !important;
+            border-color: #D97706 !important;
+            color: #78350F !important;
+            box-shadow: 0 0 0 1.5px rgba(217, 119, 6, 0.25);
+        }
+        .th-mode-mini-select {
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 0 3px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(5, 150, 105, 0.3);
+            background: rgba(255, 255, 255, 0.85);
+            color: var(--primary);
+            cursor: pointer;
+            outline: none;
+        }
+        .th-sub-select-masuk {
+            width: 100%;
+            height: 21px;
+            padding: 0 3px;
+            font-size: 10.5px;
+            font-weight: 900;
+            border-radius: 4px;
+            border: 1px solid rgba(22, 101, 52, 0.25);
+            background: rgba(255, 255, 255, 0.65);
+            color: #166534;
+            cursor: pointer;
+            outline: none;
+            text-align: center;
+        }
+        .th-sub-select-masuk:hover {
+            background: #FFFFFF;
+            border-color: #16A34A;
+        }
+        .th-sub-select-masuk.filter-active {
+            background: #FEF08A !important;
+            border-color: #15803D !important;
+            color: #14532D !important;
+        }
+        .th-sub-select-keluar {
+            width: 100%;
+            height: 21px;
+            padding: 0 3px;
+            font-size: 10.5px;
+            font-weight: 900;
+            border-radius: 4px;
+            border: 1px solid rgba(153, 27, 27, 0.25);
+            background: rgba(255, 255, 255, 0.65);
+            color: #991B1B;
+            cursor: pointer;
+            outline: none;
+            text-align: center;
+        }
+        .th-sub-select-keluar:hover {
+            background: #FFFFFF;
+            border-color: #DC2626;
+        }
+        .th-sub-select-keluar.filter-active {
+            background: #FEF08A !important;
+            border-color: #B91C1C !important;
+            color: #7F1D1D !important;
+        }
+        body.theme-dark .th-col-ctrl,
+        body.theme-dark .th-mode-mini-select,
+        body.theme-dark .th-sub-select-masuk,
+        body.theme-dark .th-sub-select-keluar {
+            background: rgba(15, 23, 42, 0.85);
+            color: #F8FAFC;
+            border-color: rgba(148, 163, 184, 0.3);
+        }
 
         /* Pewarnaan Kolom PEMASUKAN (Hijau) & PENGELUARAN (Merah) di Tabel Jurnal Kasir */
         .table-jurnal thead th.th-group-pemasukan,
@@ -4981,8 +5094,8 @@
         <div class="modal-content" style="max-width: 680px; width: 96%; max-height: 90vh; display: flex; flex-direction: column; padding: 16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
                 <div>
-                    <h3 style="font-size:15px; color:#7C3AED; margin:0; display:flex; align-items:center; gap:6px;">🏢 Operasional Toko &amp; Talangan Kasir</h3>
-                    <small style="font-size:10px; color:#64748B; font-weight:600;">Biaya operasional toko yang ditalangi kasir/konter hingga diganti oleh Owner</small>
+                    <h3 style="font-size:15px; color:#7C3AED; margin:0; display:flex; align-items:center; gap:6px;">🏢 Operasional Toko &amp; Dana Talangan (Zen 2 / Owner / Karyawan)</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Catat biaya operasional toko atau pemakaian/pinjaman saldo sementara (Zen 2, Owner, Karyawan) agar Modal 250Jt tetap Balance</small>
                 </div>
                 <button type="button" onclick="closeModalOperasionalFast()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
             </div>
@@ -4990,14 +5103,14 @@
             <!-- RINGKASAN TALANGAN OPERASIONAL -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
                 <div style="background:#FAF5FF; border:1.5px solid #DDD6FE; border-radius:10px; padding:8px 12px;">
-                    <div style="font-size:10px; font-weight:700; color:#6B21A8;">🔴 TOTAL BELUM DIGANTI OWNER</div>
+                    <div style="font-size:10px; font-weight:700; color:#6B21A8;">🔴 TOTAL BELUM DIGANTI / BELUM DIKEMBALIKAN</div>
                     <div id="lblOpFastBelumDiganti" style="font-size:16px; font-weight:900; color:#7C3AED; margin-top:2px;">Rp0</div>
                     <div style="font-size:9.5px; color:#64748B; margin-top:2px;">Tercatat di Akun Saldo <b>OPERASIONAL</b> (Menjaga Modal 250Jt Pas)</div>
                 </div>
                 <div style="background:#F0FDF4; border:1.5px solid #BBF7D0; border-radius:10px; padding:8px 12px;">
-                    <div style="font-size:10px; font-weight:700; color:#166534;">🟢 SUDAH DIGANTI OWNER (LUNAS)</div>
+                    <div style="font-size:10px; font-weight:700; color:#166534;">🟢 SUDAH DIGANTI / DIKEMBALIKAN KE KAS (LUNAS)</div>
                     <div id="lblOpFastSudahDiganti" style="font-size:16px; font-weight:900; color:#16A34A; margin-top:2px;">Rp0</div>
-                    <div style="font-size:9.5px; color:#64748B; margin-top:2px;">Kas sudah diisi kembali oleh Owner</div>
+                    <div style="font-size:9.5px; color:#64748B; margin-top:2px;">Dana sudah masuk kembali ke Kas/Bank konter</div>
                 </div>
             </div>
 
@@ -5005,7 +5118,7 @@
             <form id="formOpFast" onsubmit="submitFormOpFast(event)" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px; margin-bottom:12px;">
                 <input type="hidden" id="editOpFastId" value="">
                 <div style="font-weight:800; font-size:11.5px; color:#1E293B; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                    <span id="titleFormOpFast">➕ Catat Pengeluaran Operasional Baru</span>
+                    <span id="titleFormOpFast">➕ Catat Operasional / Dana Talangan Baru</span>
                     <button type="button" id="btnBatalEditOpFast" onclick="resetFormOpFast()" style="display:none; background:#E2E8F0; color:#334155; border:none; padding:2px 8px; border-radius:5px; font-size:10px; font-weight:700; cursor:pointer;">Batal Edit</button>
                 </div>
                 <div class="row-3" style="gap:8px;">
@@ -5023,17 +5136,17 @@
                         <input type="hidden" id="opFastNom" value="0">
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:8px; margin-bottom:8px;">
+                <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:8px; margin-bottom:8px;">
                     <div class="form-group" style="margin-bottom:0;">
-                        <label style="font-size:10.5px;">Jenis Pengeluaran / Talangan *</label>
+                        <label style="font-size:10.5px;">Jenis Pengeluaran / Dana Talangan *</label>
                         <select id="opFastJenis" class="form-control" style="font-size:11px; font-weight:800; padding:6px 8px; background:#FAF5FF; border-color:#C4B5FD; color:#5B21B6;" onchange="window.onOpFastJenisChange && window.onOpFastJenisChange()">
                             <option value="BIAYA_TOKO">🏢 Biaya Operasional Toko (Listrik, Struk, Galon — Potong Laba)</option>
-                            <option value="PINJAMAN_SEMENTARA">🤝 Pinjaman Sementara / Talangan Cabang (Zen 2 — Non-Biaya)</option>
+                            <option value="PINJAMAN_SEMENTARA">🤝 Dana Talangan / Pinjaman Sementara (Zen 2 / Owner / Karyawan — Non-Biaya)</option>
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom:0;">
                         <label style="font-size:10.5px;">Keperluan / Keterangan *</label>
-                        <input type="text" id="opFastKet" class="form-control" placeholder="Contoh: PINJAM SALDO ZEN 2 / TOKEN LISTRIK / KERTAS..." required style="font-size:11px; padding:6px 8px;">
+                        <input type="text" id="opFastKet" class="form-control" placeholder="Contoh: PINJAM SALDO ZEN 2 / OWNER PAKAI / BON KARYAWAN / LISTRIK..." required style="font-size:11px; padding:6px 8px;">
                     </div>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -5078,9 +5191,9 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #DDD6FE; padding-bottom:8px;">
                 <div>
                     <h3 style="font-size:15px; color:#7C3AED; margin:0; display:flex; align-items:center; gap:6px;">
-                        <span>📥</span> <span>Owner Ganti Talangan Operasional</span>
+                        <span>📥</span> <span>Kembalikan / Ganti Dana Talangan ke Kas</span>
                     </h3>
-                    <small style="font-size:10px; color:#64748B; font-weight:600;">Kembalikan dana talangan belanja/operasional ke akun kas/bank konter</small>
+                    <small style="font-size:10px; color:#64748B; font-weight:600;">Masukkan kembali pengembalian pinjaman (Zen 2 / Owner / Karyawan) atau penggantian operasional ke akun Kas/Bank</small>
                 </div>
                 <button type="button" onclick="closeModalGantiOperasional()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
             </div>
@@ -5618,51 +5731,15 @@
     <div id="tab-kasir" class="tab-content active" style="margin-top:6px;">
         <div class="card">
             <div class="kasir-sticky-header-zone" id="kasirStickyHeaderZone">
-                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:2px;">
                     <span>📖 Jurnal Transaksi Harian</span>
                     <div class="jurnal-header-actions">
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
-                        <button type="button" class="btn-jurnal-hdr" onclick="openModalOperasionalFast()" title="Catat Pengeluaran Operasional Toko / Talangan" style="background:#7C3AED; color:#FFF; border-color:#6D28D9;">🏢 Operasional</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="openModalOperasionalFast()" title="Catat Pengeluaran Operasional Toko / Dana Talangan (Zen 2, Owner, Karyawan)" style="background:#7C3AED; color:#FFF; border-color:#6D28D9;">🏢 Operasional</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalReturAcc()" title="Catat Retur / Komplain / Tukar Aksesoris (ACC) Konsumen" style="background:#EA580C; color:#FFF; border-color:#C2410C;">🔄 Retur ACC</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalKasir()">+ CATAT TRANSAKSI</button>
-                    </div>
-                </div>
-
-                <div class="filter-container">
-                    <span style="font-size:11px; font-weight:bold; color:var(--primary);">🔍 FILTER:</span>
-                    
-                    <select id="jurnalFilterMode" class="date-picker-input" onchange="toggleFilterJurnalDate(this.value)">
-                        <option value="ALL">📅 Semua Tanggal</option>
-                        <option value="DAILY" selected>📆 Per Hari (Tanggal)</option>
-                        <option value="MONTHLY">🗓️ Per Bulan</option>
-                    </select>
-
-                    <input type="date" id="jurnalDatePicker" class="date-picker-input" onchange="renderAll()">
-                    <input type="month" id="jurnalMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
-
-                    <select id="jurnalFilterKat" class="date-picker-input" onchange="renderAll()">
-                        <option value="">-- All Kategori --</option>
-                    </select>
-
-                    <select id="jurnalFilterMasuk" class="date-picker-input" onchange="renderAll()">
-                        <option value="">-- All Akun Masuk --</option>
-                    </select>
-
-                    <select id="jurnalFilterKeluar" class="date-picker-input" onchange="renderAll()">
-                        <option value="">-- All Akun Keluar --</option>
-                    </select>
-
-                    <select id="jurnalSortCuan" class="date-picker-input" onchange="renderAll()" title="Urutkan Daftar Jurnal Berdasarkan Cuan Terbesar / Terkecil" style="font-weight:700; color:#B45309; background:#FFFBEB; border-color:#FCD34D;">
-                        <option value="DEFAULT">🕒 Urutan: Waktu Terbaru</option>
-                        <option value="CUAN_DESC">💰 Cuan: Terbesar ➔ Terkecil (⬇)</option>
-                        <option value="CUAN_ASC">💸 Cuan: Terkecil ➔ Terbesar (⬆)</option>
-                    </select>
-
-                    <div style="position:relative; display:flex; align-items:center; flex:1; min-width:175px; max-width:260px;">
-                        <input type="text" id="jurnalSearchInput" class="date-picker-input" placeholder="🔍 Cari ket / nama / nominal..." oninput="window.debouncedRenderAll()" style="width:100%; padding-right:24px;">
-                        <button type="button" id="btnClearJurnalSearch" onclick="document.getElementById('jurnalSearchInput').value=''; renderAll();" style="display:none; position:absolute; right:5px; background:none; border:none; color:#EF4444; font-weight:800; font-size:11px; cursor:pointer;" title="Bersihkan Pencarian">✕</button>
                     </div>
                 </div>
             </div>
@@ -5672,19 +5749,78 @@
                     <thead>
                         <tr class="tr-jurnal-hdr-top">
                             <th rowspan="2" class="th-jurnal-no">NO</th>
-                            <th rowspan="2" class="th-jurnal-waktu">WAKTU</th>
-                            <th rowspan="2" class="th-jurnal-ket">KETERANGAN</th>
+                            <th rowspan="2" class="th-jurnal-waktu" style="padding:4px 5px;">
+                                <div class="th-col-stack">
+                                    <div class="th-col-title-row">
+                                        <span>WAKTU</span>
+                                        <select id="jurnalFilterMode" class="th-mode-mini-select" onchange="toggleFilterJurnalDate(this.value)" title="Mode Periode Tanggal Jurnal">
+                                            <option value="DAILY" selected>Harian</option>
+                                            <option value="MONTHLY">Bulanan</option>
+                                            <option value="ALL">Semua</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <input type="date" id="jurnalDatePicker" class="th-col-ctrl" onchange="renderAll()" title="Pilih Tanggal Jurnal">
+                                        <input type="month" id="jurnalMonthPicker" class="th-col-ctrl" style="display:none;" onchange="renderAll()" title="Pilih Bulan Jurnal">
+                                        <div id="jurnalAllDateLabel" class="th-col-ctrl" style="display:none; line-height:19px; text-align:center; background:rgba(5,150,105,0.12); color:var(--primary); cursor:default;">📅 Semua Tgl</div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th rowspan="2" class="th-jurnal-ket" style="padding:4px 6px;">
+                                <div class="th-col-stack">
+                                    <div class="th-col-title-row">
+                                        <span>KETERANGAN</span>
+                                        <span id="badgeJurnalRowCount" style="font-size:9px; font-weight:800; color:var(--primary); opacity:0.85;"></span>
+                                    </div>
+                                    <div style="position:relative; display:flex; align-items:center; width:100%;">
+                                        <input type="text" id="jurnalSearchInput" class="th-col-ctrl" placeholder="🔍 Cari ket / nama / nominal..." oninput="window.debouncedRenderAll()" style="width:100%; padding-right:20px; font-weight:700;">
+                                        <button type="button" id="btnClearJurnalSearch" onclick="document.getElementById('jurnalSearchInput').value=''; renderAll();" style="display:none; position:absolute; right:4px; background:none; border:none; color:#DC2626; font-weight:900; font-size:10.5px; cursor:pointer; padding:0 2px;" title="Bersihkan Pencarian">✕</button>
+                                    </div>
+                                </div>
+                            </th>
                             <th rowspan="2" class="th-jurnal-qty">QTY</th>
-                            <th rowspan="2" class="th-jurnal-kat">KATEGORI</th>
+                            <th rowspan="2" class="th-jurnal-kat" style="padding:4px 5px;">
+                                <div class="th-col-stack">
+                                    <div class="th-col-title-row"><span>KATEGORI</span></div>
+                                    <select id="jurnalFilterKat" class="th-col-ctrl" onchange="renderAll()" title="Filter Berdasarkan Kategori / Kartu Sektor Cuan">
+                                        <option value="">Semua ▾</option>
+                                    </select>
+                                </div>
+                            </th>
                             <th colspan="2" class="th-group-pemasukan">PEMASUKAN</th>
                             <th colspan="2" class="th-group-pengeluaran">PENGELUARAN</th>
-                            <th rowspan="2" class="th-jurnal-cuan" onclick="window.toggleSortCuanJurnal()" style="cursor:pointer; user-select:none;" title="Klik untuk mengurutkan Cuan: Terbesar ➔ Terkecil / Terkecil ➔ Terbesar / Waktu Terbaru">CUAN <span id="jurnalThCuanSortIcon" style="font-size:10px; opacity:0.85;">⇅</span></th>
-                            <th rowspan="2" class="th-jurnal-aksi">AKSI</th>
+                            <th rowspan="2" class="th-jurnal-cuan" style="padding:4px 5px;">
+                                <div class="th-col-stack">
+                                    <div class="th-col-title-row" onclick="window.toggleSortCuanJurnal()" style="cursor:pointer; user-select:none;" title="Klik untuk mengurutkan Cuan: Terbesar / Terkecil / Terbaru">
+                                        <span>CUAN</span>
+                                        <span id="jurnalThCuanSortIcon" style="font-size:10px; opacity:0.85;">⇅</span>
+                                    </div>
+                                    <select id="jurnalSortCuan" class="th-col-ctrl" onchange="renderAll()" title="Urutkan Daftar Jurnal Berdasarkan Cuan Terbesar / Terkecil">
+                                        <option value="DEFAULT">Waktu ⇅</option>
+                                        <option value="CUAN_DESC">Terbesar ⬇</option>
+                                        <option value="CUAN_ASC">Terkecil ⬆</option>
+                                    </select>
+                                </div>
+                            </th>
+                            <th rowspan="2" class="th-jurnal-aksi" style="padding:4px 5px;">
+                                <div class="th-col-stack">
+                                    <div class="th-col-title-row"><span>AKSI</span></div>
+                                    <button type="button" id="btnResetFilterJurnal" onclick="window.resetAllFilterJurnal()" class="th-col-ctrl" style="font-size:9.5px; font-weight:800; text-align:center; padding:0 5px; opacity:0.65;" title="Reset Semua Filter & Pencarian Kolom Jurnal">↺ Reset</button>
+                                </div>
+                            </th>
                         </tr>
                         <tr class="tr-jurnal-hdr-sub">
-                            <th class="th-sub-pemasukan">SALDO</th>
+                            <th class="th-sub-pemasukan" style="padding:2px 4px;">
+                                <select id="jurnalFilterMasuk" class="th-sub-select-masuk" onchange="renderAll()" title="Filter Akun Saldo Masuk">
+                                    <option value="">SALDO ▾</option>
+                                </select>
+                            </th>
                             <th class="th-sub-pemasukan">JUAL</th>
-                            <th class="th-sub-pengeluaran">SALDO</th>
+                            <th class="th-sub-pengeluaran" style="padding:2px 4px;">
+                                <select id="jurnalFilterKeluar" class="th-sub-select-keluar" onchange="renderAll()" title="Filter Akun Saldo Keluar">
+                                    <option value="">SALDO ▾</option>
+                                </select>
+                            </th>
                             <th class="th-sub-pengeluaran">MODAL</th>
                         </tr>
                     </thead>
@@ -14766,8 +14902,12 @@
             window.renderAll();
         }
         window.toggleFilterJurnalDate = function(mode) {
-            document.getElementById('jurnalDatePicker').style.display = mode === 'DAILY' ? 'inline-block' : 'none';
-            document.getElementById('jurnalMonthPicker').style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            const dEl = document.getElementById('jurnalDatePicker');
+            const mEl = document.getElementById('jurnalMonthPicker');
+            const aEl = document.getElementById('jurnalAllDateLabel');
+            if (dEl) dEl.style.display = mode === 'DAILY' ? 'block' : 'none';
+            if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'block' : 'none';
+            if (aEl) aEl.style.display = mode === 'ALL' ? 'block' : 'none';
             window.renderAll();
         }
         window.toggleFilterTiketDate = function(mode) {
@@ -16070,11 +16210,11 @@
             if (pKat) pKat.innerHTML = ''; if (cfgAkun) cfgAkun.innerHTML = '<option value="">-- Pilih Akun --</option>';
             const prevFKatVal = fKat ? fKat.value : '';
             fKat.innerHTML = `
-                <option value="">-- All Kategori --</option>
+                <option value="">Semua ▾</option>
                 <optgroup label="📊 FILTER KARTU SEKTOR CUAN">
-                    <option value="SEKTOR_ATM">🏧 KARTU CUAN ATM LINK (TOPUP, TF, TARIK, EDC)</option>
-                    <option value="SEKTOR_KONTER">📱 KARTU CUAN KONTER (VCR, KUOTA, PULSA, PPOB, ACC, SP, GAME, GADAI)</option>
-                    <option value="SEKTOR_SERVICE">🛠️ KARTU CUAN SERVICE (SERVICE HP)</option>
+                    <option value="SEKTOR_ATM">🏧 KARTU CUAN ATM LINK</option>
+                    <option value="SEKTOR_KONTER">📱 KARTU CUAN KONTER</option>
+                    <option value="SEKTOR_SERVICE">🛠️ KARTU CUAN SERVICE</option>
                 </optgroup>
             `;
             let indivKatOpts = '<optgroup label="🏷️ PER KATEGORI SATUAN">';
@@ -16208,12 +16348,16 @@
             const fMasuk = document.getElementById('jurnalFilterMasuk');
             const fKeluar = document.getElementById('jurnalFilterKeluar');
             if (fMasuk && fKeluar) {
-                fMasuk.innerHTML = '<option value="">-- All Masuk --</option>';
-                fKeluar.innerHTML = '<option value="">-- All Keluar --</option>';
+                const prevMasuk = fMasuk.value || '';
+                const prevKeluar = fKeluar.value || '';
+                fMasuk.innerHTML = '<option value="">SALDO ▾</option>';
+                fKeluar.innerHTML = '<option value="">SALDO ▾</option>';
                 window.saldoList.forEach(s => {
                     fMasuk.innerHTML += `<option value="${s}">${s}</option>`;
                     fKeluar.innerHTML += `<option value="${s}">${s}</option>`;
                 });
+                if (prevMasuk) fMasuk.value = prevMasuk;
+                if (prevKeluar) fKeluar.value = prevKeluar;
             }
             window.updateDatalistVlookup();
             if (window.syncKasirAkunDropdownRestrictions) window.syncKasirAkunDropdownRestrictions();
@@ -19333,7 +19477,7 @@
             if (op.jenis === 'PINJAMAN_SEMENTARA') return true;
             if (op.jenis === 'BIAYA_TOKO') return false;
             const ketUp = String(op.ket || '').toUpperCase();
-            return /\b(ZEN\s*2|ZENCELL\s*2|ZEN\s*1|ZENCELL\s*1|PINJAM|TALANGAN\s*CABANG|BON\s*SEMENTARA)\b/.test(ketUp);
+            return /\b(ZEN\s*2|ZENCELL\s*2|ZEN\s*1|ZENCELL\s*1|PINJAM|TALANGAN|BON\s|KARYAWAN|OWNER\s*PAKAI|PRIBADI)\b/.test(ketUp);
         };
 
         window.onOpFastJenisChange = function() {
@@ -19343,15 +19487,15 @@
             const btnSubmit = document.getElementById('btnSubmitOpFast');
             const isEdit = Boolean(document.getElementById('editOpFastId')?.value);
             if (jenis === 'PINJAMAN_SEMENTARA') {
-                if (ketEl) ketEl.placeholder = 'Contoh: PINJAM SALDO / UANG LACI KE ZENCELL 2...';
-                if (hintEl) hintEl.innerHTML = '🤝 <b>Pinjaman Sementara (Non-Biaya):</b> Menjaga Modal 250Jt tetap Balance & <b>TIDAK memotong Laba Bersih Toko</b>. Klik <b>📥 Ganti ke Kas</b> saat Zen 2 bayar.';
+                if (ketEl) ketEl.placeholder = 'Contoh: PINJAM SALDO ZEN 2 / OWNER PAKAI / BON KARYAWAN...';
+                if (hintEl) hintEl.innerHTML = '🤝 <b>Dana Talangan / Pinjaman Sementara (Zen 2 / Owner / Karyawan):</b> Menjaga Modal 250Jt tetap Balance & <b>TIDAK memotong Laba Bersih Toko</b>. Klik <b>📥 Ganti ke Kas</b> saat dikembalikan.';
                 if (btnSubmit && !isEdit) {
-                    btnSubmit.innerText = '🤝 Catat Pinjaman / Talangan Sementara';
+                    btnSubmit.innerText = '🤝 Catat Dana Talangan / Pinjaman Sementara';
                     btnSubmit.style.background = '#0284C7';
                 }
             } else {
                 if (ketEl) ketEl.placeholder = 'Contoh: KERTAS THERMAL, TOKEN LISTRIK TOKO, AIR GALON...';
-                if (hintEl) hintEl.innerHTML = '🏢 <b>Biaya Operasional Toko:</b> Mengurangi Laba Bersih di Rapor Laporan & ditalangi akun <b>OPERASIONAL</b> hingga diganti Owner.';
+                if (hintEl) hintEl.innerHTML = '🏢 <b>Biaya Operasional Toko:</b> Mengurangi Laba Bersih di Rapor Laporan & ditalangi akun <b>OPERASIONAL</b> hingga diganti.';
                 if (btnSubmit && !isEdit) {
                     btnSubmit.innerText = '💾 Catat Operasional (Ditalangi Kas)';
                     btnSubmit.style.background = '#7C3AED';
@@ -19367,7 +19511,7 @@
             const nom = parseFloat(document.getElementById('opFastNom')?.value) || 0;
             const ket = (document.getElementById('opFastKet')?.value || '').trim().toUpperCase();
             let jenis = document.getElementById('opFastJenis')?.value || 'BIAYA_TOKO';
-            if (jenis === 'BIAYA_TOKO' && /\b(ZEN\s*2|ZENCELL\s*2|PINJAM\s*SALDO|PINJAM\s*LACI|TALANGAN\s*CABANG)\b/.test(ket)) {
+            if (jenis === 'BIAYA_TOKO' && /\b(ZEN\s*2|ZENCELL\s*2|PINJAM|TALANGAN|BON\s|KARYAWAN|OWNER\s*PAKAI|PRIBADI)\b/.test(ket)) {
                 jenis = 'PINJAMAN_SEMENTARA';
             }
 
@@ -19648,7 +19792,7 @@
 
                 const isPinjam = window.isPinjamanSementaraOperasional && window.isPinjamanSementaraOperasional(o);
                 const jenisBadge = isPinjam
-                    ? `<span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">🤝 PINJAMAN / TALANGAN SEMENTARA (Non-Biaya)</span>`
+                    ? `<span style="display:inline-block; background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px; margin-top:2px;">🤝 DANA TALANGAN / PINJAMAN (Zen 2 / Owner / Karyawan)</span>`
                     : `<span style="display:inline-block; background:#F3E8FF; color:#6B21A8; border:1px solid #E9D5FF; font-size:9px; font-weight:700; padding:1px 5px; border-radius:4px; margin-top:2px;">🏢 BIAYA OPERASIONAL TOKO</span>`;
 
                 return `
@@ -21260,11 +21404,26 @@
             const btnClearJurnal = document.getElementById('btnClearJurnalSearch');
             if (btnClearJurnal) btnClearJurnal.style.display = fSearchRaw ? 'block' : 'none';
 
-            // Update indikator panah sort di header tabel CUAN & highlight kartu KPI sektor aktif
+            // Update indikator panah sort di header tabel CUAN, highlight filter kolom aktif, & highlight kartu KPI sektor aktif
             const thCuanIcon = document.getElementById('jurnalThCuanSortIcon');
             if (thCuanIcon) {
                 thCuanIcon.innerText = fSortCuan === 'CUAN_DESC' ? '⬇' : (fSortCuan === 'CUAN_ASC' ? '⬆' : '⇅');
                 thCuanIcon.style.opacity = fSortCuan === 'DEFAULT' ? '0.75' : '1';
+            }
+            const toggleActiveFilterCls = (elId, isAct) => {
+                const el = document.getElementById(elId);
+                if (el) el.classList.toggle('filter-active', Boolean(isAct));
+            };
+            toggleActiveFilterCls('jurnalFilterKat', Boolean(fKat));
+            toggleActiveFilterCls('jurnalFilterMasuk', Boolean(fMasuk));
+            toggleActiveFilterCls('jurnalFilterKeluar', Boolean(fKeluar));
+            toggleActiveFilterCls('jurnalSortCuan', fSortCuan !== 'DEFAULT');
+            toggleActiveFilterCls('jurnalSearchInput', Boolean(fSearchRaw));
+            const btnResetJurnal = document.getElementById('btnResetFilterJurnal');
+            const anyJurnalFilterActive = Boolean(fKat || fMasuk || fKeluar || fSearchRaw || fSortCuan !== 'DEFAULT');
+            if (btnResetJurnal) {
+                btnResetJurnal.classList.toggle('filter-active', anyJurnalFilterActive);
+                btnResetJurnal.style.opacity = anyJurnalFilterActive ? '1' : '0.6';
             }
             const setCardSektorActive = (cardId, badgeId, isActive, activeColor) => {
                 const cEl = document.getElementById(cardId);
@@ -21576,6 +21735,10 @@
                 filteredTrx.sort((a, b) => Number(b.data.cuan || 0) - Number(a.data.cuan || 0));
             } else if (fSortCuan === 'CUAN_ASC') {
                 filteredTrx.sort((a, b) => Number(a.data.cuan || 0) - Number(b.data.cuan || 0));
+            }
+            const elBadgeJurnalCnt = document.getElementById('badgeJurnalRowCount');
+            if (elBadgeJurnalCnt) {
+                elBadgeJurnalCnt.innerText = anyJurnalFilterActive ? `(${filteredTrx.length} Trx)` : '';
             }
 
             // Fallback pengaman: jika ada data di piutangList bersumber dari VOUCHER/SP/ACC yang belum punya transaksi init di transaksiJurnal
@@ -23397,6 +23560,21 @@
                 window.renderOpFastTable();
             }
             window.updateUndoRedoBtnState();
+        };
+
+        window.resetAllFilterJurnal = function() {
+            const fKat = document.getElementById('jurnalFilterKat');
+            const fMasuk = document.getElementById('jurnalFilterMasuk');
+            const fKeluar = document.getElementById('jurnalFilterKeluar');
+            const fSort = document.getElementById('jurnalSortCuan');
+            const fSearch = document.getElementById('jurnalSearchInput');
+            if (fKat) fKat.value = '';
+            if (fMasuk) fMasuk.value = '';
+            if (fKeluar) fKeluar.value = '';
+            if (fSort) fSort.value = 'DEFAULT';
+            if (fSearch) fSearch.value = '';
+            window.renderAll();
+            window.showToast("🔄 Semua filter & pencarian kolom Jurnal direset", "info");
         };
 
         window.toggleSortCuanJurnal = function() {
