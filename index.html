@@ -8026,7 +8026,7 @@
             if (pRef && pRef.kategori && pRef.kategori !== 'PIUTANG' && (window.kategoriList || []).includes(pRef.kategori)) {
                 return pRef.kategori;
             }
-            if (ketUp.includes('TARIK TUNAI') || ketUp.includes('T DANA') || ketUp.includes('T QRIS') || ketUp.includes('T BCA') || ketUp.includes('T BRI')) return 'TARIK TUNAI';
+            if (ketUp.includes('TARIK TUNAI') || ketUp.includes('T DANA') || ketUp.includes('T QRIS') || ketUp.includes('T BCA') || ketUp.includes('T BRI') || ketUp.includes('T MANDIRI') || ketUp.includes('T BNI')) return 'TARIK TUNAI';
             if (ketUp.includes('TF ') || ketUp.includes('TRANSFER')) return 'TRANSFER';
             if (ketUp.includes('GADAI')) return 'GADAI';
             if (ketUp.includes('VCR') || ketUp.includes('VOUCHER')) return 'VOUCHER';
@@ -8037,7 +8037,7 @@
         };
 
         window.STANDARD_SALDO_ORDER_Z1 = [
-            'LACI', 'BRI', 'BCA', 'SEA FINA', 'SEA ECA', 'NOBU', 'PIUTANG', 'OPERASIONAL',
+            'LACI', 'BRI', 'BCA', 'MANDIRI', 'BNI', 'SEA FINA', 'SEA ECA', 'NOBU', 'PIUTANG', 'OPERASIONAL',
             'GOPAY', 'QRIS', 'DANA FINA', 'DANA AA', 'OVO',
             'O KUOTA', 'PROPANA', 'DIGIPOS', 'RITA', 'SIDIVA', 'SIMPEL',
             'SPAREPART', 'VOUCHER', 'SP', 'ACC', 'KOMISI EDC'
@@ -8074,8 +8074,8 @@
                 return false;
             };
 
-            // Akun inti / sistem yang TIDAK BOLEH digantikan oleh akun custom
-            const CORE_LOCKED_ACCOUNTS = new Set(['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART', 'KOMISI EDC']);
+            // Akun inti / sistem & akun bank resmi yang TIDAK BOLEH digantikan posisinya oleh akun custom
+            const CORE_LOCKED_ACCOUNTS = new Set(['LACI', 'PIUTANG', 'OPERASIONAL', 'VOUCHER', 'SP', 'ACC', 'SPAREPART', 'KOMISI EDC', 'MANDIRI', 'BNI']);
 
             // Deteksi akun custom (bukan bagian dari standard order dan bukan akun yang dihapus permanen)
             const customAccounts = cleaned.filter(s => {
@@ -8165,6 +8165,8 @@
             'LACI': 59924357,
             'BRI': 14217909,
             'BCA': 14004602,
+            'MANDIRI': 0,
+            'BNI': 0,
             'SEA FINA': 72463,
             'SEA ECA': 9745056,
             'NOBU': 18506000,
@@ -9229,6 +9231,26 @@
                     needsResyncMap.saldoListCustom = true;
                 }
 
+                // Self-healing otomatis penambahan akun resmi MANDIRI & BNI di POS ZENCELL 1
+                if (window.ACTIVE_CABANG !== '2') {
+                    const rawCustomArr = Array.isArray(data.saldoListCustom)
+                        ? data.saldoListCustom.map(s => String(s || '').trim().toUpperCase())
+                        : [];
+                    if (!window.saldoList.includes('MANDIRI')) {
+                        const idxBca = window.saldoList.indexOf('BCA');
+                        if (idxBca !== -1) window.saldoList.splice(idxBca + 1, 0, 'MANDIRI');
+                        else window.saldoList.splice(1, 0, 'MANDIRI');
+                    }
+                    if (!window.saldoList.includes('BNI')) {
+                        const idxMandiri = window.saldoList.indexOf('MANDIRI');
+                        if (idxMandiri !== -1) window.saldoList.splice(idxMandiri + 1, 0, 'BNI');
+                        else window.saldoList.splice(2, 0, 'BNI');
+                    }
+                    if (!rawCustomArr.includes('MANDIRI') || !rawCustomArr.includes('BNI')) {
+                        needsResyncMap.saldoListCustom = true;
+                    }
+                }
+
                 if (data.saldoAwal) {
                     const hasCustomSaldoList = Array.isArray(data.saldoListCustom) && data.saldoListCustom.length > 0;
                     if (window.hasNonZeroSaldoAwal(data.saldoAwal) || data.isExplicitZeroSaldoAwal === true) {
@@ -9255,6 +9277,16 @@
                     window.masterSaldoAwal['PIUTANG'] = 0;
                     if (window.masterSaldoAwal['KOMISI EDC'] === undefined) {
                         window.masterSaldoAwal['KOMISI EDC'] = Number(window.DEFAULT_SALDO_AWAL['KOMISI EDC'] || 0);
+                    }
+                    if (window.ACTIVE_CABANG !== '2') {
+                        if (window.masterSaldoAwal['MANDIRI'] === undefined) {
+                            window.masterSaldoAwal['MANDIRI'] = 0;
+                            needsResyncMap.saldoAwal = true;
+                        }
+                        if (window.masterSaldoAwal['BNI'] === undefined) {
+                            window.masterSaldoAwal['BNI'] = 0;
+                            needsResyncMap.saldoAwal = true;
+                        }
                     }
                 }
             }
@@ -12187,6 +12219,8 @@
             if (raw.startsWith('DANA ')) return 'DANA';
             if (raw.startsWith('BRI ')) return 'BRI';
             if (raw.startsWith('BCA ')) return 'BCA';
+            if (raw.startsWith('MANDIRI ')) return 'MANDIRI';
+            if (raw.startsWith('BNI ')) return 'BNI';
             if (raw.startsWith('SEA ') || raw.startsWith('SEABANK ')) return 'SEABANK';
             if (raw.startsWith('OVO ')) return 'OVO';
             if (raw.startsWith('GOPAY ')) return 'GOPAY';
@@ -29364,7 +29398,7 @@
                 if (keluarAkun[ak] === undefined) keluarAkun[ak] = 0;
             };
             Object.keys(saldoAwalObj).forEach(ensureAkun);
-            ['LACI', 'BCA', 'BRI', 'MANDIRI', 'SEABANK', 'DANA', 'OVO', 'GOPAY', 'SHOPEEPAY', 'MITRA SHOPEE', 'ORDER KUOTA', 'DIGIPOS', 'EDOMPUL', 'BERKAT'].forEach(ensureAkun);
+            ['LACI', 'BCA', 'BRI', 'MANDIRI', 'BNI', 'SEABANK', 'DANA', 'OVO', 'GOPAY', 'SHOPEEPAY', 'MITRA SHOPEE', 'ORDER KUOTA', 'DIGIPOS', 'EDOMPUL', 'BERKAT'].forEach(ensureAkun);
 
             let omsetPeriode = 0;
             let cuanKotorPeriode = 0;
