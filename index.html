@@ -5794,13 +5794,13 @@
             </div>
         </div>
 
-        <!-- MODAL POPUP: + INPUT / EDIT STOK OPNAME -->
+        <!-- MODAL POPUP: + INPUT / EDIT STOK OPNAME (SINGLE & MULTI-ITEM BELANJA) -->
         <div id="modalStokOpnameOverlay" class="modal-overlay">
-            <div class="modal-content" style="max-width: 520px;">
+            <div class="modal-content" style="max-width: 620px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
                     <div>
-                        <h3 id="formStokTitle" style="font-size:15px; color:#059669; margin:0; display:flex; align-items:center; gap:6px;">📦 + Input Stok Opname Baru</h3>
-                        <small style="font-size:10px; color:#64748B; font-weight:600;">Tambah atau perbarui stok fisik Voucher, SP (Perdana), &amp; ACC</small>
+                        <h3 id="formStokTitle" style="font-size:15px; color:#059669; margin:0; display:flex; align-items:center; gap:6px;">📦 + Input / Belanja Stok Opname</h3>
+                        <small style="font-size:10px; color:#64748B; font-weight:600;">Tambah 1 barang atau belanja banyak jenis barang sekaligus (Voucher, SP, &amp; ACC)</small>
                     </div>
                     <button type="button" onclick="closeModalStokOpname()" style="background:#F1F5F9; border:1px solid #CBD5E1; width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; color:var(--text); display:inline-flex; align-items:center; justify-content:center;">✕</button>
                 </div>
@@ -5808,69 +5808,106 @@
                     <input type="hidden" id="editStokId" value="">
                     <input type="hidden" id="terimaMutasiPacketId" value="">
                     <div id="stokMutasiTerimaBanner" style="display:none; background:#EEF2FF; border:1.5px solid #818CF8; border-radius:9px; padding:8px 11px; margin-bottom:10px; font-size:11px; line-height:1.45; color:#1E1B4B;"></div>
-                    <div class="row-3">
-                        <div class="form-group">
-                            <label>Kategori *</label>
-                            <select id="stokKat" class="form-control" required style="font-weight:700;" onchange="if(window.onStokKatChange) window.onStokKatChange()">
-                                <option value="VOUCHER">VOUCHER</option>
-                                <option value="SP">SP (PERDANA)</option>
-                                <option value="ACC">ACC (AKSESORIS)</option>
-                            </select>
+
+                    <div id="stokMultiTipsBanner" style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:7px 10px; margin-bottom:10px; font-size:10.5px; color:#065F46; line-height:1.4;">
+                        💡 <b>Bisa Input 1 Barang atau Belanja Banyak Sekaligus:</b> Setelah isi barang pertama, klik tombol <b>➕ Tambah ke Daftar Belanja</b> untuk lanjut input barang ke-2, ke-3, dst. Total nota belanja akan dijumlahkan otomatis!
+                    </div>
+
+                    <!-- KOTAK KERANJANG / DAFTAR BELANJA STOK OPNAME -->
+                    <div id="boxBelanjaStokQueue" style="display:none; background:#F0FDF4; border:1.5px solid #34D399; border-radius:10px; padding:9px 11px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-size:11px; font-weight:900; color:#065F46;">🛒 DAFTAR NOTA BELANJA STOK (<span id="lblBelanjaStokQueueCount">0</span> Jenis Barang)</span>
+                            <button type="button" onclick="clearBelanjaStokQueue()" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; border-radius:5px; padding:2px 8px; font-size:9.5px; font-weight:800; cursor:pointer;">🗑️ Kosongkan</button>
                         </div>
-                        <div class="form-group">
-                            <label>Nama Barang * <small style="color:#0284C7; font-weight:700;">(Auto-Fill)</small></label>
-                            <input type="text" id="stokNama" list="listStokOpnameExist" autocomplete="off" class="form-control" placeholder="KETIK / PILIH BARANG..." required style="font-weight:700;" oninput="if(window.onStokNamaInput) window.onStokNamaInput(this)" onchange="if(window.onStokNamaInput) window.onStokNamaInput(this)">
-                            <datalist id="listStokOpnameExist"></datalist>
+                        <div id="listBelanjaStokQueueItems" style="display:flex; flex-direction:column; gap:5px; max-height:175px; overflow-y:auto; margin-bottom:7px;"></div>
+                        <div id="summaryBelanjaStokQueue" style="background:#DCFCE7; border:1px solid #86EFAC; border-radius:7px; padding:6px 10px; font-size:11px; color:#064E3B; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; font-weight:800;"></div>
+                    </div>
+
+                    <!-- KOTAK INPUT ITEM BARANG -->
+                    <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px 11px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:7px;">
+                            <span id="lblStokInputItemHeader" style="font-size:11px; font-weight:800; color:#0F172A;">📝 Rincian Barang yang Dibeli / Masuk</span>
+                            <span style="font-size:9.5px; color:#0284C7; font-weight:700;">Ketik Nama = Auto-Fill Modal &amp; Jual</span>
                         </div>
-                        <div class="form-group">
-                            <label id="lblStokQtyInput">Qty Belanja / Masuk *</label>
-                            <input type="number" id="stokQty" class="form-control" placeholder="0" inputmode="numeric" pattern="[0-9]*" required oninput="hitungTotalStokOpname()">
+
+                        <div class="row-3">
+                            <div class="form-group">
+                                <label>Kategori *</label>
+                                <select id="stokKat" class="form-control" style="font-weight:700;" onchange="if(window.onStokKatChange) window.onStokKatChange()">
+                                    <option value="VOUCHER">VOUCHER</option>
+                                    <option value="SP">SP (PERDANA)</option>
+                                    <option value="ACC">ACC (AKSESORIS)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Nama Barang * <small style="color:#0284C7; font-weight:700;">(Auto-Fill)</small></label>
+                                <input type="text" id="stokNama" list="listStokOpnameExist" autocomplete="off" class="form-control" placeholder="KETIK / PILIH BARANG..." style="font-weight:700;" oninput="if(window.onStokNamaInput) window.onStokNamaInput(this)" onchange="if(window.onStokNamaInput) window.onStokNamaInput(this)">
+                                <datalist id="listStokOpnameExist"></datalist>
+                            </div>
+                            <div class="form-group">
+                                <label id="lblStokQtyInput">Qty Belanja / Masuk *</label>
+                                <input type="number" id="stokQty" class="form-control" placeholder="0" inputmode="numeric" pattern="[0-9]*" oninput="hitungTotalStokOpname()">
+                            </div>
+                        </div>
+
+                        <div id="stokRestockInfoBox" style="display:none; background:#F0F9FF; border:1px solid #7DD3FC; border-radius:8px; padding:8px 10px; margin-bottom:10px; font-size:11px; line-height:1.4; color:#0C4A6E;"></div>
+
+                        <div class="row-3">
+                            <div class="form-group">
+                                <label>Harga Modal / Pcs *</label>
+                                <input type="text" id="stokModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stokModal'); hitungTotalStokOpname();">
+                                <input type="hidden" id="stokModal" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Harga Jual / Pcs (Opsional)</label>
+                                <input type="text" id="stokJualDisplay" class="form-control" placeholder="0 (Boleh Kosong)" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stokJual')">
+                                <input type="hidden" id="stokJual" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Subtotal Barang Ini</label>
+                                <input type="text" id="stokTotalDisplay" class="form-control" placeholder="Rp0" readonly style="background-color:#F0FDF4; border-color:#86EFAC; font-weight:800; color:#047857;">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:end;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>🛡️ Keterangan Garansi (Otomatis Tampil di Nota ACC)</label>
+                                <select id="stokGaransi" class="form-control" style="background-color:#F0F9FF; border-color:#BAE6FD; font-weight:700; color:#0369A1;">
+                                    <option value="TANPA GARANSI (Cek di Tempat)">🚫 TANPA GARANSI (Cek di Tempat)</option>
+                                    <option value="GARANSI TOKO 1 HARI (24 Jam)">🛡️ GARANSI TOKO 1 HARI (24 Jam)</option>
+                                    <option value="GARANSI TOKO 3 HARI">🛡️ GARANSI TOKO 3 HARI</option>
+                                    <option value="GARANSI TOKO 7 HARI (1 Minggu)">🛡️ GARANSI TOKO 7 HARI (1 Minggu)</option>
+                                    <option value="GARANSI TOKO 14 HARI (2 Minggu)">🛡️ GARANSI TOKO 14 HARI (2 Minggu)</option>
+                                    <option value="GARANSI TOKO 1 BULAN (30 Hari)">🛡️ GARANSI TOKO 1 BULAN (30 Hari)</option>
+                                    <option value="GARANSI RESMI 6 BULAN">🏅 GARANSI RESMI / DISTRIBUTOR 6 BULAN</option>
+                                    <option value="GARANSI RESMI 1 TAHUN">🏅 GARANSI RESMI / DISTRIBUTOR 1 TAHUN</option>
+                                </select>
+                            </div>
+                            <button type="button" id="btnAddStokToQueue" onclick="tambahItemKeDaftarBelanjaStok()" style="height:37px; background:linear-gradient(135deg, #0284C7, #0369A1); color:#FFFFFF; border:none; border-radius:8px; padding:0 13px; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(2,132,199,0.28);" title="Masukkan barang ini ke Daftar Belanja lalu lanjut ketik barang berikutnya">
+                                ➕ Tambah ke Daftar Belanja
+                            </button>
                         </div>
                     </div>
 
-                    <div id="stokRestockInfoBox" style="display:none; background:#F0F9FF; border:1px solid #7DD3FC; border-radius:8px; padding:8px 10px; margin-bottom:10px; font-size:11px; line-height:1.4; color:#0C4A6E;"></div>
-
-                    <div class="row-3">
-                        <div class="form-group">
-                            <label>Harga Modal / Pcs *</label>
-                            <input type="text" id="stokModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'stokModal'); hitungTotalStokOpname();">
-                            <input type="hidden" id="stokModal" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Harga Jual / Pcs (Opsional)</label>
-                            <input type="text" id="stokJualDisplay" class="form-control" placeholder="0 (Boleh Kosong)" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'stokJual')">
-                            <input type="hidden" id="stokJual" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Total Nilai Belanja</label>
-                            <input type="text" id="stokTotalDisplay" class="form-control" placeholder="Rp0" readonly style="background-color:#F0FDF4; border-color:#86EFAC; font-weight:800; color:#047857;">
-                        </div>
-                    </div>
-
-                    <div class="row-2" style="margin-bottom:10px;">
+                    <!-- SUMBER SALDO & GRAND TOTAL BELANJA -->
+                    <div style="display:grid; grid-template-columns: 1.15fr 1fr; gap:8px; margin-bottom:10px; align-items:stretch;">
                         <div class="form-group" style="margin-bottom:0;">
-                            <label>🛡️ Keterangan Garansi (Otomatis Tampil di Nota ACC)</label>
-                            <select id="stokGaransi" class="form-control" style="background-color:#F0F9FF; border-color:#BAE6FD; font-weight:700; color:#0369A1;">
-                                <option value="TANPA GARANSI (Cek di Tempat)">🚫 TANPA GARANSI (Cek di Tempat)</option>
-                                <option value="GARANSI TOKO 1 HARI (24 Jam)">🛡️ GARANSI TOKO 1 HARI (24 Jam)</option>
-                                <option value="GARANSI TOKO 3 HARI">🛡️ GARANSI TOKO 3 HARI</option>
-                                <option value="GARANSI TOKO 7 HARI (1 Minggu)">🛡️ GARANSI TOKO 7 HARI (1 Minggu)</option>
-                                <option value="GARANSI TOKO 14 HARI (2 Minggu)">🛡️ GARANSI TOKO 14 HARI (2 Minggu)</option>
-                                <option value="GARANSI TOKO 1 BULAN (30 Hari)">🛡️ GARANSI TOKO 1 BULAN (30 Hari)</option>
-                                <option value="GARANSI RESMI 6 BULAN">🏅 GARANSI RESMI / DISTRIBUTOR 6 BULAN</option>
-                                <option value="GARANSI RESMI 1 TAHUN">🏅 GARANSI RESMI / DISTRIBUTOR 1 TAHUN</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Sumber Saldo (Potong Kas)</label>
+                            <label>💰 Sumber Saldo (Potong Kas untuk Total Belanja)</label>
                             <select id="stokSumberKas" class="form-control" style="background-color: #fefce8; font-weight: bold;">
                                 <option value="TIDAK POTONG SALDO">TIDAK POTONG SALDO (AUDIT SAJA)</option>
                             </select>
                         </div>
+                        <div style="background:linear-gradient(135deg, #ECFDF5, #D1FAE5); border:1.5px solid #10B981; border-radius:9px; padding:6px 11px; display:flex; flex-direction:column; justify-content:center;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:9.5px; font-weight:800; color:#065F46; text-transform:uppercase;">🧾 Total Keseluruhan Belanja</span>
+                                <span id="lblStokGrandTotalItems" style="font-size:9.5px; font-weight:800; color:#047857; background:#A7F3D0; padding:1px 6px; border-radius:999px;">0 Item (0 Pcs)</span>
+                            </div>
+                            <div id="lblStokGrandTotalRp" style="font-size:15px; font-weight:900; color:#065F46; margin-top:2px;">Rp0</div>
+                        </div>
                     </div>
 
                     <div class="row-2" style="margin-top:6px;">
-                        <button type="submit" id="btnSubmitStok" class="btn" style="background:#059669;">💾 Simpan Stok Opname</button>
+                        <button type="submit" id="btnSubmitStok" class="btn" style="background:#059669; font-weight:800;">💾 Simpan Stok Opname &amp; Catat Aset</button>
                         <button type="button" class="btn" style="background:#64748B;" onclick="closeModalStokOpname()">Batal</button>
                     </div>
                 </form>
@@ -10577,14 +10614,21 @@
             document.getElementById('modalSetorFastOverlay')?.classList.remove('show');
         };
 
+        window._belanjaStokQueue = [];
+
         window.openModalStokOpname = function() {
             const f = document.getElementById('formStokOpname');
             if (f) f.reset();
             window._lastAutoFilledStokKey = '';
+            window._belanjaStokQueue = [];
             if (document.getElementById('editStokId')) document.getElementById('editStokId').value = '';
             if (document.getElementById('terimaMutasiPacketId')) document.getElementById('terimaMutasiPacketId').value = '';
             const mutasiBanner = document.getElementById('stokMutasiTerimaBanner');
             if (mutasiBanner) { mutasiBanner.style.display = 'none'; mutasiBanner.innerHTML = ''; }
+            const tipsBanner = document.getElementById('stokMultiTipsBanner');
+            if (tipsBanner) tipsBanner.style.display = 'block';
+            const btnAddQueue = document.getElementById('btnAddStokToQueue');
+            if (btnAddQueue) btnAddQueue.style.display = 'inline-flex';
             if (document.getElementById('stokModal')) document.getElementById('stokModal').value = '0';
             if (document.getElementById('stokJual')) document.getElementById('stokJual').value = '0';
             if (document.getElementById('stokTotalDisplay')) document.getElementById('stokTotalDisplay').value = 'Rp0';
@@ -10598,18 +10642,21 @@
             const btnEl = document.getElementById('btnSubmitStok');
             if (btnEl) btnEl.innerText = '💾 Simpan Stok Opname & Catat Aset';
             if (window.updateDatalistStokOpname) window.updateDatalistStokOpname();
+            if (window.renderBelanjaStokQueueUI) window.renderBelanjaStokQueueUI();
             const ov = document.getElementById('modalStokOpnameOverlay');
             if (ov) ov.classList.add('show');
             setTimeout(() => document.getElementById('stokNama')?.focus(), 80);
         };
         window.closeModalStokOpname = function() {
             window._lastAutoFilledStokKey = '';
+            window._belanjaStokQueue = [];
             if (document.getElementById('editStokId')) document.getElementById('editStokId').value = '';
             if (document.getElementById('terimaMutasiPacketId')) document.getElementById('terimaMutasiPacketId').value = '';
             const mutasiBanner = document.getElementById('stokMutasiTerimaBanner');
             if (mutasiBanner) { mutasiBanner.style.display = 'none'; mutasiBanner.innerHTML = ''; }
             const infoBox = document.getElementById('stokRestockInfoBox');
             if (infoBox) { infoBox.style.display = 'none'; infoBox.innerHTML = ''; }
+            if (window.renderBelanjaStokQueueUI) window.renderBelanjaStokQueueUI();
             document.getElementById('modalStokOpnameOverlay')?.classList.remove('show');
         };
 
@@ -16662,6 +16709,7 @@
                 window._lastAutoFilledStokKey = '';
             }
             window.updatePreviewRestokRataRata();
+            if (window.renderBelanjaStokQueueUI) window.renderBelanjaStokQueueUI();
         };
 
         window.updatePreviewRestokRataRata = function() {
@@ -16763,11 +16811,210 @@
         };
 
         window.hitungTotalStokOpname = function() {
-            const q = parseFloat(document.getElementById('stokQty').value) || 0;
-            const m = parseFloat(document.getElementById('stokModal').value) || 0;
-            document.getElementById('stokTotalDisplay').value = window.formatRp(q * m);
+            const q = parseFloat(document.getElementById('stokQty')?.value) || 0;
+            const m = parseFloat(document.getElementById('stokModal')?.value) || 0;
+            const totEl = document.getElementById('stokTotalDisplay');
+            if (totEl) totEl.value = window.formatRp(q * m);
             if (window.updatePreviewRestokRataRata) window.updatePreviewRestokRataRata();
-        }
+            if (window.renderBelanjaStokQueueUI) window.renderBelanjaStokQueueUI();
+        };
+
+        window.extractCurrentStokFormItem = function() {
+            const kat = (document.getElementById('stokKat')?.value || 'VOUCHER').trim();
+            const nama = (document.getElementById('stokNama')?.value || '').trim().toUpperCase();
+            const qty = parseFloat(document.getElementById('stokQty')?.value) || 0;
+            const modal = parseFloat(document.getElementById('stokModal')?.value) || 0;
+            const jual = parseFloat(document.getElementById('stokJual')?.value) || 0;
+            const garansi = (document.getElementById('stokGaransi')?.value || 'TANPA GARANSI (Cek di Tempat)').trim();
+
+            if (!nama) {
+                window.showToast("⚠️ Harap isi Nama Barang terlebih dahulu!", "error");
+                document.getElementById('stokNama')?.focus();
+                return null;
+            }
+            if (qty <= 0) {
+                window.showToast(`⚠️ Qty Belanja untuk "${nama}" harus lebih dari 0!`, "error");
+                document.getElementById('stokQty')?.focus();
+                return null;
+            }
+            if (modal <= 0) {
+                window.showToast(`⚠️ Harga Modal / Pcs untuk "${nama}" harus lebih dari Rp0!`, "error");
+                document.getElementById('stokModalDisplay')?.focus();
+                return null;
+            }
+
+            return {
+                kat,
+                nama,
+                qty,
+                modal,
+                jual,
+                garansi,
+                totalNilai: Math.round(qty * modal)
+            };
+        };
+
+        window.resetStokItemInputFieldsOnly = function() {
+            window._lastAutoFilledStokKey = '';
+            if (document.getElementById('stokNama')) document.getElementById('stokNama').value = '';
+            if (document.getElementById('stokQty')) document.getElementById('stokQty').value = '';
+            if (document.getElementById('stokModal')) document.getElementById('stokModal').value = '0';
+            if (document.getElementById('stokModalDisplay')) document.getElementById('stokModalDisplay').value = '';
+            if (document.getElementById('stokJual')) document.getElementById('stokJual').value = '0';
+            if (document.getElementById('stokJualDisplay')) document.getElementById('stokJualDisplay').value = '';
+            if (document.getElementById('stokTotalDisplay')) document.getElementById('stokTotalDisplay').value = 'Rp0';
+            const infoBox = document.getElementById('stokRestockInfoBox');
+            if (infoBox) { infoBox.style.display = 'none'; infoBox.innerHTML = ''; }
+            window.renderBelanjaStokQueueUI();
+        };
+
+        window.tambahItemKeDaftarBelanjaStok = function() {
+            const editId = document.getElementById('editStokId')?.value || '';
+            if (editId) return;
+            const item = window.extractCurrentStokFormItem();
+            if (!item) return;
+            if (!Array.isArray(window._belanjaStokQueue)) window._belanjaStokQueue = [];
+
+            const existingIdx = window._belanjaStokQueue.findIndex(q => q.kat === item.kat && q.nama === item.nama && q.modal === item.modal);
+            if (existingIdx !== -1) {
+                window._belanjaStokQueue[existingIdx].qty += item.qty;
+                window._belanjaStokQueue[existingIdx].totalNilai = Math.round(window._belanjaStokQueue[existingIdx].qty * window._belanjaStokQueue[existingIdx].modal);
+                if (item.jual > 0) window._belanjaStokQueue[existingIdx].jual = item.jual;
+                if (item.garansi) window._belanjaStokQueue[existingIdx].garansi = item.garansi;
+            } else {
+                window._belanjaStokQueue.push(item);
+            }
+
+            window.resetStokItemInputFieldsOnly();
+            document.getElementById('stokNama')?.focus();
+            window.showToast(`➕ [${item.kat}] ${item.nama} (${item.qty} Pcs • ${window.formatRp(item.totalNilai)}) masuk ke Daftar Belanja (#${window._belanjaStokQueue.length})!`, "success");
+        };
+
+        window.hapusItemDaftarBelanjaStok = function(idx) {
+            if (!Array.isArray(window._belanjaStokQueue) || idx < 0 || idx >= window._belanjaStokQueue.length) return;
+            window._belanjaStokQueue.splice(idx, 1);
+            window.renderBelanjaStokQueueUI();
+        };
+
+        window.editItemDaftarBelanjaStok = function(idx) {
+            if (!Array.isArray(window._belanjaStokQueue) || idx < 0 || idx >= window._belanjaStokQueue.length) return;
+            const item = window._belanjaStokQueue.splice(idx, 1)[0];
+            if (document.getElementById('stokKat')) document.getElementById('stokKat').value = item.kat || 'VOUCHER';
+            if (window.updateDatalistStokOpname) window.updateDatalistStokOpname();
+            if (document.getElementById('stokNama')) document.getElementById('stokNama').value = item.nama || '';
+            if (document.getElementById('stokQty')) document.getElementById('stokQty').value = item.qty || '';
+            if (document.getElementById('stokModal')) document.getElementById('stokModal').value = item.modal || 0;
+            if (document.getElementById('stokModalDisplay')) document.getElementById('stokModalDisplay').value = item.modal > 0 ? Number(item.modal).toLocaleString('id-ID') : '';
+            if (document.getElementById('stokJual')) document.getElementById('stokJual').value = item.jual || 0;
+            if (document.getElementById('stokJualDisplay')) document.getElementById('stokJualDisplay').value = item.jual > 0 ? Number(item.jual).toLocaleString('id-ID') : '';
+            if (document.getElementById('stokGaransi')) document.getElementById('stokGaransi').value = item.garansi || 'TANPA GARANSI (Cek di Tempat)';
+            window.hitungTotalStokOpname();
+            document.getElementById('stokQty')?.focus();
+        };
+
+        window.clearBelanjaStokQueue = function() {
+            window._belanjaStokQueue = [];
+            window.renderBelanjaStokQueueUI();
+        };
+
+        window.renderBelanjaStokQueueUI = function() {
+            const box = document.getElementById('boxBelanjaStokQueue');
+            const listEl = document.getElementById('listBelanjaStokQueueItems');
+            const sumEl = document.getElementById('summaryBelanjaStokQueue');
+            const cntEl = document.getElementById('lblBelanjaStokQueueCount');
+            const hdrEl = document.getElementById('lblStokInputItemHeader');
+            const btnSubmit = document.getElementById('btnSubmitStok');
+            const grandItemsEl = document.getElementById('lblStokGrandTotalItems');
+            const grandRpEl = document.getElementById('lblStokGrandTotalRp');
+
+            const editId = document.getElementById('editStokId')?.value || '';
+            const q = (!editId && Array.isArray(window._belanjaStokQueue)) ? window._belanjaStokQueue : [];
+
+            const curNama = (document.getElementById('stokNama')?.value || '').trim().toUpperCase();
+            const curQty = parseFloat(document.getElementById('stokQty')?.value) || 0;
+            const curModal = parseFloat(document.getElementById('stokModal')?.value) || 0;
+            const curSubtotal = (curQty > 0 && curModal > 0) ? Math.round(curQty * curModal) : 0;
+            const hasValidCurrentInput = Boolean(curNama && curQty > 0 && curModal > 0);
+
+            let queuePcs = 0;
+            let queueTotalRp = 0;
+            q.forEach(item => {
+                queuePcs += Number(item.qty || 0);
+                queueTotalRp += Number(item.totalNilai || 0);
+            });
+
+            const grandJenis = q.length + (hasValidCurrentInput ? 1 : 0);
+            const grandPcs = queuePcs + (hasValidCurrentInput ? curQty : 0);
+            const grandTotalRp = queueTotalRp + (hasValidCurrentInput ? curSubtotal : 0);
+
+            if (grandItemsEl) {
+                grandItemsEl.innerText = `${grandJenis} Jenis (${grandPcs} Pcs)`;
+            }
+            if (grandRpEl) {
+                grandRpEl.innerText = window.formatRp(grandTotalRp);
+            }
+
+            if (!box || !listEl || !sumEl) return;
+
+            if (editId || q.length === 0) {
+                box.style.display = 'none';
+                if (hdrEl) {
+                    hdrEl.innerHTML = editId
+                        ? '✏️ Edit Data Master Barang Stok Opname'
+                        : '📝 Rincian Barang yang Dibeli / Masuk';
+                }
+                if (btnSubmit && !editId) {
+                    btnSubmit.innerHTML = grandTotalRp > 0
+                        ? `💾 Simpan Belanja Stok (${window.formatRp(grandTotalRp)})`
+                        : '💾 Simpan Stok Opname &amp; Catat Aset';
+                }
+                return;
+            }
+
+            box.style.display = 'block';
+            if (cntEl) cntEl.innerText = q.length;
+            if (hdrEl) {
+                hdrEl.innerHTML = `<span style="color:#0284C7; font-weight:800;">➕ Input Barang Ke-${q.length + 1}</span> <small style="color:#64748B; font-weight:600;">(Kosongkan jika sudah selesai memilih barang)</small>`;
+            }
+
+            listEl.innerHTML = q.map((item, idx) => {
+                const existItem = (window.stokOpnameItems || []).find(i => (i.nama || i.namaBarang || '').trim().toUpperCase() === item.nama && i.kat === item.kat);
+                const statusBadge = existItem
+                    ? `<span style="background:#E0F2FE; color:#0369A1; font-weight:800; padding:1px 5px; border-radius:4px; font-size:9px;">➕ Restok</span>`
+                    : `<span style="background:#FEF3C7; color:#92400E; font-weight:800; padding:1px 5px; border-radius:4px; font-size:9px;">✨ Baru</span>`;
+                return `
+                    <div style="background:#FFFFFF; border:1px solid #A7F3D0; border-left:3.5px solid #059669; border-radius:7px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                        <div style="font-size:10.5px; line-height:1.35; flex:1;">
+                            <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+                                <b style="color:#065F46;">#${idx + 1} [${item.kat}]</b>
+                                <b style="color:#0F172A;">${item.nama}</b>
+                                <span style="background:#DCFCE7; color:#15803D; font-weight:800; padding:1px 6px; border-radius:4px;">+${item.qty} Pcs</span>
+                                ${statusBadge}
+                            </div>
+                            <div style="font-size:10px; color:#475569; margin-top:1px;">
+                                Modal: <b>${window.formatRp(item.modal)}</b>/pcs${item.jual > 0 ? ` • Jual: <b>${window.formatRp(item.jual)}</b>` : ''} ➔ Subtotal: <b style="color:#047857;">${window.formatRp(item.totalNilai)}</b>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:4px;">
+                            <button type="button" onclick="editItemDaftarBelanjaStok(${idx})" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; border-radius:5px; padding:3px 7px; font-size:10px; font-weight:800; cursor:pointer;" title="Edit baris ini">✏️</button>
+                            <button type="button" onclick="hapusItemDaftarBelanjaStok(${idx})" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; border-radius:5px; padding:3px 7px; font-size:10px; font-weight:800; cursor:pointer;" title="Hapus dari daftar">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            sumEl.innerHTML = `
+                <span>🛒 Di Daftar: <b>${q.length} Jenis (${queuePcs} Pcs) = ${window.formatRp(queueTotalRp)}</b></span>
+                ${hasValidCurrentInput
+                    ? `<span style="color:#0369A1;">+ Input Aktif (${window.formatRp(curSubtotal)}) ➔ <b>Total: ${window.formatRp(grandTotalRp)}</b></span>`
+                    : `<span>Total Nota: <b style="color:#047857; font-size:12.5px;">${window.formatRp(queueTotalRp)}</b></span>`
+                }
+            `;
+
+            if (btnSubmit) {
+                btnSubmit.innerHTML = `💾 Simpan Semua Belanja (${grandJenis} Jenis • ${window.formatRp(grandTotalRp)})`;
+            }
+        };
 
         window.simpanStokOpname = function(e) {
             if (e) e.preventDefault();
@@ -16788,11 +17035,6 @@
             const tglInput = window.getTodayIso();
             const waktuInput = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-            if (!nama || qty <= 0 || modal <= 0) {
-                window.showToast("⚠️ Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!", "error");
-                return;
-            }
-
             if (!window.riwayatBelanjaStok) window.riwayatBelanjaStok = [];
             if (!window.stokOpnameItems) window.stokOpnameItems = [];
 
@@ -16801,6 +17043,10 @@
             let toastMsg = '';
 
             if (editId) {
+                if (!nama || qty <= 0 || modal <= 0) {
+                    window.showToast("⚠️ Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!", "error");
+                    return;
+                }
                 if (typeof window.isOwnerAuthorized === 'function' && !window.isOwnerAuthorized()) {
                     window.showToast("⛔ Akses Dibatasi: Hanya OWNER yang dapat menyimpan perubahan data stok master!", "error");
                     return;
@@ -16927,88 +17173,154 @@
                 window.catatLogAktivitas('EDIT STOK', `Memperbarui data stok opname [${kat}] ${nama} (Qty: ${qty}, ${garansi})`);
                 toastMsg = `✅ Perubahan stok [${kat}] ${nama} berhasil disimpan!`;
             } else {
-                const recordId = nowTs;
-                let item = window.stokOpnameItems.find(i => ((i.nama || i.namaBarang || '').trim().toUpperCase() === nama && i.kat === kat));
-                const modalLama = item ? Number(item.modal || 0) : 0;
-                const jualLama = item ? Number(item.jual || 0) : 0;
-                const sisaLama = item ? Math.max(0, Number(item.awal || 0) - Number(item.terjual || 0)) : 0;
+                const queueItems = Array.isArray(window._belanjaStokQueue) ? window._belanjaStokQueue.slice() : [];
+                let itemsToProcess = [];
 
-                // Hitung Harga Modal Rata-Rata Tertimbang (Weighted Average) jika masih ada sisa stok lama dengan harga modal berbeda
-                let modalFinalTabel = modal;
-                let isAveraged = false;
-                if (item && sisaLama > 0 && modalLama > 0 && modalLama !== modal) {
-                    const totalNilaiGabungan = (sisaLama * modalLama) + (qty * modal);
-                    const totalSisaBaru = sisaLama + qty;
-                    modalFinalTabel = Math.round(totalNilaiGabungan / totalSisaBaru);
-                    isAveraged = true;
-                }
-                const jualFinalTabel = jual > 0 ? jual : jualLama;
-                const garansiFinal = garansi || (item && item.garansi ? item.garansi : 'TANPA GARANSI (Cek di Tempat)');
-
-                const newRiwayat = {
-                    id: recordId,
-                    waktu: waktuInput,
-                    isoDate: tglInput,
-                    tgl: tglInput,
-                    kat: kat,
-                    nama: nama,
-                    qty: qty,
-                    modal: modal,
-                    prevModal: item ? modalLama : modal,
-                    modalRataSetelah: modalFinalTabel,
-                    jual: jualFinalTabel,
-                    garansi: garansiFinal,
-                    total: totalNilai,
-                    sumberKas: sumberKas,
-                    updatedAt: nowTs
-                };
-                window.riwayatBelanjaStok.unshift(newRiwayat);
-                window.markLocalEntityEdited('riwayatBelanjaStok', newRiwayat);
-
-                if (item) {
-                    item.awal = Number(item.awal || 0) + qty;
-                    item.modal = modalFinalTabel;
-                    item.jual = jualFinalTabel;
-                    item.garansi = garansiFinal;
-                    item.nama = nama;
-                    item.updatedAt = nowTs;
-                    targetHighlightId = item.id;
-                    window.markLocalEntityEdited('stok', item);
-                    if (window.masterVlookup && window.masterVlookup[nama]) {
-                        window.masterVlookup[nama].defModal = modalFinalTabel;
-                        if (jualFinalTabel > 0) window.masterVlookup[nama].defJual = jualFinalTabel;
+                if (queueItems.length > 0 && !nama) {
+                    itemsToProcess = queueItems;
+                } else if (queueItems.length > 0 && nama) {
+                    if (qty <= 0 || modal <= 0) {
+                        window.showToast(`⚠️ Kolom input "${nama}" belum lengkap (Qty / Modal kosong). Lengkapi dulu atau kosongkan Nama Barang untuk menyimpan ${queueItems.length} barang di Daftar Belanja!`, "error");
+                        return;
                     }
-                    if (isAveraged) {
-                        window.catatLogAktivitas('BELANJA STOK (RATA-RATA)', `Tambah stok [${kat}] ${nama} +${qty} pcs (Modal beli: ${window.formatRp(modal)} ➔ Modal rata-rata baru: ${window.formatRp(modalFinalTabel)})`);
-                        toastMsg = `✅ Stok [${kat}] ${nama} +${qty} Pcs berhasil ditambah! Harga modal otomatis dirata-rata menjadi ${window.formatRp(modalFinalTabel)}/pcs.`;
-                    } else {
-                        window.catatLogAktivitas('TAMBAH STOK', `Menambah stok [${kat}] ${nama} +${qty} pcs (Modal: ${window.formatRp(modalFinalTabel)})`);
-                        toastMsg = `✅ Stok [${kat}] ${nama} (+${qty} Pcs) berhasil ditambahkan!`;
-                    }
+                    itemsToProcess = [...queueItems, {
+                        kat,
+                        nama,
+                        qty,
+                        modal,
+                        jual,
+                        garansi,
+                        totalNilai: Math.round(qty * modal)
+                    }];
                 } else {
-                    const newStok = {
-                        id: recordId,
-                        kat: kat,
-                        nama: nama,
-                        awal: qty,
-                        terjual: 0,
-                        modal: modal,
-                        jual: jual,
-                        garansi: garansiFinal,
-                        updatedAt: nowTs
-                    };
-                    targetHighlightId = recordId;
-                    window.stokOpnameItems.push(newStok);
-                    window.markLocalEntityEdited('stok', newStok);
-                    window.catatLogAktivitas('INPUT STOK', `Menambah stok opname baru [${kat}] ${nama} sebanyak ${qty} pcs (${garansiFinal})`);
-                    toastMsg = `✅ Stok baru [${kat}] ${nama} (${qty} Pcs) berhasil disimpan!`;
+                    if (!nama || qty <= 0 || modal <= 0) {
+                        window.showToast("⚠️ Harap isi Nama Barang, Qty, dan Harga Modal dengan benar!", "error");
+                        return;
+                    }
+                    itemsToProcess = [{
+                        kat,
+                        nama,
+                        qty,
+                        modal,
+                        jual,
+                        garansi,
+                        totalNilai: Math.round(qty * modal)
+                    }];
                 }
+
+                let batchTotalPcs = 0;
+                let batchGrandTotalRp = 0;
+
+                itemsToProcess.forEach((entry) => {
+                    const itemTs = window.getNextUniqueTs();
+                    const eKat = entry.kat;
+                    const eNama = entry.nama;
+                    const eQty = Number(entry.qty || 0);
+                    const eModal = Number(entry.modal || 0);
+                    const eJual = Number(entry.jual || 0);
+                    const eGaransi = entry.garansi || 'TANPA GARANSI (Cek di Tempat)';
+                    const eTotalNilai = Math.round(eQty * eModal);
+
+                    batchTotalPcs += eQty;
+                    batchGrandTotalRp += eTotalNilai;
+
+                    let item = window.stokOpnameItems.find(i => ((i.nama || i.namaBarang || '').trim().toUpperCase() === eNama && i.kat === eKat));
+                    const modalLama = item ? Number(item.modal || 0) : 0;
+                    const jualLama = item ? Number(item.jual || 0) : 0;
+                    const sisaLama = item ? Math.max(0, Number(item.awal || 0) - Number(item.terjual || 0)) : 0;
+
+                    // Hitung Harga Modal Rata-Rata Tertimbang (Weighted Average) jika masih ada sisa stok lama dengan harga modal berbeda
+                    let modalFinalTabel = eModal;
+                    let isAveraged = false;
+                    if (item && sisaLama > 0 && modalLama > 0 && modalLama !== eModal) {
+                        const totalNilaiGabungan = (sisaLama * modalLama) + (eQty * eModal);
+                        const totalSisaBaru = sisaLama + eQty;
+                        modalFinalTabel = Math.round(totalNilaiGabungan / totalSisaBaru);
+                        isAveraged = true;
+                    }
+                    const jualFinalTabel = eJual > 0 ? eJual : jualLama;
+                    const garansiFinal = eGaransi || (item && item.garansi ? item.garansi : 'TANPA GARANSI (Cek di Tempat)');
+
+                    const newRiwayat = {
+                        id: itemTs,
+                        waktu: waktuInput,
+                        isoDate: tglInput,
+                        tgl: tglInput,
+                        kat: eKat,
+                        nama: eNama,
+                        qty: eQty,
+                        modal: eModal,
+                        prevModal: item ? modalLama : eModal,
+                        modalRataSetelah: modalFinalTabel,
+                        jual: jualFinalTabel,
+                        garansi: garansiFinal,
+                        total: eTotalNilai,
+                        sumberKas: sumberKas,
+                        updatedAt: itemTs
+                    };
+                    window.riwayatBelanjaStok.unshift(newRiwayat);
+                    window.markLocalEntityEdited('riwayatBelanjaStok', newRiwayat);
+
+                    if (item) {
+                        item.awal = Number(item.awal || 0) + eQty;
+                        item.modal = modalFinalTabel;
+                        item.jual = jualFinalTabel;
+                        item.garansi = garansiFinal;
+                        item.nama = eNama;
+                        item.updatedAt = itemTs;
+                        targetHighlightId = item.id;
+                        window.markLocalEntityEdited('stok', item);
+                        if (window.masterVlookup && window.masterVlookup[eNama]) {
+                            window.masterVlookup[eNama].defModal = modalFinalTabel;
+                            if (jualFinalTabel > 0) window.masterVlookup[eNama].defJual = jualFinalTabel;
+                        }
+                        if (itemsToProcess.length === 1) {
+                            if (isAveraged) {
+                                window.catatLogAktivitas('BELANJA STOK (RATA-RATA)', `Tambah stok [${eKat}] ${eNama} +${eQty} pcs (Modal beli: ${window.formatRp(eModal)} ➔ Modal rata-rata baru: ${window.formatRp(modalFinalTabel)})`);
+                                toastMsg = `✅ Stok [${eKat}] ${eNama} +${eQty} Pcs berhasil ditambah! Harga modal otomatis dirata-rata menjadi ${window.formatRp(modalFinalTabel)}/pcs.`;
+                            } else {
+                                window.catatLogAktivitas('TAMBAH STOK', `Menambah stok [${eKat}] ${eNama} +${eQty} pcs (Modal: ${window.formatRp(modalFinalTabel)})`);
+                                toastMsg = `✅ Stok [${eKat}] ${eNama} (+${eQty} Pcs) berhasil ditambahkan!`;
+                            }
+                        }
+                    } else {
+                        const newStok = {
+                            id: itemTs,
+                            kat: eKat,
+                            nama: eNama,
+                            awal: eQty,
+                            terjual: 0,
+                            modal: eModal,
+                            jual: eJual,
+                            garansi: garansiFinal,
+                            updatedAt: itemTs
+                        };
+                        targetHighlightId = itemTs;
+                        window.stokOpnameItems.push(newStok);
+                        window.markLocalEntityEdited('stok', newStok);
+                        if (itemsToProcess.length === 1) {
+                            window.catatLogAktivitas('INPUT STOK', `Menambah stok opname baru [${eKat}] ${eNama} sebanyak ${eQty} pcs (${garansiFinal})`);
+                            toastMsg = `✅ Stok baru [${eKat}] ${eNama} (${eQty} Pcs) berhasil disimpan!`;
+                        }
+                    }
+                });
+
+                if (itemsToProcess.length > 1) {
+                    const ringkasanNama = itemsToProcess.slice(0, 3).map(x => `${x.nama} (${x.qty})`).join(', ') + (itemsToProcess.length > 3 ? `, dll` : '');
+                    window.catatLogAktivitas(
+                        'BELANJA STOK MULTI-ITEM',
+                        `Belanja ${itemsToProcess.length} jenis barang (${batchTotalPcs} Pcs • Total: ${window.formatRp(batchGrandTotalRp)} • Kas: ${sumberKas}): ${ringkasanNama}`
+                    );
+                    toastMsg = `✅ Belanja ${itemsToProcess.length} Jenis Barang (${batchTotalPcs} Pcs • Total ${window.formatRp(batchGrandTotalRp)}) berhasil disimpan!`;
+                }
+                window._belanjaStokQueue = [];
             }
 
             const receivedPacketId = document.getElementById('terimaMutasiPacketId')?.value || '';
 
             document.getElementById('formStokOpname').reset();
             window._lastAutoFilledStokKey = '';
+            window._belanjaStokQueue = [];
             document.getElementById('editStokId').value = '';
             if (document.getElementById('terimaMutasiPacketId')) document.getElementById('terimaMutasiPacketId').value = '';
             const mutasiBanner = document.getElementById('stokMutasiTerimaBanner');
@@ -17151,7 +17463,12 @@
 
             const namaBarang = (stok.nama || stok.namaBarang || '').trim().toUpperCase();
             window._lastAutoFilledStokKey = '';
+            window._belanjaStokQueue = [];
             document.getElementById('editStokId').value = stok.id;
+            const tipsBanner = document.getElementById('stokMultiTipsBanner');
+            if (tipsBanner) tipsBanner.style.display = 'none';
+            const btnAddQueue = document.getElementById('btnAddStokToQueue');
+            if (btnAddQueue) btnAddQueue.style.display = 'none';
             document.getElementById('stokKat').value = stok.kat;
             document.getElementById('stokNama').value = namaBarang;
             document.getElementById('stokQty').value = stok.awal;
