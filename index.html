@@ -3296,7 +3296,7 @@
             }
         }
     </style>
-<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
+</head>
 <body>
 
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
@@ -6023,8 +6023,8 @@
                             </div>
                         </div>
 
-                        <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:end;">
-                            <div class="form-group" style="margin-bottom:0;">
+                        <div id="rowStokGaransiAndAddBtn" style="display:flex; justify-content:flex-end; gap:8px; align-items:flex-end;">
+                            <div id="boxStokGaransiInput" class="form-group" style="margin-bottom:0; flex:1; display:none;">
                                 <label>🛡️ Keterangan Garansi (Otomatis Tampil di Nota ACC)</label>
                                 <select id="stokGaransi" class="form-control" style="background-color:#F0F9FF; border-color:#BAE6FD; font-weight:700; color:#0369A1;">
                                     <option value="TANPA GARANSI (Cek di Tempat)">🚫 TANPA GARANSI (Cek di Tempat)</option>
@@ -10828,6 +10828,7 @@
             const btnEl = document.getElementById('btnSubmitStok');
             if (btnEl) btnEl.innerText = '💾 Simpan Stok Opname & Catat Aset';
             if (window.updateDatalistStokOpname) window.updateDatalistStokOpname();
+            if (window.syncStokGaransiVisibility) window.syncStokGaransiVisibility();
             if (window.renderBelanjaStokQueueUI) window.renderBelanjaStokQueueUI();
             const ov = document.getElementById('modalStokOpnameOverlay');
             if (ov) ov.classList.add('show');
@@ -11540,7 +11541,7 @@
                     modalFinalTabel = Math.round(((sisaLama * modalLama) + (qty * modal)) / (sisaLama + qty));
                 }
                 const jualFinalTabel = jual > 0 ? jual : jualLama;
-                const garansiFinal = garansi || (existingItem && existingItem.garansi ? existingItem.garansi : 'TANPA GARANSI (Cek di Tempat)');
+                const garansiFinal = kat === 'ACC' ? (garansi || (existingItem && existingItem.garansi ? existingItem.garansi : 'TANPA GARANSI (Cek di Tempat)')) : '';
 
                 const newRiwayat = {
                     id: nowTs,
@@ -15981,7 +15982,7 @@
                     if (window.applyKasirExactStokLockUI) window.applyKasirExactStokLockUI();
                     window.hitungCuan();
                     notice.style.display = 'block';
-                    const garansiInfo = (katStok === 'ACC' || matchStok.garansi)
+                    const garansiInfo = (katStok === 'ACC')
                         ? ` • 🛡️ Nota: ${matchStok.garansi || 'TANPA GARANSI (Cek di Tempat)'}`
                         : '';
                     notice.innerText = `🔒 Keterangan identik dengan Stok [${katStok}]. Akun Keluar & Modal dikunci ke ${katStok}${garansiInfo}.`;
@@ -16873,7 +16874,20 @@
             return list.find(i => (i.nama || i.namaBarang || '').trim().toUpperCase() === nm) || null;
         };
 
+        window.syncStokGaransiVisibility = function() {
+            const kat = (document.getElementById('stokKat')?.value || 'VOUCHER').trim().toUpperCase();
+            const isAcc = kat === 'ACC';
+            const isEditMode = Boolean(document.getElementById('editStokId')?.value);
+            const boxGar = document.getElementById('boxStokGaransiInput');
+            const rowGarBtn = document.getElementById('rowStokGaransiAndAddBtn');
+            if (boxGar) boxGar.style.display = isAcc ? 'block' : 'none';
+            if (rowGarBtn) {
+                rowGarBtn.style.display = (!isAcc && isEditMode) ? 'none' : 'flex';
+            }
+        };
+
         window.onStokKatChange = function() {
+            window.syncStokGaransiVisibility();
             window.updateDatalistStokOpname();
             const namaEl = document.getElementById('stokNama');
             if (namaEl && namaEl.value.trim()) {
@@ -16896,6 +16910,7 @@
                 const matchKey = `${matched.id}__${(matched.nama || matched.namaBarang || '').trim().toUpperCase()}`;
                 if (katEl && matched.kat && katEl.value !== matched.kat) {
                     katEl.value = matched.kat;
+                    window.syncStokGaransiVisibility();
                 }
                 if (window._lastAutoFilledStokKey !== matchKey) {
                     window._lastAutoFilledStokKey = matchKey;
@@ -16910,7 +16925,7 @@
                         document.getElementById('stokJualDisplay').value = jualLama.toLocaleString('id-ID');
                     }
                     const garEl = document.getElementById('stokGaransi');
-                    if (garEl && matched.garansi) {
+                    if (garEl && matched.kat === 'ACC' && matched.garansi) {
                         garEl.value = matched.garansi;
                     }
                     const q = parseFloat(document.getElementById('stokQty')?.value) || 0;
@@ -17014,7 +17029,8 @@
             document.getElementById('stokJual').value = jualLama;
             document.getElementById('stokJualDisplay').value = jualLama > 0 ? jualLama.toLocaleString('id-ID') : '';
             const garEl = document.getElementById('stokGaransi');
-            if (garEl) garEl.value = stok.garansi || 'TANPA GARANSI (Cek di Tempat)';
+            if (garEl) garEl.value = (stok.kat === 'ACC' && stok.garansi) ? stok.garansi : 'TANPA GARANSI (Cek di Tempat)';
+            window.syncStokGaransiVisibility();
             document.getElementById('stokTotalDisplay').value = 'Rp0';
             window._lastAutoFilledStokKey = `${stok.id}__${namaBarang}`;
             const titleEl = document.getElementById('formStokTitle');
@@ -17038,7 +17054,7 @@
             const qty = parseFloat(document.getElementById('stokQty')?.value) || 0;
             const modal = parseFloat(document.getElementById('stokModal')?.value) || 0;
             const jual = parseFloat(document.getElementById('stokJual')?.value) || 0;
-            const garansi = (document.getElementById('stokGaransi')?.value || 'TANPA GARANSI (Cek di Tempat)').trim();
+            const garansi = kat === 'ACC' ? (document.getElementById('stokGaransi')?.value || 'TANPA GARANSI (Cek di Tempat)').trim() : '';
 
             if (!nama) {
                 window.showToast("⚠️ Harap isi Nama Barang terlebih dahulu!", "error");
@@ -17113,6 +17129,7 @@
             if (!Array.isArray(window._belanjaStokQueue) || idx < 0 || idx >= window._belanjaStokQueue.length) return;
             const item = window._belanjaStokQueue.splice(idx, 1)[0];
             if (document.getElementById('stokKat')) document.getElementById('stokKat').value = item.kat || 'VOUCHER';
+            window.syncStokGaransiVisibility();
             if (window.updateDatalistStokOpname) window.updateDatalistStokOpname();
             if (document.getElementById('stokNama')) document.getElementById('stokNama').value = item.nama || '';
             if (document.getElementById('stokQty')) document.getElementById('stokQty').value = item.qty || '';
@@ -17120,7 +17137,7 @@
             if (document.getElementById('stokModalDisplay')) document.getElementById('stokModalDisplay').value = item.modal > 0 ? Number(item.modal).toLocaleString('id-ID') : '';
             if (document.getElementById('stokJual')) document.getElementById('stokJual').value = item.jual || 0;
             if (document.getElementById('stokJualDisplay')) document.getElementById('stokJualDisplay').value = item.jual > 0 ? Number(item.jual).toLocaleString('id-ID') : '';
-            if (document.getElementById('stokGaransi')) document.getElementById('stokGaransi').value = item.garansi || 'TANPA GARANSI (Cek di Tempat)';
+            if (document.getElementById('stokGaransi')) document.getElementById('stokGaransi').value = (item.kat === 'ACC' && item.garansi) ? item.garansi : 'TANPA GARANSI (Cek di Tempat)';
             window.hitungTotalStokOpname();
             document.getElementById('stokQty')?.focus();
         };
@@ -17238,7 +17255,7 @@
             const qty = parseFloat(document.getElementById('stokQty').value) || 0;
             const modal = parseFloat(document.getElementById('stokModal').value) || 0;
             const jual = parseFloat(document.getElementById('stokJual').value) || 0;
-            const garansi = (document.getElementById('stokGaransi')?.value || 'TANPA GARANSI (Cek di Tempat)').trim();
+            const garansi = kat === 'ACC' ? (document.getElementById('stokGaransi')?.value || 'TANPA GARANSI (Cek di Tempat)').trim() : '';
             
             const sumberKasSelect = document.getElementById('stokSumberKas');
             const sumberKas = sumberKasSelect ? sumberKasSelect.value : "TIDAK POTONG SALDO";
@@ -17431,7 +17448,7 @@
                     const eQty = Number(entry.qty || 0);
                     const eModal = Number(entry.modal || 0);
                     const eJual = Number(entry.jual || 0);
-                    const eGaransi = entry.garansi || 'TANPA GARANSI (Cek di Tempat)';
+                    const eGaransi = eKat === 'ACC' ? (entry.garansi || 'TANPA GARANSI (Cek di Tempat)') : '';
                     const eTotalNilai = Math.round(eQty * eModal);
 
                     batchTotalPcs += eQty;
@@ -17452,7 +17469,7 @@
                         isAveraged = true;
                     }
                     const jualFinalTabel = eJual > 0 ? eJual : jualLama;
-                    const garansiFinal = eGaransi || (item && item.garansi ? item.garansi : 'TANPA GARANSI (Cek di Tempat)');
+                    const garansiFinal = eKat === 'ACC' ? (eGaransi || (item && item.garansi ? item.garansi : 'TANPA GARANSI (Cek di Tempat)')) : '';
 
                     const newRiwayat = {
                         id: itemTs,
@@ -17696,7 +17713,8 @@
             document.getElementById('stokJualDisplay').value = Number(stok.jual || 0) > 0 ? Number(stok.jual).toLocaleString('id-ID') : '';
 
             const garEl = document.getElementById('stokGaransi');
-            if (garEl) garEl.value = stok.garansi || 'TANPA GARANSI (Cek di Tempat)';
+            if (garEl) garEl.value = (stok.kat === 'ACC' && stok.garansi) ? stok.garansi : 'TANPA GARANSI (Cek di Tempat)';
+            if (window.syncStokGaransiVisibility) window.syncStokGaransiVisibility();
 
             const sumberSelect = document.getElementById('stokSumberKas');
             if (sumberSelect) {
@@ -22030,7 +22048,10 @@
                     filteredPcsTotal += Math.max(0, sisa);
                     const namaItem = s.nama || s.namaBarang || '-';
                     const katBadgeColor = s.kat === 'ACC' ? 'background:#FEF3C7; color:#B45309; border:1px solid #FDE68A;' : (s.kat === 'SP' ? 'background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0;' : 'background:#E0F2FE; color:#0284C7; border:1px solid #BAE6FD;');
-                    const garText = s.garansi || (s.kat === 'ACC' ? 'TANPA GARANSI (Cek di Tempat)' : '');
+                    if (s.kat !== 'ACC' && s.garansi) {
+                        s.garansi = '';
+                    }
+                    const garText = s.kat === 'ACC' ? (s.garansi || 'TANPA GARANSI (Cek di Tempat)') : '';
                     const isNoGarStok = garText.toUpperCase().includes('TANPA');
                     const garBadgeHtml = garText
                         ? `<div style="margin-top:2px;"><span style="display:inline-block; font-size:9px; font-weight:700; padding:1px 6px; border-radius:4px; ${isNoGarStok ? 'background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1;' : 'background:#ECFDF5; color:#047857; border:1px solid #A7F3D0;'}">${isNoGarStok ? '🚫 ' : '🛡️ '}${garText}</span></div>`
