@@ -55,32 +55,177 @@
         }
 
         /* ==========================================================================
-           TEMA NUANSA PUTIH BERSIH (MINIMALIS, SERAGAM & BERSIH ALA LEMBAR KERJA)
-           - Dominan Putih Asli (#FFFFFF) pada Header, Kartu, Tabel & Tombol
-           - Latar Belakang Dasar Putih Bersih (#F8FAFC) & Tabel/Kartu Utama Putih (#FFFFFF)
-           - Ikon, 8 Kartu KPI, Menu, Header & Bar Bawah TETAP BERWARNA seperti Tema Hijau
+           TEMA NUANSA PUTIH BERSIH (OPSI 3: HEADER BIRU NAVY/INDIGO LEMBUT + KONTEN PUTIH BERSIH)
+           1. Background bawaan Hijau Soft tipis (#ECFDF5) seperti tema Hijau Emerald
+           2. Hanya Header Atas Utama yang Biru Navy/Indigo Lembut (#1E3A8A - #3B82F6) bertuliskan Putih
+           3. 8 Kartu Informasi (KPI) Warna-Warni Soft Pastel dengan tulisan Hitam Pekat
+           4. Judul Tabel/Kartu di Tengah, Bar Saldo & Navigasi Bawah Semuanya Putih Bersih (#FFFFFF)
            ========================================================================== */
         body.theme-cream {
             --primary: #059669;
             --primary-dark: #047857;
             --primary-light: #ECFDF5;
             --accent: #10B981;
-            --bg: #F8FAFC;
+            --bg: #ECFDF5;
             --card: #FFFFFF;
             --text: #0F172A;
             --debit: #DC2626;
             --kredit: #16A34A;
             --border: #CBD5E1;
-            background-color: #F8FAFC !important;
+            background-color: #ECFDF5 !important;
+        }
+        body.theme-cream .sticky-top-container {
+            background-color: #ECFDF5 !important;
         }
 
-        /* Kartu & Kontainer Utama Putih Bersih, sedangkan Header, 8 Kartu KPI, Ikon, Menu & Bar Bawah Tetap Berwarna */
+        /* 2. Hanya Header Utama Atas yang Biru Navy / Indigo Lembut dengan Tulisan Putih */
+        body.theme-cream header {
+            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 55%, #3B82F6 100%) !important;
+            color: #FFFFFF !important;
+            border-bottom: 2px solid #93C5FD !important;
+            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.18) !important;
+        }
+        body.theme-cream .header-title h1 {
+            color: #FFFFFF !important;
+        }
+        body.theme-cream .btn-icon-hdr {
+            background: rgba(255, 255, 255, 0.18) !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important;
+        }
+        body.theme-cream .btn-icon-hdr:hover {
+            background: rgba(255, 255, 255, 0.28) !important;
+        }
+        body.theme-cream .header-status-bar {
+            background: rgba(255, 255, 255, 0.14) !important;
+            border: 1px solid rgba(255, 255, 255, 0.24) !important;
+            color: #FFFFFF !important;
+        }
+        body.theme-cream .status-marquee-box {
+            background: rgba(15, 23, 42, 0.25) !important;
+            border-color: rgba(255, 255, 255, 0.28) !important;
+        }
+        body.theme-cream .hdr-clock-stacked .hdr-clock-date {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        body.theme-cream .hdr-clock-stacked .hdr-clock-time {
+            color: #FFFFFF !important;
+        }
+
+        /* 3. Informasi 8 Kartu KPI Warna-Warni Soft Pastel dengan Tulisan Hitam & Ikon Solid */
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card {
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card::after {
+            background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .lbl {
+            color: #1E293B !important;
+            text-shadow: none !important;
+            font-weight: 800 !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .val,
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card .val span {
+            color: #0F172A !important;
+            text-shadow: none !important;
+            font-weight: 900 !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .kpi-icon-box {
+            border: none !important;
+            color: #FFFFFF !important;
+            border-radius: 9px !important;
+        }
+        /* Palet Pastel Soft 8 Kartu KPI */
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c1 {
+            background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%) !important;
+            border: 1.5px solid #A7F3D0 !important;
+            border-top: 3px solid #10B981 !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c1 .kpi-icon-box {
+            background: #10B981 !important;
+            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.28) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c2 {
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%) !important;
+            border: 1.5px solid #BFDBFE !important;
+            border-top: 3px solid #2563EB !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c2 .kpi-icon-box {
+            background: #2563EB !important;
+            box-shadow: 0 3px 8px rgba(37, 99, 235, 0.26) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c3 {
+            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%) !important;
+            border: 1.5px solid #FDE68A !important;
+            border-top: 3px solid #F59E0B !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c3 .kpi-icon-box {
+            background: #F59E0B !important;
+            box-shadow: 0 3px 8px rgba(245, 158, 11, 0.28) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c4 {
+            background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%) !important;
+            border: 1.5px solid #DDD6FE !important;
+            border-top: 3px solid #7C3AED !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c4 .kpi-icon-box {
+            background: #7C3AED !important;
+            box-shadow: 0 3px 8px rgba(124, 58, 237, 0.26) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c5 {
+            background: linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%) !important;
+            border: 1.5px solid #A5F3FC !important;
+            border-top: 3px solid #0891B2 !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c5 .kpi-icon-box {
+            background: #0891B2 !important;
+            box-shadow: 0 3px 8px rgba(8, 145, 178, 0.26) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c6 {
+            background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%) !important;
+            border: 1.5px solid #99F6E4 !important;
+            border-top: 3px solid #0D9488 !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c6 .kpi-icon-box {
+            background: #0D9488 !important;
+            box-shadow: 0 3px 8px rgba(13, 148, 136, 0.26) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c7 {
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%) !important;
+            border: 1.5px solid #C7D2FE !important;
+            border-top: 3px solid #4F46E5 !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c7 .kpi-icon-box {
+            background: #4F46E5 !important;
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.26) !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c8 {
+            background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%) !important;
+            border: 1.5px solid #FECDD3 !important;
+            border-top: 3px solid #E11D48 !important;
+        }
+        body.theme-cream .top-kpi-wrapper.kpi-mode-modern .summary-card.kpi-c8 .kpi-icon-box {
+            background: #E11D48 !important;
+            box-shadow: 0 3px 8px rgba(225, 29, 72, 0.26) !important;
+        }
+
+        /* Kartu ringkasan di tab lain (Stok Opname, dll.) juga bertuliskan hitam tegas */
+        body.theme-cream .summary-card .lbl {
+            color: #1E293B !important;
+            font-weight: 800 !important;
+        }
+        body.theme-cream .summary-card .val {
+            color: #0F172A !important;
+            font-weight: 900 !important;
+        }
+
+        /* 4. Tengah & Bawah (Bar Saldo, Judul Kartu/Tabel, Tabel, Navigasi Bawah) Semuanya Putih Bersih Tanpa Balok Gelap */
         body.theme-cream .saldo-banner-bar {
             background: #FFFFFF !important;
             border: 1.5px solid #CBD5E1 !important;
             border-left: 4px solid #059669 !important;
-            border-right: 4px solid #0284C7 !important;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05) !important;
+            border-right: 4px solid #2563EB !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
         }
         body.theme-cream .saldo-banner-center {
             background: #F8FAFC !important;
@@ -88,16 +233,18 @@
         }
         body.theme-cream .saldo-banner-title {
             color: #047857 !important;
+            font-weight: 800 !important;
         }
         body.theme-cream .saldo-banner-val {
             color: #0F172A !important;
+            font-weight: 900 !important;
         }
 
-        /* Kartu & Header Bagian */
+        /* Kartu & Header Bagian Tengah Putih Bersih / Mint Soft (Tidak Hitam) */
         body.theme-cream .card {
             background: #FFFFFF !important;
             border: 1px solid #CBD5E1 !important;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03) !important;
         }
         body.theme-cream .card-header,
         body.theme-cream .sidebar-section-hdr {
@@ -203,6 +350,7 @@
             color: #B91C1C !important;
             font-weight: 700 !important;
         }
+        /* Bar Navigasi Bawah & Sub-Nav Putih Bersih Ringan */
         body.theme-cream .bottom-nav {
             background: rgba(255, 255, 255, 0.96) !important;
             border: 1.5px solid #A7F3D0 !important;
