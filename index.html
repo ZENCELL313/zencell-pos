@@ -2650,6 +2650,12 @@
         body.theme-dark .row-piutang-lunas-today {
             background-color: rgba(22, 163, 74, 0.15);
         }
+        .row-service-cancel-today {
+            background-color: rgba(239, 68, 68, 0.06);
+        }
+        body.theme-dark .row-service-cancel-today {
+            background-color: rgba(239, 68, 68, 0.14);
+        }
         .piutang-aksi-wrap {
             display: inline-flex;
             align-items: center;
@@ -5835,15 +5841,16 @@
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <span>🛠️ REKAPAN SERVICE HP (SEDANG PENGERJAAN & LUNAS HARI INI)</span>
+                    <span>🛠️ REKAPAN SERVICE HP (SEDANG PENGERJAAN & HARI INI)</span>
                     <span id="badgeServiceCountInfo" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Sedang Pengerjaan</span>
                     <span id="badgeServiceLunasTodayInfo" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; display:none;">0 Lunas Hari Ini</span>
+                    <span id="badgeServiceCancelTodayInfo" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; display:none;">0 Cancel Hari Ini</span>
                 </div>
                 <button class="btn" style="width:auto; padding:6px 14px; font-size:11.5px; background:#0284C7;" onclick="openModalTiketServis()">+ Buat Tiket Servis Baru</button>
             </div>
 
             <div style="font-size:10.5px; color:#64748B; margin-bottom:8px; padding:0 2px;">
-                💡 <i>Servis yang dilunasi <b>hari ini</b> otomatis ditaruh di <b>bagian bawah tabel ini (warna hijau)</b> selama 1 hari agar mudah dicek & cetak nota. Setelah <b>lewat hari (besoknya)</b>, data yang sudah lunas otomatis pindah ke tabel <b>Rekapan Service Lunas (Arsip Lewat Hari)</b> di bawah.</i>
+                💡 <i>Servis yang <b>Lunas</b> atau <b>Cancel</b> <b>hari ini</b> otomatis ditaruh di <b>bagian bawah tabel ini</b> selama 1 hari agar mudah dicek &amp; cetak nota. Setelah <b>lewat hari (besoknya)</b>, data otomatis pindah ke <b>Rekapan Service Lunas</b> atau <b>Rekapan Service Cancel</b> di bawah.</i>
             </div>
 
             <div class="filter-container" style="justify-content:space-between;">
@@ -5858,12 +5865,12 @@
                     <input type="month" id="tiketMonthPicker" class="date-picker-input" style="display:none;" onchange="renderAll()">
 
                     <select id="tiketFilterStatus" class="date-picker-input" onchange="renderAll()">
-                        <option value="">-- Semua Status (Aktif & Hari Ini) --</option>
+                        <option value="">-- Semua Status (Aktif &amp; Hari Ini) --</option>
                         <option value="MENUNGGU KONFIRMASI">MENUNGGU KONFIRMASI</option>
                         <option value="PROSES">PROSES (DIKERJAKAN)</option>
                         <option value="SIAP DIAMBIL">SIAP DIAMBIL (BERES TEKNISI)</option>
                         <option value="SELESAI_SISTEM">✅ LUNAS HARI INI (SUDAH DIBAYAR)</option>
-                        <option value="CANCEL">CANCEL</option>
+                        <option value="CANCEL">❌ CANCEL HARI INI</option>
                     </select>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -5876,10 +5883,10 @@
                     <thead>
                         <tr>
                             <th>NO. TIKET</th>
-                            <th>WAKTU & TGL</th>
-                            <th>PELANGGAN & HP</th>
-                            <th>KELUHAN & UNIT</th>
-                            <th>SPAREPART & MODAL</th>
+                            <th>WAKTU &amp; TGL</th>
+                            <th>PELANGGAN &amp; HP</th>
+                            <th>KELUHAN &amp; UNIT</th>
+                            <th>SPAREPART &amp; MODAL</th>
                             <th>DP (INFO)</th>
                             <th>BIAYA SERVIS</th>
                             <th>STATUS</th>
@@ -5891,40 +5898,99 @@
             </div>
         </div>
 
+        <!-- ARSIP LEWAT HARI 1: REKAPAN SERVICE LUNAS / SUKSES (DEFAULT DISEMBUNYIKAN) -->
         <div class="card" style="margin-top:12px; border-top:3px solid #16A34A;">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(22, 163, 74, 0.1); color:#15803D;">
+            <div class="card-header" onclick="toggleRekapanServiceArsip('LUNAS')" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(22, 163, 74, 0.1); color:#15803D; cursor:pointer; user-select:none; margin-bottom:0; border-radius:8px; padding:10px 12px;" title="Klik untuk menampilkan atau menyembunyikan Rekapan Service Lunas Lewat Hari">
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <span>✅ REKAPAN SERVICE LUNAS / SELESAI (ARSIP LEWAT HARI)</span>
                     <span id="badgeServiceArsipCount" style="background:#FFFFFF; color:#15803D; border:1px solid #86EFAC; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Data Lunas</span>
                 </div>
-                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <select id="tiketArsipFilterMode" class="date-picker-input" onchange="toggleFilterTiketArsipDate(this.value)" style="font-size:11px; padding:4px 8px;">
-                        <option value="ALL" selected>📅 Semua Tanggal Lunas</option>
-                        <option value="DAILY">📆 Per Hari Lunas</option>
-                        <option value="MONTHLY">🗓️ Per Bulan Lunas</option>
-                    </select>
-                    <input type="date" id="tiketArsipDatePicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
-                    <input type="month" id="tiketArsipMonthPicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
-                    <input type="text" id="tiketArsipSearchInput" class="form-control" placeholder="🔍 Cari arsip service lunas..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="width:185px; padding:4px 9px; font-size:11px; height:28px;">
+                <button type="button" id="btnToggleRekapanServiceLunas" onclick="event.stopPropagation(); toggleRekapanServiceArsip('LUNAS')" style="background:#16A34A; color:#FFFFFF; border:none; padding:5px 12px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
+                    👁️ Tampilkan Rekapan
+                </button>
+            </div>
+            <div id="wrapBodyRekapanServiceLunasArsip" style="display:none; margin-top:10px;">
+                <div class="filter-container" style="justify-content:space-between; margin-bottom:8px;">
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <span style="font-size:11px; font-weight:800; color:#15803D;">🔍 FILTER ARSIP LUNAS:</span>
+                        <select id="tiketArsipFilterMode" class="date-picker-input" onchange="toggleFilterTiketArsipDate(this.value)" style="font-size:11px; padding:4px 8px;">
+                            <option value="ALL" selected>📅 Semua Tanggal Lunas</option>
+                            <option value="DAILY">📆 Per Hari Lunas</option>
+                            <option value="MONTHLY">🗓️ Per Bulan Lunas</option>
+                        </select>
+                        <input type="date" id="tiketArsipDatePicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                        <input type="month" id="tiketArsipMonthPicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <input type="text" id="tiketArsipSearchInput" class="form-control" placeholder="🔍 Cari arsip service lunas..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="width:200px; padding:4px 9px; font-size:11px; height:28px;">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-service">
+                        <thead>
+                            <tr>
+                                <th>NO. TIKET</th>
+                                <th>TGL MASUK</th>
+                                <th>PELANGGAN &amp; HP</th>
+                                <th>KELUHAN &amp; UNIT</th>
+                                <th>SPAREPART &amp; MODAL</th>
+                                <th>DP (INFO)</th>
+                                <th>TOTAL BIAYA</th>
+                                <th>TGL LUNAS</th>
+                                <th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyTiketServisLunasArsip"></tbody>
+                    </table>
                 </div>
             </div>
-            <div class="table-responsive">
-                <table class="table-service">
-                    <thead>
-                        <tr>
-                            <th>NO. TIKET</th>
-                            <th>TGL MASUK</th>
-                            <th>PELANGGAN & HP</th>
-                            <th>KELUHAN & UNIT</th>
-                            <th>SPAREPART & MODAL</th>
-                            <th>DP (INFO)</th>
-                            <th>TOTAL BIAYA</th>
-                            <th>TGL LUNAS</th>
-                            <th>AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bodyTiketServisLunasArsip"></tbody>
-                </table>
+        </div>
+
+        <!-- ARSIP LEWAT HARI 2: REKAPAN SERVICE CANCEL (DEFAULT DISEMBUNYIKAN) -->
+        <div class="card" style="margin-top:10px; border-top:3px solid #EF4444;">
+            <div class="card-header" onclick="toggleRekapanServiceArsip('CANCEL')" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(239, 68, 68, 0.08); color:#B91C1C; cursor:pointer; user-select:none; margin-bottom:0; border-radius:8px; padding:10px 12px;" title="Klik untuk menampilkan atau menyembunyikan Rekapan Service Cancel Lewat Hari">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span>❌ REKAPAN SERVICE CANCEL (ARSIP LEWAT HARI)</span>
+                    <span id="badgeServiceCancelArsipCount" style="background:#FFFFFF; color:#DC2626; border:1px solid #FCA5A5; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">0 Data Cancel</span>
+                </div>
+                <button type="button" id="btnToggleRekapanServiceCancel" onclick="event.stopPropagation(); toggleRekapanServiceArsip('CANCEL')" style="background:#DC2626; color:#FFFFFF; border:none; padding:5px 12px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
+                    👁️ Tampilkan Rekapan
+                </button>
+            </div>
+            <div id="wrapBodyRekapanServiceCancelArsip" style="display:none; margin-top:10px;">
+                <div class="filter-container" style="justify-content:space-between; margin-bottom:8px;">
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <span style="font-size:11px; font-weight:800; color:#B91C1C;">🔍 FILTER ARSIP CANCEL:</span>
+                        <select id="tiketCancelArsipFilterMode" class="date-picker-input" onchange="toggleFilterTiketCancelArsipDate(this.value)" style="font-size:11px; padding:4px 8px;">
+                            <option value="ALL" selected>📅 Semua Tanggal Cancel</option>
+                            <option value="DAILY">📆 Per Hari Cancel</option>
+                            <option value="MONTHLY">🗓️ Per Bulan Cancel</option>
+                        </select>
+                        <input type="date" id="tiketCancelArsipDatePicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                        <input type="month" id="tiketCancelArsipMonthPicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <input type="text" id="tiketCancelArsipSearchInput" class="form-control" placeholder="🔍 Cari arsip service cancel..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="width:200px; padding:4px 9px; font-size:11px; height:28px;">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-service">
+                        <thead>
+                            <tr>
+                                <th>NO. TIKET</th>
+                                <th>TGL MASUK</th>
+                                <th>PELANGGAN &amp; HP</th>
+                                <th>KELUHAN &amp; UNIT</th>
+                                <th>SPAREPART &amp; MODAL</th>
+                                <th>DP (INFO)</th>
+                                <th>EST. BIAYA</th>
+                                <th>STATUS &amp; TGL CANCEL</th>
+                                <th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyTiketServisCancelArsip"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -12250,6 +12316,13 @@
             const t = window.tiketServisList.find(item => item.id === id);
             if (t) {
                 t.status = statusBaru;
+                if (statusBaru === 'CANCEL') {
+                    t.tglCancel = window.getTodayIso();
+                    t.waktuCancel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    t.tglCancel = '';
+                    t.waktuCancel = '';
+                }
                 t.updatedAt = window.getNextUniqueTs();
                 window.markLocalEntityEdited('tiketServis', t);
                 window.catatLogAktivitas('STATUS TIKET', `Mengubah status tiket ${t.noServis} (${t.nama}) menjadi ${statusBaru}`);
@@ -14923,6 +14996,25 @@
             if (dEl) dEl.style.display = mode === 'DAILY' ? 'inline-block' : 'none';
             if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
             window.renderAll();
+        }
+        window.toggleFilterTiketCancelArsipDate = function(mode) {
+            const dEl = document.getElementById('tiketCancelArsipDatePicker');
+            const mEl = document.getElementById('tiketCancelArsipMonthPicker');
+            if (dEl) dEl.style.display = mode === 'DAILY' ? 'inline-block' : 'none';
+            if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            window.renderAll();
+        }
+        window.toggleRekapanServiceArsip = function(type) {
+            const isCancel = type === 'CANCEL';
+            const wrapEl = document.getElementById(isCancel ? 'wrapBodyRekapanServiceCancelArsip' : 'wrapBodyRekapanServiceLunasArsip');
+            const btnEl = document.getElementById(isCancel ? 'btnToggleRekapanServiceCancel' : 'btnToggleRekapanServiceLunas');
+            if (!wrapEl) return;
+            const isHidden = wrapEl.style.display === 'none' || !wrapEl.style.display;
+            wrapEl.style.display = isHidden ? 'block' : 'none';
+            if (btnEl) {
+                btnEl.innerHTML = isHidden ? '🔼 Sembunyikan Rekapan' : '👁️ Tampilkan Rekapan';
+                btnEl.style.background = isHidden ? '#475569' : (isCancel ? '#DC2626' : '#16A34A');
+            }
         }
         window.toggleFilterServiceDate = function(mode) {
             document.getElementById('serviceDatePicker').style.display = mode === 'DAILY' ? 'inline-block' : 'none';
@@ -21302,6 +21394,8 @@
                     t.isSettledInKasir = true;
                     t.status = pakaiModal ? 'SELESAI & LUNAS' : 'SELESAI';
                     if (pakaiModal) t.statusPart = 'SELESAI & LUNAS';
+                    t.tglCancel = '';
+                    t.waktuCancel = '';
                     const latestTglLunas = matchedTrxList.reduce((maxTgl, trx) => (trx.isoDate && trx.isoDate > maxTgl ? trx.isoDate : maxTgl), '');
                     const latestTrx = matchedTrxList[0];
                     t.tglLunas = latestTglLunas || t.tglLunas || t.isoDate || '';
@@ -21322,24 +21416,33 @@
             const todayIsoServis = window.getTodayIso();
             let listTiketUtama = [];
             let listTiketArsipLunas = [];
+            let listTiketArsipCancel = [];
             let countServisProses = 0;
             let countServisLunasHariIni = 0;
+            let countServisCancelHariIni = 0;
 
             (window.tiketServisList || []).forEach(t => {
                 const isLunas = Boolean(t.isSettledInKasir);
                 const tglLunasT = t.tglLunas || t.isoDate || '';
                 const isLunasLewatHari = isLunas && (tglLunasT !== todayIsoServis);
 
+                const isCancel = !isLunas && t.status === 'CANCEL';
+                const tglCancelT = t.tglCancel || t.isoDate || '';
+                const isCancelLewatHari = isCancel && (tglCancelT !== todayIsoServis);
+
                 if (isLunasLewatHari) {
                     listTiketArsipLunas.push(t);
+                } else if (isCancelLewatHari) {
+                    listTiketArsipCancel.push(t);
                 } else {
                     if (isLunas) countServisLunasHariIni++;
-                    else if (t.status !== 'CANCEL') countServisProses++;
+                    else if (isCancel) countServisCancelHariIni++;
+                    else countServisProses++;
                     listTiketUtama.push(t);
                 }
             });
 
-            // Urutkan tabel utama: SEDANG PENGERJAAN di atas, CANCEL di tengah, LUNAS HARI INI di paling bawah
+            // Urutkan tabel utama: SEDANG PENGERJAAN di atas, CANCEL HARI INI di tengah, LUNAS HARI INI di paling bawah
             listTiketUtama.sort((a, b) => {
                 const prioA = a.isSettledInKasir ? 2 : (a.status === 'CANCEL' ? 1 : 0);
                 const prioB = b.isSettledInKasir ? 2 : (b.status === 'CANCEL' ? 1 : 0);
@@ -21355,6 +21458,14 @@
                 return (b.id || 0) - (a.id || 0);
             });
 
+            // Urutkan arsip cancel lewat hari: dari tanggal cancel terbaru
+            listTiketArsipCancel.sort((a, b) => {
+                const tglA = a.tglCancel || a.isoDate || '';
+                const tglB = b.tglCancel || b.isoDate || '';
+                if (tglA !== tglB) return tglB.localeCompare(tglA);
+                return (b.id || 0) - (a.id || 0);
+            });
+
             const badgeSrvInfo = document.getElementById('badgeServiceCountInfo');
             if (badgeSrvInfo) {
                 badgeSrvInfo.innerText = `${countServisProses} Sedang Pengerjaan`;
@@ -21364,12 +21475,22 @@
                 badgeSrvToday.style.display = countServisLunasHariIni > 0 ? 'inline-block' : 'none';
                 badgeSrvToday.innerText = `${countServisLunasHariIni} Lunas Hari Ini`;
             }
+            const badgeSrvCancelToday = document.getElementById('badgeServiceCancelTodayInfo');
+            if (badgeSrvCancelToday) {
+                badgeSrvCancelToday.style.display = countServisCancelHariIni > 0 ? 'inline-block' : 'none';
+                badgeSrvCancelToday.innerText = `${countServisCancelHariIni} Cancel Hari Ini`;
+            }
             const badgeSrvArsip = document.getElementById('badgeServiceArsipCount');
             if (badgeSrvArsip) {
                 badgeSrvArsip.innerText = `${listTiketArsipLunas.length} Data Lunas`;
             }
+            const badgeSrvCancelArsip = document.getElementById('badgeServiceCancelArsipCount');
+            if (badgeSrvCancelArsip) {
+                badgeSrvCancelArsip.innerText = `${listTiketArsipCancel.length} Data Cancel`;
+            }
 
-            const buildRowTiketServisHtml = (t, isArsipMode) => {
+            const buildRowTiketServisHtml = (t, arsipMode) => {
+                const isArsipMode = Boolean(arsipMode);
                 const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id);
                 const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
                 const modalNom = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
@@ -21413,13 +21534,18 @@
                     }
                 } else {
                     const selColor = t.status === 'SIAP DIAMBIL' ? '#0284C7' : (t.status === 'CANCEL' ? '#EF4444' : (t.status === 'PROSES' ? '#D97706' : 'inherit'));
+                    const cancelInfoSubHtml = t.status === 'CANCEL'
+                        ? (arsipMode === 'CANCEL'
+                            ? `<div style="font-size:8.5px; font-weight:700; color:#B91C1C; margin-top:3px; text-align:center;">📅 Cancel: ${window.formatTanggalDDMMYY(t.tglCancel || tglOnly)}${t.waktuCancel ? ' • ' + t.waktuCancel : ''}</div>`
+                            : `<div style="font-size:8px; font-weight:700; color:#DC2626; margin-top:2px; text-align:center;" title="Dicancel hari ini — Besok otomatis pindah ke tabel Rekapan Service Cancel di bawah">⏳ Cancel Hari Ini${t.waktuCancel ? ' • ' + t.waktuCancel : ''}</div>`)
+                        : '';
                     kolomStatusHtml = `
                         <select class="service-status-select" style="color:${selColor};" onchange="ubahStatusTiket(${t.id}, this.value)" title="Ubah Status Pengerjaan Teknisi">
                             <option value="MENUNGGU KONFIRMASI" ${t.status === 'MENUNGGU KONFIRMASI' ? 'selected' : ''}>⏳ KONFIRMASI</option>
                             <option value="PROSES" ${t.status === 'PROSES' ? 'selected' : ''}>🔧 PROSES</option>
                             <option value="SIAP DIAMBIL" ${t.status === 'SIAP DIAMBIL' ? 'selected' : ''}>✅ SIAP DIAMBIL</option>
                             <option value="CANCEL" ${t.status === 'CANCEL' ? 'selected' : ''}>❌ CANCEL</option>
-                        </select>`;
+                        </select>${cancelInfoSubHtml}`;
                 }
 
                 const biayaFinalNom = (t.isSettledInKasir && Number(t.biayaLunasAktual || 0) > 0) ? Number(t.biayaLunasAktual) : Number(t.estBiaya || 0);
@@ -21455,7 +21581,9 @@
                        </button>`
                     : '';
 
-                const rowClass = (!isArsipMode && t.isSettledInKasir) ? 'row-piutang-lunas-today' : '';
+                const rowClass = (!isArsipMode && t.isSettledInKasir)
+                    ? 'row-piutang-lunas-today'
+                    : ((!isArsipMode && t.status === 'CANCEL') ? 'row-service-cancel-today' : '');
 
                 return `
                     <tr id="row-tiket-${t.id}" class="${rowClass}">
@@ -21483,7 +21611,7 @@
                             ${biayaFinalNom > 0
                                 ? `<div style="color:var(--primary); font-weight:800; font-size:11.5px;">${window.formatRp(biayaFinalNom)}</div>`
                                 : `<span style="display:inline-block; font-size:9.5px; font-weight:800; color:#D97706; background:#FEF3C7; border:1px solid #FCD34D; padding:2px 6px; border-radius:5px;" title="Estimasi biaya belum ditentukan, perlu dicek teknisi terlebih dahulu">🔍 PERLU CEK DULU</span>`}
-                            ${(pakaiModal || t.isSettledInKasir) && biayaFinalNom > 0 ? `<small style="font-size:9px; color:#D97706; font-weight:700; display:block;">Cuan: ${window.formatRp(estCuanSrv)}</small>` : ''}
+                            ${(pakaiModal || t.isSettledInKasir) && biayaFinalNom > 0 && t.status !== 'CANCEL' ? `<small style="font-size:9px; color:#D97706; font-weight:700; display:block;">Cuan: ${window.formatRp(estCuanSrv)}</small>` : ''}
                         </td>
                         <td>${kolomStatusHtml}</td>
                         <td>
@@ -21531,8 +21659,8 @@
 
                 let filteredTiketUtama = listTiketUtama.filter(t => {
                     const itemDate = t.isoDate || '';
-                    if (tMode === 'DAILY' && itemDate !== tDate && t.tglLunas !== tDate) return false;
-                    if (tMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(tMonth)) && (!t.tglLunas || !t.tglLunas.startsWith(tMonth))) return false;
+                    if (tMode === 'DAILY' && itemDate !== tDate && t.tglLunas !== tDate && t.tglCancel !== tDate) return false;
+                    if (tMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(tMonth)) && (!t.tglLunas || !t.tglLunas.startsWith(tMonth)) && (!t.tglCancel || !t.tglCancel.startsWith(tMonth))) return false;
                     if (tStatus) {
                         if (tStatus === 'SELESAI_SISTEM') {
                             if (!t.isSettledInKasir) return false;
@@ -21547,7 +21675,7 @@
                     return true;
                 });
 
-                bTiket.innerHTML = filteredTiketUtama.map(t => buildRowTiketServisHtml(t, false)).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada tiket servis aktif / lunas hari ini yang sesuai filter.</td></tr>`;
+                bTiket.innerHTML = filteredTiketUtama.map(t => buildRowTiketServisHtml(t, false)).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada tiket servis aktif / hari ini yang sesuai filter.</td></tr>`;
             }
 
             const bTiketArsip = document.getElementById('bodyTiketServisLunasArsip');
@@ -21568,7 +21696,28 @@
                     return true;
                 });
 
-                bTiketArsip.innerHTML = filteredTiketArsip.map(t => buildRowTiketServisHtml(t, true)).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada arsip servis lunas lewat hari.</td></tr>`;
+                bTiketArsip.innerHTML = filteredTiketArsip.map(t => buildRowTiketServisHtml(t, 'LUNAS')).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada arsip servis lunas lewat hari.</td></tr>`;
+            }
+
+            const bTiketCancelArsip = document.getElementById('bodyTiketServisCancelArsip');
+            if (bTiketCancelArsip) {
+                const cMode = document.getElementById('tiketCancelArsipFilterMode')?.value || 'ALL';
+                const cDate = document.getElementById('tiketCancelArsipDatePicker')?.value || '';
+                const cMonth = document.getElementById('tiketCancelArsipMonthPicker')?.value || '';
+                const cSearch = (document.getElementById('tiketCancelArsipSearchInput')?.value || '').trim().toUpperCase();
+
+                let filteredTiketCancelArsip = listTiketArsipCancel.filter(t => {
+                    const cancelDate = t.tglCancel || t.isoDate || '';
+                    if (cMode === 'DAILY' && cancelDate !== cDate && t.isoDate !== cDate) return false;
+                    if (cMode === 'MONTHLY' && (!cancelDate || !cancelDate.startsWith(cMonth)) && (!t.isoDate || !t.isoDate.startsWith(cMonth))) return false;
+                    if (cSearch) {
+                        const hay = `${t.noServis || ''} ${t.nama || ''} ${t.noHp || ''} ${t.tipeHp || ''} ${t.keluhan || ''} ${t.namaPart || ''} ${cancelDate}`.toUpperCase();
+                        if (!hay.includes(cSearch)) return false;
+                    }
+                    return true;
+                });
+
+                bTiketCancelArsip.innerHTML = filteredTiketCancelArsip.map(t => buildRowTiketServisHtml(t, 'CANCEL')).join('') || `<tr><td colspan="9" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada arsip servis cancel lewat hari.</td></tr>`;
             }
 
             const fMode = document.getElementById('jurnalFilterMode').value;
