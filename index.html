@@ -8879,11 +8879,13 @@ logoUrl: '',
 printerUkuran: '58mm',
 teksStruk: 'Terima kasih telah berbelanja di ZENCELL!\nBarang yang sudah dibeli tidak dapat ditukar/dikembalikan.',
 teksBerjalan: 'HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER',
-targetModalBerputar: window.ACTIVE_CABANG === '2' ? 0 : 250000000,
+targetModalBerputar: window.ACTIVE_CABANG === '2' ? 45000000 : 250000000,
 modeAuditModal: 'HARIAN',
 offsetCuanKalibrasi: 0
 };
-if (window.pengaturanToko.targetModalBerputar === undefined) window.pengaturanToko.targetModalBerputar = 250000000;
+if (window.pengaturanToko.targetModalBerputar === undefined || (window.ACTIVE_CABANG === '2' && Number(window.pengaturanToko.targetModalBerputar) === 0)) {
+window.pengaturanToko.targetModalBerputar = window.ACTIVE_CABANG === '2' ? 45000000 : 250000000;
+}
 if (!window.pengaturanToko.modeAuditModal) window.pengaturanToko.modeAuditModal = 'HARIAN';
 window.getDefaultBranchKaryawanList = function(targetCabang) {
 const branch = String(targetCabang || window.ACTIVE_CABANG || '1') === '2' ? '2' : '1';
@@ -24157,15 +24159,41 @@ if ((s.isoDate || s.tgl) === todayIso) setoranHariIni += nom;
 const totalHartaAktual = Number(window._lastRealtimeTotalHarta || 0);
 const kasCairAktual = Number(window._lastRealtimeKasCair || 0);
 const p = window.pengaturanToko || {};
-const targetModalPokok = Number(p.targetModalBerputar !== undefined ? p.targetModalBerputar : 250000000);
+const defaultModalCabang = window.ACTIVE_CABANG === '2' ? 45000000 : 250000000;
+const targetModalPokok = Number(p.targetModalBerputar !== undefined && Number(p.targetModalBerputar) > 0 ? p.targetModalBerputar : defaultModalCabang);
 const modeAudit = p.modeAuditModal || 'HARIAN';
 const offsetKalibrasi = Number(p.offsetCuanKalibrasi || 0);
-const sisaProfitHariIni = cuanHariIni - setoranHariIni;
+const stBunga = (typeof window.getSeaBankBungaState === 'function') ? window.getSeaBankBungaState() : ((p && p.seaBankBungaState) || { riwayatBunga: [] });
+let totalBungaSeaBankTercatat = 0;
+let bungaSeaBankHariIni = 0;
+(stBunga.riwayatBunga || []).forEach(b => {
+if (!b || b.modalAdjusted || b.sudahDisetor) return;
+const nomB = Number(b.nominalCair || 0);
+if (nomB > 0) {
+totalBungaSeaBankTercatat += nomB;
+if (b.isoDate === todayIso) bungaSeaBankHariIni += nomB;
+}
+});
+const rawDiffTanpaBunga = totalHartaAktual - (targetModalPokok + cuanHariIni);
+let bungaSeaBankAktif = 0;
+if (modeAudit !== 'AKUMULASI' && rawDiffTanpaBunga > 0 && totalBungaSeaBankTercatat > 0) {
+if (rawDiffTanpaBunga === totalBungaSeaBankTercatat) {
+bungaSeaBankAktif = totalBungaSeaBankTercatat;
+} else if (bungaSeaBankHariIni > 0 && rawDiffTanpaBunga === bungaSeaBankHariIni) {
+bungaSeaBankAktif = bungaSeaBankHariIni;
+} else if (rawDiffTanpaBunga <= totalBungaSeaBankTercatat) {
+bungaSeaBankAktif = rawDiffTanpaBunga;
+} else {
+bungaSeaBankAktif = totalBungaSeaBankTercatat;
+}
+}
+const sisaProfitHariIni = cuanHariIni + bungaSeaBankAktif;
 const sisaProfitAkumulasi = (cuanAllTime - setoranAllTime) - offsetKalibrasi;
 const penambahanProfit = modeAudit === 'AKUMULASI' ? sisaProfitAkumulasi : sisaProfitHariIni;
 const seharusnyaTotalHarta = targetModalPokok + penambahanProfit;
 const selisihAudit = totalHartaAktual - seharusnyaTotalHarta;
-const jatahProfitSiapSetor = Math.max(0, totalHartaAktual - targetModalPokok);
+const kelebihanDiluarCuanHariIni = Math.max(0, totalHartaAktual - (targetModalPokok + cuanHariIni));
+const jatahProfitSiapSetor = kelebihanDiluarCuanHariIni > 0 ? kelebihanDiluarCuanHariIni : Math.max(0, totalHartaAktual - targetModalPokok);
 return {
 todayIso,
 totalHartaAktual,
@@ -24173,6 +24201,9 @@ kasCairAktual,
 targetModalPokok,
 modeAudit,
 cuanHariIni,
+bungaSeaBankAktif,
+bungaSeaBankHariIni,
+totalBungaSeaBankTercatat,
 setoranHariIni,
 sisaProfitHariIni,
 cuanAllTime,
@@ -24181,6 +24212,7 @@ sisaProfitAkumulasi,
 penambahanProfit,
 seharusnyaTotalHarta,
 selisihAudit,
+kelebihanDiluarCuanHariIni,
 jatahProfitSiapSetor
 };
 };
@@ -24231,7 +24263,9 @@ if (elSubProfit) {
 if (info.modeAudit === 'AKUMULASI') {
 elSubProfit.innerText = `Total Cuan Belum Disetor Sejak Kalibrasi`;
 } else {
-elSubProfit.innerText = `Cuan Hari Ini: ${window.formatRp(info.cuanHariIni)} • Setor: ${window.formatRp(info.setoranHariIni)}`;
+const bungaInfoTxt = info.bungaSeaBankAktif > 0 ? ` • Bunga SeaBank: +${window.formatRp(info.bungaSeaBankAktif)}` : '';
+const setorInfoTxt = info.setoranHariIni > 0 ? ` • Setor Kemarin: ${window.formatRp(info.setoranHariIni)}` : '';
+elSubProfit.innerText = `Cuan Hari Ini: ${window.formatRp(info.cuanHariIni)}${bungaInfoTxt}${setorInfoTxt}`;
 }
 }
 const elSeharusnya = document.getElementById('lblAuditSeharusnyaHarta');
@@ -24865,19 +24899,23 @@ body.innerHTML = `
                         <span>2. Keuntungan (Cuan) Hari Ini</span>
                         <b style="color:#16A34A;">+${window.formatRp(info.cuanHariIni)}</b>
                     </div>
-                    ${info.setoranHariIni > 0 ? `
-                    <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #E2E8F0; color:#DC2626;">
-                        <span>3. Setoran Profit yang Diambil Owner</span>
-                        <b>-${window.formatRp(info.setoranHariIni)}</b>
+                    ${info.bungaSeaBankAktif > 0 ? `
+                    <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #E2E8F0; color:#0284C7;">
+                        <span>3. Bunga SeaBank Tercatat di Saldo</span>
+                        <b>+${window.formatRp(info.bungaSeaBankAktif)}</b>
                     </div>` : ''}
                     <div style="display:flex; justify-content:space-between; padding:5px 6px; background:#FEF3C7; margin:6px -6px; border-radius:6px; font-weight:800; color:#92400E;">
-                        <span>4. Seharusnya (Patokan Modal + Sisa Cuan)</span>
+                        <span>${info.bungaSeaBankAktif > 0 ? '4' : '3'}. Seharusnya (Patokan Modal + Cuan Hari Ini)</span>
                         <span>${window.formatRp(info.seharusnyaTotalHarta)}</span>
                     </div>
+                    ${info.setoranHariIni > 0 ? `
+                    <div style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; border-radius:6px; padding:5px 8px; margin-top:4px; font-size:10px; font-weight:700; line-height:1.4;">
+                        ℹ️ <b>Setoran Profit Tercatat Hari Ini: ${window.formatRp(info.setoranHariIni)}</b> — Setoran profit sebelumnya sudah otomatis memotong Saldo Kas/Laci ke patokan Modal Pokok, sehingga tidak mengurangi patokan Modal + Cuan Hari Ini.
+                    </div>` : ''}
 
                     <div style="margin-top:10px; padding-top:6px; border-top:1px dashed #CBD5E1;">
                         <div style="display:flex; justify-content:space-between; font-weight:900; color:#047857; margin-bottom:4px;">
-                            <span>5. Total Harta Riil Konter Saat Ini</span>
+                            <span>${info.bungaSeaBankAktif > 0 ? '5' : '4'}. Total Harta Riil Konter Saat Ini</span>
                             <span>${window.formatRp(info.totalHartaAktual)}</span>
                         </div>
                         <div style="font-size:10px; color:#64748B; padding-left:10px; line-height:1.5;">
@@ -24895,14 +24933,19 @@ body.innerHTML = `
 
                 <!-- SOLUSI 1-KLIK -->
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    ${(!isPas && info.selisihAudit > 0 && info.setoranHariIni > 0) ? `
+                    <button type="button" class="btn" style="flex:1; min-width:220px; background:#059669; font-weight:800; font-size:11px; padding:9px 12px;" onclick="window.genapkanSetoranHariIniAgarPasModal()">
+                        💸 Genapkan Setoran Hari Ini (+${window.formatRp(info.selisihAudit)}: ${window.formatRp(info.setoranHariIni)} ➔ ${window.formatRp(info.setoranHariIni + info.selisihAudit)}) Agar PAS Rp 0
+                    </button>
+                    ` : ''}
                     ${!isPas ? `
                     <button type="button" class="btn" style="flex:1; min-width:210px; background:#7C3AED; font-weight:800; font-size:11.5px; padding:9px 12px;" onclick="window.paskanSelisihAuditKeLaciOtomatis()">
                         ⚖️ Pas-kan via Koreksi LACI (${info.selisihAudit > 0 ? '-' : '+'}${window.formatRp(Math.abs(info.selisihAudit))}) Agar Pas ${window.formatCompactRp ? window.formatCompactRp(info.targetModalPokok) : 'Modal'} + Cuan
                     </button>
                     ` : ''}
-                    ${info.targetModalPokok !== 250000000 ? `
+                    ${info.targetModalPokok !== (window.ACTIVE_CABANG === '2' ? 45000000 : 250000000) ? `
                     <button type="button" class="btn" style="flex:1; min-width:190px; background:#0284C7; font-weight:800; font-size:11.5px; padding:9px 12px;" onclick="window.kunciModalPokok250Juta()">
-                        🔒 Kembalikan Patokan ke Rp250.000.000
+                        🔒 Kembalikan Patokan ke ${window.ACTIVE_CABANG === '2' ? 'Rp45.000.000' : 'Rp250.000.000'}
                     </button>
                     ` : ''}
                     <button type="button" class="btn" style="background:#64748B; width:auto; padding:9px 16px; font-size:11.5px;" onclick="window.closeModalBedahAuditModal()">
@@ -24916,17 +24959,54 @@ window.closeModalBedahAuditModal = function() {
 const modal = document.getElementById('modalBedahAuditOverlay');
 if (modal) modal.classList.remove('show');
 };
+window.genapkanSetoranHariIniAgarPasModal = function() {
+if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi('Genapkan Setoran Profit Hari Ini Agar Pas Modal')) {
+return;
+}
+const info = window.hitungRingkasanProfitDanHarta();
+const selisih = Number(info.selisihAudit || 0);
+if (selisih <= 0) {
+window.showToast('✅ Tidak ada sisa kelebihan saldo untuk ditambahkan ke setoran!', 'warn');
+return;
+}
+const todayIso = window.getTodayIso();
+const targetSetoran = (window.setoranOwnerList || []).find(s => s && (s.isoDate || s.tgl) === todayIso);
+if (!targetSetoran) {
+window.showToast('⚠️ Tidak ditemukan catatan Setoran Profit hari ini!', 'warn');
+return;
+}
+const oldNom = Number(targetSetoran.nominal || 0);
+const newNom = oldNom + selisih;
+const nowTs = window.getNextUniqueTs ? window.getNextUniqueTs() : Date.now();
+targetSetoran.nominal = newNom;
+targetSetoran.updatedAt = nowTs;
+window.markLocalEntityEdited('setoran', targetSetoran);
+const stBunga = (typeof window.getSeaBankBungaState === 'function') ? window.getSeaBankBungaState() : null;
+if (stBunga && Array.isArray(stBunga.riwayatBunga)) {
+stBunga.riwayatBunga.forEach(b => { if (b) b.sudahDisetor = true; });
+}
+window.catatLogAktivitas('EDIT SETORAN PROFIT', `Menggenapkan setoran profit hari ini dari ${window.formatRp(oldNom)} menjadi ${window.formatRp(newNom)} (+${window.formatRp(selisih)}) dari ${targetSetoran.sumber} agar Total Saldo PAS dengan Modal ${window.formatRp(info.targetModalPokok)} + Cuan Hari Ini`);
+window.saveMultipleFirebaseNodes({
+setoran: window.setoranOwnerList,
+pengaturan: window.pengaturanToko
+}, false);
+window.renderAll();
+window.closeModalBedahAuditModal();
+window.showToast(`✅ Setoran Profit hari ini digenapkan menjadi ${window.formatRp(newNom)}. Status Audit kini PAS (Rp 0)!`, 'success');
+};
 window.kunciModalPokok250Juta = function() {
-if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi('Kunci Patokan Modal Pokok Rp250.000.000')) {
+const defModal = window.ACTIVE_CABANG === '2' ? 45000000 : 250000000;
+const defLabel = window.formatRp(defModal);
+if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi(`Kunci Patokan Modal Pokok ${defLabel}`)) {
 return;
 }
 if (!window.pengaturanToko) window.pengaturanToko = {};
-window.pengaturanToko.targetModalBerputar = 250000000;
+window.pengaturanToko.targetModalBerputar = defModal;
 localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
 window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
 window.renderAll();
 window.openModalBedahAuditModal();
-window.showToast('🔒 Patokan Modal Berputar berhasil dikembalikan & dikunci ke Rp250.000.000!', 'success');
+window.showToast(`🔒 Patokan Modal Berputar berhasil dikembalikan & dikunci ke ${defLabel}!`, 'success');
 };
 window.paskanSelisihAuditKeLaciOtomatis = function() {
 if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi('Penyesuaian Selisih Audit ke LACI')) {
@@ -24943,8 +25023,13 @@ const saldoLaciSebelum = window.getCurrentSystemBalanceForAkun ? window.getCurre
 const saldoLaciBaru = saldoLaciSebelum + koreksiLaci;
 if (!window.masterSaldoAwal) window.masterSaldoAwal = {};
 window.masterSaldoAwal['LACI'] = Number(window.masterSaldoAwal['LACI'] || 0) + koreksiLaci;
+const defModal = window.ACTIVE_CABANG === '2' ? 45000000 : 250000000;
 if (!window.pengaturanToko) window.pengaturanToko = {};
-if (!window.pengaturanToko.targetModalBerputar) window.pengaturanToko.targetModalBerputar = 250000000;
+if (!window.pengaturanToko.targetModalBerputar) window.pengaturanToko.targetModalBerputar = defModal;
+const stBunga = (typeof window.getSeaBankBungaState === 'function') ? window.getSeaBankBungaState() : null;
+if (stBunga && Array.isArray(stBunga.riwayatBunga)) {
+stBunga.riwayatBunga.forEach(b => { if (b) b.sudahDisetor = true; });
+}
 const korState = window.getKoreksiSaldoState ? window.getKoreksiSaldoState() : null;
 const now = new Date();
 const nowTs = window.getNextUniqueTs ? window.getNextUniqueTs() : Date.now();
@@ -24957,21 +25042,21 @@ akun: 'LACI',
 saldoSistemSebelum: saldoLaciSebelum,
 saldoRiilBaru: saldoLaciBaru,
 selisih: koreksiLaci,
-kategoriAlasan: 'PENYESUAIAN PATOKAN 250JT + CUAN',
+kategoriAlasan: `PENYESUAIAN PATOKAN ${window.formatRp(info.targetModalPokok)} + CUAN`,
 catatan: `Penyesuaian otomatis selisih audit (${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}) agar Total Saldo = Patokan Modal + Cuan Hari Ini`,
 modalAdjusted: false,
 oleh: 'OWNER',
 updatedAt: nowTs
 });
 }
-window.catatLogAktivitas('KOREKSI SALDO', `Menyesuaikan saldo LACI (${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}) agar Total Saldo Konter pas dengan Rp250 Juta + Cuan Hari Ini`);
+window.catatLogAktivitas('KOREKSI SALDO', `Menyesuaikan saldo LACI (${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}) agar Total Saldo Konter pas dengan ${window.formatRp(info.targetModalPokok)} + Cuan Hari Ini`);
 window.saveMultipleFirebaseNodes({
 saldoAwal: window.masterSaldoAwal,
 pengaturan: window.pengaturanToko
 }, false);
 window.renderAll();
 window.closeModalBedahAuditModal();
-window.showToast(`✅ Saldo LACI disesuaikan ${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}. Total Saldo Konter kini PAS 100% dengan Rp250 Juta + Cuan Hari Ini!`, 'success');
+window.showToast(`✅ Saldo LACI disesuaikan ${(koreksiLaci >= 0 ? '+' : '') + window.formatRp(koreksiLaci)}. Total Saldo Konter kini PAS 100% dengan ${window.formatRp(info.targetModalPokok)} + Cuan Hari Ini!`, 'success');
 };
 window.kalibrasiModalPokokOtomatis = function() {
 if (typeof window.verifyOwnerAccessForKoreksi === 'function' && !window.verifyOwnerAccessForKoreksi('Kalibrasi Patokan Modal Pokok')) {
