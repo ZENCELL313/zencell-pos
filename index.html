@@ -1871,6 +1871,35 @@
         .table-service th:nth-child(8), .table-service td:nth-child(8) { text-align: center; white-space: nowrap; width: 10%; min-width: 112px; }
         .table-service th:nth-child(9), .table-service td:nth-child(9) { text-align: center; white-space: nowrap; width: 1%; }
 
+        /* Tabel Ramping & Tipis 1 Baris khusus Manajemen Sparepart & Stok Hadiah ATM Link */
+        .table-sparepart-compact {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        .table-sparepart-compact th,
+        .table-sparepart-compact td {
+            vertical-align: middle;
+            padding: 3.5px 7px !important;
+            font-size: 11px;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+        .table-sparepart-compact th {
+            font-size: 10px;
+            padding: 5px 7px !important;
+            letter-spacing: 0.2px;
+            text-align: center;
+        }
+        .table-sparepart-compact td:nth-child(1) { text-align: center; width: 68px; }
+        .table-sparepart-compact td:nth-child(2) { text-align: left; }
+        .table-sparepart-compact td:nth-child(3) { text-align: left; }
+        .table-sparepart-compact td:nth-child(4) { text-align: right; }
+        .table-sparepart-compact td:nth-child(5) { text-align: center; }
+        .table-sparepart-compact td:nth-child(6) { text-align: right; }
+        .table-sparepart-compact td:nth-child(7) { text-align: center; }
+        .table-sparepart-compact td:nth-child(8) { text-align: center; width: 1%; }
+
         /* Tata Letak Presisi & Proporsional Tabel Rekapan Jurnal Harian (PC & HP) */
         .table-jurnal {
             width: 100%;
@@ -4755,7 +4784,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="summary-card kpi-c6 clickable" id="cardTopModalSparepart" onclick="activateMainTabById('tab-service')" title="Klik untuk buka tab Service &amp; Sparepart (Modal Sparepart Belum Cair)" style="border-top: 3px solid #0D9488;">
+                <div class="summary-card kpi-c6 clickable" id="cardTopModalSparepart" onclick="window.bukaMenuManajemenSparepart ? window.bukaMenuManajemenSparepart() : activateMainTabById('tab-service')" title="Klik untuk buka Manajemen Modal &amp; Stok Sparepart Service (Talangan Servis + Stok Part Ready / Eks-Cancel)" style="border-top: 3px solid #0D9488;">
                     <div class="kpi-icon-box" title="Modal Sparepart Belum Cair">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
                     </div>
@@ -5926,7 +5955,7 @@
                     <span>📖 Jurnal Transaksi Harian</span>
                     <div class="jurnal-header-actions">
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalVlookupFast()" title="Tambah Kata Kunci VLOOKUP / Data Otomatis">+ Data Otomatis</button>
-                        <button type="button" class="btn-jurnal-hdr" onclick="openModalTfFast()" title="Mutasi / Pindah Saldo Antar Akun">🔀 Pindah Saldo</button>
+                        <button type="button" class="btn-jurnal-hdr" onclick="window.openModalTukarKuponHadiah()" title="Tukar Kupon Hadiah Transaksi ATM Link &amp; Cek Stok Hadiah Ready" style="background:linear-gradient(135deg, #E11D48, #BE123C); color:#FFF; border-color:#9F1239;">🎁 Tukar Kupon</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalOperasionalFast()" title="Catat Pengeluaran Operasional Toko / Dana Talangan (Zen 2, Owner, Karyawan)" style="background:#7C3AED; color:#FFF; border-color:#6D28D9;">🏢 Operasional</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalReturAcc()" title="Catat Retur / Komplain / Tukar Aksesoris (ACC) Konsumen" style="background:#EA580C; color:#FFF; border-color:#C2410C;">🔄 Retur ACC</button>
                         <button type="button" class="btn-jurnal-hdr" onclick="openModalSetorFast()" title="Catat Setoran Profit ke Owner">💸 Setoran Profit</button>
@@ -6078,6 +6107,80 @@
                         </tr>
                     </thead>
                     <tbody id="bodyTiketServis"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MANAJEMEN MODAL & STOK SPAREPART SERVICE (DANA TALANGAN DADAKAN + STOK PART READY & EKS-CANCEL) -->
+        <div class="card" id="cardManajemenSparepartService" style="margin-top:12px; border-top:3px solid #0D9488;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(13, 148, 136, 0.1); color:#0F766E; border-radius:8px; padding:10px 12px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-weight:800;">🔧 MANAJEMEN MODAL &amp; STOK SPAREPART SERVICE</span>
+                    <span id="badgeSpTalanganCount" style="background:#FEF3C7; color:#B45309; border:1px solid #FCD34D; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">⚡ Talangan Servis: 0 Unit</span>
+                    <span id="badgeSpStokReadyCount" style="background:#CCFBF1; color:#0F766E; border:1px solid #5EEAD4; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;">📦 Stok Ready / Eks-Cancel: 0 Pcs</span>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <button type="button" class="btn-header-action" style="background:#0D9488; color:#FFFFFF; border:none; font-weight:800;" onclick="openModalSparepart('STOK_READY')">+ Input / Belanja Stok Sparepart</button>
+                </div>
+            </div>
+
+            <!-- 3 Kotak Ringkasan Perputaran Modal Sparepart Service -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:8px; margin-bottom:10px;">
+                <div style="background:#FFFBEB; border:1px solid #FDE68A; border-left:4px solid #D97706; border-radius:8px; padding:8px 10px;">
+                    <div style="font-size:10px; font-weight:800; color:#B45309; text-transform:uppercase;">⚡ 1. Dana Talangan Sparepart Dadakan</div>
+                    <div id="valSpSummaryTalangan" style="font-size:15px; font-weight:900; color:#92400E; margin-top:2px;">Rp0</div>
+                    <div id="subSpSummaryTalangan" style="font-size:9.5px; color:#B45309; font-weight:600; margin-top:1px;">0 Part menempel di tiket servis aktif</div>
+                </div>
+                <div style="background:#F0FDFA; border:1px solid #99F6E4; border-left:4px solid #0D9488; border-radius:8px; padding:8px 10px;">
+                    <div style="font-size:10px; font-weight:800; color:#0F766E; text-transform:uppercase;">📦 2. Stok Sparepart Ready &amp; Eks-Cancel</div>
+                    <div id="valSpSummaryStokReady" style="font-size:15px; font-weight:900; color:#115E59; margin-top:2px;">Rp0</div>
+                    <div id="subSpSummaryStokReady" style="font-size:9.5px; color:#0F766E; font-weight:600; margin-top:1px;">0 Pcs stok part siap pakai di laci teknisi</div>
+                </div>
+                <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-left:4px solid #2563EB; border-radius:8px; padding:8px 10px;">
+                    <div style="font-size:10px; font-weight:800; color:#1D4ED8; text-transform:uppercase;">🔧 Total Modal Sparepart Berputar</div>
+                    <div id="valSpSummaryTotalAktif" style="font-size:15px; font-weight:900; color:#1E3A8A; margin-top:2px;">Rp0</div>
+                    <div id="subSpSummaryTotalAktif" style="font-size:9.5px; color:#1D4ED8; font-weight:600; margin-top:1px;">Sinkron otomatis ke kartu MODAL SPAREPART</div>
+                </div>
+            </div>
+
+            <div class="filter-container" style="justify-content:space-between; margin-bottom:8px;">
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:11px; font-weight:800; color:#0F766E;">🔍 FILTER PART:</span>
+                    <select id="sparepartFilterJenis" class="date-picker-input" onchange="renderAll()" style="font-size:11px; padding:4px 8px; font-weight:700;">
+                        <option value="AKTIF" selected>⏳ Semua Modal Part Aktif (Belum Cair)</option>
+                        <option value="STOK_READY">📦 Hanya Stok Sparepart Ready &amp; Eks-Cancel</option>
+                        <option value="TALANGAN">⚡ Hanya Dana Talangan Tiket Servis Aktif</option>
+                        <option value="LUNAS">✅ Riwayat Part Sudah Lunas / Terpakai</option>
+                        <option value="ALL">📋 Tampilkan Semua Data</option>
+                    </select>
+                    <select id="serviceFilterMode" class="date-picker-input" onchange="window.toggleFilterServicePartDate(this.value)" style="font-size:11px; padding:4px 8px;">
+                        <option value="ALL" selected>📅 Semua Tanggal</option>
+                        <option value="DAILY">📆 Per Hari</option>
+                        <option value="MONTHLY">🗓️ Per Bulan</option>
+                    </select>
+                    <input type="date" id="serviceDatePicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                    <input type="month" id="serviceMonthPicker" class="date-picker-input" style="display:none; font-size:11px; padding:4px 8px;" onchange="renderAll()">
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <input type="text" id="sparepartSearchInput" class="date-picker-input" placeholder="🔍 Cari nama part / tipe HP / tiket..." oninput="window.debouncedRenderAll ? window.debouncedRenderAll() : renderAll()" style="min-width:190px; cursor:text;">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-sparepart-compact">
+                    <thead>
+                        <tr>
+                            <th>TGL BELI</th>
+                            <th>NAMA SPAREPART / UNIT</th>
+                            <th>JENIS &amp; ASAL PART</th>
+                            <th>MODAL PART</th>
+                            <th>SUMBER KAS</th>
+                            <th>EST. BIAYA PASANG / JUAL</th>
+                            <th>STATUS MODAL</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodySparepartList"></tbody>
                 </table>
             </div>
         </div>
@@ -6508,6 +6611,7 @@
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span>📦 Stok Opname Realtime</span>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:linear-gradient(135deg, #E11D48, #BE123C); color:#FFF; font-weight:800;" onclick="document.getElementById('cardRekapStokHadiahAtm')?.scrollIntoView({behavior:'smooth'})" title="Lihat &amp; Kelola Rekapan Stok Hadiah Kupon ATM Link">🎁 Stok Hadiah ATM</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:linear-gradient(135deg, #0D9488, #0F766E); color:#FFF; font-weight:800;" onclick="openModalCekFisikStok()" title="Cek &amp; Cocokkan Hitungan Fisik Rak Etalase dengan Stok Sistem (Tanpa Mengubah Stok)">📋 Cek Fisik Etalase</button>
                     <button type="button" id="btnOpenMutasiStokCabang" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:linear-gradient(135deg, #4F46E5, #3730A3); color:#FFF; font-weight:800;" onclick="openModalMutasiStokCabang()" title="Kirim / Mutasi Stok ke Cabang Sebelah (Bisa Banyak Barang Sekaligus, Non-Omset)">📤 Kirim Stok ke Cabang</button>
                     <button type="button" class="btn" style="width:auto; padding:5px 11px; font-size:10.5px; background:#7C3AED; color:#FFF; font-weight:800;" onclick="document.getElementById('cardRekapMutasiStokCabang')?.scrollIntoView({behavior:'smooth'})" title="Lihat Tabel Rekapitulasi &amp; Riwayat Mutasi Stok Antar Cabang">📋 Rekap Mutasi Cabang</button>
@@ -6654,6 +6758,85 @@
                         <tr><td colspan="8" style="text-align:center; color:#94A3B8; padding:14px;">Belum ada riwayat mutasi stok ke cabang pada periode ini.</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- KARTU REKAPAN STOK HADIAH & PENUKARAN KUPON ATM LINK (DI LUAR MODAL BERPUTAR 250 JUTA) -->
+        <div class="card" id="cardRekapStokHadiahAtm" style="margin-top:12px; border-top:3px solid #E11D48;">
+            <div class="card-header" style="background:linear-gradient(135deg, #FFE4E6, #FECDD3); color:#9F1239; border:1px solid #FDA4AF; border-radius:8px; padding:9px 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-size:15px;">🎁</span>
+                    <div>
+                        <div style="font-size:12.5px; font-weight:900; color:#881337;">REKAPAN STOK HADIAH &amp; PENUKARAN KUPON ATM LINK</div>
+                        <div style="font-size:9.5px; color:#9F1239; font-weight:700;">Inventaris Promosi Owner (Tidak Masuk Modal Berputar Rp250 Juta) • Beli Dadakan Kasir Otomatis Masuk Rekap Operasional Wajib Diganti Owner</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <button type="button" onclick="window.openModalTukarKuponHadiah()" style="background:#E11D48; color:#FFFFFF; border:none; border-radius:6px; padding:5px 11px; font-size:10.5px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 5px rgba(225,29,72,0.25);">🎟️ Tukar Kupon Pelanggan</button>
+                    <button type="button" onclick="window.openModalInputStokHadiah()" style="background:#0F172A; color:#FFFFFF; border:none; border-radius:6px; padding:5px 11px; font-size:10.5px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">+ Input / Restok Hadiah</button>
+                </div>
+            </div>
+
+            <!-- 3 Kotak Ringkasan Stok Hadiah & Kupon ATM Link -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; margin:10px 0;">
+                <div style="background:#FFF1F2; border:1px solid #FECDD3; border-left:4px solid #E11D48; border-radius:8px; padding:7px 10px;">
+                    <div style="font-size:10px; font-weight:800; color:#9F1239;">🎁 TOTAL SISA STOK HADIAH READY</div>
+                    <div id="valHadiahReadyTotalPcs" style="font-size:15px; font-weight:900; color:#881337; margin-top:2px;">0 Pcs</div>
+                    <div id="subHadiahReadyJenis" style="font-size:9.5px; color:#BE123C; font-weight:700;">0 Jenis Hadiah Terdaftar</div>
+                </div>
+                <div style="background:#FEF3C7; border:1px solid #FDE68A; border-left:4px solid #D97706; border-radius:8px; padding:7px 10px;">
+                    <div style="font-size:10px; font-weight:800; color:#92400E;">🎟️ TOTAL HADIAH DITUKAR (KELUAR)</div>
+                    <div id="valHadiahKeluarTotalPcs" style="font-size:15px; font-weight:900; color:#78350F; margin-top:2px;">0 Pcs Keluar</div>
+                    <div id="subHadiahKuponTerkumpul" style="font-size:9.5px; color:#B45309; font-weight:700;">Total 0 Kupon ATM Link Ditukar</div>
+                </div>
+                <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-left:4px solid #16A34A; border-radius:8px; padding:7px 10px;">
+                    <div style="font-size:10px; font-weight:800; color:#166534;">💰 ESTIMASI NILAI SISA HADIAH (PATOKAN TUKAR)</div>
+                    <div id="valHadiahNilaiSisaRp" style="font-size:15px; font-weight:900; color:#14532D; margin-top:2px;">Rp0</div>
+                    <div style="font-size:9.5px; color:#15803D; font-weight:700;">Di luar Modal 250 Juta • Patokan nilai barang setara</div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-sparepart-compact">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">NAMA HADIAH ATM LINK</th>
+                            <th style="text-align:center;">STOK MASUK (PCS)</th>
+                            <th style="text-align:center;">DITUKAR (KELUAR)</th>
+                            <th style="text-align:center;">SISA STOK</th>
+                            <th style="text-align:right;">MODAL / NILAI BARANG</th>
+                            <th style="text-align:right;">TOTAL NILAI SISA</th>
+                            <th style="text-align:center;">SUMBER PENGADAAN</th>
+                            <th style="text-align:center;">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyStokHadiahAtm"></tbody>
+                </table>
+            </div>
+
+            <!-- Riwayat Penukaran Kupon Hadiah ATM Link (Bisa Dibuka/Tutup) -->
+            <div style="margin-top:10px; border-top:1px dashed var(--border); padding-top:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                    <span style="font-size:11px; font-weight:900; color:#881337;">📜 RIWAYAT PENUKARAN KUPON &amp; KELUAR HADIAH ATM LINK</span>
+                    <button type="button" id="btnToggleRiwayatHadiahAtm" onclick="window.toggleRiwayatTukarHadiahAtm()" style="background:#FFE4E6; color:#9F1239; border:1px solid #FDA4AF; border-radius:6px; padding:3px 9px; font-size:10px; font-weight:800; cursor:pointer;">👁️ Tampilkan / Sembunyikan Riwayat</button>
+                </div>
+                <div id="wrapRiwayatTukarHadiahAtm" class="table-responsive">
+                    <table class="table-sparepart-compact">
+                        <thead>
+                            <tr>
+                                <th style="text-align:center;">TGL &amp; JAM</th>
+                                <th style="text-align:left;">NAMA PELANGGAN / KET</th>
+                                <th style="text-align:left;">HADIAH YANG DIAMBIL</th>
+                                <th style="text-align:center;">QTY KELUAR</th>
+                                <th style="text-align:center;">KUPON DITUKAR</th>
+                                <th style="text-align:right;">NILAI BARANG</th>
+                                <th style="text-align:center;">PETUGAS</th>
+                                <th style="text-align:center;">AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyRiwayatTukarHadiahAtm"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -7525,16 +7708,23 @@
                     </div>
                 </div>
 
-                <!-- Bagian Beli Sparepart ke Depan -->
+                <!-- Bagian Beli / Ambil Sparepart -->
                 <div class="card" style="background:#F8FAFC; border:1px dashed var(--border); padding:10px; margin-bottom:10px;">
                     <label style="font-size:12px; font-weight:bold; color:var(--primary); cursor:pointer; display:flex; align-items:center; gap:6px;">
-                        <input type="checkbox" id="chkPerluSparepart" onchange="document.getElementById('boxInputPartServis').style.display = this.checked ? 'block' : 'none';" style="width:16px; height:16px;">
-                        🛒 Butuh Beli Sparepart ke Depan? (Ditalangi Toko)
+                        <input type="checkbox" id="chkPerluSparepart" onchange="document.getElementById('boxInputPartServis').style.display = this.checked ? 'block' : 'none'; if(this.checked && window.populateDropdownStokPartReady) window.populateDropdownStokPartReady('tPilihStokPartReady');" style="width:16px; height:16px;">
+                        🛒 Pakai Sparepart? (Beli Dadakan / Ambil dari Stok Sparepart Ready)
                     </label>
 
                     <div id="boxInputPartServis" style="display:none; margin-top:8px;">
+                        <div class="form-group" style="background:#F0FDFA; border:1px solid #99F6E4; padding:7px 9px; border-radius:7px; margin-bottom:8px;">
+                            <label style="color:#0F766E; font-weight:800; font-size:11px;">📦 OpsiSumber Part: Ambil dari Stok Sparepart Ready / Eks-Cancel?</label>
+                            <select id="tPilihStokPartReady" class="form-control" onchange="window.onSelectStokPartReadyForTiket('TIKET_BARU', this.value)" style="margin-top:3px; font-weight:700; font-size:11.5px;">
+                                <option value="">⚡ -- Beli Sparepart Dadakan Baru (Potong Saldo Kas) --</option>
+                            </select>
+                            <small id="tNoticeStokPartReady" style="display:none; color:#0F766E; font-size:10px; font-weight:800; margin-top:4px;">✅ Menggunakan Stok Sparepart Ready di konter (Tidak memotong saldo kas lagi).</small>
+                        </div>
                         <div class="form-group">
-                            <label>Nama Sparepart yang Dibeli</label>
+                            <label>Nama Sparepart yang Dipakai / Dibeli</label>
                             <input type="text" id="tNamaPart" class="form-control" placeholder="Cth: LCD OPPO A3S / BATERAI SAMSUNG">
                         </div>
                         <div class="row-2">
@@ -7548,7 +7738,7 @@
                                 <select id="tSumberKasPart" class="form-control"></select>
                             </div>
                         </div>
-                        <small style="color:#059669; font-size:10.5px; font-weight:bold; display:block;">*Otomatis memotong saldo kas yang dipilih dan menambah saldo akun SPAREPART.</small>
+                        <small id="tHintPotongKasPart" style="color:#059669; font-size:10.5px; font-weight:bold; display:block;">*Otomatis memotong saldo kas yang dipilih dan menambah saldo akun SPAREPART.</small>
                     </div>
                 </div>
 
@@ -7564,18 +7754,18 @@
                 </div>
 
                 <div class="row-2" style="margin-top:14px;">
-                    <button type="submit" id="btnSubmitTiketServis" class="btn">Buat Tiket & Cetak Nota</button>
+                    <button type="submit" id="btnSubmitTiketServis" class="btn">Buat Tiket &amp; Cetak Nota</button>
                     <button type="button" class="btn" style="background:#64748B;" onclick="closeModalTiketServis()">Batal</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Cepat Beli Sparepart Susulan untuk Tiket yang Sudah Berjalan -->
+    <!-- Modal Cepat Beli / Pakai Sparepart Susulan untuk Tiket yang Sudah Berjalan -->
     <div id="modalBeliPartCepatOverlay" class="modal-overlay">
-        <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-content" style="max-width: 460px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="font-size:15px; color:var(--primary);">🛒 Beli Sparepart ke Depan (Talangan Toko)</h3>
+                <h3 style="font-size:15px; color:var(--primary);">🛒 Pasang / Beli Sparepart ke Tiket Servis</h3>
                 <button onclick="closeModalBeliPartCepat()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
             </div>
             <form onsubmit="simpanBeliPartTiketSusulan(event)">
@@ -7584,8 +7774,15 @@
                     <label>Info Unit Servis</label>
                     <input type="text" id="bpInfoUnit" class="form-control" readonly style="background:#F1F5F9; font-weight:bold;">
                 </div>
+                <div class="form-group" style="background:#F0FDFA; border:1px solid #99F6E4; padding:8px 10px; border-radius:7px; margin-bottom:10px;">
+                    <label style="color:#0F766E; font-weight:800; font-size:11px;">📦 Ambil dari Stok Sparepart Ready / Eks-Cancel?</label>
+                    <select id="bpPilihStokPartReady" class="form-control" onchange="window.onSelectStokPartReadyForTiket('SUSULAN', this.value)" style="margin-top:4px; font-weight:700; font-size:11.5px;">
+                        <option value="">⚡ -- Beli Sparepart Dadakan Baru (Potong Saldo Kas) --</option>
+                    </select>
+                    <small id="bpNoticeStokPartReady" style="display:none; color:#0F766E; font-size:10px; font-weight:800; margin-top:4px;">✅ Memakai Stok Sparepart Ready yang sudah ada (Tidak memotong saldo kas dua kali).</small>
+                </div>
                 <div class="form-group">
-                    <label>Nama Sparepart yang Dibeli *</label>
+                    <label>Nama Sparepart yang Dipakai / Dibeli *</label>
                     <input type="text" id="bpNamaPart" class="form-control" placeholder="Cth: LCD OPPO A3S..." required>
                 </div>
                 <div class="row-2">
@@ -7599,9 +7796,9 @@
                         <select id="bpSumberKas" class="form-control" required></select>
                     </div>
                 </div>
-                <p style="font-size:10.5px; color:#059669; font-weight:bold; margin-bottom:12px;">*Uang akan dipotong dari kas terpilih dan masuk ke saldo akun SPAREPART.</p>
+                <p id="bpHintPotongKas" style="font-size:10.5px; color:#059669; font-weight:bold; margin-bottom:12px;">*Uang akan dipotong dari kas terpilih dan masuk ke saldo akun SPAREPART.</p>
                 <div class="row-2">
-                    <button type="submit" class="btn">Simpan & Potong Kas</button>
+                    <button type="submit" id="btnSubmitBeliPartSusulan" class="btn">Simpan &amp; Pasang Part</button>
                     <button type="button" class="btn" style="background:#64748B;" onclick="closeModalBeliPartCepat()">Batal</button>
                 </div>
             </form>
@@ -7612,34 +7809,227 @@
     <div id="printAreaNotaLunasService" style="display:none;"></div>
 
     <div id="modalSparepartOverlay" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:460px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 id="formSparepartTitle" style="font-size:15px; color:var(--primary);">+ Catat Belanja Sparepart Service</h3>
+                <h3 id="formSparepartTitle" style="font-size:15px; color:var(--primary);">+ Input / Belanja Stok Sparepart Service</h3>
                 <button onclick="closeModalSparepart()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
             </div>
             <form id="formBelanjaSparepart" onsubmit="simpanBelanjaSparepart(event)">
                 <input type="hidden" id="editSparepartId" value="">
-                <div class="form-group">
-                    <label>Nama Unit / Keterangan</label>
-                    <input type="text" id="spNamaUnit" class="form-control" placeholder="CONTOH: LCD OPPO A3S" required>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Kategori Perputaran Part</label>
+                        <select id="spJenisPart" class="form-control" style="font-weight:700;">
+                            <option value="STOK_READY" selected>📦 Stok Sparepart Ready (Laci Teknisi)</option>
+                            <option value="EKS_CANCEL">🔄 Stok Eks-Service Cancel</option>
+                            <option value="TALANGAN">⚡ Dana Talangan Servis</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="wrapSpQtyInput">
+                        <label>Jumlah Beli (Qty Pcs)</label>
+                        <input type="number" id="spQtyInput" class="form-control" value="1" min="1" max="50" style="font-weight:800;">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Modal Sparepart (Rp)</label>
-                    <input type="text" id="spNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'spNom')">
-                    <input type="hidden" id="spNom" value="0">
+                    <label>Nama Sparepart / Tipe Unit *</label>
+                    <input type="text" id="spNamaUnit" class="form-control" placeholder="CONTOH: LCD OPPO A3S / KONEKTOR TYPE-C" required>
+                </div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Modal per 1 Pcs (Rp) *</label>
+                        <input type="text" id="spNomDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'spNom')">
+                        <input type="hidden" id="spNom" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Diambil Dari (Sumber Kas) *</label>
+                        <select id="spSumber" class="form-control" required></select>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Diambil Dari (Sumber Saldo)</label>
-                    <select id="spSumber" class="form-control" required></select>
-                </div>
-                <div class="form-group">
-                    <label>Estimasi Biaya Service (Rp)</label>
+                    <label>Estimasi Biaya Pasang / Jual per Pcs (Rp)</label>
                     <input type="text" id="spEstJualDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" oninput="formatNominal(this, 'spEstJual')">
                     <input type="hidden" id="spEstJual" value="0">
                 </div>
+                <small style="display:block; font-size:10px; color:#0F766E; font-weight:700; margin-bottom:10px;">*Jika Qty &gt; 1 Pcs, sistem otomatis membuat item stok per-pcs agar saat dipakai ke tiket servis bisa diambil satu per satu dengan akurat.</small>
                 <div class="row-2" style="margin-top:12px;">
-                    <button type="submit" id="btnSubmitSparepart" class="btn">Simpan Sparepart</button>
+                    <button type="submit" id="btnSubmitSparepart" class="btn">Simpan ke Stok Sparepart</button>
                     <button type="button" class="btn" style="background:#64748B;" onclick="closeModalSparepart()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Otomatis Saat Tiket Servis yang Sudah Keluar Modal Sparepart Diubah ke CANCEL -->
+    <div id="modalKonfirmasiCancelPartOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width:480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="font-size:15px; color:#DC2626; display:flex; align-items:center; gap:6px;">⚠️ Servis Cancel Memiliki Modal Sparepart!</h3>
+                <button onclick="window.batalUbahStatusCancelPart()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+            <div id="infoBoxKonfirmasiCancelPart" style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:12px; color:#7F1D1D; line-height:1.45;"></div>
+            <div style="font-size:11.5px; font-weight:800; color:var(--text); margin-bottom:8px;">Pilih perlakuan untuk sparepart yang sudah terlanjur dibeli ini:</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button type="button" onclick="window.prosesKeputusanCancelPartTiket('JADIKAN_STOK')" style="background:#0D9488; color:#FFFFFF; border:none; border-radius:8px; padding:10px 12px; text-align:left; cursor:pointer; box-shadow:0 2px 4px rgba(13,148,136,0.2);">
+                    <div style="font-size:12.5px; font-weight:900;">📦 Opsi 1: Simpan Jadi Stok Sparepart Konter (Eks-Service Cancel)</div>
+                    <div style="font-size:10.5px; opacity:0.92; margin-top:2px; font-weight:600;">Barang tidak bisa diretur ke toko. Sparepart dilepas dari tiket cancel ini dan masuk ke daftar <b>Stok Sparepart Ready / Eks-Cancel</b> agar bisa dipasang ke servisan berikutnya tanpa potong kas lagi.</div>
+                </button>
+                <button type="button" onclick="window.prosesKeputusanCancelPartTiket('RETUR_KAS')" style="background:#2563EB; color:#FFFFFF; border:none; border-radius:8px; padding:10px 12px; text-align:left; cursor:pointer; box-shadow:0 2px 4px rgba(37,99,235,0.2);">
+                    <div style="font-size:12.5px; font-weight:900;">🔄 Opsi 2: Retur ke Supplier / Batal Beli (Kembalikan Saldo Kas)</div>
+                    <div style="font-size:10.5px; opacity:0.92; margin-top:2px; font-weight:600;">Sparepart dikembalikan ke toko sparepart dan uang kembali utuh. Data belanja sparepart dihapus sehingga saldo kas asal (LACI/BCA) pulih otomatis.</div>
+                </button>
+                <button type="button" onclick="window.batalUbahStatusCancelPart()" class="btn" style="background:#64748B; margin-top:4px;">Batal (Jangan Cancel Tiket)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pasang Stok Sparepart Ready Langsung ke Tiket Servis Aktif -->
+    <div id="modalPasangStokPartKeTiketOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width:440px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="font-size:15px; color:#0D9488;">🔧 Pasang Stok Sparepart ke Tiket Servis Aktif</h3>
+                <button onclick="document.getElementById('modalPasangStokPartKeTiketOverlay').classList.remove('show')" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+            <form onsubmit="window.simpanPasangStokPartKeTiket(event)">
+                <input type="hidden" id="psSparepartId" value="">
+                <div class="form-group">
+                    <label>Sparepart Ready yang Dipilih</label>
+                    <input type="text" id="psInfoSparepart" class="form-control" readonly style="background:#F0FDFA; font-weight:800; color:#0F766E;">
+                </div>
+                <div class="form-group">
+                    <label>Pilih Tiket Servis Aktif Tujuan *</label>
+                    <select id="psTargetTiketId" class="form-control" required style="font-weight:700;"></select>
+                </div>
+                <small style="display:block; font-size:10.5px; color:#059669; font-weight:700; margin-bottom:12px;">*Sparepart ini akan langsung menempel ke tiket servis terpilih tanpa memotong saldo kas lagi.</small>
+                <div class="row-2">
+                    <button type="submit" class="btn" style="background:#0D9488;">Pasang ke Tiket</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="document.getElementById('modalPasangStokPartKeTiketOverlay').classList.remove('show')">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: + INPUT / RESTOK STOK HADIAH ATM LINK (DROP OWNER ATAU BELI DADAKAN MASUK OPERASIONAL) -->
+    <div id="modalInputStokHadiahOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width:480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <div>
+                    <h3 id="titleModalInputStokHadiah" style="font-size:15px; color:#E11D48; margin:0;">🎁 + Input / Restok Stok Hadiah ATM Link</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:700;">Tidak masuk Modal Berputar 250 Juta • Jika dibeli kasir otomatis masuk Rekap Operasional Wajib Diganti Owner</small>
+                </div>
+                <button type="button" onclick="window.closeModalInputStokHadiah()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+            <form id="formInputStokHadiah" onsubmit="window.simpanInputStokHadiahAtm(event)">
+                <input type="hidden" id="hdEditId" value="">
+                <input type="hidden" id="hdModeForm" value="NEW">
+                <div class="form-group">
+                    <label>Nama Barang Hadiah ATM Link *</label>
+                    <input type="text" id="hdNama" list="datalistHadiahAtmExist" class="form-control" placeholder="CONTOH: MINYAK GORENG 1L / GULA 1KG / PAYUNG / SABUN" required oninput="window.onInputNamaHadiahAtm(this.value)" style="font-weight:800;">
+                    <datalist id="datalistHadiahAtmExist"></datalist>
+                </div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label id="lblHdQtyMasuk">Jumlah Stok Masuk (Pcs) *</label>
+                        <input type="number" id="hdQtyMasuk" class="form-control" value="1" min="0" required style="font-weight:800;" oninput="window.hitungTotalBelanjaHadiahAtm()">
+                    </div>
+                    <div class="form-group" id="wrapHdQtyKeluarEdit" style="display:none;">
+                        <label>Sudah Ditukar / Keluar (Pcs)</label>
+                        <input type="number" id="hdQtyKeluarEdit" class="form-control" value="0" min="0" style="font-weight:800;">
+                    </div>
+                    <div class="form-group" id="wrapHdSyaratKupon">
+                        <label>Syarat Kupon / 1 Pcs (Opsional)</label>
+                        <input type="number" id="hdSyaratKupon" class="form-control" value="10" min="1" placeholder="Cth: 10 Kupon" style="font-weight:800;">
+                    </div>
+                </div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Harga Modal / Nilai per Pcs (Rp) *</label>
+                        <input type="text" id="hdModalDisplay" class="form-control" placeholder="0" inputmode="decimal" pattern="[0-9.]*" required oninput="formatNominal(this, 'hdModal'); window.hitungTotalBelanjaHadiahAtm();">
+                        <input type="hidden" id="hdModal" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Nilai Pengadaan</label>
+                        <input type="text" id="hdTotalModalDisplay" class="form-control" placeholder="Rp0" readonly style="background:#FFF1F2; color:#BE123C; font-weight:900;">
+                    </div>
+                </div>
+                <div class="form-group" id="wrapHdSumberDana" style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:8px 10px;">
+                    <label style="color:#0F172A; font-weight:800;">💰 Sumber Pengadaan Hadiah *</label>
+                    <select id="hdSumberDana" class="form-control" onchange="window.onChangeSumberDanaHadiahAtm(this.value)" style="font-weight:800; margin-top:3px;"></select>
+                    <small id="hdNoticeSumberDana" style="display:block; margin-top:4px; font-size:10px; font-weight:700; color:#059669;">
+                        👑 Drop / Titipan langsung dari Owner: Menambah stok hadiah tanpa memotong saldo kas konter.
+                    </small>
+                </div>
+                <div class="row-2" style="margin-top:12px;">
+                    <button type="submit" id="btnSubmitStokHadiah" class="btn" style="background:#E11D48; font-weight:800;">Simpan Stok Hadiah</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="window.closeModalInputStokHadiah()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: TUKAR KUPON HADIAH ATM LINK (DIATAS REKAP JURNAL TRANSAKSI & TAB STOK) -->
+    <div id="modalTukarKuponHadiahOverlay" class="modal-overlay">
+        <div class="modal-content" style="max-width:560px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <div>
+                    <h3 style="font-size:15px; color:#E11D48; margin:0; display:flex; align-items:center; gap:6px;">🎁 Penukaran Kupon Hadiah Transaksi ATM Link</h3>
+                    <small style="font-size:10px; color:#64748B; font-weight:700;">Pilih hadiah yang ditukar pelanggan • Jika stok kosong, cek referensi harga modal barang setara di bawah</small>
+                </div>
+                <button type="button" onclick="window.closeModalTukarKuponHadiah()" style="background:none; border:none; font-size:18px; font-weight:bold; cursor:pointer; color:var(--text);">✕</button>
+            </div>
+
+            <form id="formTukarKuponHadiah" onsubmit="window.simpanTukarKuponHadiahAtm(event)">
+                <div class="form-group">
+                    <label>Pilih Hadiah yang Diambil Pelanggan *</label>
+                    <select id="tkHadiahSelect" class="form-control" required onchange="window.onSelectHadiahTukarKupon()" style="font-weight:800;"></select>
+                </div>
+                <div class="row-3">
+                    <div class="form-group">
+                        <label>Qty Hadiah Keluar (Pcs) *</label>
+                        <input type="number" id="tkQtyKeluar" class="form-control" value="1" min="1" required oninput="window.onQtyTukarKuponChange()" style="font-weight:800; text-align:center;">
+                    </div>
+                    <div class="form-group">
+                        <label>Jml Kupon Diserahkan *</label>
+                        <input type="number" id="tkJmlKupon" class="form-control" value="10" min="1" required style="font-weight:800; text-align:center; background:#FEF3C7; color:#92400E;">
+                    </div>
+                    <div class="form-group">
+                        <label>Nilai Barang / Modal</label>
+                        <input type="text" id="tkInfoModalHadiah" class="form-control" readonly style="background:#F1F5F9; font-weight:800; color:#0F172A;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Nama Pelanggan / Catatan Penukaran *</label>
+                    <input type="text" id="tkNamaPelanggan" class="form-control" placeholder="Cth: IBU SITI (TUKAR 10 KUPON ATM LINK)" required style="font-weight:700;">
+                </div>
+
+                <!-- Referensi Cepat Daftar Stok Hadiah & Nilai Modal (Untuk Cari Pengganti Setara Bila Kosong) -->
+                <div style="background:#FFF1F2; border:1px solid #FECDD3; border-radius:8px; padding:8px 10px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                        <span style="font-size:10.5px; font-weight:900; color:#881337;">📋 CEK STOK &amp; PATOKAN MODAL HADIAH (CARI PENGGANTI SETARA):</span>
+                        <div style="display:flex; gap:5px;">
+                            <button type="button" onclick="window.closeModalTukarKuponHadiah(); window.openModalInputStokHadiah();" style="background:#0F172A; color:#FFF; border:none; border-radius:5px; padding:2.5px 8px; font-size:9.5px; font-weight:800; cursor:pointer;">+ Beli / Restok Hadiah Dadakan</button>
+                            <button type="button" onclick="window.bukaRekapStokHadiahLengkap()" style="background:#E11D48; color:#FFF; border:none; border-radius:5px; padding:2.5px 8px; font-size:9.5px; font-weight:800; cursor:pointer;">📦 Buka Tabel Rekap</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height:155px; overflow-y:auto; background:#FFFFFF; border:1px solid #FDA4AF; border-radius:6px;">
+                        <table class="table-sparepart-compact" style="font-size:10.5px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">NAMA HADIAH</th>
+                                    <th style="text-align:center;">MASUK</th>
+                                    <th style="text-align:center;">KELUAR</th>
+                                    <th style="text-align:center;">SISA</th>
+                                    <th style="text-align:right;">MODAL / NILAI</th>
+                                    <th style="text-align:center;">PILIH</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyMiniRefStokHadiahModal"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <button type="submit" class="btn" style="background:linear-gradient(135deg, #E11D48, #BE123C); font-weight:800;">🎟️ Simpan Penukaran &amp; Potong Stok Hadiah</button>
+                    <button type="button" class="btn" style="background:#64748B;" onclick="window.closeModalTukarKuponHadiah()">Batal</button>
                 </div>
             </form>
         </div>
@@ -9171,6 +9561,8 @@
         window.logAktivitasList = JSON.parse(localStorage.getItem('zencell_log_aktivitas') || '[]');
         window.tiketServisList = JSON.parse(localStorage.getItem('zencell_tiket_servis') || '[]');
         window.riwayatCekLaciList = JSON.parse(localStorage.getItem('zencell_riwayat_cek_laci') || '[]');
+        window.stokHadiahAtmList = JSON.parse(localStorage.getItem('zencell_stok_hadiah_atm') || '[]');
+        window.riwayatTukarHadiahList = JSON.parse(localStorage.getItem('zencell_riwayat_tukar_hadiah') || '[]');
 
         window.pengaturanToko = JSON.parse(localStorage.getItem('zencell_pengaturan') || 'null') || {
             namaToko: window.DEFAULT_SHOP_NAME_CABANG || (window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1'),
@@ -9304,7 +9696,7 @@
 
         // Proteksi Universal Anti-Rollback & Anti-Overwrite Multi-Perangkat (Berlaku untuk Semua Modul)
         const ENTITY_PROTECTION_TTL_MS = 15 * 60 * 1000; // 15 menit penuh
-        const PROTECTED_COLLECTIONS = ['transaksi', 'tiketServis', 'sparepart', 'piutang', 'stok', 'riwayatBelanjaStok', 'operasional', 'setoran'];
+        const PROTECTED_COLLECTIONS = ['transaksi', 'tiketServis', 'sparepart', 'piutang', 'stok', 'riwayatBelanjaStok', 'operasional', 'setoran', 'stokHadiahAtm', 'riwayatTukarHadiah'];
 
         try {
             window._localEntityEdits = JSON.parse(localStorage.getItem('zencell_entity_edits_v2') || '{}') || {};
@@ -9869,6 +10261,10 @@
             // 8. Operasional Konter (Smart Merge)
             window.operasionalList = mergeCloudCollection('operasional', data.operasional, needsResyncMap, lastResetTs);
 
+            // 8b. Stok Hadiah & Riwayat Penukaran Kupon ATM Link (Smart Merge - Di Luar Modal 250 Juta)
+            window.stokHadiahAtmList = mergeCloudCollection('stokHadiahAtm', data.stokHadiahAtm, needsResyncMap, lastResetTs);
+            window.riwayatTukarHadiahList = mergeCloudCollection('riwayatTukarHadiah', data.riwayatTukarHadiah, needsResyncMap, lastResetTs);
+
             // 9. Log Aktivitas (Gabungkan dengan log yang sempat tercatat sebelum koneksi cloud awal selesai)
             if (data.logAktivitas) {
                 let cloudLog = Array.isArray(data.logAktivitas) ? data.logAktivitas : Object.values(data.logAktivitas);
@@ -9937,6 +10333,8 @@
                 riwayatBelanjaStok: window.riwayatBelanjaStok,
                 setoran: window.setoranOwnerList,
                 operasional: window.operasionalList,
+                stokHadiahAtm: window.stokHadiahAtmList,
+                riwayatTukarHadiah: window.riwayatTukarHadiahList,
                 saldoAwal: window.masterSaldoAwal,
                 saldoListCustom: window.saldoList,
                 seedVersionZ2: window.Z2_SEED_VERSION
@@ -10646,6 +11044,8 @@
             safeSetLs('zencell_tiket_servis', window.tiketServisList);
             safeSetLs('zencell_riwayat_belanja', window.riwayatBelanjaStok);
             safeSetLs('zencell_operasional', window.operasionalList);
+            safeSetLs('zencell_stok_hadiah_atm', window.stokHadiahAtmList || []);
+            safeSetLs('zencell_riwayat_tukar_hadiah', window.riwayatTukarHadiahList || []);
             safeSetLs('zencell_log_aktivitas', window.logAktivitasList);
             safeSetLs('zencell_riwayat_cek_laci', window.riwayatCekLaciList || []);
             safeSetLs('zencell_batas_min', window.masterBatasMinSaldo);
@@ -10745,6 +11145,8 @@
                     tiketServis: window.tiketServisList,
                     riwayatBelanjaStok: window.riwayatBelanjaStok,
                     operasional: window.operasionalList,
+                    stokHadiahAtm: window.stokHadiahAtmList || [],
+                    riwayatTukarHadiah: window.riwayatTukarHadiahList || [],
                     logAktivitas: window.logAktivitasList,
                     riwayatCekLaci: window.riwayatCekLaciList || [],
                     saldoAwal: window.masterSaldoAwal,
@@ -12154,6 +12556,8 @@
             document.getElementById('tNamaPart').value = '';
             document.getElementById('tModalPart').value = '0';
             document.getElementById('tModalPartDisplay').value = '';
+            if (window.populateDropdownStokPartReady) window.populateDropdownStokPartReady('tPilihStokPartReady');
+            if (window.onSelectStokPartReadyForTiket) window.onSelectStokPartReadyForTiket('TIKET_BARU', '');
             document.getElementById('tGaransi').value = 'Garansi servis 7 Hari.';
             document.getElementById('tPetugas').value = sessionStorage.getItem('zencell_user')?.toUpperCase() || 'ADMIN';
             document.getElementById('modalTiketServisOverlay').classList.add('show');
@@ -12208,6 +12612,9 @@
             document.getElementById('chkPerluSparepart').checked = pakaiModal;
             document.getElementById('boxInputPartServis').style.display = pakaiModal ? 'block' : 'none';
 
+            if (window.populateDropdownStokPartReady) window.populateDropdownStokPartReady('tPilihStokPartReady', spLinked ? spLinked.id : null);
+            if (window.onSelectStokPartReadyForTiket) window.onSelectStokPartReadyForTiket('TIKET_BARU', '');
+
             if (pakaiModal) {
                 const rawPartName = t.namaPart || (spLinked ? spLinked.namaUnit : '');
                 const modalVal = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
@@ -12245,6 +12652,7 @@
             const petugas = document.getElementById('tPetugas').value.trim().toUpperCase() || 'ADMIN';
 
             const perluSparepart = document.getElementById('chkPerluSparepart').checked;
+            const pickedReadySpId = perluSparepart ? (document.getElementById('tPilihStokPartReady')?.value || '') : '';
             const namaPart = perluSparepart ? document.getElementById('tNamaPart').value.trim().toUpperCase() : '';
             const modalPart = perluSparepart ? (parseFloat(document.getElementById('tModalPart').value) || 0) : 0;
             const sumberKasPart = perluSparepart ? document.getElementById('tSumberKasPart').value : '';
@@ -12293,7 +12701,27 @@
 
                     if (perluSparepart && modalPart > 0 && sumberKasPart) {
                         const unitFormatted = namaPart.includes(tipeHp) ? namaPart : `${tipeHp} (${namaPart})`;
-                        if (spLinked) {
+                        const pickedReadySp = pickedReadySpId ? window.sparepartList.find(s => s.id == pickedReadySpId) : null;
+                        if (pickedReadySp && (!spLinked || spLinked.id != pickedReadySp.id)) {
+                            // Jika sebelumnya ada spLinked lama, kembalikan spLinked lama ke stok ready bila berasal dari stok, atau hapus jika talangan
+                            if (spLinked) {
+                                if (spLinked.jenisPart === 'STOK_READY' || spLinked.jenisPart === 'EKS_CANCEL') {
+                                    spLinked.idTiketRef = null;
+                                    spLinked.namaUnit = spLinked.namaAsliStok || spLinked.namaUnit;
+                                    spLinked.updatedAt = nowTs;
+                                    window.markLocalEntityEdited('sparepart', spLinked);
+                                } else {
+                                    window.markLocalEntityDeleted('sparepart', spLinked.id);
+                                    window.sparepartList = window.sparepartList.filter(s => s.id !== spLinked.id);
+                                }
+                            }
+                            if (!pickedReadySp.namaAsliStok) pickedReadySp.namaAsliStok = pickedReadySp.namaUnit;
+                            pickedReadySp.idTiketRef = t.id;
+                            pickedReadySp.namaUnit = unitFormatted;
+                            pickedReadySp.estJual = estBiaya;
+                            pickedReadySp.updatedAt = nowTs;
+                            window.markLocalEntityEdited('sparepart', pickedReadySp);
+                        } else if (spLinked) {
                             spLinked.namaUnit = unitFormatted;
                             spLinked.modal = modalPart;
                             spLinked.sumber = sumberKasPart;
@@ -12308,6 +12736,7 @@
                                 id: spTs,
                                 updatedAt: spTs,
                                 idTiketRef: t.id,
+                                jenisPart: 'TALANGAN',
                                 isoDate: selectedDate,
                                 tgl: selectedDate,
                                 waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
@@ -12322,8 +12751,15 @@
                         }
                         nodesToSave.sparepart = window.sparepartList;
                     } else if (spLinked) {
-                        window.markLocalEntityDeleted('sparepart', spLinked.id);
-                        window.sparepartList = window.sparepartList.filter(s => s.id !== spLinked.id);
+                        if (spLinked.jenisPart === 'STOK_READY' || spLinked.jenisPart === 'EKS_CANCEL') {
+                            spLinked.idTiketRef = null;
+                            spLinked.namaUnit = spLinked.namaAsliStok || spLinked.namaUnit;
+                            spLinked.updatedAt = nowTs;
+                            window.markLocalEntityEdited('sparepart', spLinked);
+                        } else {
+                            window.markLocalEntityDeleted('sparepart', spLinked.id);
+                            window.sparepartList = window.sparepartList.filter(s => s.id !== spLinked.id);
+                        }
                         nodesToSave.sparepart = window.sparepartList;
                         spLinked = null;
                     }
@@ -12373,27 +12809,40 @@
 
             const nodesToSave = { tiketServis: window.tiketServisList };
 
-            // Jika ada belanja sparepart, catat ke sparepartList agar kas keluar & akun SPAREPART bertambah
+            // Jika pakai sparepart: cek apakah mengambil dari Stok Sparepart Ready atau beli dadakan baru
             if (perluSparepart && modalPart > 0 && sumberKasPart) {
                 if (!window.sparepartList) window.sparepartList = [];
-                const spTs = window.getNextUniqueTs();
-                const newSpObj = {
-                    id: spTs,
-                    updatedAt: spTs,
-                    idTiketRef: tiketObj.id,
-                    isoDate: selectedDate,
-                    tgl: selectedDate,
-                    waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
-                    namaUnit: `${tipeHp} (${namaPart})`,
-                    modal: modalPart,
-                    sumber: sumberKasPart,
-                    estJual: estBiaya,
-                    status: 'BELUM LUNAS'
-                };
-                window.sparepartList.unshift(newSpObj);
-                window.markLocalEntityEdited('sparepart', newSpObj);
-                nodesToSave.sparepart = window.sparepartList;
-                window.catatLogAktivitas('BELANJA PART SERVIS', `Mencatat belanja part "${namaPart}" modal ${window.formatRp(modalPart)} dari ${sumberKasPart}`);
+                const pickedReadySp = pickedReadySpId ? window.sparepartList.find(s => s.id == pickedReadySpId && !s.idTiketRef && s.status !== 'LUNAS') : null;
+                if (pickedReadySp) {
+                    if (!pickedReadySp.namaAsliStok) pickedReadySp.namaAsliStok = pickedReadySp.namaUnit;
+                    pickedReadySp.idTiketRef = tiketObj.id;
+                    pickedReadySp.namaUnit = namaPart.includes(tipeHp) ? namaPart : `${tipeHp} (${namaPart})`;
+                    pickedReadySp.estJual = estBiaya;
+                    pickedReadySp.updatedAt = nowTs;
+                    window.markLocalEntityEdited('sparepart', pickedReadySp);
+                    nodesToSave.sparepart = window.sparepartList;
+                    window.catatLogAktivitas('PAKAI STOK PART SERVIS', `Memasang stok sparepart ready "${namaPart}" (${window.formatRp(modalPart)}) ke tiket ${noServis}`);
+                } else {
+                    const spTs = window.getNextUniqueTs();
+                    const newSpObj = {
+                        id: spTs,
+                        updatedAt: spTs,
+                        idTiketRef: tiketObj.id,
+                        jenisPart: 'TALANGAN',
+                        isoDate: selectedDate,
+                        tgl: selectedDate,
+                        waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
+                        namaUnit: `${tipeHp} (${namaPart})`,
+                        modal: modalPart,
+                        sumber: sumberKasPart,
+                        estJual: estBiaya,
+                        status: 'BELUM LUNAS'
+                    };
+                    window.sparepartList.unshift(newSpObj);
+                    window.markLocalEntityEdited('sparepart', newSpObj);
+                    nodesToSave.sparepart = window.sparepartList;
+                    window.catatLogAktivitas('BELANJA PART SERVIS', `Mencatat belanja part "${namaPart}" modal ${window.formatRp(modalPart)} dari ${sumberKasPart}`);
+                }
             } else {
                 window.catatLogAktivitas('TIKET SERVIS BARU', `Menerima servis baru ${noServis} - ${nama} (${tipeHp})`);
             }
@@ -12406,6 +12855,63 @@
             window.showToast(`✅ Tiket servis ${noServis} berhasil dibuat!`, "success");
         }
 
+        window.populateDropdownStokPartReady = function(selectId, currentLinkedId) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            const availList = (window.sparepartList || []).filter(sp => {
+                if (sp.status === 'LUNAS') return false;
+                if (currentLinkedId && sp.id == currentLinkedId) return true;
+                return !sp.idTiketRef;
+            });
+            let html = `<option value="">⚡ -- Beli Sparepart Dadakan Baru (Potong Saldo Kas) --</option>`;
+            availList.forEach(sp => {
+                const tagJenis = sp.jenisPart === 'EKS_CANCEL' ? '🔄 EKS-CANCEL' : '📦 STOK READY';
+                const namaTampil = sp.namaAsliStok || sp.namaUnit || 'SPAREPART';
+                html += `<option value="${sp.id}">[${tagJenis}] ${namaTampil} — Modal ${window.formatRp(sp.modal)} (${sp.sumber})</option>`;
+            });
+            sel.innerHTML = html;
+            if (currentLinkedId && availList.some(s => s.id == currentLinkedId)) {
+                sel.value = String(currentLinkedId);
+            } else {
+                sel.value = '';
+            }
+        };
+
+        window.onSelectStokPartReadyForTiket = function(mode, spIdVal) {
+            const isSusulan = mode === 'SUSULAN';
+            const elNama = document.getElementById(isSusulan ? 'bpNamaPart' : 'tNamaPart');
+            const elModal = document.getElementById(isSusulan ? 'bpNom' : 'tModalPart');
+            const elModalDisp = document.getElementById(isSusulan ? 'bpNomDisplay' : 'tModalPartDisplay');
+            const elSumber = document.getElementById(isSusulan ? 'bpSumberKas' : 'tSumberKasPart');
+            const elNotice = document.getElementById(isSusulan ? 'bpNoticeStokPartReady' : 'tNoticeStokPartReady');
+            const elHint = document.getElementById(isSusulan ? 'bpHintPotongKas' : 'tHintPotongKasPart');
+
+            if (!spIdVal) {
+                if (elNotice) elNotice.style.display = 'none';
+                if (elHint) elHint.style.display = 'block';
+                if (elModalDisp) { elModalDisp.readOnly = false; elModalDisp.style.background = ''; }
+                if (elSumber) { elSumber.style.pointerEvents = ''; elSumber.style.background = ''; }
+                return;
+            }
+            const sp = (window.sparepartList || []).find(s => s.id == spIdVal);
+            if (!sp) return;
+            const namaClean = sp.namaAsliStok || sp.namaUnit || '';
+            if (elNama) elNama.value = namaClean;
+            if (elModal) elModal.value = Number(sp.modal || 0);
+            if (elModalDisp) {
+                elModalDisp.value = Number(sp.modal || 0).toLocaleString('id-ID');
+                elModalDisp.readOnly = true;
+                elModalDisp.style.background = '#F1F5F9';
+            }
+            if (elSumber) {
+                elSumber.value = sp.sumber || 'LACI';
+                elSumber.style.pointerEvents = 'none';
+                elSumber.style.background = '#F1F5F9';
+            }
+            if (elNotice) elNotice.style.display = 'block';
+            if (elHint) elHint.style.display = 'none';
+        };
+
         window.bukaModalBeliPartTiket = function(id) {
             const t = window.tiketServisList.find(item => item.id === id);
             if (!t) return;
@@ -12414,6 +12920,8 @@
             document.getElementById('bpNamaPart').value = '';
             document.getElementById('bpNom').value = '0';
             document.getElementById('bpNomDisplay').value = '';
+            window.populateDropdownStokPartReady('bpPilihStokPartReady');
+            window.onSelectStokPartReadyForTiket('SUSULAN', '');
             document.getElementById('modalBeliPartCepatOverlay').classList.add('show');
         }
         window.closeModalBeliPartCepat = function() {
@@ -12426,6 +12934,7 @@
             const t = window.tiketServisList.find(item => item.id === id);
             if (!t) return;
 
+            const pickedReadySpId = document.getElementById('bpPilihStokPartReady')?.value || '';
             const namaPart = document.getElementById('bpNamaPart').value.trim().toUpperCase();
             const modalPart = parseFloat(document.getElementById('bpNom').value) || 0;
             const sumberKas = document.getElementById('bpSumberKas').value;
@@ -12441,36 +12950,49 @@
             t.modalPart = modalPart;
             t.sumberKasPart = sumberKas;
             t.statusPart = 'SUDAH DIBELI';
-            t.status = 'PROSES';
+            t.catatanPartCancel = '';
+            if (t.status === 'MENUNGGU KONFIRMASI') t.status = 'PROSES';
             t.updatedAt = nowTs;
             window.markLocalEntityEdited('tiketServis', t);
 
             if (!window.sparepartList) window.sparepartList = [];
-            const spTs = window.getNextUniqueTs();
-            const spObj = {
-                id: spTs,
-                updatedAt: spTs,
-                idTiketRef: t.id,
-                isoDate: window.getTodayIso(),
-                tgl: window.getTodayIso(),
-                waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
-                namaUnit: `${t.tipeHp} (${namaPart})`,
-                modal: modalPart,
-                sumber: sumberKas,
-                estJual: t.estBiaya || 0,
-                status: 'BELUM LUNAS'
-            };
-            window.sparepartList.unshift(spObj);
-            window.markLocalEntityEdited('sparepart', spObj);
+            const pickedReadySp = pickedReadySpId ? window.sparepartList.find(s => s.id == pickedReadySpId && !s.idTiketRef && s.status !== 'LUNAS') : null;
+            if (pickedReadySp) {
+                if (!pickedReadySp.namaAsliStok) pickedReadySp.namaAsliStok = pickedReadySp.namaUnit;
+                pickedReadySp.idTiketRef = t.id;
+                pickedReadySp.namaUnit = namaPart.includes(t.tipeHp) ? namaPart : `${t.tipeHp} (${namaPart})`;
+                pickedReadySp.estJual = t.estBiaya || pickedReadySp.estJual || 0;
+                pickedReadySp.updatedAt = nowTs;
+                window.markLocalEntityEdited('sparepart', pickedReadySp);
+                window.catatLogAktivitas('PAKAI STOK PART SERVIS', `Memasang stok part ready "${namaPart}" (${window.formatRp(modalPart)}) ke tiket ${t.noServis}`);
+            } else {
+                const spTs = window.getNextUniqueTs();
+                const spObj = {
+                    id: spTs,
+                    updatedAt: spTs,
+                    idTiketRef: t.id,
+                    jenisPart: 'TALANGAN',
+                    isoDate: window.getTodayIso(),
+                    tgl: window.getTodayIso(),
+                    waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
+                    namaUnit: `${t.tipeHp} (${namaPart})`,
+                    modal: modalPart,
+                    sumber: sumberKas,
+                    estJual: t.estBiaya || 0,
+                    status: 'BELUM LUNAS'
+                };
+                window.sparepartList.unshift(spObj);
+                window.markLocalEntityEdited('sparepart', spObj);
+                window.catatLogAktivitas('BELANJA PART SERVIS', `Belanja part susulan "${namaPart}" (${window.formatRp(modalPart)}) dari ${sumberKas} untuk unit ${t.tipeHp}`);
+            }
 
-            window.catatLogAktivitas('BELANJA PART SERVIS', `Belanja part susulan "${namaPart}" (${window.formatRp(modalPart)}) dari ${sumberKas} untuk unit ${t.tipeHp}`);
             window.closeModalBeliPartCepat();
             window.saveMultipleFirebaseNodes({
                 tiketServis: window.tiketServisList,
                 sparepart: window.sparepartList
             });
             window.renderAll();
-            alert("✅ Pembelian sparepart berhasil dicatat & saldo kas terpotong!");
+            window.showToast(pickedReadySp ? "✅ Stok sparepart ready berhasil dipasang ke tiket!" : "✅ Pembelian sparepart berhasil dicatat & saldo kas terpotong!", "success");
         }
 
         window.prosesLunasiTiketKeKasir = function(t) {
@@ -12512,26 +13034,129 @@
             window._pendingTiketIdToLunas = t.id;
             window._pendingSparepartIdToLunas = spLinked ? spLinked.id : null;
             window._pendingPiutangIdToLunas = null; window._pendingPiutangGroupNama = null;
-            }
+        }
+
+        window._pendingCancelTiketId = null;
 
         window.ubahStatusTiket = function(id, statusBaru) {
             const t = window.tiketServisList.find(item => item.id === id);
-            if (t) {
-                t.status = statusBaru;
-                if (statusBaru === 'CANCEL') {
-                    t.tglCancel = window.getTodayIso();
-                    t.waktuCancel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                } else {
-                    t.tglCancel = '';
-                    t.waktuCancel = '';
+            if (!t) return;
+
+            if (statusBaru === 'CANCEL') {
+                const spLinked = (window.sparepartList || []).find(s => s.idTiketRef == t.id && s.status !== 'LUNAS');
+                const pakaiModal = Boolean((t.perluSparepart && Number(t.modalPart || 0) > 0) || (spLinked && Number(spLinked.modal || 0) > 0));
+                if (pakaiModal) {
+                    window._pendingCancelTiketId = t.id;
+                    const namaPartTxt = t.namaPart || (spLinked ? spLinked.namaUnit : 'Sparepart');
+                    const modalNom = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
+                    const sumberTxt = t.sumberKasPart || (spLinked ? spLinked.sumber : 'LACI');
+                    const infoBox = document.getElementById('infoBoxKonfirmasiCancelPart');
+                    if (infoBox) {
+                        infoBox.innerHTML = `
+                            <div><b>No. Tiket:</b> ${t.noServis} — <b>${t.nama}</b> (${t.tipeHp})</div>
+                            <div style="margin-top:4px;"><b>Sparepart Terpasang:</b> ${namaPartTxt}</div>
+                            <div style="margin-top:2px;"><b>Modal Part:</b> <span style="font-weight:900; color:#DC2626;">${window.formatRp(modalNom)}</span> (Sumber Kas: <b>${sumberTxt}</b>)</div>
+                        `;
+                    }
+                    document.getElementById('modalKonfirmasiCancelPartOverlay').classList.add('show');
+                    return;
                 }
-                t.updatedAt = window.getNextUniqueTs();
-                window.markLocalEntityEdited('tiketServis', t);
-                window.catatLogAktivitas('STATUS TIKET', `Mengubah status tiket ${t.noServis} (${t.nama}) menjadi ${statusBaru}`);
-                window.saveToFirebaseNode('tiketServis', window.tiketServisList);
-                window.renderAll();
             }
+
+            t.status = statusBaru;
+            if (statusBaru === 'CANCEL') {
+                t.tglCancel = window.getTodayIso();
+                t.waktuCancel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                t.tglCancel = '';
+                t.waktuCancel = '';
+            }
+            t.updatedAt = window.getNextUniqueTs();
+            window.markLocalEntityEdited('tiketServis', t);
+            window.catatLogAktivitas('STATUS TIKET', `Mengubah status tiket ${t.noServis} (${t.nama}) menjadi ${statusBaru}`);
+            window.saveToFirebaseNode('tiketServis', window.tiketServisList);
+            window.renderAll();
         }
+
+        window.batalUbahStatusCancelPart = function() {
+            window._pendingCancelTiketId = null;
+            document.getElementById('modalKonfirmasiCancelPartOverlay').classList.remove('show');
+            window.renderAll();
+        };
+
+        window.prosesKeputusanCancelPartTiket = function(keputusan) {
+            const id = window._pendingCancelTiketId;
+            window._pendingCancelTiketId = null;
+            document.getElementById('modalKonfirmasiCancelPartOverlay').classList.remove('show');
+            if (!id) return;
+
+            const t = (window.tiketServisList || []).find(item => item.id == id);
+            if (!t) return;
+            if (!window.sparepartList) window.sparepartList = [];
+            const spLinked = window.sparepartList.find(s => s.idTiketRef == t.id && s.status !== 'LUNAS');
+            const namaPartTxt = t.namaPart || (spLinked ? spLinked.namaUnit : 'SPAREPART');
+            const modalNom = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
+            const sumberTxt = t.sumberKasPart || (spLinked ? spLinked.sumber : 'LACI');
+            const nowTs = window.getNextUniqueTs();
+
+            t.status = 'CANCEL';
+            t.tglCancel = window.getTodayIso();
+            t.waktuCancel = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            t.perluSparepart = false;
+            t.modalPart = 0;
+            t.updatedAt = nowTs;
+
+            if (keputusan === 'RETUR_KAS') {
+                t.statusPart = 'DIRETUR KE SUPPLIER';
+                t.catatanPartCancel = `🔄 Part Diretur (${namaPartTxt} - ${window.formatRp(modalNom)} kembali ke ${sumberTxt})`;
+                if (spLinked) {
+                    window.markLocalEntityDeleted('sparepart', spLinked.id);
+                    window.sparepartList = window.sparepartList.filter(s => s.id !== spLinked.id);
+                }
+                window.catatLogAktivitas('CANCEL SERVIS & RETUR PART', `Tiket ${t.noServis} CANCEL. Sparepart "${namaPartTxt}" (${window.formatRp(modalNom)}) diretur & saldo ${sumberTxt} kembali.`);
+                window.showToast(`🔄 Tiket ${t.noServis} Cancel & Saldo ${sumberTxt} (${window.formatRp(modalNom)}) dikembalikan!`, "info");
+            } else {
+                // JADIKAN_STOK (Simpan jadi Stok Sparepart Ready / Eks-Cancel)
+                t.statusPart = 'MASUK STOK READY';
+                t.catatanPartCancel = `📦 Masuk Stok Ready (${namaPartTxt} - ${window.formatRp(modalNom)})`;
+                if (spLinked) {
+                    spLinked.idTiketRef = null;
+                    spLinked.jenisPart = 'EKS_CANCEL';
+                    spLinked.asalCancelInfo = `Eks Cancel ${t.noServis} (${t.nama} - ${t.tipeHp})`;
+                    if (spLinked.namaAsliStok) spLinked.namaUnit = spLinked.namaAsliStok;
+                    spLinked.updatedAt = nowTs;
+                    window.markLocalEntityEdited('sparepart', spLinked);
+                } else if (modalNom > 0) {
+                    const spTs = window.getNextUniqueTs();
+                    const newSp = {
+                        id: spTs,
+                        updatedAt: spTs,
+                        idTiketRef: null,
+                        jenisPart: 'EKS_CANCEL',
+                        asalCancelInfo: `Eks Cancel ${t.noServis} (${t.nama} - ${t.tipeHp})`,
+                        isoDate: window.getTodayIso(),
+                        tgl: window.getTodayIso(),
+                        waktu: new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }),
+                        namaUnit: namaPartTxt.includes(t.tipeHp) ? namaPartTxt : `${t.tipeHp} (${namaPartTxt})`,
+                        modal: modalNom,
+                        sumber: sumberTxt,
+                        estJual: t.estBiaya || modalNom,
+                        status: 'BELUM LUNAS'
+                    };
+                    window.sparepartList.unshift(newSp);
+                    window.markLocalEntityEdited('sparepart', newSp);
+                }
+                window.catatLogAktivitas('CANCEL SERVIS & SIMPAN STOK PART', `Tiket ${t.noServis} CANCEL. Sparepart "${namaPartTxt}" (${window.formatRp(modalNom)}) disimpan ke Stok Sparepart Ready (Eks-Cancel).`);
+                window.showToast(`📦 Tiket ${t.noServis} Cancel & Part "${namaPartTxt}" masuk ke Stok Sparepart Ready!`, "success");
+            }
+
+            window.markLocalEntityEdited('tiketServis', t);
+            window.saveMultipleFirebaseNodes({
+                tiketServis: window.tiketServisList,
+                sparepart: window.sparepartList
+            });
+            window.renderAll();
+        };
 
         window.setPrintPageMode = function(mode) {
             let styleEl = document.getElementById('dynamicPrintPageStyle');
@@ -13209,12 +13834,36 @@
             }
         }
 
-        window.openModalSparepart = function() {
+        window.bukaMenuManajemenSparepart = function() {
+            window.activateMainTabById('tab-service');
+            setTimeout(() => {
+                const el = document.getElementById('cardManajemenSparepartService');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 120);
+        };
+
+        window.toggleFilterServicePartDate = function(mode) {
+            const dEl = document.getElementById('serviceDatePicker');
+            const mEl = document.getElementById('serviceMonthPicker');
+            if (dEl) dEl.style.display = mode === 'DAILY' ? 'inline-block' : 'none';
+            if (mEl) mEl.style.display = mode === 'MONTHLY' ? 'inline-block' : 'none';
+            if (mode === 'DAILY' && dEl && !dEl.value) dEl.value = window.getTodayIso();
+            if (mode === 'MONTHLY' && mEl && !mEl.value) mEl.value = window.getTodayIso().slice(0, 7);
+            window.renderAll();
+        };
+
+        window.openModalSparepart = function(defaultJenis) {
             document.getElementById('editSparepartId').value = '';
             document.getElementById('formBelanjaSparepart').reset();
             document.getElementById('spNom').value = '0';
             document.getElementById('spEstJual').value = '0';
-            document.getElementById('formSparepartTitle').innerText = '+ Catat Belanja Sparepart Service';
+            const elJenis = document.getElementById('spJenisPart');
+            if (elJenis) elJenis.value = defaultJenis || 'STOK_READY';
+            const elQty = document.getElementById('spQtyInput');
+            if (elQty) elQty.value = '1';
+            const wrapQty = document.getElementById('wrapSpQtyInput');
+            if (wrapQty) wrapQty.style.display = '';
+            document.getElementById('formSparepartTitle').innerText = '+ Input / Belanja Stok Sparepart Service';
             document.getElementById('modalSparepartOverlay').classList.add('show');
         }
         window.closeModalSparepart = function() { document.getElementById('modalSparepartOverlay').classList.remove('show'); }
@@ -17027,6 +17676,8 @@
         window.simpanBelanjaSparepart = function(e) {
             e.preventDefault();
             const editId = document.getElementById('editSparepartId').value;
+            const jenisPart = document.getElementById('spJenisPart')?.value || 'STOK_READY';
+            const qtyInput = Math.max(1, Math.min(50, parseInt(document.getElementById('spQtyInput')?.value || '1', 10) || 1));
             const namaUnit = document.getElementById('spNamaUnit').value.trim().toUpperCase();
             const modal = parseFloat(document.getElementById('spNom').value) || 0;
             const sumber = document.getElementById('spSumber').value;
@@ -17042,6 +17693,8 @@
                 let sp = window.sparepartList.find(s => s.id == editId);
                 if (sp) {
                     sp.namaUnit = namaUnit;
+                    sp.namaAsliStok = namaUnit;
+                    sp.jenisPart = jenisPart;
                     sp.modal = modal;
                     sp.sumber = sumber;
                     sp.estJual = estJual;
@@ -17070,41 +17723,599 @@
                 document.getElementById('editSparepartId').value = '';
                 window.catatLogAktivitas('EDIT SPAREPART', `Mengubah sparepart service "${namaUnit}" modal ${window.formatRp(modal)}`);
             } else {
-                const newSp = { id: nowTs, isoDate: tgl, tgl, waktu, namaUnit, modal, sumber, estJual, status: 'BELUM LUNAS', updatedAt: nowTs };
-                window.sparepartList.unshift(newSp);
-                window.markLocalEntityEdited('sparepart', newSp);
-                window.catatLogAktivitas('BELANJA SPAREPART', `Mencatat belanja sparepart "${namaUnit}" seharga ${window.formatRp(modal)} dari ${sumber}`);
+                for (let i = 0; i < qtyInput; i++) {
+                    const itemTs = window.getNextUniqueTs();
+                    const newSp = {
+                        id: itemTs,
+                        isoDate: tgl,
+                        tgl,
+                        waktu,
+                        jenisPart,
+                        idTiketRef: null,
+                        namaUnit,
+                        namaAsliStok: namaUnit,
+                        modal,
+                        sumber,
+                        estJual,
+                        status: 'BELUM LUNAS',
+                        updatedAt: itemTs
+                    };
+                    window.sparepartList.unshift(newSp);
+                    window.markLocalEntityEdited('sparepart', newSp);
+                }
+                window.catatLogAktivitas('BELANJA SPAREPART', `Mencatat belanja ${qtyInput} pcs sparepart "${namaUnit}" (@ ${window.formatRp(modal)}) dari ${sumber}`);
             }
             window.closeModalSparepart();
             window.saveMultipleFirebaseNodes(nodesToSave, false);
             window.renderAll();
-            alert("✅ Sparepart disimpan!");
+            window.showToast(editId ? "✅ Data sparepart berhasil diperbarui!" : `✅ ${qtyInput} Pcs Sparepart "${namaUnit}" berhasil disimpan ke Stok Sparepart!`, "success");
         }
 
         window.editSparepart = function(id) {
             const sp = window.sparepartList.find(s => s.id == id);
             if (!sp) return;
+            window.openModalSparepart(sp.jenisPart || (sp.idTiketRef ? 'TALANGAN' : 'STOK_READY'));
             document.getElementById('editSparepartId').value = sp.id;
             document.getElementById('spNamaUnit').value = sp.namaUnit;
             document.getElementById('spNom').value = sp.modal;
             document.getElementById('spNomDisplay').value = Number(sp.modal).toLocaleString('id-ID');
             document.getElementById('spSumber').value = sp.sumber;
-            document.getElementById('spEstJual').value = sp.estJual;
-            document.getElementById('spEstJualDisplay').value = Number(sp.estJual).toLocaleString('id-ID');
-            document.getElementById('formSparepartTitle').innerText = '✏️ Edit Belanja Sparepart';
-            window.openModalSparepart();
+            document.getElementById('spEstJual').value = sp.estJual || 0;
+            document.getElementById('spEstJualDisplay').value = Number(sp.estJual || 0).toLocaleString('id-ID');
+            const wrapQty = document.getElementById('wrapSpQtyInput');
+            if (wrapQty) wrapQty.style.display = 'none';
+            document.getElementById('formSparepartTitle').innerText = '✏️ Edit Data Sparepart Service';
         }
 
         window.hapusSparepart = function(id) {
             const sp = window.sparepartList.find(s => s.id == id);
-            if (confirm("Hapus sparepart ini?")) {
+            if (!sp) return;
+            const msg = sp.status === 'LUNAS'
+                ? `Hapus riwayat sparepart "${sp.namaUnit}"?`
+                : `Retur / Hapus sparepart "${sp.namaUnit}" (${window.formatRp(sp.modal)})?\n\nSaldo kas ${sp.sumber} akan otomatis kembali bertambah ${window.formatRp(sp.modal)}.`;
+            if (confirm(msg)) {
+                const nodesToSave = {};
+                if (sp.idTiketRef) {
+                    const tk = (window.tiketServisList || []).find(t => t.id == sp.idTiketRef);
+                    if (tk && !tk.isSettledInKasir) {
+                        tk.perluSparepart = false;
+                        tk.modalPart = 0;
+                        tk.statusPart = 'DIRETUR KE SUPPLIER';
+                        tk.updatedAt = window.getNextUniqueTs();
+                        window.markLocalEntityEdited('tiketServis', tk);
+                        nodesToSave.tiketServis = window.tiketServisList;
+                    }
+                }
                 window.markLocalEntityDeleted('sparepart', id);
-                if (sp) window.catatLogAktivitas('HAPUS SPAREPART', `Menghapus data sparepart "${sp.namaUnit}"`);
+                window.catatLogAktivitas('HAPUS / RETUR SPAREPART', `Menghapus/retur data sparepart "${sp.namaUnit}" (${window.formatRp(sp.modal)}) kembali ke ${sp.sumber}`);
                 window.sparepartList = window.sparepartList.filter(s => s.id !== id);
-                window.saveToFirebaseNode('sparepart', window.sparepartList);
+                nodesToSave.sparepart = window.sparepartList;
+                window.saveMultipleFirebaseNodes(nodesToSave, false);
                 window.renderAll();
+                window.showToast(`🔄 Sparepart "${sp.namaUnit}" dihapus & saldo ${sp.sumber} pulih!`, "info");
             }
         }
+
+        window.lepasSparepartJadiStokReady = function(spId) {
+            const sp = (window.sparepartList || []).find(s => s.id == spId);
+            if (!sp || !sp.idTiketRef) return;
+            const tk = (window.tiketServisList || []).find(t => t.id == sp.idTiketRef);
+            if (!confirm(`Lepas sparepart "${sp.namaUnit}" (${window.formatRp(sp.modal)}) dari tiket ${tk ? tk.noServis : ''} dan simpan menjadi Stok Sparepart Ready di konter?`)) return;
+            const nowTs = window.getNextUniqueTs();
+            const nodesToSave = { sparepart: window.sparepartList };
+            if (tk) {
+                tk.perluSparepart = false;
+                tk.modalPart = 0;
+                tk.statusPart = 'MASUK STOK READY';
+                tk.catatanPartCancel = `📦 Part dilepas ke Stok Ready (${sp.namaUnit})`;
+                tk.updatedAt = nowTs;
+                window.markLocalEntityEdited('tiketServis', tk);
+                nodesToSave.tiketServis = window.tiketServisList;
+            }
+            sp.idTiketRef = null;
+            sp.jenisPart = 'EKS_CANCEL';
+            if (tk) sp.asalCancelInfo = `Eks Tiket ${tk.noServis} (${tk.nama} - ${tk.tipeHp})`;
+            if (sp.namaAsliStok) sp.namaUnit = sp.namaAsliStok;
+            sp.updatedAt = nowTs;
+            window.markLocalEntityEdited('sparepart', sp);
+            window.saveMultipleFirebaseNodes(nodesToSave, false);
+            window.renderAll();
+            window.showToast(`📦 Sparepart "${sp.namaUnit}" berhasil dipindahkan ke Stok Sparepart Ready!`, "success");
+        };
+
+        window.bukaModalPasangStokPartKeTiket = function(spId) {
+            const sp = (window.sparepartList || []).find(s => s.id == spId);
+            if (!sp || sp.status === 'LUNAS') return;
+            const activeTickets = (window.tiketServisList || []).filter(t => !t.isSettledInKasir && t.status !== 'CANCEL');
+            if (activeTickets.length === 0) {
+                alert("Saat ini belum ada Tiket Servis aktif yang sedang dikerjakan. Silakan buat Tiket Servis baru terlebih dahulu.");
+                return;
+            }
+            document.getElementById('psSparepartId').value = sp.id;
+            document.getElementById('psInfoSparepart').value = `${sp.namaAsliStok || sp.namaUnit} — Modal ${window.formatRp(sp.modal)} (${sp.sumber})`;
+            const sel = document.getElementById('psTargetTiketId');
+            sel.innerHTML = activeTickets.map(t => {
+                const hasPart = t.perluSparepart && Number(t.modalPart || 0) > 0;
+                return `<option value="${t.id}">${t.noServis} — ${t.nama} [${t.tipeHp}] ${hasPart ? '(Sudah ada part)' : '(Belum ada part)'}</option>`;
+            }).join('');
+            document.getElementById('modalPasangStokPartKeTiketOverlay').classList.add('show');
+        };
+
+        window.simpanPasangStokPartKeTiket = function(e) {
+            e.preventDefault();
+            const spId = parseFloat(document.getElementById('psSparepartId').value);
+            const tkId = parseFloat(document.getElementById('psTargetTiketId').value);
+            const sp = (window.sparepartList || []).find(s => s.id == spId);
+            const tk = (window.tiketServisList || []).find(t => t.id == tkId);
+            if (!sp || !tk) return;
+
+            const existingSp = (window.sparepartList || []).find(s => s.idTiketRef == tk.id && s.id !== sp.id && s.status !== 'LUNAS');
+            if (existingSp) {
+                if (!confirm(`Tiket ${tk.noServis} sudah memiliki part "${existingSp.namaUnit}". Ganti dengan "${sp.namaUnit}" (part lama dikembalikan ke Stok Ready)?`)) return;
+                existingSp.idTiketRef = null;
+                existingSp.jenisPart = 'STOK_READY';
+                if (existingSp.namaAsliStok) existingSp.namaUnit = existingSp.namaAsliStok;
+                existingSp.updatedAt = window.getNextUniqueTs();
+                window.markLocalEntityEdited('sparepart', existingSp);
+            }
+
+            const nowTs = window.getNextUniqueTs();
+            const rawPartName = sp.namaAsliStok || sp.namaUnit;
+            if (!sp.namaAsliStok) sp.namaAsliStok = sp.namaUnit;
+            sp.idTiketRef = tk.id;
+            sp.namaUnit = rawPartName.includes(tk.tipeHp) ? rawPartName : `${tk.tipeHp} (${rawPartName})`;
+            sp.updatedAt = nowTs;
+            window.markLocalEntityEdited('sparepart', sp);
+
+            tk.perluSparepart = true;
+            tk.namaPart = rawPartName;
+            tk.modalPart = Number(sp.modal || 0);
+            tk.sumberKasPart = sp.sumber || 'LACI';
+            tk.statusPart = 'SUDAH DIBELI';
+            tk.catatanPartCancel = '';
+            if (tk.status === 'MENUNGGU KONFIRMASI') tk.status = 'PROSES';
+            tk.updatedAt = nowTs;
+            window.markLocalEntityEdited('tiketServis', tk);
+
+            document.getElementById('modalPasangStokPartKeTiketOverlay').classList.remove('show');
+            window.catatLogAktivitas('PASANG STOK PART KE TIKET', `Memasang stok sparepart "${rawPartName}" (${window.formatRp(sp.modal)}) ke tiket ${tk.noServis} (${tk.nama})`);
+            window.saveMultipleFirebaseNodes({
+                tiketServis: window.tiketServisList,
+                sparepart: window.sparepartList
+            }, false);
+            window.renderAll();
+            window.showToast(`✅ Stok part "${rawPartName}" berhasil dipasang ke tiket ${tk.noServis}!`, "success");
+        };
+
+        // =========================================================================
+        // MANAJEMEN STOK HADIAH & PENUKARAN KUPON ATM LINK (DI LUAR MODAL 250 JUTA)
+        // =========================================================================
+        window.populateDropdownSumberDanaHadiah = function() {
+            const sel = document.getElementById('hdSumberDana');
+            if (!sel) return;
+            const autoSet = new Set(window.AKUN_DATA_OTOMATIS || ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG', 'OPERASIONAL']);
+            let html = `<option value="OWNER_LANGSUNG">👑 Drop / Titipan Langsung dari Owner (Tanpa Potong Kas)</option>`;
+            html += `<optgroup label="💵 Beli Dadakan Pakai Kas Konter (Masuk Operasional Wajib Diganti Owner)">`;
+            (window.saldoList || []).forEach(ak => {
+                const akUp = String(ak || '').toUpperCase().trim();
+                if (autoSet.has(akUp) || akUp === 'BRANKAS' || akUp === 'BRANGKAS' || akUp === 'KOMISI EDC') return;
+                html += `<option value="${ak}">💵 Potong Kas ${ak} (Masuk Rekap Operasional Wajib Diganti Owner)</option>`;
+            });
+            html += `</optgroup>`;
+            sel.innerHTML = html;
+            sel.value = 'OWNER_LANGSUNG';
+        };
+
+        window.onChangeSumberDanaHadiahAtm = function(val) {
+            const notice = document.getElementById('hdNoticeSumberDana');
+            if (!notice) return;
+            if (!val || val === 'OWNER_LANGSUNG') {
+                notice.style.color = '#059669';
+                notice.innerHTML = '👑 <b>Drop / Titipan langsung dari Owner:</b> Menambah stok hadiah tanpa memotong saldo kas konter &amp; tidak masuk Modal Berputar 250 Juta.';
+            } else {
+                notice.style.color = '#B45309';
+                notice.innerHTML = `💵 <b>Beli Dadakan Pakai Kas ${val}:</b> Saldo <b>${val}</b> otomatis terpotong dan tercatat ke <b>Rekapan Operasional Toko (Belum Diganti Owner)</b> agar diganti penuh oleh Owner.`;
+            }
+        };
+
+        window.hitungTotalBelanjaHadiahAtm = function() {
+            const qty = Math.max(0, parseInt(document.getElementById('hdQtyMasuk')?.value || '0', 10) || 0);
+            const modal = parseFloat(document.getElementById('hdModal')?.value || '0') || 0;
+            const totDisp = document.getElementById('hdTotalModalDisplay');
+            if (totDisp) totDisp.value = window.formatRp(qty * modal);
+        };
+
+        window.onInputNamaHadiahAtm = function(val) {
+            const mode = document.getElementById('hdModeForm')?.value || 'NEW';
+            if (mode === 'EDIT') return;
+            const clean = String(val || '').trim().toUpperCase();
+            const exist = (window.stokHadiahAtmList || []).find(h => (h.nama || '').trim().toUpperCase() === clean);
+            if (exist) {
+                const modVal = Number(exist.modal || 0);
+                document.getElementById('hdModal').value = modVal;
+                document.getElementById('hdModalDisplay').value = modVal > 0 ? modVal.toLocaleString('id-ID') : '';
+                document.getElementById('hdSyaratKupon').value = Number(exist.syaratKupon || 10);
+                window.hitungTotalBelanjaHadiahAtm();
+            }
+        };
+
+        window.openModalInputStokHadiah = function(restokId, isEditMode) {
+            window.populateDropdownSumberDanaHadiah();
+            const dl = document.getElementById('datalistHadiahAtmExist');
+            if (dl) {
+                dl.innerHTML = (window.stokHadiahAtmList || []).map(h => `<option value="${h.nama}">Sisa: ${Math.max(0, Number(h.masuk || 0) - Number(h.keluar || 0))} Pcs • Modal ${window.formatRp(h.modal || 0)}</option>`).join('');
+            }
+            const form = document.getElementById('formInputStokHadiah');
+            if (form) form.reset();
+
+            const elEditId = document.getElementById('hdEditId');
+            const elMode = document.getElementById('hdModeForm');
+            const elTitle = document.getElementById('titleModalInputStokHadiah');
+            const lblQty = document.getElementById('lblHdQtyMasuk');
+            const wrapKeluar = document.getElementById('wrapHdQtyKeluarEdit');
+            const wrapSumber = document.getElementById('wrapHdSumberDana');
+
+            if (restokId && isEditMode) {
+                const h = (window.stokHadiahAtmList || []).find(x => x.id == restokId);
+                if (!h) return;
+                elEditId.value = h.id;
+                elMode.value = 'EDIT';
+                elTitle.innerText = `✏️ Edit Data Stok Hadiah (${h.nama})`;
+                lblQty.innerText = 'Total Stok Masuk (Pcs) *';
+                if (wrapKeluar) wrapKeluar.style.display = '';
+                if (wrapSumber) wrapSumber.style.display = 'none';
+                document.getElementById('hdNama').value = h.nama || '';
+                document.getElementById('hdQtyMasuk').value = Number(h.masuk || 0);
+                document.getElementById('hdQtyKeluarEdit').value = Number(h.keluar || 0);
+                document.getElementById('hdSyaratKupon').value = Number(h.syaratKupon || 10);
+                document.getElementById('hdModal').value = Number(h.modal || 0);
+                document.getElementById('hdModalDisplay').value = Number(h.modal || 0).toLocaleString('id-ID');
+                window.hitungTotalBelanjaHadiahAtm();
+            } else if (restokId) {
+                const h = (window.stokHadiahAtmList || []).find(x => x.id == restokId);
+                if (!h) return;
+                elEditId.value = h.id;
+                elMode.value = 'RESTOK';
+                elTitle.innerText = `➕ Tambah / Restok Hadiah (${h.nama})`;
+                lblQty.innerText = 'Jumlah Tambahan Restok (Pcs) *';
+                if (wrapKeluar) wrapKeluar.style.display = 'none';
+                if (wrapSumber) wrapSumber.style.display = '';
+                document.getElementById('hdNama').value = h.nama || '';
+                document.getElementById('hdQtyMasuk').value = '1';
+                document.getElementById('hdSyaratKupon').value = Number(h.syaratKupon || 10);
+                document.getElementById('hdModal').value = Number(h.modal || 0);
+                document.getElementById('hdModalDisplay').value = Number(h.modal || 0).toLocaleString('id-ID');
+                window.onChangeSumberDanaHadiahAtm('OWNER_LANGSUNG');
+                window.hitungTotalBelanjaHadiahAtm();
+            } else {
+                elEditId.value = '';
+                elMode.value = 'NEW';
+                elTitle.innerText = '🎁 + Input / Restok Stok Hadiah ATM Link';
+                lblQty.innerText = 'Jumlah Stok Masuk (Pcs) *';
+                if (wrapKeluar) wrapKeluar.style.display = 'none';
+                if (wrapSumber) wrapSumber.style.display = '';
+                document.getElementById('hdQtyMasuk').value = '1';
+                document.getElementById('hdSyaratKupon').value = '10';
+                document.getElementById('hdModal').value = '0';
+                document.getElementById('hdModalDisplay').value = '';
+                window.onChangeSumberDanaHadiahAtm('OWNER_LANGSUNG');
+                window.hitungTotalBelanjaHadiahAtm();
+            }
+            document.getElementById('modalInputStokHadiahOverlay').classList.add('show');
+        };
+
+        window.closeModalInputStokHadiah = function() {
+            document.getElementById('modalInputStokHadiahOverlay').classList.remove('show');
+        };
+
+        window.simpanInputStokHadiahAtm = function(e) {
+            e.preventDefault();
+            if (!window.stokHadiahAtmList) window.stokHadiahAtmList = [];
+            const editId = document.getElementById('hdEditId')?.value || '';
+            const mode = document.getElementById('hdModeForm')?.value || 'NEW';
+            const nama = (document.getElementById('hdNama')?.value || '').trim().toUpperCase();
+            const qtyMasuk = Math.max(0, parseInt(document.getElementById('hdQtyMasuk')?.value || '0', 10) || 0);
+            const qtyKeluarEdit = Math.max(0, parseInt(document.getElementById('hdQtyKeluarEdit')?.value || '0', 10) || 0);
+            const syaratKupon = Math.max(1, parseInt(document.getElementById('hdSyaratKupon')?.value || '10', 10) || 10);
+            const modal = parseFloat(document.getElementById('hdModal')?.value || '0') || 0;
+            const sumberDana = document.getElementById('hdSumberDana')?.value || 'OWNER_LANGSUNG';
+
+            if (!nama || modal < 0) {
+                alert("Harap isi nama hadiah dan harga modal/nilai barang!");
+                return;
+            }
+            if (mode !== 'EDIT' && qtyMasuk <= 0) {
+                alert("Jumlah stok masuk minimal 1 Pcs!");
+                return;
+            }
+
+            const nowTs = window.getNextUniqueTs();
+            const tgl = window.getTodayIso();
+            const waktu = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const nodesToSave = { stokHadiahAtm: window.stokHadiahAtmList };
+
+            if (mode === 'EDIT' && editId) {
+                const h = window.stokHadiahAtmList.find(x => x.id == editId);
+                if (h) {
+                    h.nama = nama;
+                    h.masuk = qtyMasuk;
+                    h.keluar = qtyKeluarEdit;
+                    h.modal = modal;
+                    h.syaratKupon = syaratKupon;
+                    h.updatedAt = nowTs;
+                    window.markLocalEntityEdited('stokHadiahAtm', h);
+                    window.catatLogAktivitas('EDIT STOK HADIAH ATM', `Mengubah data stok hadiah "${nama}" (Masuk: ${qtyMasuk}, Keluar: ${qtyKeluarEdit}, Modal: ${window.formatRp(modal)})`);
+                }
+            } else {
+                let target = editId
+                    ? window.stokHadiahAtmList.find(x => x.id == editId)
+                    : window.stokHadiahAtmList.find(x => (x.nama || '').trim().toUpperCase() === nama);
+
+                if (target) {
+                    const sisaLama = Math.max(0, Number(target.masuk || 0) - Number(target.keluar || 0));
+                    const modalLama = Number(target.modal || 0);
+                    // Rata-rata tertimbang atau update modal terbaru bila sisa lama 0
+                    const modalBaru = (sisaLama > 0 && modalLama > 0 && modal > 0)
+                        ? Math.round(((sisaLama * modalLama) + (qtyMasuk * modal)) / (sisaLama + qtyMasuk))
+                        : (modal || modalLama);
+                    target.masuk = Number(target.masuk || 0) + qtyMasuk;
+                    target.modal = modalBaru;
+                    target.syaratKupon = syaratKupon;
+                    target.sumberTerakhir = sumberDana === 'OWNER_LANGSUNG' ? 'DROP OWNER' : `KAS ${sumberDana} (OPERASIONAL)`;
+                    target.tglRestokTerakhir = tgl;
+                    target.updatedAt = nowTs;
+                    window.markLocalEntityEdited('stokHadiahAtm', target);
+                } else {
+                    target = {
+                        id: nowTs,
+                        updatedAt: nowTs,
+                        isoDate: tgl,
+                        tgl: tgl,
+                        nama: nama,
+                        masuk: qtyMasuk,
+                        keluar: 0,
+                        modal: modal,
+                        syaratKupon: syaratKupon,
+                        sumberTerakhir: sumberDana === 'OWNER_LANGSUNG' ? 'DROP OWNER' : `KAS ${sumberDana} (OPERASIONAL)`
+                    };
+                    window.stokHadiahAtmList.unshift(target);
+                    window.markLocalEntityEdited('stokHadiahAtm', target);
+                }
+
+                // JIKA DIBELI DADAKAN OLEH KASIR (BUKAN OWNER_LANGSUNG), OTOMATIS MASUKKAN KE REKAPAN OPERASIONAL WAJIB DIGANTI OWNER
+                const totalBelanja = qtyMasuk * modal;
+                if (sumberDana && sumberDana !== 'OWNER_LANGSUNG' && totalBelanja > 0) {
+                    if (!window.operasionalList) window.operasionalList = [];
+                    const opTs = window.getNextUniqueTs();
+                    const newOp = {
+                        id: opTs,
+                        updatedAt: opTs,
+                        isoDate: tgl,
+                        tgl: tgl,
+                        waktu: waktu,
+                        ket: `[HADIAH ATM LINK] BELI ${qtyMasuk} PCS ${nama} (@ ${window.formatRp(modal)})`,
+                        nominal: totalBelanja,
+                        sumber: sumberDana,
+                        status: 'BELUM DIGANTI',
+                        idHadiahAtmRef: target.id
+                    };
+                    window.operasionalList.unshift(newOp);
+                    window.markLocalEntityEdited('operasional', newOp);
+                    nodesToSave.operasional = window.operasionalList;
+                    window.catatLogAktivitas('BELI HADIAH ATM DADAKAN', `Membeli ${qtyMasuk} pcs hadiah "${nama}" (${window.formatRp(totalBelanja)}) pakai ${sumberDana} ➔ Masuk Operasional Wajib Diganti Owner`);
+                } else {
+                    window.catatLogAktivitas('RESTOK HADIAH ATM', `Menambah ${qtyMasuk} pcs stok hadiah "${nama}" (Drop dari Owner)`);
+                }
+            }
+
+            window.closeModalInputStokHadiah();
+            window.saveMultipleFirebaseNodes(nodesToSave, false);
+            window.renderAll();
+            if (document.getElementById('modalTukarKuponHadiahOverlay')?.classList.contains('show')) {
+                window.populateModalTukarKuponHadiah(nama);
+            }
+            window.showToast(
+                (sumberDana && sumberDana !== 'OWNER_LANGSUNG' && mode !== 'EDIT')
+                    ? `✅ Stok hadiah "${nama}" bertambah & pengeluaran ${sumberDana} masuk ke Rekap Operasional Wajib Diganti Owner!`
+                    : `✅ Data stok hadiah "${nama}" berhasil disimpan!`,
+                "success"
+            );
+        };
+
+        window.hapusStokHadiahAtm = function(id) {
+            const h = (window.stokHadiahAtmList || []).find(x => x.id == id);
+            if (!h) return;
+            if (!confirm(`Hapus item stok hadiah "${h.nama}" dari daftar?`)) return;
+            window.markLocalEntityDeleted('stokHadiahAtm', h.id);
+            window.stokHadiahAtmList = (window.stokHadiahAtmList || []).filter(x => x.id != id);
+            window.catatLogAktivitas('HAPUS STOK HADIAH ATM', `Menghapus stok hadiah "${h.nama}"`);
+            window.saveToFirebaseNode('stokHadiahAtm', window.stokHadiahAtmList);
+            window.renderAll();
+            window.showToast(`🗑️ Stok hadiah "${h.nama}" dihapus.`, "info");
+        };
+
+        window.openModalTukarKuponHadiah = function(preselectId) {
+            window.populateModalTukarKuponHadiah(null, preselectId);
+            document.getElementById('tkNamaPelanggan').value = '';
+            document.getElementById('tkQtyKeluar').value = '1';
+            window.onSelectHadiahTukarKupon();
+            document.getElementById('modalTukarKuponHadiahOverlay').classList.add('show');
+        };
+
+        window.closeModalTukarKuponHadiah = function() {
+            document.getElementById('modalTukarKuponHadiahOverlay').classList.remove('show');
+        };
+
+        window.bukaRekapStokHadiahLengkap = function() {
+            window.closeModalTukarKuponHadiah();
+            window.activateMainTabById('tab-stok');
+            setTimeout(() => {
+                const el = document.getElementById('cardRekapStokHadiahAtm');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 120);
+        };
+
+        window.populateModalTukarKuponHadiah = function(selectByName, selectById) {
+            const sel = document.getElementById('tkHadiahSelect');
+            const tbodyMini = document.getElementById('bodyMiniRefStokHadiahModal');
+            const list = (window.stokHadiahAtmList || []).slice().sort((a, b) => {
+                const sisaA = Math.max(0, Number(a.masuk || 0) - Number(a.keluar || 0));
+                const sisaB = Math.max(0, Number(b.masuk || 0) - Number(b.keluar || 0));
+                if ((sisaA > 0) !== (sisaB > 0)) return sisaB > 0 ? 1 : -1;
+                return Number(a.modal || 0) - Number(b.modal || 0);
+            });
+
+            if (sel) {
+                if (list.length === 0) {
+                    sel.innerHTML = `<option value="">-- Belum Ada Stok Hadiah (Klik + Beli / Restok Hadiah) --</option>`;
+                } else {
+                    sel.innerHTML = list.map(h => {
+                        const sisa = Math.max(0, Number(h.masuk || 0) - Number(h.keluar || 0));
+                        const kupon = Number(h.syaratKupon || 10);
+                        const statTxt = sisa <= 0 ? '❌ HABIS (0 Pcs)' : `✅ Sisa ${sisa} Pcs`;
+                        return `<option value="${h.id}" ${sisa <= 0 ? 'disabled' : ''}>${h.nama} — [${statTxt}] • Modal ${window.formatRp(h.modal || 0)} (${kupon} Kupon)</option>`;
+                    }).join('');
+
+                    if (selectById && list.some(h => h.id == selectById && (Number(h.masuk || 0) - Number(h.keluar || 0)) > 0)) {
+                        sel.value = String(selectById);
+                    } else if (selectByName) {
+                        const found = list.find(h => (h.nama || '').toUpperCase() === selectByName.toUpperCase() && (Number(h.masuk || 0) - Number(h.keluar || 0)) > 0);
+                        if (found) sel.value = String(found.id);
+                    } else {
+                        const firstReady = list.find(h => (Number(h.masuk || 0) - Number(h.keluar || 0)) > 0);
+                        sel.value = firstReady ? String(firstReady.id) : '';
+                    }
+                }
+            }
+
+            if (tbodyMini) {
+                tbodyMini.innerHTML = list.map(h => {
+                    const masuk = Number(h.masuk || 0);
+                    const keluar = Number(h.keluar || 0);
+                    const sisa = Math.max(0, masuk - keluar);
+                    return `
+                        <tr style="${sisa <= 0 ? 'opacity:0.65; background:#FEF2F2;' : ''}">
+                            <td><b>${h.nama}</b> <span style="font-size:9px; color:#BE123C; font-weight:800;">(${h.syaratKupon || 10} Kpn)</span></td>
+                            <td style="text-align:center;">${masuk}</td>
+                            <td style="text-align:center; color:#DC2626; font-weight:700;">${keluar}</td>
+                            <td style="text-align:center; font-weight:900; color:${sisa <= 0 ? '#DC2626' : '#059669'};">${sisa <= 0 ? '0 (HABIS)' : sisa + ' Pcs'}</td>
+                            <td style="text-align:right; font-weight:800;">${window.formatRp(h.modal || 0)}</td>
+                            <td style="text-align:center;">
+                                ${sisa > 0
+                                    ? `<button type="button" onclick="document.getElementById('tkHadiahSelect').value='${h.id}'; window.onSelectHadiahTukarKupon();" style="background:#059669; color:#FFF; border:none; border-radius:4px; padding:2px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">Pilih</button>`
+                                    : `<button type="button" onclick="window.closeModalTukarKuponHadiah(); window.openModalInputStokHadiah(${h.id});" style="background:#0284C7; color:#FFF; border:none; border-radius:4px; padding:2px 7px; font-size:9.5px; font-weight:800; cursor:pointer;">+ Restok</button>`}
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="6" style="text-align:center; color:#94A3B8; padding:10px;">Belum ada daftar hadiah. Klik <b>+ Beli / Restok Hadiah Dadakan</b> di atas.</td></tr>`;
+            }
+        };
+
+        window.onSelectHadiahTukarKupon = function() {
+            const idVal = document.getElementById('tkHadiahSelect')?.value || '';
+            const h = (window.stokHadiahAtmList || []).find(x => x.id == idVal);
+            const qty = Math.max(1, parseInt(document.getElementById('tkQtyKeluar')?.value || '1', 10) || 1);
+            const elKupon = document.getElementById('tkJmlKupon');
+            const elModal = document.getElementById('tkInfoModalHadiah');
+            if (!h) {
+                if (elModal) elModal.value = 'Rp0';
+                return;
+            }
+            const syarat = Number(h.syaratKupon || 10);
+            if (elKupon) elKupon.value = syarat * qty;
+            if (elModal) elModal.value = `${window.formatRp((h.modal || 0) * qty)} (@ ${window.formatRp(h.modal || 0)})`;
+        };
+
+        window.onQtyTukarKuponChange = function() {
+            window.onSelectHadiahTukarKupon();
+        };
+
+        window.simpanTukarKuponHadiahAtm = function(e) {
+            e.preventDefault();
+            const idVal = document.getElementById('tkHadiahSelect')?.value || '';
+            const h = (window.stokHadiahAtmList || []).find(x => x.id == idVal);
+            if (!h) {
+                alert("Silakan pilih stok hadiah yang tersedia terlebih dahulu!");
+                return;
+            }
+            const qtyKeluar = Math.max(1, parseInt(document.getElementById('tkQtyKeluar')?.value || '1', 10) || 1);
+            const jmlKupon = Math.max(1, parseInt(document.getElementById('tkJmlKupon')?.value || '1', 10) || 1);
+            const namaPelanggan = (document.getElementById('tkNamaPelanggan')?.value || '').trim().toUpperCase();
+
+            const sisaSaatIni = Math.max(0, Number(h.masuk || 0) - Number(h.keluar || 0));
+            if (qtyKeluar > sisaSaatIni) {
+                alert(`Sisa stok hadiah "${h.nama}" hanya tinggal ${sisaSaatIni} Pcs! Silakan pilih hadiah pengganti yang nilainya setara atau lakukan Restok terlebih dahulu.`);
+                return;
+            }
+
+            const nowTs = window.getNextUniqueTs();
+            const tgl = window.getTodayIso();
+            const waktu = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const petugas = (sessionStorage.getItem('zencell_user') || 'KASIR').toUpperCase();
+
+            h.keluar = Number(h.keluar || 0) + qtyKeluar;
+            h.updatedAt = nowTs;
+            window.markLocalEntityEdited('stokHadiahAtm', h);
+
+            if (!window.riwayatTukarHadiahList) window.riwayatTukarHadiahList = [];
+            const rwTs = window.getNextUniqueTs();
+            const rwObj = {
+                id: rwTs,
+                updatedAt: rwTs,
+                idHadiahRef: h.id,
+                namaHadiah: h.nama,
+                qty: qtyKeluar,
+                kupon: jmlKupon,
+                modalSatuan: Number(h.modal || 0),
+                totalNilai: Number(h.modal || 0) * qtyKeluar,
+                namaPelanggan: namaPelanggan,
+                petugas: petugas,
+                isoDate: tgl,
+                tgl: tgl,
+                waktu: waktu
+            };
+            window.riwayatTukarHadiahList.unshift(rwObj);
+            window.markLocalEntityEdited('riwayatTukarHadiah', rwObj);
+
+            window.catatLogAktivitas('TUKAR KUPON ATM LINK', `${namaPelanggan} menukar ${jmlKupon} kupon dengan ${qtyKeluar} pcs "${h.nama}" (Sisa: ${sisaSaatIni - qtyKeluar} Pcs)`);
+            window.closeModalTukarKuponHadiah();
+            window.saveMultipleFirebaseNodes({
+                stokHadiahAtm: window.stokHadiahAtmList,
+                riwayatTukarHadiah: window.riwayatTukarHadiahList
+            }, false);
+            window.renderAll();
+            window.showToast(`🎁 Penukaran ${jmlKupon} kupon (${qtyKeluar} pcs ${h.nama}) untuk ${namaPelanggan} berhasil dicatat!`, "success");
+        };
+
+        window.hapusRiwayatTukarHadiahAtm = function(rwId) {
+            const rw = (window.riwayatTukarHadiahList || []).find(x => x.id == rwId);
+            if (!rw) return;
+            if (!confirm(`Batalkan / hapus riwayat penukaran hadiah "${rw.namaHadiah}" (${rw.qty} Pcs) oleh ${rw.namaPelanggan}?\n\nStok hadiah "${rw.namaHadiah}" akan otomatis dikembalikan +${rw.qty} Pcs.`)) return;
+
+            const nowTs = window.getNextUniqueTs();
+            const nodesToSave = {};
+            const h = (window.stokHadiahAtmList || []).find(x => x.id == rw.idHadiahRef || (x.nama || '').toUpperCase() === (rw.namaHadiah || '').toUpperCase());
+            if (h) {
+                h.keluar = Math.max(0, Number(h.keluar || 0) - Number(rw.qty || 0));
+                h.updatedAt = nowTs;
+                window.markLocalEntityEdited('stokHadiahAtm', h);
+                nodesToSave.stokHadiahAtm = window.stokHadiahAtmList;
+            }
+            window.markLocalEntityDeleted('riwayatTukarHadiah', rw.id);
+            window.riwayatTukarHadiahList = (window.riwayatTukarHadiahList || []).filter(x => x.id != rwId);
+            nodesToSave.riwayatTukarHadiah = window.riwayatTukarHadiahList;
+
+            window.catatLogAktivitas('BATAL TUKAR KUPON ATM', `Membatalkan penukaran ${rw.qty} pcs "${rw.namaHadiah}" oleh ${rw.namaPelanggan} (Stok kembali)`);
+            window.saveMultipleFirebaseNodes(nodesToSave, false);
+            window.renderAll();
+            window.showToast(`↩️ Penukaran dibatalkan & stok hadiah "${rw.namaHadiah}" kembali +${rw.qty} Pcs!`, "info");
+        };
+
+        window.toggleRiwayatTukarHadiahAtm = function() {
+            const wrap = document.getElementById('wrapRiwayatTukarHadiahAtm');
+            if (!wrap) return;
+            wrap.style.display = wrap.style.display === 'none' ? '' : 'none';
+        };
 
         window.bukaKasirUntukSparepart = function(id) {
             const sp = window.sparepartList.find(x => x.id === id);
@@ -21782,8 +22993,10 @@
                        ${t.isSettledInKasir
                            ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">✅ MODAL LUNAS</span>`
                            : `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; font-size:8.5px; padding:1.5px 6px; border-radius:4px; font-weight:800; display:inline-block; margin-top:3px;">⏳ SALDO PART</span>`}`
-                    : `<div style="color:#059669; font-size:10px; font-weight:800;">🛠️ JASA NON-MODAL</div>
-                       ${(!t.isSettledInKasir && t.status !== 'CANCEL') ? `<button type="button" class="btn-mini-part" onclick="bukaModalBeliPartTiket(${t.id})" title="Beli Sparepart Susulan (Ditalangi Toko)">+ Beli Part</button>` : ''}`;
+                    : `${t.catatanPartCancel
+                        ? `<div style="background:#F0FDFA; color:#0F766E; border:1px solid #99F6E4; font-size:9px; font-weight:800; padding:3px 6px; border-radius:5px; line-height:1.25;">${t.catatanPartCancel}</div>`
+                        : `<div style="color:#059669; font-size:10px; font-weight:800;">🛠️ JASA NON-MODAL</div>`}
+                       ${(!t.isSettledInKasir && t.status !== 'CANCEL') ? `<button type="button" class="btn-mini-part" onclick="bukaModalBeliPartTiket(${t.id})" title="Pasang Stok Sparepart Ready atau Beli Sparepart Dadakan">+ Pasang / Beli Part</button>` : ''}`;
 
                 // Kolom Status: Terkunci oleh sistem jika sudah dibayar di Kasir, atau Dropdown Teknisi jika belum dibayar
                 let kolomStatusHtml = '';
@@ -22053,6 +23266,9 @@
                     if (linkedTiket) {
                         const noSrv = (linkedTiket.noServis || '').trim().toUpperCase();
                         if (noSrv && ketTrx.includes(noSrv)) return true;
+                    }
+                    if (sp.jenisPart === 'STOK_READY' || sp.jenisPart === 'EKS_CANCEL') {
+                        return false;
                     }
                     return spName && (ketTrx === spName || ketTrx.includes(spName));
                 });
@@ -22510,37 +23726,121 @@
 
             const bSparepart = document.getElementById('bodySparepartList');
             if (bSparepart) {
-                const sMode = document.getElementById('serviceFilterMode').value;
-                const sDate = document.getElementById('serviceDatePicker').value;
-                const sMonth = document.getElementById('serviceMonthPicker').value;
-                let filteredService = window.sparepartList.filter(s => {
+                let sumTalanganNom = 0, countTalangan = 0;
+                let sumStokReadyNom = 0, countStokReady = 0;
+
+                (window.sparepartList || []).forEach(s => {
+                    if (s.status === 'LUNAS') return;
+                    const mod = Number(s.modal || 0);
+                    const linkedTk = s.idTiketRef ? (window.tiketServisList || []).find(tk => tk.id == s.idTiketRef) : null;
+                    if (linkedTk && linkedTk.status !== 'CANCEL') {
+                        sumTalanganNom += mod;
+                        countTalangan++;
+                    } else {
+                        sumStokReadyNom += mod;
+                        countStokReady++;
+                    }
+                });
+
+                const elValTal = document.getElementById('valSpSummaryTalangan');
+                if (elValTal) elValTal.innerText = window.formatRp(sumTalanganNom);
+                const elSubTal = document.getElementById('subSpSummaryTalangan');
+                if (elSubTal) elSubTal.innerText = `${countTalangan} Part menempel di tiket servis aktif`;
+
+                const elValStok = document.getElementById('valSpSummaryStokReady');
+                if (elValStok) elValStok.innerText = window.formatRp(sumStokReadyNom);
+                const elSubStok = document.getElementById('subSpSummaryStokReady');
+                if (elSubStok) elSubStok.innerText = `${countStokReady} Pcs stok part siap pakai di laci teknisi`;
+
+                const elValTot = document.getElementById('valSpSummaryTotalAktif');
+                if (elValTot) elValTot.innerText = window.formatRp(sumTalanganNom + sumStokReadyNom);
+                const elSubTot = document.getElementById('subSpSummaryTotalAktif');
+                if (elSubTot) elSubTot.innerText = `${countTalangan + countStokReady} Item aktif (Sinkron kartu MODAL SPAREPART)`;
+
+                const bTalCount = document.getElementById('badgeSpTalanganCount');
+                if (bTalCount) bTalCount.innerText = `⚡ Talangan Servis: ${countTalangan} Unit (${window.formatRp(sumTalanganNom)})`;
+                const bStokCount = document.getElementById('badgeSpStokReadyCount');
+                if (bStokCount) bStokCount.innerText = `📦 Stok Ready / Eks-Cancel: ${countStokReady} Pcs (${window.formatRp(sumStokReadyNom)})`;
+
+                const sJenis = document.getElementById('sparepartFilterJenis')?.value || 'AKTIF';
+                const sMode = document.getElementById('serviceFilterMode')?.value || 'ALL';
+                const sDate = document.getElementById('serviceDatePicker')?.value || '';
+                const sMonth = document.getElementById('serviceMonthPicker')?.value || '';
+                const sQuery = (document.getElementById('sparepartSearchInput')?.value || '').trim().toUpperCase();
+
+                let filteredService = (window.sparepartList || []).filter(s => {
                     const itemDate = s.isoDate || s.tgl || '';
                     if (sMode === 'DAILY' && itemDate !== sDate) return false;
                     if (sMode === 'MONTHLY' && (!itemDate || !itemDate.startsWith(sMonth))) return false;
+
+                    const linkedTk = s.idTiketRef ? (window.tiketServisList || []).find(tk => tk.id == s.idTiketRef) : null;
+                    const isTalanganAktif = Boolean(linkedTk && linkedTk.status !== 'CANCEL');
+
+                    if (sJenis === 'AKTIF' && s.status === 'LUNAS') return false;
+                    if (sJenis === 'STOK_READY' && (s.status === 'LUNAS' || isTalanganAktif)) return false;
+                    if (sJenis === 'TALANGAN' && (s.status === 'LUNAS' || !isTalanganAktif)) return false;
+                    if (sJenis === 'LUNAS' && s.status !== 'LUNAS') return false;
+
+                    if (sQuery) {
+                        const hay = `${s.namaUnit || ''} ${s.namaAsliStok || ''} ${s.sumber || ''} ${s.asalCancelInfo || ''} ${linkedTk ? (linkedTk.noServis + ' ' + linkedTk.nama + ' ' + linkedTk.tipeHp) : ''}`.toUpperCase();
+                        if (!hay.includes(sQuery)) return false;
+                    }
                     return true;
                 });
-                bSparepart.innerHTML = filteredService.map(s => `
-                    <tr>
-                        <td>${window.formatTanggalDDMMYY(s.isoDate || s.tgl)}</td>
-                        <td><b>${s.namaUnit}</b></td>
-                        <td class="text-debit">${window.formatRp(s.modal)}</td>
-                        <td>${s.sumber}</td>
-                        <td class="text-kredit">${window.formatRp(s.estJual)}</td>
-                        <td>
-                            ${s.status === 'LUNAS'
-                                ? `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:3px 7px; border-radius:6px; font-weight:800; font-size:10px; display:inline-block;">✅ SELESAI & LUNAS</span>`
-                                : `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; padding:3px 7px; border-radius:6px; font-weight:800; font-size:10px; display:inline-block;">⏳ BELUM LUNAS (MODAL AKTIF)</span>`
-                            }
-                        </td>
-                        <td>
-                            <div style="display:flex; gap:3px; justify-content:center;">
-                                ${s.status !== 'LUNAS' ? `<button class="btn" style="background:#16A34A; width:auto; padding:3px 7px; font-size:10px; font-weight:bold;" onclick="bukaKasirUntukSparepart(${s.id})" title="Buka Kasir: Lunasi Service & Kembalikan Modal Sparepart">💰 Lunasi</button>` : ''}
-                                <button class="btn-edit" onclick="editSparepart(${s.id})">Edit</button>
-                                <button class="btn-delete" onclick="hapusSparepart(${s.id})">Hapus</button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('') || `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">Belum ada sparepart.</td></tr>`;
+
+                bSparepart.innerHTML = filteredService.map(s => {
+                    const linkedTk = s.idTiketRef ? (window.tiketServisList || []).find(tk => tk.id == s.idTiketRef) : null;
+                    const isTalanganAktif = Boolean(linkedTk && linkedTk.status !== 'CANCEL');
+
+                    let badgeJenisHtml = '';
+                    if (isTalanganAktif) {
+                        badgeJenisHtml = `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FCD34D; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9.5px;">⚡ TALANGAN</span> <span style="font-size:10px; font-weight:800; color:var(--primary); margin-left:3px;">🔗 ${linkedTk.noServis} • ${linkedTk.nama}</span>`;
+                    } else if (s.jenisPart === 'EKS_CANCEL' || s.asalCancelInfo) {
+                        const infoClean = (s.asalCancelInfo || '').replace('Eks Cancel ', '').replace('Eks Tiket ', '');
+                        badgeJenisHtml = `<span style="background:#FCE7F3; color:#BE185D; border:1px solid #F9A8D4; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9.5px;">🔄 EKS-CANCEL</span>${infoClean ? ` <span style="font-size:9.5px; color:#9D174D; font-weight:700; margin-left:3px;">${infoClean}</span>` : ''}`;
+                    } else {
+                        badgeJenisHtml = `<span style="background:#CCFBF1; color:#0F766E; border:1px solid #5EEAD4; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9.5px;">📦 STOK READY</span>`;
+                    }
+
+                    let statusModalHtml = '';
+                    if (s.status === 'LUNAS') {
+                        statusModalHtml = `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9.5px;">✅ LUNAS</span>`;
+                    } else if (isTalanganAktif) {
+                        const shortStat = linkedTk.status === 'MENUNGGU KONFIRMASI' ? 'KONFIRMASI' : linkedTk.status;
+                        statusModalHtml = `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9.5px;">⏳ DI TIKET (${shortStat})</span>`;
+                    } else {
+                        statusModalHtml = `<span style="background:#CCFBF1; color:#0F766E; border:1px solid #5EEAD4; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9.5px;">📦 READY DI LACI</span>`;
+                    }
+
+                    const subAsalTxt = (s.namaAsliStok && s.namaAsliStok !== s.namaUnit) ? ` <span style="font-size:9.5px; color:#64748B; font-weight:600;">(${s.namaAsliStok})</span>` : '';
+
+                    return `
+                        <tr>
+                            <td>${window.formatTanggalDDMMYY(s.isoDate || s.tgl)}</td>
+                            <td><b style="font-size:11px; color:var(--text);">${s.namaUnit}</b>${subAsalTxt}</td>
+                            <td>${badgeJenisHtml}</td>
+                            <td class="text-debit" style="font-weight:800;">${window.formatRp(s.modal)}</td>
+                            <td><span style="font-weight:800; font-size:10px;">${s.sumber}</span></td>
+                            <td class="text-kredit" style="font-weight:700;">${Number(s.estJual || 0) > 0 ? window.formatRp(s.estJual) : '<span style="color:#94A3B8; font-size:9.5px;">Fleksibel</span>'}</td>
+                            <td>${statusModalHtml}</td>
+                            <td>
+                                <div style="display:inline-flex; gap:3px; justify-content:center; align-items:center; flex-wrap:nowrap;">
+                                    ${(s.status !== 'LUNAS' && !isTalanganAktif)
+                                        ? `<button type="button" class="btn" style="background:#0D9488; width:auto; padding:2px 6px; font-size:9.5px; font-weight:800;" onclick="window.bukaModalPasangStokPartKeTiket(${s.id})" title="Pasang stok sparepart ini ke Tiket Servis yang sedang dikerjakan (Tanpa potong kas lagi)">🔧 Pakai</button>`
+                                        : ''}
+                                    ${(s.status !== 'LUNAS' && isTalanganAktif)
+                                        ? `<button type="button" class="btn" style="background:#D97706; width:auto; padding:2px 6px; font-size:9.5px; font-weight:800;" onclick="window.lepasSparepartJadiStokReady(${s.id})" title="Lepas dari tiket servis dan simpan jadi Stok Sparepart Ready">📦 Ke Stok</button>`
+                                        : ''}
+                                    ${s.status !== 'LUNAS'
+                                        ? `<button type="button" class="btn" style="background:#16A34A; width:auto; padding:2px 6px; font-size:9.5px; font-weight:800;" onclick="bukaKasirUntukSparepart(${s.id})" title="Jual langsung / Cairkan modal sparepart di Kasir">💰 Cairkan</button>`
+                                        : ''}
+                                    <button type="button" class="btn-edit" style="padding:2px 6px; font-size:9.5px;" onclick="editSparepart(${s.id})">Edit</button>
+                                    <button type="button" class="btn-delete" style="padding:2px 6px; font-size:9.5px;" onclick="hapusSparepart(${s.id})" title="Hapus / Retur ke Supplier (Kembalikan Saldo Kas)">${s.status === 'LUNAS' ? 'Hapus' : 'Retur'}</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="8" style="text-align:center; color:#94A3B8; padding:10px;">Belum ada data sparepart pada filter ini. Klik <b>+ Input / Belanja Stok Sparepart</b> untuk memasukkan stok sparepart ready.</td></tr>`;
             }
 
             const bOperasional = document.getElementById('bodyOperasional');
@@ -22740,6 +24040,93 @@
             document.getElementById('valNilaiStokAcc').innerText = window.formatRp(nAcc);
             document.getElementById('valNilaiStokTotal').innerText = window.formatRp(nTotalStok);
             document.getElementById('topStokOpnameVal').innerText = window.formatRp(nTotalStok);
+
+            // Render Tabel Rekapan Stok Hadiah & Penukaran Kupon ATM Link (Di Luar Modal Berputar Rp250 Juta)
+            const bHadiahAtm = document.getElementById('bodyStokHadiahAtm');
+            if (bHadiahAtm) {
+                const listHadiah = (window.stokHadiahAtmList || []).slice().sort((a, b) => (a.nama || '').localeCompare(b.nama || '', 'id'));
+                let totSisaPcs = 0;
+                let totKeluarPcs = 0;
+                let totNilaiSisaRp = 0;
+
+                bHadiahAtm.innerHTML = listHadiah.map(h => {
+                    const masuk = Number(h.masuk || 0);
+                    const keluar = Number(h.keluar || 0);
+                    const sisa = Math.max(0, masuk - keluar);
+                    const modal = Number(h.modal || 0);
+                    const nilaiSisa = sisa * modal;
+                    const kupon = Number(h.syaratKupon || 10);
+
+                    totSisaPcs += sisa;
+                    totKeluarPcs += keluar;
+                    totNilaiSisaRp += nilaiSisa;
+
+                    const sisaBadge = sisa <= 0
+                        ? `<span style="background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; padding:1.5px 6px; border-radius:4px; font-weight:900; font-size:9.5px;">0 Pcs (HABIS)</span>`
+                        : (sisa <= 3
+                            ? `<span style="background:#FEF3C7; color:#B45309; border:1px solid #FCD34D; padding:1.5px 6px; border-radius:4px; font-weight:900; font-size:9.5px;">⚠️ ${sisa} Pcs</span>`
+                            : `<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; padding:1.5px 6px; border-radius:4px; font-weight:900; font-size:9.5px;">✅ ${sisa} Pcs</span>`);
+
+                    const isKasOp = (h.sumberTerakhir || '').includes('OPERASIONAL');
+                    const sumberBadge = isKasOp
+                        ? `<span style="background:#EDE9FE; color:#6D28D9; border:1px solid #C4B5FD; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9px;">💵 ${h.sumberTerakhir}</span>`
+                        : `<span style="background:#F0FDF4; color:#15803D; border:1px solid #BBF7D0; padding:1.5px 6px; border-radius:4px; font-weight:800; font-size:9px;">👑 DROP OWNER</span>`;
+
+                    return `
+                        <tr>
+                            <td style="text-align:left;">
+                                <b style="font-size:11px; color:var(--text);">${h.nama}</b>
+                                <span style="background:#FFE4E6; color:#BE123C; border:1px solid #FDA4AF; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800; margin-left:4px;">🎟️ ${kupon} Kupon</span>
+                            </td>
+                            <td style="text-align:center; font-weight:800;">${masuk} Pcs</td>
+                            <td style="text-align:center; font-weight:800; color:#DC2626;">${keluar} Pcs</td>
+                            <td style="text-align:center;">${sisaBadge}</td>
+                            <td style="text-align:right; font-weight:800; color:#0F172A;">${window.formatRp(modal)}</td>
+                            <td style="text-align:right; font-weight:800; color:#047857;">${window.formatRp(nilaiSisa)}</td>
+                            <td style="text-align:center;">${sumberBadge}</td>
+                            <td style="text-align:center;">
+                                <div style="display:inline-flex; gap:3px; align-items:center; justify-content:center; flex-wrap:nowrap;">
+                                    <button type="button" class="btn" style="background:#E11D48; width:auto; padding:2px 7px; font-size:9.5px; font-weight:800;" onclick="window.openModalTukarKuponHadiah(${h.id})" title="Tukar Kupon Pelanggan dengan Hadiah Ini">🎁 Tukar</button>
+                                    <button type="button" class="btn" style="background:#0284C7; width:auto; padding:2px 7px; font-size:9.5px; font-weight:800;" onclick="window.openModalInputStokHadiah(${h.id}, false)" title="Tambah / Restok Hadiah Ini (Drop Owner atau Beli Dadakan Pakai Kas)">➕ Restok</button>
+                                    <button type="button" class="btn-edit" style="padding:2px 6px; font-size:9.5px;" onclick="window.openModalInputStokHadiah(${h.id}, true)">Edit</button>
+                                    <button type="button" class="btn-delete" style="padding:2px 6px; font-size:9.5px;" onclick="window.hapusStokHadiahAtm(${h.id})">Hapus</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || `<tr><td colspan="8" style="text-align:center; color:#94A3B8; padding:10px;">Belum ada stok hadiah ATM Link. Klik <b>+ Input / Restok Hadiah</b> untuk menambahkan stok hadiah.</td></tr>`;
+
+                const totKuponTerkumpul = (window.riwayatTukarHadiahList || []).reduce((sum, r) => sum + Number(r.kupon || 0), 0);
+                const elReadyPcs = document.getElementById('valHadiahReadyTotalPcs');
+                if (elReadyPcs) elReadyPcs.innerText = `${totSisaPcs} Pcs`;
+                const elReadySub = document.getElementById('subHadiahReadyJenis');
+                if (elReadySub) elReadySub.innerText = `${listHadiah.length} Jenis Hadiah Terdaftar`;
+                const elKeluarPcs = document.getElementById('valHadiahKeluarTotalPcs');
+                if (elKeluarPcs) elKeluarPcs.innerText = `${totKeluarPcs} Pcs Ditukar`;
+                const elKuponSub = document.getElementById('subHadiahKuponTerkumpul');
+                if (elKuponSub) elKuponSub.innerText = `Total ${totKuponTerkumpul} Kupon ATM Link Terkumpul`;
+                const elNilaiSisa = document.getElementById('valHadiahNilaiSisaRp');
+                if (elNilaiSisa) elNilaiSisa.innerText = window.formatRp(totNilaiSisaRp);
+            }
+
+            const bRiwayatHadiah = document.getElementById('bodyRiwayatTukarHadiahAtm');
+            if (bRiwayatHadiah) {
+                const rwList = (window.riwayatTukarHadiahList || []).slice(0, 60);
+                bRiwayatHadiah.innerHTML = rwList.map(r => `
+                    <tr>
+                        <td style="text-align:center;">${window.formatTanggalDDMMYY(r.isoDate || r.tgl)} <span style="color:#64748B; font-size:9.5px;">${r.waktu || ''}</span></td>
+                        <td style="text-align:left;"><b>${r.namaPelanggan || '-'}</b></td>
+                        <td style="text-align:left; font-weight:800; color:#881337;">🎁 ${r.namaHadiah || '-'}</td>
+                        <td style="text-align:center; font-weight:800; color:#DC2626;">-${r.qty || 1} Pcs</td>
+                        <td style="text-align:center;"><span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; padding:1px 6px; border-radius:4px; font-weight:800; font-size:9.5px;">🎟️ ${r.kupon || 0} Kupon</span></td>
+                        <td style="text-align:right; font-weight:700;">${window.formatRp(r.totalNilai || 0)}</td>
+                        <td style="text-align:center; font-size:10px; font-weight:700;">${r.petugas || 'KASIR'}</td>
+                        <td style="text-align:center;">
+                            <button type="button" class="btn-delete" style="padding:2px 6px; font-size:9.5px;" onclick="window.hapusRiwayatTukarHadiahAtm(${r.id})" title="Batalkan Penukaran & Kembalikan Stok Hadiah">Batal/Hapus</button>
+                        </td>
+                    </tr>
+                `).join('') || `<tr><td colspan="8" style="text-align:center; color:#94A3B8; padding:8px;">Belum ada riwayat penukaran kupon hadiah ATM Link.</td></tr>`;
+            }
 
             let totalPiutang = 0;
             let totalPokokPiutangAll = 0;
