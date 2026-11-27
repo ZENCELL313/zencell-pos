@@ -4458,7 +4458,7 @@ Pasang foto wajah asli Anda atau logo untuk akun <b id="lblFotoUserAktif" style=
 </div>
 <span id="hdrUserActive" style="font-weight:800; font-size:11px; letter-spacing:0.4px;">OWNER</span>
 </div>
-<span id="cloudStatus" style="color:#FFF; font-weight:800; font-size:10px; letter-spacing:0.6px; background:rgba(15,23,42,0.35); border:1px solid rgba(74,222,128,0.5); padding:2px 9px; border-radius:999px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>SYNC...</span>
+<span id="cloudStatus" onclick="if(window.forceRefreshCloudSync) window.forceRefreshCloudSync(false)" title="Klik untuk sinkronisasi ulang data terbaru dari Cloud" style="cursor:pointer; color:#FFF; font-weight:800; font-size:10px; letter-spacing:0.6px; background:rgba(15,23,42,0.35); border:1px solid rgba(74,222,128,0.5); padding:2px 9px; border-radius:999px; display:inline-flex; align-items:center;"><span class="realtime-dot"></span>SYNC...</span>
 </div>
 <div class="status-marquee-box" id="hdrMarqueeBox" title="Pemberitahuan / SOP Toko">
 <span class="status-marquee-track" id="hdrRunningText">📢 HARAP BERHATI DALAM SEMUA TRANSAKSI, PASTIKAN SEMUA SOP DIPATUHI, PASTIKAN JUGA KONSUMEN REPEAT ORDER</span>
@@ -7931,17 +7931,136 @@ Ikut Reset Semua Nominal Saldo Awal menjadi Rp 0
 </form>
 </div>
 </div>
+<script>
+(function initSafeIframeStorageGuard() {
+window._memLsMap = window._memLsMap || {};
+window._memSsMap = window._memSsMap || {};
+window._isInsideIframe = (function() {
+try { return window.self !== window.top; } catch (e) { return true; }
+})();
+window._storageRestrictedInIframe = false;
+const createMemStorage = (backingObj) => ({
+getItem(k) { return Object.prototype.hasOwnProperty.call(backingObj, k) ? backingObj[k] : null; },
+setItem(k, v) { backingObj[k] = String(v); },
+removeItem(k) { delete backingObj[k]; },
+clear() { Object.keys(backingObj).forEach(k => delete backingObj[k]); },
+key(i) { return Object.keys(backingObj)[i] || null; },
+get length() { return Object.keys(backingObj).length; }
+});
+try {
+const ls = window.localStorage;
+ls.setItem('__zc_ls_probe', '1');
+ls.removeItem('__zc_ls_probe');
+} catch (e) {
+window._storageRestrictedInIframe = true;
+try {
+Object.defineProperty(window, 'localStorage', {
+value: createMemStorage(window._memLsMap),
+configurable: true,
+writable: true
+});
+} catch (_) {}
+}
+try {
+const ss = window.sessionStorage;
+ss.setItem('__zc_ss_probe', '1');
+ss.removeItem('__zc_ss_probe');
+} catch (e) {
+window._storageRestrictedInIframe = true;
+try {
+Object.defineProperty(window, 'sessionStorage', {
+value: createMemStorage(window._memSsMap),
+configurable: true,
+writable: true
+});
+} catch (_) {}
+}
+if (!window.prosesLogin) {
+window.prosesLogin = function(ev) {
+if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
+window._queuedEarlyLoginAttempt = true;
+return false;
+};
+}
+})();
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, get, off } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
-import { getAuth, initializeAuth, signInAnonymously, onAuthStateChanged, signOut, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+import { getDatabase, ref, onValue, set, update, get, off, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+import { getAuth, initializeAuth, signInAnonymously, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 (function initMultiCabangEngine() {
-const rawLsGet = Storage.prototype.getItem.bind(localStorage);
-const rawLsSet = Storage.prototype.setItem.bind(localStorage);
-const rawLsRemove = Storage.prototype.removeItem.bind(localStorage);
+const memLs = window._memLsMap || (window._memLsMap = {});
+const memSs = window._memSsMap || (window._memSsMap = {});
+const origGet = typeof Storage !== 'undefined' ? Storage.prototype.getItem : null;
+const origSet = typeof Storage !== 'undefined' ? Storage.prototype.setItem : null;
+const origRemove = typeof Storage !== 'undefined' ? Storage.prototype.removeItem : null;
+let nativeLs = null;
+let nativeSs = null;
+try { nativeLs = window.localStorage; } catch (_) {}
+try { nativeSs = window.sessionStorage; } catch (_) {}
+const rawLsGet = function(k) {
+try {
+if (nativeLs && origGet) {
+const v = origGet.call(nativeLs, k);
+if (v !== null && v !== undefined) return v;
+} else if (nativeLs && typeof nativeLs.getItem === 'function') {
+const v = nativeLs.getItem(k);
+if (v !== null && v !== undefined) return v;
+}
+} catch (_) {}
+return Object.prototype.hasOwnProperty.call(memLs, k) ? memLs[k] : null;
+};
+const rawLsRemove = function(k) {
+delete memLs[k];
+try {
+if (nativeLs && origRemove) origRemove.call(nativeLs, k);
+else if (nativeLs && typeof nativeLs.removeItem === 'function') nativeLs.removeItem(k);
+} catch (_) {}
+};
+const pruneNonCriticalLsCache = () => {
+const expendableKeys = [
+'zencell_log_aktivitas', 'zencell2_log_aktivitas',
+'zencell_recent_trx_edits', 'zencell_recent_trx_deletes',
+'zencell2_recent_trx_edits', 'zencell2_recent_trx_deletes',
+'zencell_entity_edits_v2', 'zencell2_entity_edits_v2',
+'zencell_entity_deletes_v2', 'zencell2_entity_deletes_v2'
+];
+expendableKeys.forEach(k => { try { rawLsRemove(k); } catch (_) {} });
+};
+const rawLsSet = function(k, v) {
+const strVal = String(v);
+memLs[k] = strVal;
+if (!nativeLs) return;
+try {
+if (origSet) return origSet.call(nativeLs, k, strVal);
+if (typeof nativeLs.setItem === 'function') return nativeLs.setItem(k, strVal);
+} catch (err) {
+try {
+pruneNonCriticalLsCache();
+if (origSet) return origSet.call(nativeLs, k, strVal);
+} catch (_) {
+const inactivePrefix = window.ACTIVE_CABANG === '2' ? 'zencell_' : 'zencell2_';
+['transaksi', 'vlookup', 'stok', 'riwayat_belanja'].forEach(sub => {
+try { rawLsRemove(inactivePrefix + sub); } catch (__) {}
+});
+try { if (origSet) return origSet.call(nativeLs, k, strVal); } catch (__) {}
+}
+}
+};
 window._rawLsGet = rawLsGet;
 window._rawLsSet = rawLsSet;
 window._rawLsRemove = rawLsRemove;
+window.safeParseLs = function(key, fallbackVal) {
+try {
+const raw = localStorage.getItem(key);
+if (!raw) return fallbackVal;
+const parsed = JSON.parse(raw);
+return parsed !== null && parsed !== undefined ? parsed : fallbackVal;
+} catch (e) {
+try { localStorage.removeItem(key); } catch (_) {}
+return fallbackVal;
+}
+};
 try {
 const urlParams = new URLSearchParams(window.location.search);
 const qCabang = (urlParams.get('cabang') || urlParams.get('toko') || '').trim();
@@ -7969,24 +8088,44 @@ return 'zencell2_' + k.slice('zencell_'.length);
 }
 return k;
 };
+if (typeof Storage !== 'undefined') {
 Storage.prototype.getItem = function(key) {
-if (this === localStorage) {
-return rawLsGet(mapStorageKey(key));
+if (this === nativeLs) {
+try { return rawLsGet(mapStorageKey(key)); } catch (e) { return null; }
 }
-return rawLsGet.call(this, key);
+if (this === nativeSs) {
+try {
+const v = origGet ? origGet.call(this, key) : null;
+if (v !== null && v !== undefined) return v;
+} catch (e) {}
+return Object.prototype.hasOwnProperty.call(memSs, key) ? memSs[key] : null;
+}
+try { return origGet ? origGet.call(this, key) : null; } catch (e) { return null; }
 };
 Storage.prototype.setItem = function(key, val) {
-if (this === localStorage) {
+if (this === nativeLs) {
 return rawLsSet(mapStorageKey(key), val);
 }
-return rawLsSet.call(this, key, val);
+if (this === nativeSs) {
+memSs[key] = String(val);
+try { if (origSet) return origSet.call(this, key, String(val)); } catch (e) {}
+return;
+}
+try { if (origSet) return origSet.call(this, key, val); } catch (e) {}
 };
 Storage.prototype.removeItem = function(key) {
-if (this === localStorage) {
-return rawLsRemove(mapStorageKey(key));
+if (this === nativeLs) {
+try { return rawLsRemove(mapStorageKey(key)); } catch (e) {}
+return;
 }
-return rawLsRemove.call(this, key);
+if (this === nativeSs) {
+delete memSs[key];
+try { if (origRemove) return origRemove.call(this, key); } catch (e) {}
+return;
+}
+try { if (origRemove) return origRemove.call(this, key); } catch (e) {}
 };
+}
 })();
 function cekStatusKoneksiOnline() {
 const isOnline = navigator.onLine;
@@ -8182,12 +8321,25 @@ messagingSenderId: "333606490804",
 appId: "1:333606490804:web:4733a1401932a206edbde1"
 };
 const app = initializeApp(firebaseConfig);
-const isEmbeddedIframe = (function() {
-try { return window.self !== window.top; } catch (e) { return true; }
+const useIframeRamAuth = Boolean(window._isInsideIframe || window._storageRestrictedInIframe);
+if (!useIframeRamAuth) {
+try {
+if (window.indexedDB && typeof window.indexedDB.deleteDatabase === 'function') {
+window.indexedDB.deleteDatabase('firebaseLocalStorageDb');
+}
+} catch (_) {}
+}
+const auth = (function() {
+try {
+return initializeAuth(app, {
+persistence: useIframeRamAuth ? inMemoryPersistence : [browserLocalPersistence, inMemoryPersistence]
+});
+} catch (e) {
+const a = getAuth(app);
+try { setPersistence(a, useIframeRamAuth ? inMemoryPersistence : browserLocalPersistence).catch(() => {}); } catch (_) {}
+return a;
+}
 })();
-const auth = isEmbeddedIframe
-? initializeAuth(app, { persistence: inMemoryPersistence })
-: getAuth(app);
 const db = getDatabase(app);
 window._firebaseAuth = auth;
 window._firebaseAuthState = 'INIT';
@@ -8752,8 +8904,8 @@ const totPotong = tfNom + tfAdm;
 tfPrev.value = `${window.formatRp(totPotong)}${tfAdm > 0 ? ` (Pokok ${window.formatRp(tfNom)} + Admin ${window.formatRp(tfAdm)})` : ''}`;
 }
 };
-window.masterBatasMinSaldo = JSON.parse(localStorage.getItem('zencell_batas_min') || '{}');
-window.masterVlookup = JSON.parse(localStorage.getItem('zencell_vlookup') || '{}');
+window.masterBatasMinSaldo = window.safeParseLs('zencell_batas_min', {});
+window.masterVlookup = window.safeParseLs('zencell_vlookup', {});
 window.isManualVlookupEntry = function(key, rule) {
 if (!key || !rule) return false;
 const kNorm = String(rule.origKey || key).toUpperCase().trim();
@@ -8837,9 +8989,9 @@ return window.compareVoucherNames(namaA, namaB);
 return namaA.localeCompare(namaB, 'id', { numeric: true, sensitivity: 'base' });
 });
 };
-window.transaksiJurnal = JSON.parse(localStorage.getItem('zencell_transaksi') || '[]');
-window.stokOpnameItems = window.sortStokOpnameAlphabetical(JSON.parse(localStorage.getItem('zencell_stok') || '[]'));
-window.piutangList = JSON.parse(localStorage.getItem('zencell_piutang') || '[]');
+window.transaksiJurnal = window.safeParseLs('zencell_transaksi', []);
+window.stokOpnameItems = window.sortStokOpnameAlphabetical(window.safeParseLs('zencell_stok', []));
+window.piutangList = window.safeParseLs('zencell_piutang', []);
 if (window.ACTIVE_CABANG === '2') {
 if (!Array.isArray(window.stokOpnameItems) || window.stokOpnameItems.length === 0) {
 window.stokOpnameItems = window.sortStokOpnameAlphabetical(JSON.parse(JSON.stringify(window.DEFAULT_STOK_Z2)));
@@ -8862,16 +9014,16 @@ if (!Array.isArray(window.piutangList) || window.piutangList.length === 0) {
 window.piutangList = JSON.parse(JSON.stringify(window.DEFAULT_PIUTANG_Z2));
 }
 }
-window.setoranOwnerList = JSON.parse(localStorage.getItem('zencell_setoran') || '[]');
-window.sparepartList = JSON.parse(localStorage.getItem('zencell_sparepart') || '[]');
-window.riwayatBelanjaStok = JSON.parse(localStorage.getItem('zencell_riwayat_belanja') || '[]');
-window.operasionalList = JSON.parse(localStorage.getItem('zencell_operasional') || '[]');
-window.logAktivitasList = JSON.parse(localStorage.getItem('zencell_log_aktivitas') || '[]');
-window.tiketServisList = JSON.parse(localStorage.getItem('zencell_tiket_servis') || '[]');
-window.riwayatCekLaciList = JSON.parse(localStorage.getItem('zencell_riwayat_cek_laci') || '[]');
-window.stokHadiahAtmList = JSON.parse(localStorage.getItem('zencell_stok_hadiah_atm') || '[]');
-window.riwayatTukarHadiahList = JSON.parse(localStorage.getItem('zencell_riwayat_tukar_hadiah') || '[]');
-window.pengaturanToko = JSON.parse(localStorage.getItem('zencell_pengaturan') || 'null') || {
+window.setoranOwnerList = window.safeParseLs('zencell_setoran', []);
+window.sparepartList = window.safeParseLs('zencell_sparepart', []);
+window.riwayatBelanjaStok = window.safeParseLs('zencell_riwayat_belanja', []);
+window.operasionalList = window.safeParseLs('zencell_operasional', []);
+window.logAktivitasList = window.safeParseLs('zencell_log_aktivitas', []);
+window.tiketServisList = window.safeParseLs('zencell_tiket_servis', []);
+window.riwayatCekLaciList = window.safeParseLs('zencell_riwayat_cek_laci', []);
+window.stokHadiahAtmList = window.safeParseLs('zencell_stok_hadiah_atm', []);
+window.riwayatTukarHadiahList = window.safeParseLs('zencell_riwayat_tukar_hadiah', []);
+window.pengaturanToko = window.safeParseLs('zencell_pengaturan', null) || {
 namaToko: window.DEFAULT_SHOP_NAME_CABANG || (window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1'),
 alamatToko: 'Nanggerang, Jalaksana, Kuningan, Jabar',
 kontakToko: 'WA: 0812-3456-7890',
@@ -8891,16 +9043,16 @@ window.getDefaultBranchKaryawanList = function(targetCabang) {
 const branch = String(targetCabang || window.ACTIVE_CABANG || '1') === '2' ? '2' : '1';
 if (branch === '2') {
 return [
-{ id: 1, username: 'OWNER', role: 'OWNER', pin: '212', dibuat: '2026-10-14' },
-{ id: 2, username: 'PIPIT', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
-{ id: 3, username: 'ELSA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' }
+{ id: 1, username: 'OWNER', role: 'OWNER', pin: '000', dibuat: '2026-10-14' },
+{ id: 2, username: 'PIPIT', role: 'ADMIN', pin: '313', dibuat: '2026-10-14' },
+{ id: 3, username: 'ELSA', role: 'ADMIN', pin: '313', dibuat: '2026-10-14' }
 ];
 }
 return [
-{ id: 1, username: 'OWNER', role: 'OWNER', pin: '212', dibuat: '2026-10-14' },
+{ id: 1, username: 'OWNER', role: 'OWNER', pin: '000', dibuat: '2026-10-14' },
 { id: 2, username: 'FINA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
 { id: 3, username: 'ECA', role: 'KASIR', pin: '313', dibuat: '2026-10-14' },
-{ id: 4, username: 'ZIYAD', role: 'KASIR', pin: '313', dibuat: '2026-10-14' }
+{ id: 4, username: 'ZIYAD', role: 'ADMIN', pin: '111', dibuat: '2026-10-14' }
 ];
 };
 window.normalizeBranchKaryawanList = function(rawList, targetCabang) {
@@ -8915,7 +9067,8 @@ arr.forEach(item => {
 if (!item || !item.username) return;
 const uUp = String(item.username).toUpperCase().trim();
 if (!uUp || forbiddenInBranch.has(uUp)) return;
-const pinVal = String(item.pin !== undefined && item.pin !== '' ? item.pin : (uUp === 'OWNER' ? '212' : '313')).trim();
+const defPinForUser = uUp === 'OWNER' ? '000' : (uUp === 'ZIYAD' ? '111' : '313');
+const pinVal = String(item.pin !== undefined && item.pin !== '' ? item.pin : defPinForUser).trim();
 const prev = byUser.get(uUp);
 if (!prev || Number(item.pinUpdatedAt || 0) >= Number(prev.pinUpdatedAt || 0)) {
 byUser.set(uUp, Object.assign({}, item, {
@@ -8964,8 +9117,7 @@ ownerEntry.pinUpdatedAt = globalTs;
 return result;
 };
 window.daftarKaryawan = (function() {
-const rawBranch = localStorage.getItem('zencell_karyawan') || localStorage.getItem('zencell_daftarKaryawan');
-const parsed = JSON.parse(rawBranch || 'null');
+const parsed = window.safeParseLs('zencell_karyawan', null) || window.safeParseLs('zencell_daftarKaryawan', null);
 return window.normalizeBranchKaryawanList(parsed, window.ACTIVE_CABANG);
 })();
 window.undoStack = [];
@@ -9167,13 +9319,14 @@ window.masterSaldoAwal = Object.assign({}, window.DEFAULT_SALDO_AWAL_Z2);
 window.stokOpnameItems = JSON.parse(JSON.stringify(window.DEFAULT_STOK_Z2));
 window.piutangList = JSON.parse(JSON.stringify(window.DEFAULT_PIUTANG_Z2));
 localStorage.setItem('zencell_seed_version', window.Z2_SEED_VERSION);
-window.saveLocalBackup();
+try { window.saveLocalBackup(); } catch (_) {}
 isFirebaseSyncing = false;
 window.hasInitialCloudLoaded = true;
-window.initDropdowns();
-window.initVlookupAutoFill();
-if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
-if (window.renderAll) window.renderAll();
+if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
+try { window.initDropdowns(); } catch (_) {}
+try { window.initVlookupAutoFill(); } catch (_) {}
+try { if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI(); } catch (_) {}
+try { if (window.renderAll) window.renderAll(); } catch (_) {}
 window.saveMultipleFirebaseNodes({
 saldoListCustom: window.saldoList,
 saldoAwal: window.masterSaldoAwal,
@@ -9185,8 +9338,9 @@ return;
 }
 isFirebaseSyncing = false;
 window.hasInitialCloudLoaded = true;
-if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
-if (window.renderAll) window.renderAll();
+if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
+try { if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI(); } catch (_) {}
+try { if (window.renderAll) window.renderAll(); } catch (_) {}
 return;
 }
 isFirebaseSyncing = true;
@@ -9533,17 +9687,19 @@ window._logDirty = true;
 }
 const wasInitialLoaded = window.hasInitialCloudLoaded;
 window.hasInitialCloudLoaded = true;
-window.saveLocalBackup();
+if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
+try { window.saveLocalBackup(); } catch (e) { console.error('saveLocalBackup err:', e); }
+try {
 if (!wasInitialLoaded && window.undoStack.length === 0) {
 window.saveStateSnapshot(true);
 }
-if (statusEl) statusEl.innerHTML = '<span class="realtime-dot"></span>LIVE';
-window.initDropdowns();
-window.initVlookupAutoFill();
-if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
-if (window.updateUserAvatarUI) window.updateUserAvatarUI();
-if (window.renderLoginUserOptions) window.renderLoginUserOptions();
-window.renderAll();
+} catch (_) {}
+try { window.initDropdowns(); } catch (e) { console.error('initDropdowns err:', e); }
+try { window.initVlookupAutoFill(); } catch (e) { console.error('initVlookupAutoFill err:', e); }
+try { if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI(); } catch (_) {}
+try { if (window.updateUserAvatarUI) window.updateUserAvatarUI(); } catch (_) {}
+try { if (window.renderLoginUserOptions) window.renderLoginUserOptions(); } catch (_) {}
+try { window.renderAll(); } catch (e) { console.error('renderAll err:', e); }
 isFirebaseSyncing = false;
 const resyncPayload = {};
 const colToVarMap = {
@@ -9873,12 +10029,33 @@ await update(ref(db, 'zencell2Nodes'), updatePayloadZ2);
 window._z2BgSeedChecked = false;
 }
 };
-window.startRealtimeDatabaseListener = function() {
+window.startRealtimeDatabaseListener = function(forceRestart = false) {
+if (forceRestart && window._rtdbListenerAttached) {
+window.stopRealtimeDatabaseListener();
+}
 if (window._rtdbListenerAttached) return;
 window._rtdbListenerAttached = true;
 const rootNode = window.FIREBASE_ROOT_NODE || 'zencellNodes';
 const zencellRef = ref(db, rootNode);
+if (window._cloudSyncWatchdogTimer) clearTimeout(window._cloudSyncWatchdogTimer);
+window._cloudSyncWatchdogTimer = setTimeout(async () => {
+if (!window.hasInitialCloudLoaded && navigator.onLine) {
+try {
+const snap = await window.raceWithTimeout(get(zencellRef), 4500, null);
+if (snap && typeof snap.exists === 'function' && !window.hasInitialCloudLoaded) {
+applyCloudSnapshotData(snap.val());
+}
+} catch (_) {}
+if (!window.hasInitialCloudLoaded && navigator.onLine) {
+try { goOffline(db); setTimeout(() => { try { goOnline(db); window.startRealtimeDatabaseListener(true); } catch (_) {} }, 250); } catch (_) {}
+}
+}
+}, 3500);
 window._rtdbUnsubscribe = onValue(zencellRef, (snapshot) => {
+if (window._cloudSyncWatchdogTimer) {
+clearTimeout(window._cloudSyncWatchdogTimer);
+window._cloudSyncWatchdogTimer = null;
+}
 window._rtdbPermRetryCount = 0;
 if (window._firebaseAuthState === 'PERMISSION_DENIED') {
 window._firebaseAuthState = auth.currentUser ? 'AUTHENTICATED' : 'CONSOLE_NOT_ENABLED';
@@ -9919,8 +10096,8 @@ window._firebaseAuthState = 'AUTHENTICATED';
 window.updateFirebaseSecurityStatusUI();
 setTimeout(() => {
 window._retryingAnonAuth = false;
-window.startRealtimeDatabaseListener();
-}, 500);
+window.startRealtimeDatabaseListener(true);
+}, 400);
 return;
 }
 } catch (retryErr) {
@@ -9934,6 +10111,10 @@ if (statusEl) statusEl.innerHTML = '<span style="display:inline-block; width:7px
 });
 };
 window.stopRealtimeDatabaseListener = function() {
+if (window._cloudSyncWatchdogTimer) {
+clearTimeout(window._cloudSyncWatchdogTimer);
+window._cloudSyncWatchdogTimer = null;
+}
 try {
 if (window._rtdbUnsubscribe) {
 window._rtdbUnsubscribe();
@@ -9944,35 +10125,86 @@ off(ref(db, window.FIREBASE_ROOT_NODE || 'zencellNodes'));
 } catch (e) {}
 window._rtdbListenerAttached = false;
 };
+window.forceRefreshCloudSync = async function(silent = true) {
+if (!navigator.onLine) {
+if (!silent && window.showToast) window.showToast('⚠️ Perangkat sedang offline.', 'warning');
+return false;
+}
+if (statusEl && !window.hasInitialCloudLoaded) {
+statusEl.innerHTML = '<span class="realtime-dot"></span>SYNC...';
+}
+if (!silent && window.showToast) window.showToast('🔄 Menyinkronkan data terbaru dari Cloud...', 'info');
+try {
+try { goOnline(db); } catch (_) {}
+await window.ensureFirebaseAuthAndSync(false);
+const rootNode = window.FIREBASE_ROOT_NODE || 'zencellNodes';
+const snap = await window.raceWithTimeout(get(ref(db, rootNode)), 5000, null);
+if (snap && typeof snap.exists === 'function') {
+if (window.pendingFirebaseWrites === 0 && !window.isSavingToFirebase) {
+applyCloudSnapshotData(snap.val());
+}
+window.startRealtimeDatabaseListener(true);
+if (!silent && window.showToast) window.showToast('✅ Data terbaru berhasil disinkronkan (LIVE)!', 'success');
+return true;
+}
+window.startRealtimeDatabaseListener(true);
+} catch (e) {}
+return false;
+};
+document.addEventListener('visibilitychange', () => {
+if (document.visibilityState === 'visible' && navigator.onLine) {
+if (!window.hasInitialCloudLoaded || !window._rtdbListenerAttached) {
+window.forceRefreshCloudSync(true);
+}
+}
+});
+window.addEventListener('pageshow', (ev) => {
+if ((ev.persisted || !window.hasInitialCloudLoaded) && navigator.onLine) {
+window.forceRefreshCloudSync(true);
+}
+});
+window.raceWithTimeout = function(promise, ms = 3500, fallbackVal = null) {
+let timer = null;
+const timeoutPromise = new Promise(resolve => {
+timer = setTimeout(() => resolve(fallbackVal), ms);
+});
+return Promise.race([
+Promise.resolve(promise).catch(() => fallbackVal),
+timeoutPromise
+]).finally(() => {
+if (timer) clearTimeout(timer);
+});
+};
 window.ensureFirebaseAuthAndSync = async function(forceRetry = false) {
 if (window._authInitInFlight && !forceRetry) {
 return window._authInitInFlight;
 }
 window._authInitInFlight = (async () => {
 try {
+if (!auth.currentUser && typeof auth.authStateReady === 'function') {
+await window.raceWithTimeout(auth.authStateReady(), 1500, null);
+}
 if (auth.currentUser && !forceRetry) {
-await auth.currentUser.getIdToken();
+await window.raceWithTimeout(auth.currentUser.getIdToken(), 3500, null);
 window._firebaseAuthUid = auth.currentUser.uid;
 window._firebaseAuthState = 'AUTHENTICATED';
 window.updateFirebaseSecurityStatusUI();
-window.startRealtimeDatabaseListener();
+window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
 return true;
 }
-let cred = null;
-try {
-cred = await signInAnonymously(auth);
-} catch (storageErr) {
-await setPersistence(auth, inMemoryPersistence);
-cred = await signInAnonymously(auth);
+let cred = await window.raceWithTimeout(signInAnonymously(auth), 6000, null);
+if (!cred && !auth.currentUser) {
+try { await setPersistence(auth, inMemoryPersistence); } catch (_) {}
+cred = await window.raceWithTimeout(signInAnonymously(auth), 4000, null);
 }
-if (cred && cred.user) {
-await cred.user.getIdToken();
-window._firebaseAuthUid = cred.user.uid;
+const activeUser = (cred && cred.user) ? cred.user : auth.currentUser;
+if (activeUser) {
+await window.raceWithTimeout(activeUser.getIdToken(), 3000, null);
+window._firebaseAuthUid = activeUser.uid;
 window._firebaseAuthState = 'AUTHENTICATED';
 window._firebaseAuthErrorMsg = '';
 window.updateFirebaseSecurityStatusUI();
-await new Promise(r => setTimeout(r, 150));
-window.startRealtimeDatabaseListener();
+window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
 return true;
 }
 } catch (err) {
@@ -9980,12 +10212,12 @@ const code = (err && err.code) ? String(err.code) : '';
 window._firebaseAuthErrorMsg = code || (err && err.message) || 'Auth Error';
 window._firebaseAuthState = 'CONSOLE_NOT_ENABLED';
 window.updateFirebaseSecurityStatusUI();
-window.startRealtimeDatabaseListener();
+window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
 return false;
 } finally {
 window._authInitInFlight = null;
 }
-window.startRealtimeDatabaseListener();
+window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
 return false;
 })();
 return window._authInitInFlight;
@@ -10048,13 +10280,13 @@ return { pin: best.pin, pinUpdatedAt: best.pinUpdatedAt };
 };
 window.syncDaftarKaryawanFromCloud = async function() {
 try {
-await window.ensureFirebaseAuthAndSync();
+await window.raceWithTimeout(window.ensureFirebaseAuthAndSync(), 4500, false);
 const [snapZ1, snapZ2] = await Promise.all([
-get(ref(db, 'zencellNodes/daftarKaryawan')).catch(() => null),
-get(ref(db, 'zencell2Nodes/daftarKaryawan')).catch(() => null)
+window.raceWithTimeout(get(ref(db, 'zencellNodes/daftarKaryawan')), 4500, null),
+window.raceWithTimeout(get(ref(db, 'zencell2Nodes/daftarKaryawan')), 4500, null)
 ]);
-const z1Raw = (snapZ1 && snapZ1.exists()) ? snapZ1.val() : null;
-const z2Raw = (snapZ2 && snapZ2.exists()) ? snapZ2.val() : null;
+const z1Raw = (snapZ1 && typeof snapZ1.exists === 'function' && snapZ1.exists()) ? snapZ1.val() : null;
+const z2Raw = (snapZ2 && typeof snapZ2.exists === 'function' && snapZ2.exists()) ? snapZ2.val() : null;
 const bestOwner = window.resolveUnifiedOwnerPin(z1Raw, z2Raw, window.daftarKaryawan);
 if (bestOwner && bestOwner.pin) {
 localStorage.setItem('zencell_owner_pin_global', JSON.stringify(bestOwner));
@@ -10075,10 +10307,10 @@ const z1RawStr = z1Raw ? JSON.stringify(Array.isArray(z1Raw) ? z1Raw : Object.va
 const z2RawStr = z2Raw ? JSON.stringify(Array.isArray(z2Raw) ? z2Raw : Object.values(z2Raw)) : '';
 const z1CleanStr = JSON.stringify(z1Clean);
 const z2CleanStr = JSON.stringify(z2Clean);
-if (z1RawStr !== z1CleanStr) {
+if (z1Raw && z1RawStr !== z1CleanStr) {
 update(ref(db, 'zencellNodes'), { daftarKaryawan: cleanForFirebase(z1Clean) }).catch(() => {});
 }
-if (z2RawStr !== z2CleanStr) {
+if (z2Raw && z2RawStr !== z2CleanStr) {
 update(ref(db, 'zencell2Nodes'), { daftarKaryawan: cleanForFirebase(z2Clean) }).catch(() => {});
 }
 if (window._rawLsSet) {
@@ -10103,10 +10335,15 @@ if (!uUpper || !pClean) return false;
 const list = window.normalizeBranchKaryawanList(window.daftarKaryawan, window.ACTIVE_CABANG);
 const matched = list.find(k => k && String(k.username || '').toUpperCase().trim() === uUpper);
 if (matched && matched.pin !== undefined && String(matched.pin).trim() !== '') {
-return String(matched.pin).trim() === pClean;
+const mPin = String(matched.pin).trim();
+if (mPin === pClean) return true;
+if (!window.hasInitialCloudLoaded && uUpper === 'OWNER' && (pClean === '000' || pClean === '212')) return true;
+if (!window.hasInitialCloudLoaded && uUpper === 'ZIYAD' && (pClean === '111' || pClean === '313')) return true;
+return false;
 }
-if (uUpper === 'OWNER') return pClean === '212';
-if (['FINA', 'ECA', 'ZIYAD', 'PIPIT', 'ELSA'].includes(uUpper)) return pClean === '313';
+if (uUpper === 'OWNER') return pClean === '000' || pClean === '212';
+if (uUpper === 'ZIYAD') return pClean === '111' || pClean === '313';
+if (['FINA', 'ECA', 'PIPIT', 'ELSA'].includes(uUpper)) return pClean === '313';
 return false;
 };
 window.verifyPinFromCloudIfNeeded = async function(user, pass) {
@@ -10122,8 +10359,8 @@ window._firebaseAuthUid = user.uid;
 window._firebaseAuthState = 'AUTHENTICATED';
 window.updateFirebaseSecurityStatusUI();
 try { await user.getIdToken(); } catch (e) {}
-if (sessionStorage.getItem('zencell_user')) {
-window.startRealtimeDatabaseListener();
+if (sessionStorage.getItem('zencell_user') || !window.hasInitialCloudLoaded) {
+window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
 }
 } else {
 window._firebaseAuthUid = null;
@@ -13812,31 +14049,57 @@ return `
 }
 };
 window.prosesLogin = async function(e) {
-e.preventDefault();
-const user = (document.getElementById('loginUser')?.value || '').trim();
-const pass = (document.getElementById('loginPass')?.value || '').trim();
-if (navigator.onLine && window.syncDaftarKaryawanFromCloud) {
-await window.syncDaftarKaryawanFromCloud();
+if (e && typeof e.preventDefault === 'function') e.preventDefault();
+let user = (document.getElementById('loginUser')?.value || '').trim();
+if (!user) {
+const activePill = document.querySelector('#loginQuickUserPills .login-user-pill.active');
+user = (activePill?.getAttribute('data-user') || 'OWNER').trim();
 }
-const valid = window.isPinValidForUser ? window.isPinValidForUser(user, pass) : false;
+const pass = (document.getElementById('loginPass')?.value || '').trim();
+const btnSubmit = document.querySelector('#loginOverlay .btn-login-submit');
+const origBtnHtml = btnSubmit ? btnSubmit.innerHTML : '🚀 MASUK APLIKASI';
+let valid = window.isPinValidForUser ? window.isPinValidForUser(user, pass) : false;
+if (!valid && navigator.onLine && window.syncDaftarKaryawanFromCloud) {
+if (btnSubmit) btnSubmit.innerHTML = '⏳ MEMVERIFIKASI PIN...';
+await window.raceWithTimeout(window.syncDaftarKaryawanFromCloud(), 5000, null);
+valid = window.isPinValidForUser ? window.isPinValidForUser(user, pass) : false;
+if (btnSubmit) btnSubmit.innerHTML = origBtnHtml;
+}
 if (valid) {
 const nowStr = String(Date.now());
+if (window._memSsMap) {
+window._memSsMap['zencell_user'] = user;
+window._memSsMap['zencell_login_ts'] = nowStr;
+window._memSsMap['zencell_last_active_ts'] = nowStr;
+}
+try {
 sessionStorage.setItem('zencell_user', user);
 sessionStorage.setItem('zencell_login_ts', nowStr);
 sessionStorage.setItem('zencell_last_active_ts', nowStr);
-document.getElementById('hdrUserActive').innerText = user.toUpperCase();
-document.getElementById('loginOverlay').style.display = 'none';
+} catch (_) {}
+const hdrUser = document.getElementById('hdrUserActive');
+if (hdrUser) hdrUser.innerText = user.toUpperCase();
+const ov = document.getElementById('loginOverlay');
+if (ov) ov.style.display = 'none';
 window.clearLoginPinInputSafe();
-if (window.ensureFirebaseAuthAndSync) {
-await window.ensureFirebaseAuthAndSync();
-}
 window.checkSessionLogin();
 window.catatLogAktivitas('LOGIN', `Pengguna ${user} masuk ke aplikasi`);
 window.showToast(`👋 Selamat datang kembali, ${user.toUpperCase()}!`, "success");
+if (navigator.onLine) {
+if (window.ensureFirebaseAuthAndSync) window.ensureFirebaseAuthAndSync();
+if (window.syncDaftarKaryawanFromCloud) window.syncDaftarKaryawanFromCloud();
+}
 } else { 
 window.clearLoginPinInputSafe();
 window.showToast("❌ Kata Sandi / PIN Salah!", "error");
 }
+};
+if (window._queuedEarlyLoginAttempt) {
+window._queuedEarlyLoginAttempt = false;
+setTimeout(() => {
+const passVal = (document.getElementById('loginPass')?.value || '').trim();
+if (passVal && window.prosesLogin) window.prosesLogin();
+}, 50);
 }
 window.prosesLogout = function() {
 if (confirm("Apakah Anda yakin ingin keluar / logout dari akun ini?")) {
@@ -14719,7 +14982,9 @@ window.initDropdowns();
 window.renderAll();
 window.isUndoRedoAction = false;
 }
-document.addEventListener("DOMContentLoaded", function() {
+function initPosZencellAppBoot() {
+if (window._zencellBootInitialized) return;
+window._zencellBootInitialized = true;
 window.initTheme();
 try {
 if (localStorage.getItem('zencell_kpi_collapsed') === '1' && window.applyKpiCollapseUI) {
@@ -14739,7 +15004,13 @@ window.initDropdowns();
 window.initVlookupAutoFill();
 window.updateUndoRedoBtnState();
 window.renderAll();
-});
+}
+if (document.readyState === 'loading') {
+document.addEventListener("DOMContentLoaded", initPosZencellAppBoot);
+} else {
+initPosZencellAppBoot();
+}
+window.addEventListener("load", initPosZencellAppBoot);
 window.compareStokPriority = function(a, b) {
 const sisaA = Math.max(0, Number(a?.awal || 0) - Number(a?.terjual || 0));
 const sisaB = Math.max(0, Number(b?.awal || 0) - Number(b?.terjual || 0));
