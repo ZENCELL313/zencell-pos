@@ -4269,14 +4269,23 @@ Menggabungkan ribuan baris transaksi reguler dari bulan-bulan lalu menjadi baris
 <span>💾</span> PENYIMPANAN LOKAL (PC / LAPTOP / HP)
 </h4>
 <p style="font-size:11.5px; color:#475569; margin-bottom:12px;">Cadangkan database ke file komputer atau pulihkan database dari file cadangan.</p>
+<div style="background:#ECFDF5; border:1.5px solid #6EE7B7; border-radius:8px; padding:12px; margin-bottom:10px;">
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+<div>
+<b style="font-size:12px; color:#065F46; display:block; margin-bottom:2px;">📊 Export File Excel Backup &amp; Laporan Lengkap (7 Sheet .XLS)</b>
+<p style="font-size:10.5px; color:#047857; margin:0;">Berisi Semua Saldo Akun, Transaksi Harian &amp; Bulanan, Service &amp; Sparepart, Stok Opname, Hadiah ATM, Piutang, dan Operasional. Bisa langsung dibuka di Excel HP/PC (0 Beban ke Server Firebase).</p>
+</div>
+<button type="button" class="btn" style="background:#059669; width:auto; font-size:11.5px; font-weight:800; padding:8px 14px; margin:0;" onclick="window.downloadExcelLaporanShiftLengkap()">📊 Download Excel Lengkap (.XLS)</button>
+</div>
+</div>
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:14px;">
 <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px;">
-<b style="font-size:11.5px; color:#0F172A; display:block; margin-bottom:4px;">Export Database</b>
-<p style="font-size:10.5px; color:#64748B; margin-bottom:8px;">Simpan cadangan data lokal ke format .JSON</p>
-<button type="button" class="btn" style="background:#0F172A; font-size:11px;" onclick="backupJSON()">💾 Backup ke PC</button>
+<b style="font-size:11.5px; color:#0F172A; display:block; margin-bottom:4px;">Export Database (.JSON)</b>
+<p style="font-size:10.5px; color:#64748B; margin-bottom:8px;">Simpan cadangan sistem mentah ke format .JSON</p>
+<button type="button" class="btn" style="background:#0F172A; font-size:11px;" onclick="backupJSON()">💾 Backup JSON ke PC</button>
 </div>
 <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px;">
-<b style="font-size:11.5px; color:#0F172A; display:block; margin-bottom:4px;">Import Database</b>
+<b style="font-size:11.5px; color:#0F172A; display:block; margin-bottom:4px;">Import Database (.JSON)</b>
 <p style="font-size:10.5px; color:#64748B; margin-bottom:8px;">Pulihkan data dari file cadangan .JSON</p>
 <button type="button" class="btn" style="background:#16A34A; font-size:11px;" onclick="document.getElementById('fileRestoreJson').click()">📥 Restore File Lokal</button>
 </div>
@@ -4714,9 +4723,10 @@ Pasang foto wajah asli Anda atau logo untuk akun <b id="lblFotoUserAktif" style=
 </div>
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
 <button type="button" class="btn" onclick="cetakLaporanShiftPDF()" style="background:#0284C7; font-weight:800;">🖨️ Cetak PDF Laporan</button>
-<button type="button" class="btn" onclick="kirimLaporanShiftWA()" style="background:#16A34A; font-weight:800;">📲 Kirim Rekap ke WA Owner</button>
+<button type="button" class="btn" onclick="kirimLaporanShiftWA()" style="background:#16A34A; font-weight:800;">📲 Kirim WA + Excel</button>
 </div>
-<button type="button" class="btn" onclick="closeModalLaporanShift()" style="background:#64748B; margin-top:8px; padding:8px; font-size:11.5px;">Tutup</button>
+<button type="button" class="btn" onclick="window.downloadExcelLaporanShiftLengkap()" style="background:#047857; margin-top:7px; padding:8px; font-size:11.5px; font-weight:800;">📊 Download File Excel Lengkap (7 Sheet: Saldo, Trx, Servis, Stok, Piutang)</button>
+<button type="button" class="btn" onclick="closeModalLaporanShift()" style="background:#64748B; margin-top:7px; padding:8px; font-size:11.5px;">Tutup</button>
 </div>
 </div>
 <div id="modalSeaBankBungaOverlay" class="modal-overlay">
@@ -26461,18 +26471,45 @@ return;
 }
 const reader = new FileReader();
 reader.onload = function(evt) {
-const base64Data = evt.target.result;
-window.pengaturanToko.logoUrl = base64Data;
+const rawDataUrl = evt.target.result;
+const finishSaveLogo = (finalDataUrl) => {
+window.pengaturanToko.logoUrl = finalDataUrl;
 const imgLogo = document.getElementById('imgLogoPreview');
 const txtPlaceholder = document.getElementById('txtLogoPlaceholder');
-imgLogo.src = base64Data;
+if (imgLogo) {
+imgLogo.src = finalDataUrl;
 imgLogo.style.display = 'block';
-txtPlaceholder.style.display = 'none';
+}
+if (txtPlaceholder) txtPlaceholder.style.display = 'none';
 window.saveToFirebaseNode('pengaturan', window.pengaturanToko);
 window.applyPengaturanTokoKeUI();
-window.catatLogAktivitas('LOGO KONTER', 'Memperbarui logo toko / konter');
-window.showSettingBanner("✅ Foto logo baru berhasil diunggah & langsung diterapkan ke header, struk, dan nota!");
+window.catatLogAktivitas('LOGO KONTER', 'Memperbarui logo toko / konter (terkompresi ringan)');
+window.showSettingBanner("✅ Foto logo baru berhasil diunggah, dikompres ringan, & diterapkan!");
 window.showToast("✅ Foto logo toko berhasil diperbarui!", "success");
+};
+const img = new Image();
+img.onload = function() {
+try {
+const maxDim = 160;
+let w = img.width || maxDim;
+let h = img.height || maxDim;
+if (w > maxDim || h > maxDim) {
+if (w >= h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+else { w = Math.round((w * maxDim) / h); h = maxDim; }
+}
+const canvas = document.createElement('canvas');
+canvas.width = Math.max(1, w);
+canvas.height = Math.max(1, h);
+const ctx = canvas.getContext('2d');
+ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+const compressedUrl = canvas.toDataURL('image/png');
+finishSaveLogo(compressedUrl.length < rawDataUrl.length ? compressedUrl : rawDataUrl);
+} catch (_) {
+finishSaveLogo(rawDataUrl);
+}
+};
+img.onerror = function() { finishSaveLogo(rawDataUrl); };
+img.src = rawDataUrl;
 };
 reader.readAsDataURL(file);
 };
@@ -27914,14 +27951,19 @@ const text = `*${namaToko} - LAPORAN AKHIR SHIFT KASIR* 📊\n` +
 `*Catatan Kasir:*\n` +
 `"${catatan}"\n` +
 `----------------------------------------\n` +
+`📎 *FILE EXCEL BACKUP LENGKAP (.XLS):*\n` +
+`File Excel berisi 7 Sheet (Semua Saldo Akun, Transaksi Harian, Service & Sparepart, Stok Opname & Hadiah, Piutang, Operasional, dan Full Backup Transaksi) otomatis terunduh di perangkat kasir untuk dilampirkan ke chat WA ini.\n` +
+`----------------------------------------\n` +
 `Laporan otomatis dari ${window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1'}.`;
-window.kirimPesanWa(waOwner, text);
-window.catatLogAktivitas('KIRIM LAPORAN SHIFT WA', `Mengirim laporan shift kasir ${kasirName} ke WA Owner`);
-setTimeout(() => {
-if (window.tawarkanBackupSetelahLaporanShift) {
-window.tawarkanBackupSetelahLaporanShift('Kirim Laporan Shift WA');
+try {
+if (typeof window.downloadExcelLaporanShiftLengkap === 'function') {
+window.downloadExcelLaporanShiftLengkap(shiftDate, true);
 }
-}, 900);
+} catch (errExcel) {
+console.error('Auto Excel download error:', errExcel);
+}
+window.kirimPesanWa(waOwner, text);
+window.catatLogAktivitas('KIRIM LAPORAN SHIFT WA', `Mengirim laporan shift kasir ${kasirName} ke WA Owner + Auto Download Excel Backup`);
 };
 window.currentStrukTfTrxId = null;
 window.currentSsBuktiDataUrl = null;
@@ -28716,12 +28758,1034 @@ const nameLine = lines.find(l => /^[A-Z][A-Z\s.,']{3,30}$/.test(l.trim()) && !/\
         };
 
         window.tawarkanBackupSetelahLaporanShift = function(sumberAksi) {
-            const cabangName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
-            setTimeout(() => {
-                if (confirm(`💾 TAWARAN BACKUP OTOMATIS (${cabangName})\n\nLaporan shift (${sumberAksi || 'Akhir Shift'}) selesai diproses.\nApakah Anda ingin sekalian mengunduh File Backup Cadangan Database (.JSON) hari ini ke perangkat agar data 100% aman?`)) {
-                    window.backupJSON();
+            try {
+                if (typeof window.downloadExcelLaporanShiftLengkap === 'function') {
+                    window.downloadExcelLaporanShiftLengkap(null, true);
                 }
-            }, 300);
+            } catch (_) {}
+        };
+
+        window.downloadExcelLaporanShiftLengkap = function(targetDateOpt, isAutoFromWa = false) {
+            const shiftDateEl = document.getElementById('shiftReportDate');
+            const shiftDate = targetDateOpt || (shiftDateEl && shiftDateEl.value) || window.getTodayIso();
+            const kasirEl = document.getElementById('shiftKasirName');
+            const kasirName = (kasirEl && kasirEl.value ? kasirEl.value : (sessionStorage.getItem('zencell_user') || 'KASIR')).toUpperCase();
+            const shiftOptEl = document.getElementById('shiftJagaOption');
+            const shiftName = (shiftOptEl && shiftOptEl.value) ? shiftOptEl.value : 'Full Day';
+            const fisikEl = document.getElementById('shiftFisikLaci');
+            const fisikLaci = fisikEl ? (parseFloat(fisikEl.value) || 0) : 0;
+            const catatanEl = document.getElementById('shiftCatatanText');
+            const catatan = (catatanEl && catatanEl.value ? catatanEl.value.trim() : '') || 'Semua operasional shift berjalan lancar.';
+            const cabangCode = window.ACTIVE_CABANG === '2' ? 'ZENCELL2' : 'ZENCELL1';
+            const cabangName = window.ACTIVE_CABANG === '2' ? 'POS ZENCELL 2' : 'POS ZENCELL 1';
+
+            const escXml = (val) => String(val === undefined || val === null ? '' : val)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+
+            const cellStr = (v, styleId = 'sCell') => `<Cell ss:StyleID="${styleId}"><Data ss:Type="String">${escXml(v)}</Data></Cell>`;
+            const cellNum = (v, styleId = 'sNum') => {
+                const n = Number(v || 0);
+                const safeN = Number.isFinite(n) ? n : 0;
+                return `<Cell ss:StyleID="${styleId}"><Data ss:Type="Number">${safeN}</Data></Cell>`;
+            };
+
+            // 1. Hitung Ringkasan Harian & Saldo Per Akun
+            let omsetHarian = 0, modalHarian = 0, cuanHarian = 0, trxHarianCount = 0;
+            let cuanAtm = 0, cuanKonter = 0, cuanService = 0;
+            const trxHariIniList = [];
+            const allTrxList = (window.transaksiJurnal || []).slice();
+
+            allTrxList.forEach(t => {
+                if (!t) return;
+                if (t.isoDate === shiftDate) {
+                    trxHariIniList.push(t);
+                    if (!t.isPencatatanUtangAwal && t.kat !== 'PIUTANG_INIT' && !(window.isTransaksiPindahSaldo && window.isTransaksiPindahSaldo(t)) && !(window.isTransaksiMutasiCabang && window.isTransaksiMutasiCabang(t))) {
+                        if (window.isTransaksiPelunasanPiutang && window.isTransaksiPelunasanPiutang(t)) {
+                            const cp = Number(t.cuan || 0);
+                            if (cp > 0) {
+                                const pRef = (window.piutangList || []).find(p => (t.idPiutangRef && p.id == t.idPiutangRef) || (p.nama && (t.ket || '').toUpperCase().includes(p.nama.toUpperCase())));
+                                const katAsli = (t.kat && t.kat !== 'PIUTANG') ? t.kat : ((pRef && pRef.kategori && pRef.kategori !== 'PIUTANG') ? pRef.kategori : 'TOPUP');
+                                cuanHarian += cp;
+                                if ((window.katAtm || []).includes(katAsli)) cuanAtm += cp;
+                                else if ((window.katKonter || []).includes(katAsli)) cuanKonter += cp;
+                                else if ((window.katService || []).includes(katAsli)) cuanService += cp;
+                            }
+                            trxHarianCount++;
+                        } else {
+                            omsetHarian += Number(t.hargaJual || 0);
+                            modalHarian += Number(t.hargaModal || 0);
+                            cuanHarian += Number(t.cuan || 0);
+                            trxHarianCount++;
+                            if ((window.katAtm || []).includes(t.kat)) cuanAtm += Number(t.cuan || 0);
+                            if ((window.katKonter || []).includes(t.kat)) cuanKonter += Number(t.cuan || 0);
+                            if ((window.katService || []).includes(t.kat)) cuanService += Number(t.cuan || 0);
+                        }
+                    }
+                }
+            });
+
+            let totalSetorHariIni = 0;
+            (window.setoranOwnerList || []).forEach(s => {
+                if (s && s.isoDate === shiftDate) totalSetorHariIni += Number(s.nominal || 0);
+            });
+
+            const auditLaci = window.hitungAuditLaciSistem ? window.hitungAuditLaciSistem(shiftDate) : { laciSistem: 0 };
+            const laciSistem = Number(auditLaci.laciSistem || 0);
+            const selisihLaci = fisikLaci > 0 ? (fisikLaci - laciSistem) : 0;
+            const statusLaciTxt = fisikLaci === 0
+                ? 'BELUM DIINPUT FISIK'
+                : (selisihLaci === 0 ? 'PAS / SESUAI (Rp0)' : (selisihLaci > 0 ? `LEBIH / SURPLUS (+Rp${selisihLaci.toLocaleString('id-ID')})` : `KURANG / MINUS (-Rp${Math.abs(selisihLaci).toLocaleString('id-ID')})`));
+
+            // Hitung Saldo & Mutasi Lengkap Per Akun pada Tanggal Shift
+            const akunDataOtomatis = ['VOUCHER', 'SP', 'ACC', 'SPAREPART', 'PIUTANG'];
+            const akunStokFisik = ['VOUCHER', 'SP', 'ACC'];
+            const masukAll = {}, keluarAll = {}, masukHari = {}, keluarHari = {}, masukAfter = {}, keluarAfter = {};
+            (window.saldoList || []).forEach(s => {
+                masukAll[s] = 0; keluarAll[s] = 0;
+                masukHari[s] = 0; keluarHari[s] = 0;
+                masukAfter[s] = 0; keluarAfter[s] = 0;
+            });
+            const addMut = (akun, tipe, nominal, itemDate) => {
+                const nom = Number(nominal || 0);
+                if (!akun || !nom || masukAll[akun] === undefined) return;
+                const d = itemDate || '';
+                if (tipe === 'MASUK') {
+                    masukAll[akun] += nom;
+                    if (d === shiftDate) masukHari[akun] += nom;
+                    else if (d > shiftDate) masukAfter[akun] += nom;
+                } else {
+                    keluarAll[akun] += nom;
+                    if (d === shiftDate) keluarHari[akun] += nom;
+                    else if (d > shiftDate) keluarAfter[akun] += nom;
+                }
+            };
+            allTrxList.forEach(t => {
+                if (!t) return;
+                if ((t.isPindahSaldo || (t.ket && String(t.ket).includes('[PINDAH SALDO]'))) && (akunDataOtomatis.includes(t.akunMasuk1) || akunDataOtomatis.includes(t.akunKeluar1))) return;
+                const d = t.isoDate || '';
+                if (t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT') {
+                    const hasValidParent = !t.idPiutangRef || (window.piutangList || []).some(p => String(p.id) === String(t.idPiutangRef));
+                    if (!hasValidParent) return;
+                    if (t.akunKeluar1) addMut(t.akunKeluar1, 'KELUAR', t.modalSplit1 || t.hargaModal || 0, d);
+                    if (t.akunMasuk1) {
+                        if (t.akunMasuk1 === 'PIUTANG') addMut('PIUTANG', 'MASUK', t.modalSplit1 || t.hargaModal || 0, d);
+                        else addMut(t.akunMasuk1, 'MASUK', t.jualSplit1 || t.hargaJual || 0, d);
+                    }
+                    return;
+                }
+                if (t.isSplit) {
+                    if (t.akunMasuk1) addMut(t.akunMasuk1, 'MASUK', t.jualSplit1 || 0, d);
+                    if (t.akunMasuk2) addMut(t.akunMasuk2, 'MASUK', t.jualSplit2 || 0, d);
+                    if (t.akunKeluar1) addMut(t.akunKeluar1, 'KELUAR', t.modalSplit1 || 0, d);
+                    if (t.akunKeluar2) addMut(t.akunKeluar2, 'KELUAR', t.modalSplit2 || 0, d);
+                } else if (t.isReturAcc) {
+                    const nomKas = Number(t.hargaJual || 0);
+                    if (t.akunMasuk1) {
+                        if (nomKas >= 0) addMut(t.akunMasuk1, 'MASUK', nomKas, d);
+                        else addMut(t.akunMasuk1, 'KELUAR', Math.abs(nomKas), d);
+                    }
+                    const nomMod = Number(t.hargaModal || 0);
+                    if (t.akunKeluar1) {
+                        if (nomMod >= 0) addMut(t.akunKeluar1, 'KELUAR', nomMod, d);
+                        else addMut(t.akunKeluar1, 'MASUK', Math.abs(nomMod), d);
+                    }
+                } else {
+                    if (t.akunMasuk1) addMut(t.akunMasuk1, 'MASUK', t.hargaJual || 0, d);
+                    if (t.akunKeluar1) {
+                        if (t.akunKeluar1 === 'PIUTANG') addMut('PIUTANG', 'KELUAR', t.hargaModal || t.hargaJual || 0, d);
+                        else addMut(t.akunKeluar1, 'KELUAR', t.hargaModal || 0, d);
+                    }
+                }
+            });
+            (window.piutangList || []).forEach(p => {
+                if (!p || p.isSeedAwal) return;
+                const hasInit = allTrxList.some(t => t && t.isPencatatanUtangAwal && (t.id == p.id || t.idPiutangRef == p.id));
+                if (!hasInit) addMut('PIUTANG', 'MASUK', p.pokokAwal || p.sisa || 0, p.isoDate || '');
+            });
+            (window.riwayatBelanjaStok || []).forEach(r => {
+                if (!r || r.isSeedAwal) return;
+                const d = r.isoDate || r.tgl || '';
+                if (r.kat) addMut(r.kat, 'MASUK', r.total || 0, d);
+                if (r.sumberKas && !String(r.sumberKas).includes('TIDAK POTONG SALDO')) addMut(r.sumberKas, 'KELUAR', r.total || 0, d);
+            });
+            (window.sparepartList || []).forEach(sp => {
+                if (!sp) return;
+                const d = sp.isoDate || sp.tgl || '';
+                const modVal = Number(sp.modal || 0);
+                if (sp.sumber) addMut(sp.sumber, 'KELUAR', modVal, d);
+                addMut('SPAREPART', 'MASUK', modVal, d);
+            });
+            (window.setoranOwnerList || []).forEach(s => {
+                if (!s) return;
+                const d = s.isoDate || s.tgl || '';
+                if (s.sumber) addMut(s.sumber, 'KELUAR', s.nominal || 0, d);
+            });
+            (window.operasionalList || []).forEach(op => {
+                if (!op) return;
+                const d = op.isoDate || op.tgl || '';
+                const nom = Number(op.nominal || 0);
+                if (op.sumber) addMut(op.sumber, 'KELUAR', nom, d);
+                addMut('OPERASIONAL', 'MASUK', nom, d);
+                if (op.status === 'LUNAS DIGANTI') {
+                    const gDate = op.tglDiganti || op.isoDateGanti || d;
+                    const tAkun = op.sumberDiganti || op.sumber || 'LACI';
+                    addMut(tAkun, 'MASUK', nom, gDate);
+                    addMut('OPERASIONAL', 'KELUAR', nom, gDate);
+                }
+            });
+
+            // Hitung nilai stok opname, piutang, sparepart, operasional aktual
+            let nilaiVoucher = 0, nilaiSp = 0, nilaiAcc = 0;
+            (window.stokOpnameItems || []).forEach(s => {
+                if (!s) return;
+                const sisa = Math.max(0, Number(s.awal || 0) - Number(s.terjual || 0));
+                const val = sisa * Number(s.modal || 0);
+                if (s.kat === 'VOUCHER') nilaiVoucher += val;
+                else if (s.kat === 'SP') nilaiSp += val;
+                else if (s.kat === 'ACC') nilaiAcc += val;
+            });
+            const mapNilaiStok = { VOUCHER: nilaiVoucher, SP: nilaiSp, ACC: nilaiAcc };
+            let totalPiutangAktif = 0;
+            (window.piutangList || []).forEach(p => {
+                if (!p) return;
+                const isLunas = p.status === 'LUNAS' || Number(p.sisa || 0) <= 0;
+                if (!isLunas) totalPiutangAktif += Number(p.sisa || 0);
+            });
+            let totalSparepartAktif = 0;
+            (window.sparepartList || []).forEach(sp => {
+                if (sp && sp.status !== 'LUNAS') totalSparepartAktif += Number(sp.modal || 0);
+            });
+            let totalOperasionalAktif = 0;
+            (window.operasionalList || []).forEach(op => {
+                if (op && op.status !== 'LUNAS DIGANTI') totalOperasionalAktif += Number(op.nominal || 0);
+            });
+
+            let sumKemarin = 0, sumMasukH = 0, sumKeluarH = 0, sumAkhir = 0;
+            let totalKasBankCair = 0;
+            const saldoRowsXml = (window.saldoList || []).map((s, idx) => {
+                const isAuto = akunDataOtomatis.includes(s);
+                const awalMaster = isAuto ? 0 : Number((window.masterSaldoAwal && window.masterSaldoAwal[s]) || 0);
+                let akhirAktual = awalMaster + (masukAll[s] || 0) - (keluarAll[s] || 0);
+                if (s === 'PIUTANG') akhirAktual = totalPiutangAktif;
+                else if (s === 'OPERASIONAL') akhirAktual = totalOperasionalAktif;
+                else if (s === 'SPAREPART') akhirAktual = totalSparepartAktif;
+                else if (akunStokFisik.includes(s)) akhirAktual = mapNilaiStok[s] || 0;
+
+                const akhirRow = akhirAktual - (masukAfter[s] || 0) + (keluarAfter[s] || 0);
+                const mH = Number(masukHari[s] || 0);
+                const kH = Number(keluarHari[s] || 0);
+                const kemRow = akhirRow - mH + kH;
+
+                sumKemarin += kemRow;
+                sumMasukH += mH;
+                sumKeluarH += kH;
+                sumAkhir += akhirRow;
+                if (!isAuto && s !== 'OPERASIONAL') {
+                    totalKasBankCair += akhirRow;
+                }
+                const jenisAkun = s === 'PIUTANG' ? 'PIUTANG PELANGGAN'
+                    : (s === 'SPAREPART' ? 'MODAL SPAREPART SERVIS'
+                    : (s === 'OPERASIONAL' ? 'TALANGAN OPERASIONAL'
+                    : (akunStokFisik.includes(s) ? 'ASET STOK BARANG' : 'KAS / BANK / SERVER CAIR')));
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(s, 'sBold') +
+                    cellStr(jenisAkun, 'sCell') +
+                    cellNum(kemRow, 'sNum') +
+                    cellNum(mH, 'sNumGreen') +
+                    cellNum(kH, 'sNumRed') +
+                    cellNum(akhirRow, 'sNumBold') +
+                    `</Row>`;
+            }).join('');
+
+            const sheet1Xml = `
+            <Worksheet ss:Name="1_RINGKASAN_DAN_SALDO">
+                <Table>
+                    <Column ss:Width="40"/>
+                    <Column ss:Width="170"/>
+                    <Column ss:Width="165"/>
+                    <Column ss:Width="135"/>
+                    <Column ss:Width="135"/>
+                    <Column ss:Width="135"/>
+                    <Column ss:Width="145"/>
+                    <Row><Cell ss:MergeAcross="6" ss:StyleID="sTitle"><Data ss:Type="String">${escXml(cabangName)} — LAPORAN AKHIR SHIFT &amp; REKAP SEMUA SALDO AKUN (${escXml(shiftDate)})</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('TANGGAL SHIFT', 'sHeader')}${cellStr(shiftDate, 'sBold')}
+                        ${cellStr('PETUGAS KASIR', 'sHeader')}${cellStr(kasirName, 'sBold')}
+                        ${cellStr('SHIFT JAGA', 'sHeader')}${cellStr(shiftName, 'sBold')}
+                        ${cellStr('WAKTU EXPORT: ' + new Date().toLocaleString('id-ID'), 'sCell')}
+                    </Row>
+                    <Row></Row>
+                    <Row><Cell ss:MergeAcross="6" ss:StyleID="sSection"><Data ss:Type="String">A. RINGKASAN OMSET, CUAN &amp; AUDIT FISIK LACI HARI INI (${escXml(shiftDate)})</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('INDIKATOR LAPORAN', 'sHeader')}
+                        ${cellStr('KETERANGAN / RINCIAN', 'sHeader')}
+                        ${cellStr('NOMINAL (RP)', 'sHeader')}
+                        ${cellStr('AUDIT KAS LACI &amp; SEKTOR', 'sHeader')}
+                        ${cellStr('STATUS / KETERANGAN', 'sHeader')}
+                        ${cellStr('NOMINAL (RP)', 'sHeader')}
+                        ${cellStr('CATATAN SHIFT', 'sHeader')}
+                    </Row>
+                    <Row>
+                        ${cellStr('Total Omset Penjualan', 'sBold')}${cellStr(trxHarianCount + ' Transaksi Hari Ini', 'sCell')}${cellNum(omsetHarian, 'sNumBold')}
+                        ${cellStr('Saldo Akhir Laci (Sistem)', 'sBold')}${cellStr('Menurut Mutasi Laci', 'sCell')}${cellNum(laciSistem, 'sNumBold')}
+                        ${cellStr(catatan, 'sCell')}
+                    </Row>
+                    <Row>
+                        ${cellStr('Total Modal Pokok', 'sCell')}${cellStr('Modal Transaksi Harian', 'sCell')}${cellNum(modalHarian, 'sNum')}
+                        ${cellStr('Fisik Uang Laci (Kasir)', 'sBold')}${cellStr(fisikLaci > 0 ? 'Sudah Dihitung Kasir' : 'Belum Diinput', 'sCell')}${cellNum(fisikLaci, 'sNumBold')}
+                        ${cellStr('', 'sCell')}
+                    </Row>
+                    <Row>
+                        ${cellStr('TOTAL CUAN BERSIH', 'sTotalLabel')}${cellStr('Keuntungan Bersih Hari Ini', 'sTotalLabel')}${cellNum(cuanHarian, 'sTotalNum')}
+                        ${cellStr('Selisih Fisik vs Sistem', 'sTotalLabel')}${cellStr(statusLaciTxt, 'sTotalLabel')}${cellNum(selisihLaci, 'sTotalNum')}
+                        ${cellStr('', 'sCell')}
+                    </Row>
+                    <Row>
+                        ${cellStr('• Cuan Sektor ATM Link', 'sCell')}${cellStr('Transfer, Tarik Tunai, Topup, EDC', 'sCell')}${cellNum(cuanAtm, 'sNumGreen')}
+                        ${cellStr('• Cuan Sektor Konter', 'sCell')}${cellStr('Voucher, SP, ACC, Pulsa/Kuota', 'sCell')}${cellNum(cuanKonter, 'sNumGreen')}
+                        ${cellNum(cuanService, 'sNumGreen')}${cellStr('Cuan Sektor Servis HP', 'sCell')}
+                    </Row>
+                    <Row>
+                        ${cellStr('Setoran Profit ke Owner', 'sCell')}${cellStr('Diambil Owner Hari Ini', 'sCell')}${cellNum(totalSetorHariIni, 'sNumRed')}
+                        ${cellStr('Total Kas &amp; Bank Cair', 'sBold')}${cellStr('Uang Cair Semua Akun', 'sCell')}${cellNum(totalKasBankCair, 'sNumBold')}
+                        ${cellStr('', 'sCell')}
+                    </Row>
+                    <Row></Row>
+                    <Row><Cell ss:MergeAcross="6" ss:StyleID="sSection"><Data ss:Type="String">B. TABEL LENGKAP SEMUA SALDO AKUN &amp; MUTASI REALTIME (${(window.saldoList || []).length} AKUN)</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('NAMA AKUN SALDO', 'sHeader')}
+                        ${cellStr('KELOMPOK AKUN', 'sHeader')}
+                        ${cellStr('SALDO KEMARIN (RP)', 'sHeader')}
+                        ${cellStr('MASUK HARI INI (RP)', 'sHeader')}
+                        ${cellStr('KELUAR HARI INI (RP)', 'sHeader')}
+                        ${cellStr('SALDO AKHIR REALTIME (RP)', 'sHeader')}
+                    </Row>
+                    ${saldoRowsXml}
+                    <Row>
+                        ${cellStr('', 'sTotalLabel')}
+                        ${cellStr('TOTAL UANG KAS, BANK &amp; SERVER CAIR', 'sTotalLabel')}
+                        ${cellStr('Uang Cair Siap Pakai', 'sTotalLabel')}
+                        ${cellNum(0, 'sTotalNum')}${cellNum(0, 'sTotalNum')}${cellNum(0, 'sTotalNum')}
+                        ${cellNum(totalKasBankCair, 'sTotalNum')}
+                    </Row>
+                    <Row>
+                        ${cellStr('', 'sCell')}
+                        ${cellStr('TOTAL NILAI STOK BARANG (VOUCHER + SP + ACC)', 'sBold')}
+                        ${cellStr('Aset Barang Fisik', 'sCell')}
+                        ${cellNum(0, 'sNum')}${cellNum(0, 'sNum')}${cellNum(0, 'sNum')}
+                        ${cellNum(nilaiVoucher + nilaiSp + nilaiAcc, 'sNumBold')}
+                    </Row>
+                    <Row>
+                        ${cellStr('', 'sCell')}
+                        ${cellStr('TOTAL MODAL SPAREPART SERVIS BELUM CAIR', 'sBold')}
+                        ${cellStr('Stok &amp; Talangan Part Teknisi', 'sCell')}
+                        ${cellNum(0, 'sNum')}${cellNum(0, 'sNum')}${cellNum(0, 'sNum')}
+                        ${cellNum(totalSparepartAktif, 'sNumBold')}
+                    </Row>
+                    <Row>
+                        ${cellStr('', 'sCell')}
+                        ${cellStr('TOTAL PIUTANG PELANGGAN BELUM LUNAS', 'sBold')}
+                        ${cellStr('Bon / Tagihan Tempo Aktif', 'sCell')}
+                        ${cellNum(0, 'sNum')}${cellNum(0, 'sNum')}${cellNum(0, 'sNum')}
+                        ${cellNum(totalPiutangAktif, 'sNumBold')}
+                    </Row>
+                    <Row>
+                        ${cellStr('', 'sTotalLabel')}
+                        ${cellStr('TOTAL KESELURUHAN HARTA / SALDO KONTER', 'sTotalLabel')}
+                        ${cellStr('Kas Cair + Stok + Part + Piutang + Operasional', 'sTotalLabel')}
+                        ${cellNum(sumKemarin, 'sTotalNum')}
+                        ${cellNum(sumMasukH, 'sTotalNum')}
+                        ${cellNum(sumKeluarH, 'sTotalNum')}
+                        ${cellNum(sumAkhir, 'sTotalNum')}
+                    </Row>
+                </Table>
+            </Worksheet>`;
+
+            // 2. Sheet Transaksi Harian (shiftDate)
+            let sumJualH = 0, sumModalH = 0, sumCuanH = 0;
+            const trxHarianRowsXml = trxHariIniList.map((t, idx) => {
+                const isTf = Boolean(window.isTransaksiPindahSaldo && window.isTransaksiPindahSaldo(t));
+                const isUtangInit = Boolean(t.isPencatatanUtangAwal || t.kat === 'PIUTANG_INIT');
+                const isPelunasan = Boolean(window.isTransaksiPelunasanPiutang && window.isTransaksiPelunasanPiutang(t));
+                const jenisLabel = isTf ? 'PINDAH SALDO' : (isUtangInit ? 'CATAT PIUTANG BARU' : (isPelunasan ? 'PELUNASAN PIUTANG' : (t.isReturAcc ? 'RETUR ACC' : 'TRANSAKSI REGULER')));
+                const akunMasukTxt = (t.isSplit && t.akunMasuk2) ? `${t.akunMasuk1} (${t.jualSplit1 || 0}) + ${t.akunMasuk2} (${t.jualSplit2 || 0})` : (t.akunMasuk1 || '-');
+                const akunKeluarTxt = (t.isSplit && t.akunKeluar2) ? `${t.akunKeluar1} (${t.modalSplit1 || 0}) + ${t.akunKeluar2} (${t.modalSplit2 || 0})` : (t.akunKeluar1 || '-');
+                const jual = Number(t.hargaJual || 0);
+                const modal = Number(t.hargaModal || 0);
+                const cuan = Number(t.cuan || 0);
+                if (!isTf && !isUtangInit) {
+                    sumJualH += jual;
+                    sumModalH += modal;
+                    sumCuanH += cuan;
+                }
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(t.isoDate || shiftDate, 'sCenter') +
+                    cellStr(t.waktu || '-', 'sCenter') +
+                    cellStr(t.ket || '-', 'sCell') +
+                    cellNum(t.qty || 1, 'sCenter') +
+                    cellStr(t.kat || '-', 'sBold') +
+                    cellStr(akunMasukTxt, 'sCell') +
+                    cellNum(jual, 'sNumGreen') +
+                    cellStr(akunKeluarTxt, 'sCell') +
+                    cellNum(modal, 'sNumRed') +
+                    cellNum(cuan, 'sNumBold') +
+                    cellStr(jenisLabel, 'sCell') +
+                    `</Row>`;
+            }).join('');
+
+            const sheet2Xml = `
+            <Worksheet ss:Name="2_TRANSAKSI_HARIAN">
+                <Table>
+                    <Column ss:Width="40"/>
+                    <Column ss:Width="85"/>
+                    <Column ss:Width="60"/>
+                    <Column ss:Width="250"/>
+                    <Column ss:Width="45"/>
+                    <Column ss:Width="105"/>
+                    <Column ss:Width="130"/>
+                    <Column ss:Width="120"/>
+                    <Column ss:Width="130"/>
+                    <Column ss:Width="120"/>
+                    <Column ss:Width="110"/>
+                    <Column ss:Width="130"/>
+                    <Row><Cell ss:MergeAcross="11" ss:StyleID="sTitle"><Data ss:Type="String">${escXml(cabangName)} — JURNAL TRANSAKSI HARIAN LENGKAP (${escXml(shiftDate)} • ${trxHariIniList.length} BARIS)</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('TANGGAL', 'sHeader')}
+                        ${cellStr('JAM', 'sHeader')}
+                        ${cellStr('KETERANGAN TRANSAKSI', 'sHeader')}
+                        ${cellStr('QTY', 'sHeader')}
+                        ${cellStr('KATEGORI', 'sHeader')}
+                        ${cellStr('AKUN MASUK', 'sHeader')}
+                        ${cellStr('HARGA JUAL / MASUK', 'sHeader')}
+                        ${cellStr('AKUN KELUAR', 'sHeader')}
+                        ${cellStr('HARGA MODAL / KELUAR', 'sHeader')}
+                        ${cellStr('CUAN BERSIH', 'sHeader')}
+                        ${cellStr('JENIS TRANSAKSI', 'sHeader')}
+                    </Row>
+                    ${trxHarianRowsXml}
+                    <Row>
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellStr('TOTAL TRANSAKSI PENJUALAN HARI INI (NON-PINDAH SALDO)', 'sTotalLabel')}
+                        ${cellNum(trxHarianCount, 'sTotalNum')}${cellStr('TRX', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumJualH, 'sTotalNum')}${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumModalH, 'sTotalNum')}
+                        ${cellNum(sumCuanH, 'sTotalNum')}
+                        ${cellStr('', 'sTotalLabel')}
+                    </Row>
+                </Table>
+            </Worksheet>`;
+
+            // 3. Sheet Rekap Service & Stok Sparepart Lengkap
+            let sumBiayaServis = 0, sumModalServis = 0, sumCuanServis = 0;
+            const servisRowsXml = (window.tiketServisList || []).map((t, idx) => {
+                if (!t) return '';
+                const spLinked = (window.sparepartList || []).find(s => s && s.idTiketRef == t.id);
+                const modalNom = Number(t.modalPart || (spLinked ? spLinked.modal : 0) || 0);
+                const namaPartTxt = t.namaPart || (spLinked ? spLinked.namaUnit : (t.catatanPartCancel || 'JASA NON-MODAL'));
+                const sumberKasTxt = t.sumberKasPart || (spLinked ? spLinked.sumber : '-');
+                const biayaFinal = (t.isSettledInKasir && Number(t.biayaLunasAktual || 0) > 0) ? Number(t.biayaLunasAktual) : Number(t.estBiaya || 0);
+                const estCuan = t.status === 'CANCEL' ? 0 : Math.max(0, biayaFinal - modalNom);
+                if (t.status !== 'CANCEL') {
+                    sumBiayaServis += biayaFinal;
+                    sumModalServis += modalNom;
+                    sumCuanServis += estCuan;
+                }
+                const rawW = String(t.waktu || '');
+                const jamOnly = rawW.includes('|') ? rawW.split('|')[0].trim() : rawW;
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(t.noServis || '-', 'sBold') +
+                    cellStr(t.isoDate || '-', 'sCenter') +
+                    cellStr(jamOnly || '-', 'sCenter') +
+                    cellStr(t.nama || '-', 'sBold') +
+                    cellStr(t.noHp || '-', 'sCell') +
+                    cellStr(t.tipeHp || '-', 'sBold') +
+                    cellStr(`${t.keluhan || '-'} (${t.kelengkapan || 'UNIT SAJA'})`, 'sCell') +
+                    cellStr(namaPartTxt, 'sCell') +
+                    cellNum(modalNom, 'sNumRed') +
+                    cellStr(sumberKasTxt, 'sCenter') +
+                    cellNum(t.dpNom || 0, 'sNum') +
+                    cellNum(biayaFinal, 'sNumGreen') +
+                    cellNum(estCuan, 'sNumBold') +
+                    cellStr(t.isSettledInKasir ? 'SELESAI & LUNAS' : (t.status || 'PROSES'), 'sBold') +
+                    cellStr(t.tglLunas || t.tglCancel || '-', 'sCenter') +
+                    cellStr(t.petugas || 'ADMIN', 'sCenter') +
+                    `</Row>`;
+            }).join('');
+
+            let sumModalPartTable = 0;
+            const sparepartRowsXml = (window.sparepartList || []).map((sp, idx) => {
+                if (!sp) return '';
+                const linkedT = sp.idTiketRef ? (window.tiketServisList || []).find(tk => tk && tk.id == sp.idTiketRef) : null;
+                const jenisTxt = sp.jenisPart === 'STOK_READY'
+                    ? 'STOK SPAREPART READY'
+                    : (sp.jenisPart === 'EKS_CANCEL' ? 'STOK EKS SERVIS CANCEL' : 'TALANGAN SERVIS');
+                const tiketTxt = linkedT ? `${linkedT.noServis || ''} - ${linkedT.nama || ''} (${linkedT.tipeHp || ''})` : (sp.asalCancelInfo || 'STOK LACI TEKNISI');
+                const mod = Number(sp.modal || 0);
+                sumModalPartTable += mod;
+                const statusModTxt = sp.status === 'LUNAS'
+                    ? 'SUDAH CAIR / LUNAS DI KASIR'
+                    : (linkedT ? `MENEMPEL DI TIKET (${linkedT.status || 'PROSES'})` : 'READY DI LACI TEKNISI (BELUM CAIR)');
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(sp.isoDate || sp.tgl || '-', 'sCenter') +
+                    cellStr(sp.namaUnit || '-', 'sBold') +
+                    cellStr(jenisTxt, 'sCell') +
+                    cellStr(tiketTxt, 'sCell') +
+                    cellNum(mod, 'sNumRed') +
+                    cellStr(sp.sumber || 'LACI', 'sCenter') +
+                    cellNum(sp.hargaPasang || 0, 'sNumGreen') +
+                    cellStr(statusModTxt, 'sBold') +
+                    cellStr('', 'sCell') + cellStr('', 'sCell') + cellStr('', 'sCell') + cellStr('', 'sCell') + cellStr('', 'sCell') + cellStr('', 'sCell') + cellStr('', 'sCell') + cellStr('', 'sCell') +
+                    `</Row>`;
+            }).join('');
+
+            const sheet3Xml = `
+            <Worksheet ss:Name="3_SERVICE_DAN_SPAREPART">
+                <Table>
+                    <Column ss:Width="40"/>
+                    <Column ss:Width="105"/>
+                    <Column ss:Width="85"/>
+                    <Column ss:Width="55"/>
+                    <Column ss:Width="130"/>
+                    <Column ss:Width="100"/>
+                    <Column ss:Width="130"/>
+                    <Column ss:Width="210"/>
+                    <Column ss:Width="170"/>
+                    <Column ss:Width="110"/>
+                    <Column ss:Width="90"/>
+                    <Column ss:Width="95"/>
+                    <Column ss:Width="110"/>
+                    <Column ss:Width="110"/>
+                    <Column ss:Width="125"/>
+                    <Column ss:Width="90"/>
+                    <Column ss:Width="80"/>
+                    <Row><Cell ss:MergeAcross="16" ss:StyleID="sTitle"><Data ss:Type="String">${escXml(cabangName)} — REKAP LENGKAP TIKET SERVICE HP &amp; DATA STOK SPAREPART TEKNISI</Data></Cell></Row>
+                    <Row><Cell ss:MergeAcross="16" ss:StyleID="sSection"><Data ss:Type="String">A. DAFTAR TIKET SERVIS HP (AKTIF, SIAP DIAMBIL, LUNAS &amp; CANCEL — ${(window.tiketServisList || []).length} UNIT)</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('NO SERVIS', 'sHeader')}
+                        ${cellStr('TGL MASUK', 'sHeader')}
+                        ${cellStr('JAM', 'sHeader')}
+                        ${cellStr('NAMA PELANGGAN', 'sHeader')}
+                        ${cellStr('NO HP', 'sHeader')}
+                        ${cellStr('TIPE HP', 'sHeader')}
+                        ${cellStr('KELUHAN &amp; KELENGKAPAN', 'sHeader')}
+                        ${cellStr('SPAREPART DIPAKAI', 'sHeader')}
+                        ${cellStr('MODAL PART (RP)', 'sHeader')}
+                        ${cellStr('SUMBER KAS', 'sHeader')}
+                        ${cellStr('DP AWAL (RP)', 'sHeader')}
+                        ${cellStr('BIAYA SERVIS (RP)', 'sHeader')}
+                        ${cellStr('EST CUAN (RP)', 'sHeader')}
+                        ${cellStr('STATUS SERVIS', 'sHeader')}
+                        ${cellStr('TGL SELESAI', 'sHeader')}
+                        ${cellStr('TEKNISI', 'sHeader')}
+                    </Row>
+                    ${servisRowsXml}
+                    <Row>
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellStr('TOTAL REKAP TIKET SERVIS (NON-CANCEL)', 'sTotalLabel')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumModalServis, 'sTotalNum')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumBiayaServis, 'sTotalNum')}
+                        ${cellNum(sumCuanServis, 'sTotalNum')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                    </Row>
+                    <Row></Row>
+                    <Row><Cell ss:MergeAcross="16" ss:StyleID="sSection"><Data ss:Type="String">B. DATA LENGKAP STOK SPAREPART READY &amp; TALANGAN SPAREPART TEKNISI (${(window.sparepartList || []).length} ITEM • BELUM CAIR: Rp${totalSparepartAktif.toLocaleString('id-ID')})</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('TGL BELI', 'sHeader')}
+                        ${cellStr('NAMA SPAREPART / UNIT', 'sHeader')}
+                        ${cellStr('JENIS &amp; ASAL PART', 'sHeader')}
+                        ${cellStr('TIKET TERKAIT / POSISI', 'sHeader')}
+                        ${cellStr('MODAL PART (RP)', 'sHeader')}
+                        ${cellStr('SUMBER KAS', 'sHeader')}
+                        ${cellStr('EST BIAYA PASANG/JUAL', 'sHeader')}
+                        ${cellStr('STATUS MODAL SPAREPART', 'sHeader')}
+                        ${cellStr('', 'sHeader')}${cellStr('', 'sHeader')}${cellStr('', 'sHeader')}${cellStr('', 'sHeader')}${cellStr('', 'sHeader')}${cellStr('', 'sHeader')}${cellStr('', 'sHeader')}${cellStr('', 'sHeader')}
+                    </Row>
+                    ${sparepartRowsXml}
+                    <Row>
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellStr('TOTAL MODAL SPAREPART (SEMUA / BELUM CAIR)', 'sTotalLabel')}
+                        ${cellStr('Belum Cair: Rp' + totalSparepartAktif.toLocaleString('id-ID'), 'sTotalLabel')}
+                        ${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumModalPartTable, 'sTotalNum')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                    </Row>
+                </Table>
+            </Worksheet>`;
+
+            // 4. Sheet Stok Opname Lengkap (Voucher, SP, ACC) & Stok Hadiah ATM Link
+            let sumAwalStok = 0, sumTerjualStok = 0, sumSisaStok = 0, sumNilaiModalStok = 0;
+            const stokRowsXml = (window.stokOpnameItems || []).map((s, idx) => {
+                if (!s) return '';
+                const awal = Number(s.awal || 0);
+                const terjual = Number(s.terjual || 0);
+                const sisa = Math.max(0, awal - terjual);
+                const modal = Number(s.modal || 0);
+                const jual = Number(s.jual || 0);
+                const nilaiModal = sisa * modal;
+                const margin = Math.max(0, jual - modal);
+                sumAwalStok += awal;
+                sumTerjualStok += terjual;
+                sumSisaStok += sisa;
+                sumNilaiModalStok += nilaiModal;
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(s.kat || 'VOUCHER', 'sBold') +
+                    cellStr(s.nama || s.namaBarang || '-', 'sBold') +
+                    cellNum(awal, 'sCenter') +
+                    cellNum(terjual, 'sCenter') +
+                    cellNum(sisa, 'sNumBold') +
+                    cellNum(modal, 'sNum') +
+                    cellNum(jual, 'sNumGreen') +
+                    cellNum(nilaiModal, 'sNumBold') +
+                    cellNum(margin, 'sNumGreen') +
+                    `</Row>`;
+            }).join('');
+
+            const hadiahRowsXml = (window.stokHadiahAtmList || []).map((h, idx) => {
+                if (!h) return '';
+                const masuk = Number(h.masuk || 0);
+                const keluar = Number(h.keluar || 0);
+                const sisa = Math.max(0, masuk - keluar);
+                const modal = Number(h.modal || 0);
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr('HADIAH ATM', 'sBold') +
+                    cellStr(h.nama || '-', 'sBold') +
+                    cellNum(masuk, 'sCenter') +
+                    cellNum(keluar, 'sCenter') +
+                    cellNum(sisa, 'sNumBold') +
+                    cellNum(modal, 'sNum') +
+                    cellNum(h.syaratKupon || 10, 'sCenter') +
+                    cellNum(sisa * modal, 'sNumBold') +
+                    cellStr(h.sumberTerakhir || 'DROP OWNER', 'sCell') +
+                    `</Row>`;
+            }).join('');
+
+            const sheet4Xml = `
+            <Worksheet ss:Name="4_STOK_OPNAME_DAN_HADIAH">
+                <Table>
+                    <Column ss:Width="40"/>
+                    <Column ss:Width="95"/>
+                    <Column ss:Width="240"/>
+                    <Column ss:Width="85"/>
+                    <Column ss:Width="85"/>
+                    <Column ss:Width="95"/>
+                    <Column ss:Width="115"/>
+                    <Column ss:Width="115"/>
+                    <Column ss:Width="135"/>
+                    <Column ss:Width="125"/>
+                    <Row><Cell ss:MergeAcross="9" ss:StyleID="sTitle"><Data ss:Type="String">${escXml(cabangName)} — DATA LENGKAP STOK OPNAME (VOUCHER, SP, ACC) &amp; STOK HADIAH ATM LINK</Data></Cell></Row>
+                    <Row><Cell ss:MergeAcross="9" ss:StyleID="sSection"><Data ss:Type="String">A. STOK OPNAME VOUCHER, KARTU PERDANA (SP) &amp; AKSESORIS (ACC) — ${(window.stokOpnameItems || []).length} BARANG</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('KATEGORI', 'sHeader')}
+                        ${cellStr('NAMA BARANG STOK', 'sHeader')}
+                        ${cellStr('STOK AWAL', 'sHeader')}
+                        ${cellStr('TERJUAL', 'sHeader')}
+                        ${cellStr('SISA STOK (PCS)', 'sHeader')}
+                        ${cellStr('HARGA MODAL (RP)', 'sHeader')}
+                        ${cellStr('HARGA JUAL (RP)', 'sHeader')}
+                        ${cellStr('TOTAL NILAI MODAL (RP)', 'sHeader')}
+                        ${cellStr('MARGIN CUAN / PCS', 'sHeader')}
+                    </Row>
+                    ${stokRowsXml}
+                    <Row>
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellStr('TOTAL KESELURUHAN STOK OPNAME (VOUCHER + SP + ACC)', 'sTotalLabel')}
+                        ${cellNum(sumAwalStok, 'sTotalNum')}
+                        ${cellNum(sumTerjualStok, 'sTotalNum')}
+                        ${cellNum(sumSisaStok, 'sTotalNum')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumNilaiModalStok, 'sTotalNum')}
+                        ${cellStr('', 'sTotalLabel')}
+                    </Row>
+                    <Row></Row>
+                    <Row><Cell ss:MergeAcross="9" ss:StyleID="sSection"><Data ss:Type="String">B. DATA STOK HADIAH ATM LINK (${(window.stokHadiahAtmList || []).length} JENIS HADIAH)</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('JENIS', 'sHeader')}
+                        ${cellStr('NAMA HADIAH ATM LINK', 'sHeader')}
+                        ${cellStr('STOK MASUK', 'sHeader')}
+                        ${cellStr('DITUKAR', 'sHeader')}
+                        ${cellStr('SISA STOK (PCS)', 'sHeader')}
+                        ${cellStr('HARGA MODAL (RP)', 'sHeader')}
+                        ${cellStr('SYARAT KUPON', 'sHeader')}
+                        ${cellStr('TOTAL NILAI SISA (RP)', 'sHeader')}
+                        ${cellStr('SUMBER PENGADAAN', 'sHeader')}
+                    </Row>
+                    ${hadiahRowsXml}
+                </Table>
+            </Worksheet>`;
+
+            // 5. Sheet Data Piutang Lengkap
+            let sumPokokPiutang = 0, sumSisaPiutang = 0, sumTagihanJualPiutang = 0;
+            const piutangRowsXml = (window.piutangList || []).map((p, idx) => {
+                if (!p) return '';
+                const isLunas = p.status === 'LUNAS' || Number(p.sisa || 0) <= 0;
+                const pokok = Number(p.pokokAwal || p.sisa || 0);
+                const sisaPokok = isLunas ? 0 : Number(p.sisa || 0);
+                const tagihanAwal = Math.max(pokok, Number(p.tagihanJual || 0));
+                const sisaTagihan = isLunas ? 0 : Number(p.sisaTagihanJual !== undefined ? p.sisaTagihanJual : tagihanAwal);
+                const terbayar = Math.max(0, pokok - sisaPokok);
+                const umur = window.hitungUmurHariPiutang ? window.hitungUmurHariPiutang(p.isoDate) : 0;
+                const cicilanTxt = (p.riwayatCicilan || []).map(c => `${c.tgl}: Rp${Number(c.bayarJual || c.bayar || 0).toLocaleString('id-ID')} (${c.keAkun || 'LACI'})`).join(' | ') || (isLunas ? 'Lunas' : 'Belum dicicil');
+                sumPokokPiutang += pokok;
+                sumSisaPiutang += sisaPokok;
+                sumTagihanJualPiutang += sisaTagihan;
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(p.isoDate || '-', 'sCenter') +
+                    cellStr(p.waktu || '-', 'sCenter') +
+                    cellNum(isLunas ? 0 : umur, 'sCenter') +
+                    cellStr(p.nama || '-', 'sBold') +
+                    cellStr(p.noHp || '-', 'sCell') +
+                    cellStr(`${p.catatan || '-'}${p.gadaiBarang ? ' [JAMINAN: ' + p.gadaiBarang + ']' : ''}`, 'sCell') +
+                    cellStr(p.kategori || 'LAINNYA', 'sCenter') +
+                    cellStr(p.sumber || 'LACI', 'sCenter') +
+                    cellNum(pokok, 'sNum') +
+                    cellNum(tagihanAwal, 'sNum') +
+                    cellNum(terbayar, 'sNumGreen') +
+                    cellNum(sisaPokok, 'sNumRed') +
+                    cellNum(sisaTagihan, 'sNumBold') +
+                    cellStr(isLunas ? `LUNAS (${p.tglLunas || ''})` : 'BELUM LUNAS', 'sBold') +
+                    cellStr(cicilanTxt, 'sCell') +
+                    `</Row>`;
+            }).join('');
+
+            const sheet5Xml = `
+            <Worksheet ss:Name="5_DATA_PIUTANG">
+                <Table>
+                    <Column ss:Width="40"/>
+                    <Column ss:Width="85"/>
+                    <Column ss:Width="55"/>
+                    <Column ss:Width="75"/>
+                    <Column ss:Width="150"/>
+                    <Column ss:Width="105"/>
+                    <Column ss:Width="220"/>
+                    <Column ss:Width="95"/>
+                    <Column ss:Width="95"/>
+                    <Column ss:Width="115"/>
+                    <Column ss:Width="115"/>
+                    <Column ss:Width="115"/>
+                    <Column ss:Width="125"/>
+                    <Column ss:Width="125"/>
+                    <Column ss:Width="115"/>
+                    <Column ss:Width="240"/>
+                    <Row><Cell ss:MergeAcross="15" ss:StyleID="sTitle"><Data ss:Type="String">${escXml(cabangName)} — DATA LENGKAP PIUTANG / BON PELANGGAN (SISA BELUM LUNAS: Rp${totalPiutangAktif.toLocaleString('id-ID')})</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('TGL BON', 'sHeader')}
+                        ${cellStr('JAM', 'sHeader')}
+                        ${cellStr('UMUR (HR)', 'sHeader')}
+                        ${cellStr('NAMA PELANGGAN', 'sHeader')}
+                        ${cellStr('NO HP', 'sHeader')}
+                        ${cellStr('RINCIAN / BARANG / JAMINAN', 'sHeader')}
+                        ${cellStr('KATEGORI', 'sHeader')}
+                        ${cellStr('SUMBER SALDO', 'sHeader')}
+                        ${cellStr('POKOK AWAL (RP)', 'sHeader')}
+                        ${cellStr('TAGIHAN JUAL (RP)', 'sHeader')}
+                        ${cellStr('SUDAH DIBAYAR (RP)', 'sHeader')}
+                        ${cellStr('SISA POKOK (RP)', 'sHeader')}
+                        ${cellStr('SISA TAGIHAN JUAL', 'sHeader')}
+                        ${cellStr('STATUS PIUTANG', 'sHeader')}
+                        ${cellStr('RIWAYAT CICILAN / PELUNASAN', 'sHeader')}
+                    </Row>
+                    ${piutangRowsXml}
+                    <Row>
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellStr('TOTAL PIUTANG PELANGGAN', 'sTotalLabel')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumPokokPiutang, 'sTotalNum')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                        ${cellNum(sumSisaPiutang, 'sTotalNum')}
+                        ${cellNum(sumTagihanJualPiutang, 'sTotalNum')}
+                        ${cellStr('', 'sTotalLabel')}${cellStr('', 'sTotalLabel')}
+                    </Row>
+                </Table>
+            </Worksheet>`;
+
+            // 6. Sheet Operasional, Setoran Owner & Riwayat Belanja Stok
+            const opRowsXml = (window.operasionalList || []).map((op, idx) => {
+                if (!op) return '';
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(op.isoDate || op.tgl || '-', 'sCenter') +
+                    cellStr(op.waktu || '-', 'sCenter') +
+                    cellStr(op.keperluan || op.ket || '-', 'sBold') +
+                    cellStr(op.kategori || 'OPERASIONAL', 'sCenter') +
+                    cellStr(op.sumber || 'LACI', 'sCenter') +
+                    cellNum(op.nominal || 0, 'sNumRed') +
+                    cellStr(op.status || 'BELUM DIGANTI', 'sBold') +
+                    `</Row>`;
+            }).join('');
+
+            const setorRowsXml = (window.setoranOwnerList || []).map((s, idx) => {
+                if (!s) return '';
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(s.isoDate || s.tgl || '-', 'sCenter') +
+                    cellStr(s.waktu || '-', 'sCenter') +
+                    cellStr(s.ket || 'SETORAN PROFIT OWNER', 'sBold') +
+                    cellStr('SETORAN OWNER', 'sCenter') +
+                    cellStr(s.sumber || 'LACI', 'sCenter') +
+                    cellNum(s.nominal || 0, 'sNumRed') +
+                    cellStr('SELESAI', 'sBold') +
+                    `</Row>`;
+            }).join('');
+
+            const sheet6Xml = `
+            <Worksheet ss:Name="6_OPERASIONAL_DAN_SETORAN">
+                <Table>
+                    <Column ss:Width="40"/>
+                    <Column ss:Width="90"/>
+                    <Column ss:Width="65"/>
+                    <Column ss:Width="250"/>
+                    <Column ss:Width="120"/>
+                    <Column ss:Width="110"/>
+                    <Column ss:Width="130"/>
+                    <Column ss:Width="135"/>
+                    <Row><Cell ss:MergeAcross="7" ss:StyleID="sTitle"><Data ss:Type="String">${escXml(cabangName)} — REKAP BIAYA OPERASIONAL KONTER &amp; RIWAYAT SETORAN PROFIT OWNER</Data></Cell></Row>
+                    <Row><Cell ss:MergeAcross="7" ss:StyleID="sSection"><Data ss:Type="String">A. BIAYA OPERASIONAL KONTER (BELUM DIGANTI OWNER: Rp${totalOperasionalAktif.toLocaleString('id-ID')})</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('TANGGAL', 'sHeader')}
+                        ${cellStr('JAM', 'sHeader')}
+                        ${cellStr('KEPERLUAN / KETERANGAN OPERASIONAL', 'sHeader')}
+                        ${cellStr('KATEGORI', 'sHeader')}
+                        ${cellStr('SUMBER KAS', 'sHeader')}
+                        ${cellStr('NOMINAL (RP)', 'sHeader')}
+                        ${cellStr('STATUS PENGGANTIAN', 'sHeader')}
+                    </Row>
+                    ${opRowsXml}
+                    <Row></Row>
+                    <Row><Cell ss:MergeAcross="7" ss:StyleID="sSection"><Data ss:Type="String">B. RIWAYAT SETORAN PROFIT KE OWNER (${(window.setoranOwnerList || []).length} DATA)</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('TANGGAL', 'sHeader')}
+                        ${cellStr('JAM', 'sHeader')}
+                        ${cellStr('KETERANGAN SETORAN', 'sHeader')}
+                        ${cellStr('JENIS', 'sHeader')}
+                        ${cellStr('SUMBER KAS', 'sHeader')}
+                        ${cellStr('NOMINAL SETOR (RP)', 'sHeader')}
+                        ${cellStr('STATUS', 'sHeader')}
+                    </Row>
+                    ${setorRowsXml}
+                </Table>
+            </Worksheet>`;
+
+            // 7. Sheet Full Backup Semua Transaksi
+            const allTrxRowsXml = allTrxList.map((t, idx) => {
+                if (!t) return '';
+                const akunMasukTxt = (t.isSplit && t.akunMasuk2) ? `${t.akunMasuk1} (${t.jualSplit1 || 0}) + ${t.akunMasuk2} (${t.jualSplit2 || 0})` : (t.akunMasuk1 || '-');
+                const akunKeluarTxt = (t.isSplit && t.akunKeluar2) ? `${t.akunKeluar1} (${t.modalSplit1 || 0}) + ${t.akunKeluar2} (${t.modalSplit2 || 0})` : (t.akunKeluar1 || '-');
+                return `<Row>` +
+                    cellNum(idx + 1, 'sCenter') +
+                    cellStr(t.id || '-', 'sCell') +
+                    cellStr(t.isoDate || '-', 'sCenter') +
+                    cellStr(t.waktu || '-', 'sCenter') +
+                    cellStr(t.ket || '-', 'sCell') +
+                    cellNum(t.qty || 1, 'sCenter') +
+                    cellStr(t.kat || '-', 'sBold') +
+                    cellStr(akunMasukTxt, 'sCell') +
+                    cellNum(t.hargaJual || 0, 'sNumGreen') +
+                    cellStr(akunKeluarTxt, 'sCell') +
+                    cellNum(t.hargaModal || 0, 'sNumRed') +
+                    cellNum(t.cuan || 0, 'sNumBold') +
+                    `</Row>`;
+            }).join('');
+
+            const sheet7Xml = `
+            <Worksheet ss:Name="7_BACKUP_SEMUA_TRANSAKSI">
+                <Table>
+                    <Column ss:Width="45"/>
+                    <Column ss:Width="135"/>
+                    <Column ss:Width="85"/>
+                    <Column ss:Width="60"/>
+                    <Column ss:Width="260"/>
+                    <Column ss:Width="45"/>
+                    <Column ss:Width="105"/>
+                    <Column ss:Width="130"/>
+                    <Column ss:Width="120"/>
+                    <Column ss:Width="130"/>
+                    <Column ss:Width="120"/>
+                    <Column ss:Width="115"/>
+                    <Row><Cell ss:MergeAcross="11" ss:StyleID="sTitle"><Data ss:Type="String">${escXml(cabangName)} — FULL BACKUP SELURUH JURNAL TRANSAKSI (${allTrxList.length} TRANSAKSI)</Data></Cell></Row>
+                    <Row>
+                        ${cellStr('NO', 'sHeader')}
+                        ${cellStr('ID TRANSAKSI', 'sHeader')}
+                        ${cellStr('TANGGAL', 'sHeader')}
+                        ${cellStr('JAM', 'sHeader')}
+                        ${cellStr('KETERANGAN TRANSAKSI', 'sHeader')}
+                        ${cellStr('QTY', 'sHeader')}
+                        ${cellStr('KATEGORI', 'sHeader')}
+                        ${cellStr('AKUN MASUK', 'sHeader')}
+                        ${cellStr('HARGA JUAL / MASUK', 'sHeader')}
+                        ${cellStr('AKUN KELUAR', 'sHeader')}
+                        ${cellStr('HARGA MODAL / KELUAR', 'sHeader')}
+                        ${cellStr('CUAN BERSIH', 'sHeader')}
+                    </Row>
+                    ${allTrxRowsXml}
+                </Table>
+            </Worksheet>`;
+
+            const workbookXml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Calibri" ss:Size="10" ss:Color="#0F172A"/>
+  </Style>
+  <Style ss:ID="sTitle">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Calibri" ss:Size="12" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#065F46" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sSection">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Calibri" ss:Size="10.5" ss:Bold="1" ss:Color="#065F46"/>
+   <Interior ss:Color="#D1FAE5" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sHeader">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#94A3B8"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#94A3B8"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#94A3B8"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#94A3B8"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#0F766E" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sCell">
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="sBold">
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#0F172A"/>
+  </Style>
+  <Style ss:ID="sCenter">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="sNum">
+   <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+   <NumberFormat ss:Format="#,##0"/>
+  </Style>
+  <Style ss:ID="sNumBold">
+   <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#0F172A"/>
+   <NumberFormat ss:Format="#,##0"/>
+  </Style>
+  <Style ss:ID="sNumGreen">
+   <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#047857"/>
+   <NumberFormat ss:Format="#,##0"/>
+  </Style>
+  <Style ss:ID="sNumRed">
+   <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#DC2626"/>
+   <NumberFormat ss:Format="#,##0"/>
+  </Style>
+  <Style ss:ID="sTotalLabel">
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#059669"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#059669"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="10.5" ss:Bold="1" ss:Color="#065F46"/>
+   <Interior ss:Color="#ECFDF5" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sTotalNum">
+   <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#059669"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#059669"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="10.5" ss:Bold="1" ss:Color="#065F46"/>
+   <Interior ss:Color="#ECFDF5" ss:Pattern="Solid"/>
+   <NumberFormat ss:Format="#,##0"/>
+  </Style>
+ </Styles>
+ ${sheet1Xml}
+ ${sheet2Xml}
+ ${sheet3Xml}
+ ${sheet4Xml}
+ ${sheet5Xml}
+ ${sheet6Xml}
+ ${sheet7Xml}
+</Workbook>`;
+
+            const fileName = `LAPORAN_BACKUP_${cabangCode}_${shiftDate}_${kasirName.replace(/[^A-Z0-9]/gi, '') || 'SHIFT'}.xls`;
+            const blob = new Blob([workbookXml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.setAttribute('download', fileName);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+            window.catatLogAktivitas('BACKUP EXCEL SHIFT', `Mengunduh file Excel 7-Sheet lengkap (${fileName})`);
+            if (!isAutoFromWa) {
+                window.showToast(`📊 File Excel Lengkap 7-Sheet (${fileName}) berhasil diunduh!`, 'success');
+            }
         };
 
         window.restoreJSON = function(e) {
@@ -31284,14 +32348,17 @@ const nameLine = lines.find(l => /^[A-Z][A-Z\s.,']{3,30}$/.test(l.trim()) && !/\
                         <input type="text" id="shiftCatatanText" class="form-control" style="font-size:10.5px; padding:4px 6px;" placeholder="Contoh: Koneksi lancar, ada kembalian 2rb belum diambil...">
                     </div>
 
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:6px;">
                         <button type="button" class="btn" onclick="cetakLaporanShiftPDF()" style="background:#0284C7; font-weight:800; font-size:10.5px; padding:7px 6px; display:flex; align-items:center; justify-content:center; gap:4px;">
                             <span>🖨️</span> <span>Cetak PDF Laporan</span>
                         </button>
-                        <button type="button" class="btn" onclick="kirimLaporanShiftWA()" style="background:#16A34A; font-weight:800; font-size:10.5px; padding:7px 6px; display:flex; align-items:center; justify-content:center; gap:4px;">
-                            <span>📲</span> <span>Kirim WA ke Owner</span>
+                        <button type="button" class="btn" onclick="kirimLaporanShiftWA()" style="background:#16A34A; font-weight:800; font-size:10.5px; padding:7px 6px; display:flex; align-items:center; justify-content:center; gap:4px;" title="Kirim Ringkasan WA ke Owner + Otomatis Unduh File Excel Backup 7 Sheet">
+                            <span>📲</span> <span>Kirim WA + Excel</span>
                         </button>
                     </div>
+                    <button type="button" class="btn" onclick="window.downloadExcelLaporanShiftLengkap()" style="background:#047857; font-weight:800; font-size:10px; padding:7px 8px; display:flex; align-items:center; justify-content:center; gap:5px; width:100%; border:1px solid #34D399;" title="Download File Excel 7 Sheet (Semua Saldo, Transaksi Harian, Service & Sparepart, Stok Opname, Piutang, Operasional, Full Backup)">
+                        <span>📊</span> <span>Download Excel Lengkap (7 Sheet Backup)</span>
+                    </button>
                 </div>
 
                 <!-- BAGIAN 2: KALKULATOR DAGANG STANDAR -->
@@ -32003,10 +33070,11 @@ const nameLine = lines.find(l => /^[A-Z][A-Z\s.,']{3,30}$/.test(l.trim()) && !/\
                 <div class="insight-box" style="background:linear-gradient(135deg, #065F46 0%, #047857 100%); color:#FFF; border:none;">
                     <div style="font-size:11px; font-weight:900; margin-bottom:4px;">📲 1-KLIK LAPORAN WA KE OWNER</div>
                     <div style="font-size:9.5px; opacity:0.9; margin-bottom:8px; line-height:1.35;">Kirim rekapitulasi Cuan Harian, Saldo Kas/Bank Cair, dan Status Audit Laci langsung ke WhatsApp Owner.</div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">
                         <button type="button" onclick="switchRightSidebarTab('LAPORAN');" style="background:#FFFFFF; color:#065F46; border:none; border-radius:7px; padding:7px 8px; font-size:10px; font-weight:900; cursor:pointer;">📑 Buka Rekap Shift</button>
-                        <button type="button" onclick="kirimLaporanShiftWA()" style="background:#25D366; color:#FFFFFF; border:1px solid rgba(255,255,255,0.6); border-radius:7px; padding:7px 8px; font-size:10px; font-weight:900; cursor:pointer;">💬 Kirim WA Sekarang</button>
+                        <button type="button" onclick="kirimLaporanShiftWA()" style="background:#25D366; color:#FFFFFF; border:1px solid rgba(255,255,255,0.6); border-radius:7px; padding:7px 8px; font-size:10px; font-weight:900; cursor:pointer;">💬 Kirim WA + Excel</button>
                     </div>
+                    <button type="button" onclick="window.downloadExcelLaporanShiftLengkap()" style="background:rgba(255,255,255,0.16); color:#FFFFFF; border:1px solid rgba(255,255,255,0.5); border-radius:7px; padding:6px 8px; font-size:9.5px; font-weight:900; cursor:pointer; width:100%;">📊 Download File Excel Backup Lengkap (7 Sheet)</button>
                 </div>
 
                 <div class="insight-box">
