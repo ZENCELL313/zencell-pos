@@ -14991,6 +14991,7 @@ window.isUndoRedoAction = false;
 }
 function initPosZencellAppBoot() {
 if (window._zencellBootInitialized) return;
+if (typeof window.renderAll !== 'function') return;
 window._zencellBootInitialized = true;
 window.initTheme();
 try {
@@ -15012,11 +15013,7 @@ window.initVlookupAutoFill();
 window.updateUndoRedoBtnState();
 window.renderAll();
 }
-if (document.readyState === 'loading') {
 document.addEventListener("DOMContentLoaded", initPosZencellAppBoot);
-} else {
-initPosZencellAppBoot();
-}
 window.addEventListener("load", initPosZencellAppBoot);
 window.compareStokPriority = function(a, b) {
 const sisaA = Math.max(0, Number(a?.awal || 0) - Number(a?.terjual || 0));
@@ -32027,6 +32024,9 @@ const nameLine = lines.find(l => /^[A-Z][A-Z\s.,']{3,30}$/.test(l.trim()) && !/\
                 </div>
             `;
         };
+        if (document.readyState !== 'loading') {
+            initPosZencellAppBoot();
+        }
 </script>
 </body>
 </html>
