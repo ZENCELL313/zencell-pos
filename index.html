@@ -7949,8 +7949,7 @@ get length() { return Object.keys(backingObj).length; }
 });
 try {
 const ls = window.localStorage;
-ls.setItem('__zc_ls_probe', '1');
-ls.removeItem('__zc_ls_probe');
+ls.getItem('__zc_ls_probe');
 } catch (e) {
 window._storageRestrictedInIframe = true;
 try {
@@ -7963,8 +7962,7 @@ writable: true
 }
 try {
 const ss = window.sessionStorage;
-ss.setItem('__zc_ss_probe', '1');
-ss.removeItem('__zc_ss_probe');
+ss.getItem('__zc_ss_probe');
 } catch (e) {
 window._storageRestrictedInIframe = true;
 try {
@@ -9546,7 +9544,11 @@ window.masterSaldoAwal['KOMISI EDC'] = 0;
 }
 if (data.pengaturan) {
 window.pengaturanToko = Object.assign({}, window.pengaturanToko, data.pengaturan);
-localStorage.setItem('zencell_pengaturan', JSON.stringify(window.pengaturanToko));
+const slimPengaturan = Object.assign({}, window.pengaturanToko);
+if (slimPengaturan.logoUrl && String(slimPengaturan.logoUrl).length > 80000) {
+slimPengaturan.logoUrl = '';
+}
+localStorage.setItem('zencell_pengaturan', JSON.stringify(slimPengaturan));
 if (window.applyPengaturanTokoKeUI) window.applyPengaturanTokoKeUI();
 }
 if (data.daftarKaryawan) {
@@ -10041,16 +10043,13 @@ if (window._cloudSyncWatchdogTimer) clearTimeout(window._cloudSyncWatchdogTimer)
 window._cloudSyncWatchdogTimer = setTimeout(async () => {
 if (!window.hasInitialCloudLoaded && navigator.onLine) {
 try {
-const snap = await window.raceWithTimeout(get(zencellRef), 4500, null);
+const snap = await get(zencellRef);
 if (snap && typeof snap.exists === 'function' && !window.hasInitialCloudLoaded) {
 applyCloudSnapshotData(snap.val());
 }
 } catch (_) {}
-if (!window.hasInitialCloudLoaded && navigator.onLine) {
-try { goOffline(db); setTimeout(() => { try { goOnline(db); window.startRealtimeDatabaseListener(true); } catch (_) {} }, 250); } catch (_) {}
 }
-}
-}, 3500);
+}, 12000);
 window._rtdbUnsubscribe = onValue(zencellRef, (snapshot) => {
 if (window._cloudSyncWatchdogTimer) {
 clearTimeout(window._cloudSyncWatchdogTimer);
@@ -10138,29 +10137,29 @@ try {
 try { goOnline(db); } catch (_) {}
 await window.ensureFirebaseAuthAndSync(false);
 const rootNode = window.FIREBASE_ROOT_NODE || 'zencellNodes';
-const snap = await window.raceWithTimeout(get(ref(db, rootNode)), 5000, null);
+const snap = await window.raceWithTimeout(get(ref(db, rootNode)), 15000, null);
 if (snap && typeof snap.exists === 'function') {
 if (window.pendingFirebaseWrites === 0 && !window.isSavingToFirebase) {
 applyCloudSnapshotData(snap.val());
 }
-window.startRealtimeDatabaseListener(true);
+window.startRealtimeDatabaseListener(false);
 if (!silent && window.showToast) window.showToast('✅ Data terbaru berhasil disinkronkan (LIVE)!', 'success');
 return true;
 }
-window.startRealtimeDatabaseListener(true);
+window.startRealtimeDatabaseListener(false);
 } catch (e) {}
 return false;
 };
 document.addEventListener('visibilitychange', () => {
 if (document.visibilityState === 'visible' && navigator.onLine) {
-if (!window.hasInitialCloudLoaded || !window._rtdbListenerAttached) {
-window.forceRefreshCloudSync(true);
+if (!window._rtdbListenerAttached) {
+window.startRealtimeDatabaseListener(false);
 }
 }
 });
 window.addEventListener('pageshow', (ev) => {
-if ((ev.persisted || !window.hasInitialCloudLoaded) && navigator.onLine) {
-window.forceRefreshCloudSync(true);
+if (ev.persisted && navigator.onLine && !window._rtdbListenerAttached) {
+window.startRealtimeDatabaseListener(false);
 }
 });
 window.raceWithTimeout = function(promise, ms = 3500, fallbackVal = null) {
@@ -10189,7 +10188,7 @@ await window.raceWithTimeout(auth.currentUser.getIdToken(), 3500, null);
 window._firebaseAuthUid = auth.currentUser.uid;
 window._firebaseAuthState = 'AUTHENTICATED';
 window.updateFirebaseSecurityStatusUI();
-window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
+window.startRealtimeDatabaseListener(false);
 return true;
 }
 let cred = await window.raceWithTimeout(signInAnonymously(auth), 6000, null);
@@ -10204,7 +10203,7 @@ window._firebaseAuthUid = activeUser.uid;
 window._firebaseAuthState = 'AUTHENTICATED';
 window._firebaseAuthErrorMsg = '';
 window.updateFirebaseSecurityStatusUI();
-window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
+window.startRealtimeDatabaseListener(false);
 return true;
 }
 } catch (err) {
@@ -10212,12 +10211,12 @@ const code = (err && err.code) ? String(err.code) : '';
 window._firebaseAuthErrorMsg = code || (err && err.message) || 'Auth Error';
 window._firebaseAuthState = 'CONSOLE_NOT_ENABLED';
 window.updateFirebaseSecurityStatusUI();
-window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
+window.startRealtimeDatabaseListener(false);
 return false;
 } finally {
 window._authInitInFlight = null;
 }
-window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
+window.startRealtimeDatabaseListener(false);
 return false;
 })();
 return window._authInitInFlight;
@@ -10360,7 +10359,7 @@ window._firebaseAuthState = 'AUTHENTICATED';
 window.updateFirebaseSecurityStatusUI();
 try { await user.getIdToken(); } catch (e) {}
 if (sessionStorage.getItem('zencell_user') || !window.hasInitialCloudLoaded) {
-window.startRealtimeDatabaseListener(!window.hasInitialCloudLoaded);
+window.startRealtimeDatabaseListener(false);
 }
 } else {
 window._firebaseAuthUid = null;
@@ -10429,10 +10428,20 @@ localStorage.setItem(key, JSON.stringify(val));
 try {
 localStorage.removeItem('zencell_log_aktivitas');
 localStorage.setItem(key, JSON.stringify(val));
-} catch (_) {}
+} catch (_) {
+if (key === 'zencell_transaksi' && Array.isArray(val) && val.length > 1500) {
+try { localStorage.setItem(key, JSON.stringify(val.slice(0, 1500))); } catch (__) {}
+}
+}
 }
 };
-safeSetLs('zencell_transaksi', window.transaksiJurnal);
+const slimPengaturan = Object.assign({}, window.pengaturanToko);
+if (slimPengaturan.logoUrl && String(slimPengaturan.logoUrl).length > 80000) {
+slimPengaturan.logoUrl = '';
+}
+safeSetLs('zencell_pengaturan', slimPengaturan);
+safeSetLs('zencell_saldo_awal', window.masterSaldoAwal);
+safeSetLs('zencell_batas_min', window.masterBatasMinSaldo);
 safeSetLs('zencell_stok', window.stokOpnameItems);
 safeSetLs('zencell_piutang', window.piutangList);
 safeSetLs('zencell_setoran', window.setoranOwnerList);
@@ -10442,13 +10451,11 @@ safeSetLs('zencell_riwayat_belanja', window.riwayatBelanjaStok);
 safeSetLs('zencell_operasional', window.operasionalList);
 safeSetLs('zencell_stok_hadiah_atm', window.stokHadiahAtmList || []);
 safeSetLs('zencell_riwayat_tukar_hadiah', window.riwayatTukarHadiahList || []);
-safeSetLs('zencell_log_aktivitas', window.logAktivitasList);
 safeSetLs('zencell_riwayat_cek_laci', window.riwayatCekLaciList || []);
-safeSetLs('zencell_batas_min', window.masterBatasMinSaldo);
-safeSetLs('zencell_saldo_awal', window.masterSaldoAwal);
-safeSetLs('zencell_pengaturan', window.pengaturanToko);
 safeSetLs('zencell_karyawan', window.daftarKaryawan);
 safeSetLs('zencell_vlookup', window.masterVlookup || {});
+safeSetLs('zencell_transaksi', window.transaksiJurnal);
+safeSetLs('zencell_log_aktivitas', window.logAktivitasList);
 };
 window._debounceRenderTimer = null;
 window.debouncedRenderAll = function(delayMs = 120) {
